@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:ui';
 
 import 'package:firebase_core/firebase_core.dart';
@@ -93,14 +94,77 @@ class Repository{
   }
 
   Future<List<MoonItem>?> getMoonList() async {
-    // Реализация
+    if (_auth.currentUser != null) {
+      DataSnapshot snapshot = (await userRef.child(_auth.currentUser!.uid).child("moonlist").once()).snapshot;
+      if (snapshot.children.isNotEmpty) {
+        List<MoonItem> moons = [];
+        snapshot.children.forEach((element) {
+          if(element.key!=null&&element.value!=null) {
+            int id = int.parse(element.key!);
+            final Map<dynamic, dynamic> dataList = element.value as Map<dynamic,dynamic>;
+            String text = dataList['text'];
+            String date = dataList['date'];
+            double filling = dataList['filling'];
+            moons.add(MoonItem(id: id, filling: filling, text: text, date: date));
+          }
+        });
+        return moons;
+      } else {
+        return null;
+      }
+    } else {
+      return null;
+    }
   }
-  Future addMoon(MoonItem moonItem) async {
-    // Реализация
+  Future addMoon(MoonItem moonItem, List<CircleData> defaultCircles) async {
+    if(_auth.currentUser!=null){
+        userRef.child(_auth.currentUser!.uid).child("moonlist").child(moonItem.id.toString()).set({
+          'text': moonItem.text,
+          'date': moonItem.date,
+          'filling': moonItem.filling
+        });
+        List<Map<String, dynamic>> circleDataList = [];
+
+        // Преобразуем каждый объект CircleData в Map
+        for (CircleData circleData in defaultCircles) {
+          Map<String, dynamic> circleDataMap = {
+            'id': circleData.id,
+            'text': circleData.text,
+            'subText': circleData.subText,
+            'color': circleData.color.value, // Сохраняем цвет как строку
+            'parentId': circleData.parenId,
+          };
+          circleDataList.add(circleDataMap);
+        }
+        userRef.child(_auth.currentUser!.uid).child("moonlist").child(moonItem.id.toString()).child("spheres").set(
+          circleDataList
+        );
+    }
   }
 
   Future<List<CircleData>?> getSpheres(int moonId) async{
-// Реализация
+    List<CircleData> circleDataList = [];
+
+    if(_auth.currentUser!=null) {
+      DataSnapshot dataSnapshot = (await userRef.child(_auth.currentUser!.uid)
+          .child("moonlist").child(moonId.toString()).child("spheres")
+          .once()).snapshot;
+      if (dataSnapshot.children.isNotEmpty) {
+        dataSnapshot.children.forEach((element) {
+          final Map<dynamic, dynamic> dataList = element.value as Map<dynamic,dynamic>;
+          CircleData circleData = CircleData(
+            id: int.parse(element.key.toString()),
+            text: dataList['text'],
+            subText: dataList['subText'] ?? "",
+            color: Color(int.parse(dataList['color'].toString())),
+            parenId: int.parse(dataList['parentId'].toString()),
+          );
+          circleDataList.add(circleData);
+        });
+      }
+      return circleDataList;
+    }
+    return null;
   }
 
   Future<List<TaskItem>?> getMyTasks(int moonId) async{

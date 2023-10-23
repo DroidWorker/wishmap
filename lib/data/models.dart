@@ -18,11 +18,11 @@ class ProfileData {
 class CircleData{
   final int id;
   final String text;
-  final String subText;
+  String subText = "";
   final Color color;
   final int parenId;
 
-  CircleData({required this.id, required this.text, required this.subText, required this.color, required this.parenId});
+  CircleData({required this.id, required this.text, this.subText = "", required this.color, required this.parenId});
 }
 
 class Circle {

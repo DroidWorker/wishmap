@@ -1,6 +1,8 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:provider/provider.dart';
+import 'package:wishmap/ViewModel.dart';
 import 'package:wishmap/data/models.dart';
 import 'dart:math';
 import 'package:flutter/physics.dart';
@@ -72,21 +74,25 @@ class _CircleWidgetState extends State<CircleWidget>{
 }
 class CircularDraggableCircles extends StatefulWidget {
   List<Circle> circles;
-  List<MainCircle> centralCircles;
+  List<MainCircle> centralCircles = [];
   double size;
   Pair center;
 
-  CircularDraggableCircles({super.key, required this.circles, required this.centralCircles, required this.size, required this.center});
+  CircularDraggableCircles({super.key, required this.circles, required this.size, required this.center});
 
   @override
   _CircularDraggableCirclesState createState() => _CircularDraggableCirclesState();
 }
 
 class _CircularDraggableCirclesState extends State<CircularDraggableCircles> with TickerProviderStateMixin {
+  AppViewModel? vm;
+  
   List<Offset> circlePositions = [];
   List<double> circleRotations = [];
   List<Offset> plusesPositions = [];
   List<double> plusesRotations = [];
+
+  int circlesHash = 0;
 
   double lastRotation = 0.0;
   double lastdirection = 0.0;
@@ -109,6 +115,7 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
     final mediaQueryData = MediaQuery.of(context);
     return mediaQueryData.size;
   }
+
 
   @override
   void initState() {
@@ -154,7 +161,7 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
 
     showHideController.addStatusListener((status) {
       if(status==AnimationStatus.completed){
-        widget.circles.add(Circle(id: widget.circles.last.id+1, text: "new item", color: Colors.red));
+        widget.circles.add(Circle(id: widget.circles.isNotEmpty?widget.circles.last.id+1:0, text: "new item", color: Colors.red));
         circlePositions.clear();
         circleRotations.clear();
         plusesPositions.clear();
@@ -322,11 +329,17 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
   void animStatusListener(status){
     if (status == AnimationStatus.completed) {
       if(animationDirectionForward){
-        widget.circles = Repository.getChildrenSpheres(2);
+        widget.circles = vm?.openSphere(widget.centralCircles.last.id)??[];
         circlePositions.clear();
         circleRotations.clear();
         plusesPositions.clear();
         plusesRotations.clear();
+        if(widget.circles.isEmpty){
+          final px = widget.center.key-40 + (widget.size/2-40) * cos(1);
+          final py = widget.center.value-40 + (widget.size/2-40) * sin(1);
+          plusesPositions.add(Offset(px,py));
+          plusesRotations.add(1);
+        }
         final angleBetween = 2*pi/widget.circles.length;
         for (int i = 0; i < widget.circles.length; i++) {
           final x = widget.center.key-40 + (widget.size-widget.circles[i].radius)/2 * cos(2 * pi * i / widget.circles.length);
@@ -353,40 +366,80 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
 
   @override
   Widget build(BuildContext context) {
+    vm = Provider.of<AppViewModel>(context);
+    if(widget.centralCircles.isEmpty) {
+      widget.centralCircles = List<MainCircle>.from(vm!.mainCircles);
+    }
+
     for (int i = 0; i<widget.centralCircles.length; i++) {
-      if(widget.centralCircles[i].coords.key==0.0||widget.centralCircles[i].coords.value==0.0) {
-        widget.centralCircles[i].coords = Pair(key: widget.center.key-widget.centralCircles[i].radius, value: widget.center.value-widget.centralCircles[i].radius);
+      if (widget.centralCircles[i].coords.key == 0.0 ||
+          widget.centralCircles[i].coords.value == 0.0) {
+        widget.centralCircles[i].coords = Pair(
+            key: widget.center.key - widget.centralCircles[i].radius,
+            value: widget.center.value - widget.centralCircles[i].radius);
       }
+    }
+    var newHash = 0;
+    widget.circles.forEach((element) {
+      newHash+=element.id;
+    });
+    if(newHash!= circlesHash) {
+      final angleBetween = 2 * pi / widget.circles.length;
+      for (int i = 0; i < widget.circles.length; i++) {
+        final x = widget.center.key - 40 +
+            (widget.size - widget.circles[i].radius) / 2 *
+                cos(2 * pi * i / widget.circles.length);
+        final y = widget.center.value - 40 +
+            (widget.size - widget.circles[i].radius) / 2 *
+                sin(2 * pi * i / widget.circles.length);
+        circlePositions.add(Offset(x, y));
+        circleRotations.add(2 * pi * i / widget.circles.length);
+        final px = widget.center.key - 40 +
+            (widget.size - widget.circles[i].radius) / 2 *
+                cos((2 * pi * i / widget.circles.length) + angleBetween / 2);
+        final py = widget.center.value - 40 +
+            (widget.size - widget.circles[i].radius) / 2 *
+                sin((2 * pi * i / widget.circles.length) + angleBetween / 2);
+        plusesPositions.add(Offset(px, py));
+        plusesRotations.add(
+            (2 * pi * i / widget.circles.length) + angleBetween / 2);
+      }
+      circlesHash = newHash;
     }
 
     return Container(
-        child: AnimatedBuilder(
+     child:AnimatedBuilder(
           animation: ctrl,
-          builder: (context, child){
-            final newRotation = ctrl.value- lastRotation;
+          builder: (context, child) {
+            final newRotation = ctrl.value - lastRotation;
             lastRotation = ctrl.value;
-            if(ctrl.isAnimating) _updateCircleRotation(newRotation, widget.size, widget.center, widget.size/2, isAnim: true);
+            if (ctrl.isAnimating) _updateCircleRotation(
+                newRotation, widget.size, widget.center, widget.size / 2,
+                isAnim: true);
             return Stack(
               children: [
                 Positioned(
-                  left: widget.center.key+40-widget.size/2,
-                  top: widget.center.value+40-widget.size/2,
+                  left: widget.center.key + 40 - widget.size / 2,
+                  top: widget.center.value + 40 - widget.size / 2,
                   child:
                   Container(
-                    width: widget.size-80, // Ширина контейнера
-                    height: widget.size-80, // Высота контейнера
+                    width: widget.size - 80, // Ширина контейнера
+                    height: widget.size - 80, // Высота контейнера
                     decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: Colors.transparent,
-                        border: Border.all(color:  Colors.grey, width: 2)
+                        border: Border.all(color: Colors.grey, width: 2)
                     ),
                     child: const SizedBox(),
                   ),),
-                ...circlePositions.asMap().entries.map((e) {
+                ...plusesPositions
+                    .asMap()
+                    .entries
+                    .map((e) {
                   return Positioned(
-                    left: plusesPositions[e.key].dx+35,
-                    top: plusesPositions[e.key].dy+35,
-                    child:
+                      left: plusesPositions[e.key].dx + 35,
+                      top: plusesPositions[e.key].dy + 35,
+                      child:
                       GestureDetector(
                         child: Container(
                           width: 10, // Ширина контейнера
@@ -396,10 +449,11 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
                             color: Colors.grey,
                           ),
                           child: const Center(
-                            child: Text("+", style: TextStyle(fontSize: 8, color: Colors.white),),
+                            child: Text("+", style: TextStyle(
+                                fontSize: 8, color: Colors.white),),
                           ),
                         ),
-                        onTap: (){
+                        onTap: () {
                           showHideController.reset();
                           showHideController.forward();
                         },
@@ -407,116 +461,150 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
                   );
                 }
                 ),
-                ...widget.circles.asMap().entries.map((entry) {
+                ...widget.circles
+                    .asMap()
+                    .entries
+                    .map((entry) {
                   final index = entry.key;
                   final circle = entry.value;
 
                   return Positioned(
-                    left: circlePositions[index].dx,
-                    top: circlePositions[index].dy,
-                    child: AnimatedBuilder(
-                      animation: AlphaAnimation,
-                      builder: (context, child) {
-                        return Opacity(
-                          opacity: alphaAnimValue,
-                          child: CircleWidget(
-                            itemId: index,
-                            circle: circle,
-                            size: widget.size,
-                            center: widget.center,
-                            onRotate: (angle) {
-                              lastdirection = angle;
-                              _updateCircleRotation(angle, widget.size, widget.center, (widget.size)/2);
-                            },
-                            onEndRotate: (details){
-                              startInertia(((details.velocity.pixelsPerSecond.dx+details.velocity.pixelsPerSecond.dy).abs()/2)*(lastdirection<0?(-1):1));
-                            },
-                            startMoving: (id, itemId) {
-                              animationDirectionForward = true;
-                              initAnim(id, itemId);
-                              // Запускаем анимацию
-                              movingController.reset(); // Сбрасываем анимацию
-                              movingController.forward(); // Запускаем анимаци
+                      left: circlePositions[index].dx,
+                      top: circlePositions[index].dy,
+                      child: AnimatedBuilder(
+                        animation: AlphaAnimation,
+                        builder: (context, child) {
+                          return Opacity(
+                              opacity: alphaAnimValue,
+                              child: CircleWidget(
+                                  itemId: index,
+                                  circle: circle,
+                                  size: widget.size,
+                                  center: widget.center,
+                                  onRotate: (angle) {
+                                    lastdirection = angle;
+                                    _updateCircleRotation(
+                                        angle, widget.size, widget.center,
+                                        (widget.size) / 2);
+                                  },
+                                  onEndRotate: (details) {
+                                    startInertia(
+                                        ((details.velocity.pixelsPerSecond.dx +
+                                            details.velocity.pixelsPerSecond.dy)
+                                            .abs() / 2) *
+                                            (lastdirection < 0 ? (-1) : 1));
+                                  },
+                                  startMoving: (id, itemId) {
+                                    animationDirectionForward = true;
+                                    initAnim(id, itemId);
+                                    // Запускаем анимацию
+                                    movingController
+                                        .reset();
+                                    movingController
+                                        .forward();
 
-                            })
-                        );
-                      },
-                    )
+                                  })
+                          );
+                        },
+                      )
                   );
                 }).toList(),
-                ...widget.centralCircles.asMap().entries.where((entry) {
-                  return entry.value.isVisible; // Фильтруем элементы по условию isVisible
-                }).map((entry){
+                ...widget.centralCircles
+                    .asMap()
+                    .entries
+                    .where((entry) {
+                  return entry.value
+                      .isVisible; // Фильтруем элементы по условию isVisible
+                }).map((entry) {
                   final index = entry.key;
                   final value = entry.value;
                   return Positioned(
-                    left: value.coords.key,
-                    top: value.coords.value,
-                    child: GestureDetector(
-                      child: Container(
-                          width: value.radius*2,
-                          height: value.radius*2,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: value.color,
-                          ),
-                          child: Center(
-                              child: IntrinsicHeight(
-                                child: Column(children: [
-                                  const SizedBox(height: 5,),
-                                  Text(
-                                    value.text,
-                                    style: TextStyle(color: Colors.white, fontSize: (value.textSize).toDouble()),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                  AnimatedBuilder(
-                                    animation: AlphaAnimation,
-                                    builder: (context, child) {
-                                      return Opacity(
-                                        opacity: AlphaAnimation.value,
-                                        child: const Text(
-                                          "состояние",
-                                          style: TextStyle(color: Colors.white, fontSize: 10),
-                                          textAlign: TextAlign.center,
-                                        ),
-                                      );
-                                    },
-                                  )
-                                ],),
-                              )
-                          )
-                      ),
-                      onTap: (){
-                        if(widget.centralCircles.length-1!=index){
-                          animationDirectionForward= false;
-                          widget.circles = Repository.getChildrenSpheres(value.id);
-                          circleRotations.clear();
-                          circlePositions.clear();
-                          plusesPositions.clear();
-                          plusesRotations.clear();
-                          final angleBetween = 2*pi/widget.circles.length;
-                          for (int i = 0; i < widget.circles.length; i++) {
-                            final x = widget.center.key-40 + (widget.size-widget.circles[i].radius)/2 * cos(2 * pi * i / widget.circles.length);
-                            final y = widget.center.value-40 + (widget.size-widget.circles[i].radius)/2 * sin(2 * pi * i / widget.circles.length);
-                            circlePositions.add(Offset(x, y));
-                            circleRotations.add(2 * pi * i / widget.circles.length);
-                            final px = widget.center.key-40 + (widget.size-widget.circles[i].radius)/2 * cos((2 * pi * i / widget.circles.length)+angleBetween/2);
-                            final py = widget.center.value-40 + (widget.size-widget.circles[i].radius)/2 * sin((2 * pi * i / widget.circles.length)+angleBetween/2);
-                            plusesPositions.add(Offset(px,py));
-                            plusesRotations.add((2 * pi * i / widget.circles.length)+angleBetween/2);
+                      left: value.coords.key,
+                      top: value.coords.value,
+                      child: GestureDetector(
+                        child: Container(
+                            width: value.radius * 2,
+                            height: value.radius * 2,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: value.color,
+                            ),
+                            child: Center(
+                                child: IntrinsicHeight(
+                                  child: Column(children: [
+                                    const SizedBox(height: 5,),
+                                    Text(
+                                      value.text,
+                                      style: TextStyle(color: Colors.white,
+                                          fontSize: (value.textSize)
+                                              .toDouble()),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    AnimatedBuilder(
+                                      animation: AlphaAnimation,
+                                      builder: (context, child) {
+                                        return Opacity(
+                                          opacity: AlphaAnimation.value,
+                                          child: const Text(
+                                            "состояние",
+                                            style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 10),
+                                            textAlign: TextAlign.center,
+                                          ),
+                                        );
+                                      },
+                                    )
+                                  ],),
+                                )
+                            )
+                        ),
+                        onTap: () {
+                          if (widget.centralCircles.length - 1 != index) {
+                            animationDirectionForward = false;
+                            widget.circles = vm?.openSphere(value.id)??[];
+                            circleRotations.clear();
+                            circlePositions.clear();
+                            plusesPositions.clear();
+                            plusesRotations.clear();
+                            final angleBetween = 2 * pi / widget.circles.length;
+                            for (int i = 0; i < widget.circles.length; i++) {
+                              final x = widget.center.key - 40 +
+                                  (widget.size - widget.circles[i].radius) / 2 *
+                                      cos(2 * pi * i / widget.circles.length);
+                              final y = widget.center.value - 40 +
+                                  (widget.size - widget.circles[i].radius) / 2 *
+                                      sin(2 * pi * i / widget.circles.length);
+                              circlePositions.add(Offset(x, y));
+                              circleRotations.add(
+                                  2 * pi * i / widget.circles.length);
+                              final px = widget.center.key - 40 +
+                                  (widget.size - widget.circles[i].radius) / 2 *
+                                      cos((2 * pi * i / widget.circles.length) +
+                                          angleBetween / 2);
+                              final py = widget.center.value - 40 +
+                                  (widget.size - widget.circles[i].radius) / 2 *
+                                      sin((2 * pi * i / widget.circles.length) +
+                                          angleBetween / 2);
+                              plusesPositions.add(Offset(px, py));
+                              plusesRotations.add(
+                                  (2 * pi * i / widget.circles.length) +
+                                      angleBetween / 2);
+                            }
+                            initAnim(widget.centralCircles.last.id,
+                                widget.circles.indexWhere((element) => element
+                                    .id == widget.centralCircles.last.id));
+                            movingController.reset();
+                            movingController.forward();
+                          } else if (widget.centralCircles[index].id == 0) {
+                            BlocProvider.of<NavigationBloc>(context)
+                                .add(NavigateToSpheresOfLifeScreenEvent());
+                          } else {
+                            BlocProvider.of<NavigationBloc>(context)
+                                .add(NavigateToMainSphereEditScreenEvent());
                           }
-                          initAnim(widget.centralCircles.last.id, widget.circles.indexWhere((element) => element.id==widget.centralCircles.last.id));
-                          movingController.reset();
-                          movingController.forward();
-                        }else if(widget.centralCircles[index].id==0){
-                          BlocProvider.of<NavigationBloc>(context)
-                              .add(NavigateToSpheresOfLifeScreenEvent());
-                        }else{
-                          BlocProvider.of<NavigationBloc>(context)
-                              .add(NavigateToMainSphereEditScreenEvent());
-                        }
-                      },
-                    )
+                        },
+                      )
                   );
                 }).toList()
               ],

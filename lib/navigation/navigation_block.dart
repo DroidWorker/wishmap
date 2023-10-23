@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:wishmap/data/models.dart';
 
 abstract class NavigationEvent {}
 
@@ -67,7 +68,7 @@ class NavigationMainSphereEditScreenState extends NavigationState {}
 class NavigationBloc extends Bloc<NavigationEvent, NavigationState> {
   NavigationBloc() : super(NavigationCardsScreenState());
 
-  final List<NavigationState> _navigationHistory = [NavigationMainScreenState()];
+  final List<NavigationState> _navigationHistory = [NavigationCardsScreenState()];
 
   final _backPressController = StreamController<bool>();
 

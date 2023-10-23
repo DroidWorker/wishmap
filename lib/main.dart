@@ -29,11 +29,16 @@ void main() async{
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  final appViewModel = AppViewModel();
+  await appViewModel.init();
   runApp(
     ChangeNotifierProvider(
-      create: (context) => AppViewModel(),
+      create: (context) => appViewModel,
       child: BlocProvider<NavigationBloc>(
-        create: (context) => NavigationBloc()..add(NavigateToAuthScreenEvent()), // Устанавливаем начальное состояние Screen1
+          create: (context) {
+            final appViewModel = context.read<AppViewModel>();
+            return NavigationBloc()..add((appViewModel.profileData!=null&&appViewModel.profileData!.id.isNotEmpty)?NavigateToCardsScreenEvent():NavigateToAuthScreenEvent());
+          },
         child: MyApp(),
       ),
     ),
