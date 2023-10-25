@@ -1,14 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:provider/provider.dart';
+import 'package:wishmap/data/models.dart';
+import '../ViewModel.dart';
 import '../navigation/navigation_block.dart';
 import '../res/colors.dart';
 
 class AimScreen extends StatelessWidget {
-
-  const AimScreen({super.key});
+  int parentCircleId = 0;
+  AimScreen({super.key, required this.parentCircleId});
 
   @override
   Widget build(BuildContext context) {
+    final appViewModel = Provider.of<AppViewModel>(context);
+    final TextEditingController text = TextEditingController();
+    final TextEditingController description = TextEditingController();
+
     return Scaffold(
         backgroundColor: AppColors.backgroundColor,
         body: SafeArea(child:SingleChildScrollView(
@@ -37,9 +44,20 @@ class AimScreen extends StatelessWidget {
                           "Сохранить",
                           style: TextStyle(color: AppColors.blueTextColor),
                         ),
-                        onTap: (){
-                          BlocProvider.of<NavigationBloc>(context)
-                              .add(NavigateToAimEditScreenEvent());
+                        onTap: () async {
+                          int? aimId = await appViewModel.createAim(AimData(id: 999, text: text.text, description: description.text), parentCircleId);
+                          if(aimId!=null) {
+                            BlocProvider.of<NavigationBloc>(context)
+                                .add(NavigateToAimEditScreenEvent(aimId));
+                          }else{
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Ошибка сохранения'),
+                                duration: Duration(
+                                    seconds: 3), // Установите желаемую продолжительность отображения
+                              ),
+                            );
+                          }
                         },
                       )
                     ),
@@ -53,6 +71,7 @@ class AimScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 10),
                 TextField(
+                  controller: text,
                   style: const TextStyle(color: Colors.black), // Черный текст ввода
                   decoration: InputDecoration(
                     filled: true,
@@ -64,6 +83,7 @@ class AimScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 10),
                 TextField(
+                  controller: description,
                   minLines: 4,
                   maxLines: 15,
                   style: const TextStyle(color: Colors.black), // Черный текст ввода
@@ -86,8 +106,9 @@ class AimScreen extends StatelessWidget {
                     onPressed: (){
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                            content: Text('Необходимо созхранить цель'),
-                            duration: Duration(seconds: 3), // Установите желаемую продолжительность отображения
+                            content: Text('Необходимо сохранить цель'),
+                            duration: Duration(
+                                seconds: 3), // Установите желаемую продолжительность отображения
                           ),
                         );
                     },

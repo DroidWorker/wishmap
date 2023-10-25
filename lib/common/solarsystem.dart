@@ -407,6 +407,8 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
       circlesHash = newHash;
     }
 
+    final appViewModel = Provider.of<AppViewModel>(context);
+
     return Container(
      child:AnimatedBuilder(
           animation: ctrl,
@@ -454,8 +456,12 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
                           ),
                         ),
                         onTap: () {
-                          showHideController.reset();
-                          showHideController.forward();
+                          //showHideController.reset();
+                          //showHideController.forward();
+                          //open sphere creation screen
+                          appViewModel.startWishScreen(appViewModel.mainScreenState!.allCircles.isNotEmpty?appViewModel.mainScreenState!.allCircles.last.id+1:-101, widget.centralCircles.last.id);
+                          BlocProvider.of<NavigationBloc>(context)
+                              .add(NavigateToWishScreenEvent());
                         },
                       )
                   );
@@ -598,10 +604,11 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
                             movingController.forward();
                           } else if (widget.centralCircles[index].id == 0) {
                             BlocProvider.of<NavigationBloc>(context)
-                                .add(NavigateToSpheresOfLifeScreenEvent());
-                          } else {
-                            BlocProvider.of<NavigationBloc>(context)
                                 .add(NavigateToMainSphereEditScreenEvent());
+                          } else {
+                            appViewModel.startWishScreen(widget.centralCircles[index].id, 0);
+                            BlocProvider.of<NavigationBloc>(context)
+                                .add(NavigateToWishScreenEvent());
                           }
                         },
                       )

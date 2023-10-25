@@ -103,6 +103,7 @@ class MainScreen extends StatelessWidget {
                                 icon: Image.asset('assets/icons/checklist2665651.png'),
                                 iconSize: 30,
                                 onPressed: () {
+                                  appVM.startMyTasksScreen();
                                   BlocProvider.of<NavigationBloc>(context)
                                       .add(NavigateToTasksScreenEvent());
                                 },
@@ -111,6 +112,7 @@ class MainScreen extends StatelessWidget {
                                 icon: Image.asset('assets/icons/goal6002764.png'),
                                 iconSize: 30,
                                 onPressed: () {
+                                  appVM.startMyAimsScreen();
                                   BlocProvider.of<NavigationBloc>(context)
                                       .add(NavigateToAimsScreenEvent());
                                 },
@@ -127,6 +129,7 @@ class MainScreen extends StatelessWidget {
                                 icon: Image.asset('assets/icons/notelove1648387.png'),
                                 iconSize: 30,
                                 onPressed: () {
+                                  appVM.startMyWishesScreen();
                                   BlocProvider.of<NavigationBloc>(context)
                                       .add(NavigateToWishesScreenEvent());
                                 },

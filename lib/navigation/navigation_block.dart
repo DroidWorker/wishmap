@@ -17,9 +17,15 @@ class NavigateToSpheresOfLifeScreenEvent extends NavigationEvent {}
 
 class NavigateToWishScreenEvent extends NavigationEvent {}
 
-class NavigateToAimCreateScreenEvent extends NavigationEvent {}
+class NavigateToAimCreateScreenEvent extends NavigationEvent {
+  int circleId = 0;
+  NavigateToAimCreateScreenEvent(this.circleId);
+}
 
-class NavigateToAimEditScreenEvent extends NavigationEvent {}
+class NavigateToAimEditScreenEvent extends NavigationEvent {
+  int aimId = 0;
+  NavigateToAimEditScreenEvent(this.aimId);
+}
 
 class NavigateToTasksScreenEvent extends NavigationEvent {}
 
@@ -47,9 +53,15 @@ class NavigationSpheresOfLifeScreenState extends NavigationState {}
 
 class NavigationWishScreenState extends NavigationState {}
 
-class NavigationAimCreateScreenState extends NavigationState {}
+class NavigationAimCreateScreenState extends NavigationState {
+  int parentCircleId=0;
+  NavigationAimCreateScreenState({required this.parentCircleId});
+}
 
-class NavigationAimEditScreenState extends NavigationState {}
+class NavigationAimEditScreenState extends NavigationState {
+  int aimId=0;
+  NavigationAimEditScreenState(this.aimId);
+}
 
 class NavigationTasksScreenState extends NavigationState {}
 
@@ -113,9 +125,9 @@ class NavigationBloc extends Bloc<NavigationEvent, NavigationState> {
       _navigationHistory.add(NavigationMainScreenState());
       _navigationHistory.add(NavigationWishScreenState());
     } else if (event is NavigateToAimCreateScreenEvent) {
-      _navigationHistory.add(NavigationAimCreateScreenState());
+      _navigationHistory.add(NavigationAimCreateScreenState(parentCircleId: event.circleId));
     } else if (event is NavigateToAimEditScreenEvent) {
-      _navigationHistory.add(NavigationAimEditScreenState());
+      _navigationHistory.add(NavigationAimEditScreenState(event.aimId));
     } else if (event is NavigateToTasksScreenEvent) {
       _navigationHistory.clear();
       _navigationHistory.add(NavigationMainScreenState());

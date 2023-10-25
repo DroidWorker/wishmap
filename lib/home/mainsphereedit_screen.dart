@@ -148,7 +148,7 @@ class MainSphereEditScreen extends StatelessWidget {
                         ),
                         onPressed: (){
                           BlocProvider.of<NavigationBloc>(context)
-                              .add(NavigateToAimCreateScreenEvent());
+                              .add(NavigateToAimCreateScreenEvent(0));
                         },
                         child: const Text("Добавить", style: TextStyle(color: AppColors.greytextColor))
                     )

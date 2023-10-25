@@ -89,15 +89,16 @@ class WishItem {
 
 class WishData {
   final int id;
-  final String text;
-  final String description;
+  final int parentId;
+  String text;
+  String description;
   List<int> photolist = [];
-  final String affirmation;
-  final String color;
+  String affirmation;
+  Color color;
   List<int> childAims = [];
   bool isChecked = false;
 
-  WishData({required this.id, required this.text, required this.description, required this.affirmation, required this.color});
+  WishData({required this.id, required this.parentId, required this.text, required this.description, required this.affirmation, required this.color});
 }
 
 class AimItem {
@@ -119,7 +120,7 @@ class AimData {
 }
 
 class ProfileItem {
-  final int id;
+  final String id;
   final String name;
   final String surname;
   final String email;
@@ -144,6 +145,12 @@ class MainScreenState {
   final int musicId;
 
   MainScreenState({required this.moon, required this.musicId});
+}
+
+class WishScreenState {
+  final WishData wish;
+
+  WishScreenState({required this.wish});
 }
 
 class MessageError {

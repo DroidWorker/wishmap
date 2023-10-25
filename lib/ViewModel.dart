@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:wishmap/repository/Repository.dart';
 import 'package:wishmap/repository/local_repository.dart';
 import 'package:dart_suncalc/suncalc.dart';
@@ -26,6 +27,8 @@ class AppViewModel with ChangeNotifier {
   MainScreenState? mainScreenState;
   List<MainCircle> mainCircles = [];
   List<Circle> currentCircles = [];
+  //wishScreen
+  WishScreenState? wishScreenState;
   //MyTasksScreen
   List<TaskItem> taskItems = [];
   //MyAimsScreen
@@ -171,22 +174,82 @@ class AppViewModel with ChangeNotifier {
     return null;
   }
 
-  Future<void> startMyTasksScreen(MoonItem mi) async{
+  Future<void> startWishScreen(int wishId, int parentId) async{
     try {
-      taskItems = (await repository.getMyTasks(mi.id)) ?? [];
+      WishData wdItem;
+      var tmp = mainScreenState!.allCircles.where((element) => element.id==wishId);
+      if(tmp.isNotEmpty){
+        wdItem = (await repository.getMyWish(wishId, mainScreenState!.moon.id)) ?? WishData(id: -100, parentId: 0, text: "не удалось загрузить данные", description: "", affirmation: "", color: Colors.transparent);
+      }else{
+        wdItem = WishData(id: wishId, parentId: parentId, text: "", description: "", affirmation: "", color: Colors.green);
+      }
+      wishScreenState = WishScreenState(wish: wdItem);
+      notifyListeners();
     }catch(ex){
       addError(ex.toString());
     }
   }
-  Future<void> startMyAimsScreen(MoonItem mi) async{
+
+  Future<void> startMyTasksScreen() async{
     try {
-      aimItems = (await repository.getMyAims(mi.id)) ?? [];
+      taskItems = (await repository.getMyTasks(mainScreenState?.moon.id??0)) ?? [];
+      notifyListeners();
     }catch(ex){
       addError(ex.toString());
     }
-  }Future<void> startMyWishesScreen(MoonItem mi) async{
+  }
+  Future<List<TaskItem>?> getTasksForAim(int aimId) async {
     try {
-      wishItems = (await repository.getMyWishs(mi.id)) ?? [];
+      var list = (await repository.getAimsChildTasks(
+          aimId, mainScreenState?.moon.id ?? 0)) ?? [];
+      if (list.isNotEmpty){
+        if(taskItems.isNotEmpty){
+          return taskItems.where((element) => list.contains(element.id)).toList();
+        }else{
+          taskItems = (await repository.getMyTasks(mainScreenState?.moon.id??0)) ?? [];
+          return taskItems.where((element) => list.contains(element.id)).toList();
+        }
+      }else {
+        return null;
+      }
+    }catch(ex){
+      addError("Ошибка загрузки задач: $ex");
+    }
+    return null;
+  }
+
+  Future<void> startMyAimsScreen() async{
+    try {
+      aimItems = (await repository.getMyAims(mainScreenState?.moon.id??0)) ?? [];
+      notifyListeners();
+    }catch(ex){
+      addError(ex.toString());
+    }
+  }
+  Future<List<AimItem>?> getAimsForCircles(int sphereId) async {
+    try {
+      var list = (await repository.getSpheresChildAims(
+          sphereId, mainScreenState?.moon.id ?? 0)) ?? [];
+      if (list.isNotEmpty){
+        if(aimItems.isNotEmpty){
+          return aimItems.where((element) => list.contains(element.id)).toList();
+        }else{
+          aimItems = (await repository.getMyAims(mainScreenState?.moon.id??0)) ?? [];
+          return aimItems.where((element) => list.contains(element.id)).toList();
+        }
+      }else {
+        return null;
+      }
+    }catch(ex){
+      addError("Ошибка загрузки задач: $ex");
+    }
+    return null;
+  }
+
+  Future<void> startMyWishesScreen() async{
+    try {
+      wishItems = (await repository.getMyWishs(mainScreenState?.moon.id??0)) ?? [];
+      notifyListeners();
     }catch(ex){
       addError(ex.toString());
     }
@@ -194,15 +257,39 @@ class AppViewModel with ChangeNotifier {
 
   Future<void> createNewSphereWish(WishData wd) async{
     try {
-      await repository.createSphereWish(wd);
+      await repository.createSphereWish(wd, mainScreenState?.moon.id??0);
+      mainScreenState!.allCircles.add(CircleData(id: wd.id, text: wd.text, color: wd.color, parenId: wd.parentId));
+    }catch(ex){
+      addError("сфера не была сохранена: $ex");
+    }
+  }
+  Future<void> deleteSphereWish(WishData wd) async{
+    try {
+      await repository.deleteSphereWish(wd, mainScreenState?.moon.id??0);
+    }catch(ex){
+      addError("сфера не была удалена: $ex");
+    }
+  }
+
+  Future<int?> createAim(AimData ad, int parentCircleId) async{
+    try {
+      int? aimId = (await repository.createAim(ad, parentCircleId, mainScreenState?.moon.id??0))??-1;
+      aimItems.add(AimItem(id: aimId, text: ad.text, isChecked: ad.isChecked));
+      return aimId;
     }catch(ex){
       addError(ex.toString());
     }
   }
-
-  Future<void> createAim(AimData ad, int parentCircleId) async{
+  Future<void> deleteAim(int aimId) async{
     try {
-      await repository.createAim(ad, parentCircleId);
+      await repository.deleteAim(aimId, mainScreenState?.moon.id??0);
+    }catch(ex){
+      addError(ex.toString());
+    }
+  }
+  Future<void> updateAimStatus(int aimId, bool status) async{
+    try {
+      await repository.changeAimStatus(aimId, mainScreenState?.moon.id??0, status);
     }catch(ex){
       addError(ex.toString());
     }
@@ -210,10 +297,23 @@ class AppViewModel with ChangeNotifier {
 
   Future<void> createTask(TaskData ad, int parentAimId) async{
     try {
-      await repository.createTask(ad, parentAimId);
+      await repository.createTask(ad, parentAimId, mainScreenState?.moon.id??0);
     }catch(ex){
       addError(ex.toString());
     }
   }
-
+  Future<void> deleteTask(int taskId) async{
+    try {
+      await repository.deleteTask(taskId, mainScreenState?.moon.id??0);
+    }catch(ex){
+      addError(ex.toString());
+    }
+  }
+  Future<void> updateTaskStatus(int taskId, bool status) async{
+    try {
+      await repository.changeTaskStatus(taskId, mainScreenState?.moon.id??0, status);
+    }catch(ex){
+      addError(ex.toString());
+    }
+  }
 }

@@ -84,19 +84,19 @@ class MyApp extends StatelessWidget {
     } else if (state is NavigationSpheresOfLifeScreenState) {
       return const SpheresOfLifeScreen();
     } else if (state is NavigationWishScreenState) {
-      return const WishScreen();
+      return WishScreen();
     } else if (state is NavigationAimCreateScreenState) {
-      return const AimScreen();
+      return AimScreen(parentCircleId: state.parentCircleId);
     } else if (state is NavigationAimEditScreenState) {
-      return AimEditScreen();
+      return AimEditScreen(aimId: state.aimId);
     } else if (state is NavigationTasksScreenState) {
-      return TasksScreen(taskList: [TaskItem(id: 0, text: "text1", isChecked: false), TaskItem(id: 1, text: "text2", isChecked: false), TaskItem(id: 2, text: "text3", isChecked: true)]);
+      return const TasksScreen();
     } else if (state is NavigationWishesScreenState) {
-      return WishesScreen(wishesList: [WishItem(id: 0, text: "text1", isChecked: false), WishItem(id: 1, text: "text2", isChecked: false), WishItem(id: 2, text: "text3", isChecked: true)]);
+      return WishesScreen();
     } else if (state is NavigationAimsScreenState) {
-      return AimsScreen(aimsList: [AimItem(id: 0, text: "text1", isChecked: false), AimItem(id: 1, text: "text2", isChecked: false), AimItem(id: 2, text: "text3", isChecked: true)]);
+      return const AimsScreen();
     } else if (state is NavigationProfileScreenState) {
-      return ProfileScreen(pi: ProfileItem(id: 0, name: "text1", surname: "subtext", email: "email", bgcolor: Colors.red));
+      return const ProfileScreen();
     } else if (state is NavigationTaskCreateScreenState) {
       return const TaskScreen();
     } else if (state is NavigationTaskEditScreenState) {

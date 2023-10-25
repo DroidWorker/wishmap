@@ -45,8 +45,8 @@ class LocalRepository{
       await init(); // Дождитесь завершения инициализации
     }
     String? id = _prefs!.getString("id");
-    String? name = _prefs!.getString("login");
-    String? surname = _prefs!.getString("password");
+    String? name = _prefs!.getString("name");
+    String? surname = _prefs!.getString("surname");
     return (id!=null&&name!=null&&surname!=null)?ProfileData(id: id, name: name, surname: surname):null;
   }
 

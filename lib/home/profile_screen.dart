@@ -2,19 +2,18 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:wishmap/common/aimitem_widget.dart';
-import 'package:wishmap/common/wishItem_widget.dart';
+import 'package:provider/provider.dart';
+import '../ViewModel.dart';
 import '../data/models.dart';
 import '../navigation/navigation_block.dart';
 import '../res/colors.dart';
 
 class ProfileScreen extends StatefulWidget {
-  ProfileScreen({super.key, required this.pi});
+  const ProfileScreen({super.key});
 
   @override
   _ProfileScreenState createState() => _ProfileScreenState();
 
-  ProfileItem pi;
 }
 
 class _ProfileScreenState extends State<ProfileScreen>{
@@ -22,17 +21,25 @@ class _ProfileScreenState extends State<ProfileScreen>{
   Random r = Random();
   late Color bgColor;// елания
 
-  late ProfileItem pi = widget.pi;
+  late ProfileItem pi;
 
   @override
   void initState() {
     bgColor = Color.fromARGB(255, r.nextInt(255), r.nextInt(255), r.nextInt(255));
-    pi = ProfileItem(id: 0, name: "name", surname: "surname", email: "email@e.mail", bgcolor: bgColor);
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
+    final appViewModel = Provider.of<AppViewModel>(context);
+    if(appViewModel.profileData!=null) {
+      pi = ProfileItem(id: appViewModel.profileData!.id,
+          name: appViewModel.profileData!.name,
+          surname: appViewModel.profileData!.surname,
+          email: appViewModel.authData!.login,
+          bgcolor: bgColor);
+    }
+
     return Scaffold(
         backgroundColor: AppColors.backgroundColor,
         body: SafeArea(child:Padding(
@@ -75,13 +82,13 @@ class _ProfileScreenState extends State<ProfileScreen>{
                     ),
                   ),
                   const SizedBox(width: 10),
-                  const Column(
+                  Column(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                    Text("name"),
-                    Text("surname"),
-                    Text("email", style: TextStyle(fontSize: 10),)
+                    Text(pi.name),
+                    Text(pi.surname),
+                    Text(pi.email , style: const TextStyle(fontSize: 10),)
                   ],)
                 ],),
               ),
