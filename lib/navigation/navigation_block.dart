@@ -35,9 +35,15 @@ class NavigateToAimsScreenEvent extends NavigationEvent {}
 
 class NavigateToProfileScreenEvent extends NavigationEvent {}
 
-class NavigateToTaskCreateScreenEvent extends NavigationEvent {}
+class NavigateToTaskCreateScreenEvent extends NavigationEvent {
+  int parentAimId = 0;
+  NavigateToTaskCreateScreenEvent(this.parentAimId);
+}
 
-class NavigateToTaskEditScreenEvent extends NavigationEvent {}
+class NavigateToTaskEditScreenEvent extends NavigationEvent {
+  int taskId = 0;
+  NavigateToTaskEditScreenEvent(this.taskId);
+}
 
 class NavigateToMainSphereEditScreenEvent extends NavigationEvent {}
 
@@ -71,9 +77,15 @@ class NavigationAimsScreenState extends NavigationState {}
 
 class NavigationProfileScreenState extends NavigationState {}
 
-class NavigationTaskCreateScreenState extends NavigationState {}
+class NavigationTaskCreateScreenState extends NavigationState {
+  int parentAimId=0;
+  NavigationTaskCreateScreenState(this.parentAimId);
+}
 
-class NavigationTaskEditScreenState extends NavigationState {}
+class NavigationTaskEditScreenState extends NavigationState {
+  int aimId = 0;
+  NavigationTaskEditScreenState(this.aimId);
+}
 
 class NavigationMainSphereEditScreenState extends NavigationState {}
 
@@ -145,9 +157,9 @@ class NavigationBloc extends Bloc<NavigationEvent, NavigationState> {
       _navigationHistory.add(NavigationMainScreenState());
       _navigationHistory.add(NavigationProfileScreenState());
     } else if (event is NavigateToTaskCreateScreenEvent) {
-      _navigationHistory.add(NavigationTaskCreateScreenState());
+      _navigationHistory.add(NavigationTaskCreateScreenState(event.parentAimId));
     } else if (event is NavigateToTaskEditScreenEvent) {
-      _navigationHistory.add(NavigationTaskEditScreenState());
+      _navigationHistory.add(NavigationTaskEditScreenState(event.taskId));
     } else if (event is NavigateToMainSphereEditScreenEvent) {
       _navigationHistory.add(NavigationMainSphereEditScreenState());
     } else if(event is NavigateBackEvent) {

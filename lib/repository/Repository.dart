@@ -250,7 +250,25 @@ class Repository{
   }
 
   Future<List<WishItem>?> getMyWishs(int moonId) async{
-// not used
+    if(_auth.currentUser!=null) {
+      List<WishItem> wishesList = [];
+      DataSnapshot dataSnapshot = (await userRef.child(_auth.currentUser!.uid)
+          .child("moonlist").child(moonId.toString()).child("spheres")
+          .once()).snapshot;
+      if (dataSnapshot.children.isNotEmpty) {
+        dataSnapshot.children.forEach((element) {
+          final Map<dynamic, dynamic> dataList = element.value as Map<dynamic,dynamic>;
+          wishesList.add(WishItem(
+              id: int.parse(dataList['id'].toString()),
+              text: dataList['text'],
+              isChecked: dataList['isChecked']??false,
+              parentId: dataList['parentId']
+          ));
+        });
+      }
+      return wishesList.where((element) => element.parentId>1).toList();
+    }
+    return null;
   }
   Future<WishData?> getMyWish(int id, int moonId) async{
     if(_auth.currentUser!=null) {
@@ -320,6 +338,21 @@ class Repository{
     }
     return null;
   }
+  Future<void> updateAim(AimData ad, int currentMoonId) async {
+    if(_auth.currentUser!=null){
+      // Преобразуем каждый объект в Map
+      Map<String, dynamic> dataMap = {
+        'id': ad.id,
+        'text': ad.text,
+        'subText': ad.description,
+        'childTasks': ad.childTasks,
+        'isChecked': false
+      };
+      userRef.child(_auth.currentUser!.uid).child("moonlist").child(currentMoonId.toString()).child("aims").child(ad.id.toString()).set(
+          dataMap
+      );
+    }
+  }
   Future deleteAim(int id, int currentMoonId) async {
     if(_auth.currentUser!=null){
       userRef.child(_auth.currentUser!.uid).child("moonlist").child(currentMoonId.toString()).child("aims").child(id.toString()).remove();
@@ -351,6 +384,20 @@ class Repository{
       );
       userRef.child(_auth.currentUser!.uid).child("moonlist").child(currentMoonId.toString()).child("aims").child(parentAimId.toString()).child("childTasks").push().set(
           index
+      );
+    }
+  }
+  Future updateTask(TaskData td, int currentMoonId) async {
+    if(_auth.currentUser!=null){
+      // Преобразуем каждый объект в Map
+      Map<String, dynamic> dataMap = {
+        'id': td.id,
+        'text': td.text,
+        'subText': td.description,
+        'isChecked': false
+      };
+      userRef.child(_auth.currentUser!.uid).child("moonlist").child(currentMoonId.toString()).child("tasks").child(td.id.toString()).set(
+          dataMap
       );
     }
   }

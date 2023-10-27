@@ -21,8 +21,9 @@ class CircleData{
   String subText = "";
   final Color color;
   final int parenId;
+  String affirmation;
 
-  CircleData({required this.id, required this.text, this.subText = "", required this.color, required this.parenId});
+  CircleData({required this.id, required this.text, this.subText = "", required this.color, required this.parenId, this.affirmation=""});
 }
 
 class Circle {
@@ -43,7 +44,7 @@ class MainCircle {
   final double radius;
   bool isVisible;
 
-  MainCircle({required this.id, required this.coords, required this.text, this.textSize = 24, required this.color, this.radius=80, this.isVisible = true});
+  MainCircle({required this.id, required this.coords, required this.text, this.textSize = 24, required this.color, this.radius=52, this.isVisible = true});
 }
 
 class Pair{
@@ -76,15 +77,16 @@ class TaskData {
   final String description;
   bool isChecked = false;
 
-  TaskData({required this.id, required this.text, required this.description});
+  TaskData({required this.id, required this.text, required this.description, this.isChecked=false});
 }
 
 class WishItem {
   final int id;
   final String text;
   bool isChecked;
+  int parentId;
 
-  WishItem({required this.id, required this.text, required this.isChecked});
+  WishItem({required this.id, required this.text, required this.isChecked, this.parentId=-1});
 }
 
 class WishData {
@@ -116,7 +118,7 @@ class AimData {
   List<int> childTasks = [];
   bool isChecked = false;
 
-  AimData({required this.id, required this.text, required this.description});
+  AimData({required this.id, required this.text, required this.description, this.isChecked=false});
 }
 
 class ProfileItem {

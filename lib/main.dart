@@ -98,9 +98,9 @@ class MyApp extends StatelessWidget {
     } else if (state is NavigationProfileScreenState) {
       return const ProfileScreen();
     } else if (state is NavigationTaskCreateScreenState) {
-      return const TaskScreen();
+      return TaskScreen(parentAimId: state.parentAimId);
     } else if (state is NavigationTaskEditScreenState) {
-      return TaskEditScreen();
+      return TaskEditScreen(aimId: state.aimId);
     } else if (state is NavigationMainSphereEditScreenState) {
       return const MainSphereEditScreen();
     } else {

@@ -35,7 +35,10 @@ class _WishesScreenState extends State<WishesScreen>{
                     IconButton(
                       icon: const Icon(Icons.menu),
                       iconSize: 30,
-                      onPressed: () {},
+                      onPressed: () {
+                        BlocProvider.of<NavigationBloc>(context)
+                            .add(NavigateToProfileScreenEvent());
+                      },
                     ),
                     const Spacer(),
                     const Text("Мои желания", style: TextStyle(fontSize: 18),),
@@ -103,14 +106,16 @@ class _WishesScreenState extends State<WishesScreen>{
                     color: Colors.black,
                   ),
                   Padding(
-                    padding: const EdgeInsets.all(5),
+                    padding: const EdgeInsets.fromLTRB(5, 5, 5, 0),
                     child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         IconButton(
                           icon: Image.asset('assets/icons/checklist2665651.png'),
                           iconSize: 30,
                           onPressed: () {
+                            appVM.startMyTasksScreen();
                             BlocProvider.of<NavigationBloc>(context)
                                 .add(NavigateToTasksScreenEvent());
                           },
@@ -119,31 +124,33 @@ class _WishesScreenState extends State<WishesScreen>{
                           icon: Image.asset('assets/icons/goal6002764.png'),
                           iconSize: 30,
                           onPressed: () {
+                            appVM.startMyAimsScreen();
                             BlocProvider.of<NavigationBloc>(context)
                                 .add(NavigateToAimsScreenEvent());
                           },
                         ),
                         IconButton(
                           icon: Image.asset('assets/icons/wheel2526426.png'),
-                          iconSize: 30,
+                          iconSize: 40,
                           onPressed: () {
                             BlocProvider.of<NavigationBloc>(context)
-                                .add(NavigateToAimsScreenEvent());
+                                .add(NavigateToMainScreenEvent());
                           },
                         ),
                         IconButton(
                           icon: Image.asset('assets/icons/notelove1648387.png'),
                           iconSize: 30,
                           onPressed: () {
-
+                            appVM.startMyWishesScreen();
+                            BlocProvider.of<NavigationBloc>(context)
+                                .add(NavigateToWishesScreenEvent());
                           },
                         ),
                         IconButton(
                           icon: Image.asset('assets/icons/notepad2725914.png'),
                           iconSize: 30,
                           onPressed: () {
-                            BlocProvider.of<NavigationBloc>(context)
-                                .add(NavigateToProfileScreenEvent());
+
                           },
                         )
                       ],

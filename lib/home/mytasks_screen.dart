@@ -16,10 +16,11 @@ class TasksScreen extends StatefulWidget {
 
 class _TaskScreenState extends State{
   List<TaskItem> taskList = [];
+  late AppViewModel appViewModel;
 
   @override
   Widget build(BuildContext context) {
-
+    appViewModel = Provider.of<AppViewModel>(context);
     return Consumer<AppViewModel>(
         builder: (context, appVM, child) {
           taskList = appVM.taskItems;
@@ -33,7 +34,10 @@ class _TaskScreenState extends State{
                       IconButton(
                         icon: const Icon(Icons.menu),
                         iconSize: 30,
-                        onPressed: () {},
+                        onPressed: () {
+                          BlocProvider.of<NavigationBloc>(context)
+                              .add(NavigateToProfileScreenEvent());
+                        },
                       ),
                       const Spacer(),
                       const Text("Мои задачи", style: TextStyle(fontSize: 18),),
@@ -76,47 +80,53 @@ class _TaskScreenState extends State{
                       color: Colors.black,
                     ),
                     Padding(
-                      padding: const EdgeInsets.all(5),
+                      padding: const EdgeInsets.fromLTRB(5, 5, 5, 0),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           IconButton(
                             icon: Image.asset(
                                 'assets/icons/checklist2665651.png'),
                             iconSize: 30,
                             onPressed: () {
-
+                              appVM.startMyTasksScreen();
+                              BlocProvider.of<NavigationBloc>(context)
+                                  .add(NavigateToTasksScreenEvent());
                             },
                           ),
                           IconButton(
                             icon: Image.asset('assets/icons/goal6002764.png'),
                             iconSize: 30,
                             onPressed: () {
+                              appVM.startMyAimsScreen();
                               BlocProvider.of<NavigationBloc>(context)
-                                  .add(NavigateToWishesScreenEvent());
+                                  .add(NavigateToAimsScreenEvent());
                             },
                           ),
                           IconButton(
                             icon: Image.asset('assets/icons/wheel2526426.png'),
-                            iconSize: 30,
+                            iconSize: 40,
                             onPressed: () {
                               BlocProvider.of<NavigationBloc>(context)
-                                  .add(NavigateToAimsScreenEvent());
+                                  .add(NavigateToMainScreenEvent());
                             },
                           ),
                           IconButton(
                             icon: Image.asset(
                                 'assets/icons/notelove1648387.png'),
                             iconSize: 30,
-                            onPressed: () {},
+                            onPressed: () {
+                              appVM.startMyWishesScreen();
+                              BlocProvider.of<NavigationBloc>(context)
+                                  .add(NavigateToWishesScreenEvent());
+                            },
                           ),
                           IconButton(
                             icon: Image.asset(
                                 'assets/icons/notepad2725914.png'),
                             iconSize: 30,
                             onPressed: () {
-                              BlocProvider.of<NavigationBloc>(context)
-                                  .add(NavigateToProfileScreenEvent());
                             },
                           )
                         ],
@@ -129,13 +139,16 @@ class _TaskScreenState extends State{
   }
 
   onItemClick(int id){
+    bool status = false;
     setState((){
-      taskList.where((element) => element.id==id).forEach((element) {element.isChecked=!element.isChecked;});
+      taskList.where((element) => element.id==id).forEach((element) {element.isChecked=!element.isChecked;status = !element.isChecked;});
     });
+    appViewModel.updateTaskStatus(id, status);
   }
   onItemDelete(int id){
     setState(() {
       taskList.removeWhere((element) => element.id==id);
     });
+    appViewModel.deleteTask(id);
   }
 }

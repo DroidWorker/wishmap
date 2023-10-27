@@ -42,7 +42,7 @@ class WishScreen extends StatelessWidget {
                 children: [
                   Row(children: [
                     IconButton(
-                      icon: const Icon(Icons.home_outlined),
+                      icon: const Icon(Icons.menu),
                       iconSize: 30,
                       onPressed: () {
                         BlocProvider.of<NavigationBloc>(context)
@@ -60,6 +60,7 @@ class WishScreen extends StatelessWidget {
                             ..affirmation=_affirmation.text
                             ..color = _color;
                           appViewModel.createNewSphereWish(appVM.wishScreenState!.wish);
+                          BlocProvider.of<NavigationBloc>(context).handleBackPress();
                         }
                       },
                     ),

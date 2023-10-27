@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:provider/provider.dart';
 import 'package:wishmap/navigation/navigation_block.dart';
 
+import '../ViewModel.dart';
 import '../common/colorpicker_widget.dart';
+import '../data/models.dart';
 import '../res/colors.dart';
 
 class SpheresOfLifeScreen extends StatelessWidget {
@@ -11,6 +14,12 @@ class SpheresOfLifeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appViewModel = Provider.of<AppViewModel>(context);
+    CircleData curWd = appViewModel.mainScreenState?.allCircles[0]??CircleData(id: 0, text: "", color: Colors.red, parenId: -1);
+    TextEditingController text = TextEditingController(text: curWd.text);
+    TextEditingController description = TextEditingController(text: curWd.subText);
+    TextEditingController affirmation = TextEditingController(text: curWd.affirmation);
+
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
       body: SafeArea(child:Padding(
@@ -19,7 +28,7 @@ class SpheresOfLifeScreen extends StatelessWidget {
           children: [
             Row(children: [
               IconButton(
-                icon: const Icon(Icons.home_outlined),
+                icon: const Icon(Icons.menu),
                 iconSize: 30,
                 onPressed: () {
                   BlocProvider.of<NavigationBloc>(context)
@@ -29,7 +38,11 @@ class SpheresOfLifeScreen extends StatelessWidget {
               const Expanded(child: SizedBox(),),
               GestureDetector(
                 child: const Text("Cохранить  ", style: TextStyle(color: AppColors.blueTextColor),),
-                onTap: (){},
+                onTap: () async {
+                  await appViewModel.updateSphereWish(WishData(id: curWd.id, parentId: curWd.parenId, text: curWd.text, description: curWd.subText, affirmation: curWd.affirmation, color: curWd.color));
+                  BlocProvider.of<NavigationBloc>(context)
+                      .add(NavigateToMainScreenEvent());
+                },
               ),
               GestureDetector(
                 child: const Text("Удалить", style: TextStyle(color: AppColors.greytextColor)),
@@ -37,6 +50,7 @@ class SpheresOfLifeScreen extends StatelessWidget {
               )
             ],),
             TextField(
+              controller: text,
               style: const TextStyle(color: Colors.black), // Черный текст ввода
               decoration: InputDecoration(
                 border: InputBorder.none,
@@ -48,6 +62,7 @@ class SpheresOfLifeScreen extends StatelessWidget {
             ),
             const SizedBox(height: 15),
             TextField(
+              controller: description,
               minLines: 4,
               maxLines: 15,
               style: const TextStyle(color: Colors.black), // Черный текст ввода
@@ -61,7 +76,8 @@ class SpheresOfLifeScreen extends StatelessWidget {
             ),
             const SizedBox(height: 15),
             TextField(
-              style: TextStyle(color: Colors.black), // Черный текст ввода
+              controller: affirmation,
+              style: const TextStyle(color: Colors.black), // Черный текст ввода
               decoration: InputDecoration(
                 border: InputBorder.none,
                 filled: true, // Заливка фона

@@ -35,6 +35,9 @@ class AppViewModel with ChangeNotifier {
   List<AimItem> aimItems = [];
   //MyWishesScreen
   List<WishItem> wishItems = [];
+  //
+  AimData? currentAim;
+  TaskData? currentTask;
 
   Future<void> init() async {
     authData = await localRep.getAuth();
@@ -263,6 +266,14 @@ class AppViewModel with ChangeNotifier {
       addError("сфера не была сохранена: $ex");
     }
   }
+  Future<void> updateSphereWish(WishData wd) async{
+    try {
+      await repository.createSphereWish(wd, mainScreenState?.moon.id??0);
+      mainScreenState!.allCircles[mainScreenState!.allCircles.indexWhere((element) => element.id==wd.id)] = CircleData(id: wd.id, text: wd.text, color: wd.color, parenId: wd.parentId, affirmation: wd.affirmation, subText: wd.description);
+    }catch(ex){
+      addError("сфера не была сохранена: $ex");
+    }
+  }
   Future<void> deleteSphereWish(WishData wd) async{
     try {
       await repository.deleteSphereWish(wd, mainScreenState?.moon.id??0);
@@ -274,8 +285,16 @@ class AppViewModel with ChangeNotifier {
   Future<int?> createAim(AimData ad, int parentCircleId) async{
     try {
       int? aimId = (await repository.createAim(ad, parentCircleId, mainScreenState?.moon.id??0))??-1;
-      aimItems.add(AimItem(id: aimId, text: ad.text, isChecked: ad.isChecked));
+      currentAim=(AimData(id: aimId, text: ad.text, description: ad.description, isChecked: ad.isChecked));
       return aimId;
+    }catch(ex){
+      addError(ex.toString());
+    }
+  }
+  Future<void> updateAim(AimData ad) async{
+    try {
+      await repository.updateAim(ad, mainScreenState?.moon.id??0);
+      currentAim=(AimData(id: ad.id, text: ad.text, description: ad.description, isChecked: ad.isChecked));
     }catch(ex){
       addError(ex.toString());
     }
@@ -295,9 +314,19 @@ class AppViewModel with ChangeNotifier {
     }
   }
 
-  Future<void> createTask(TaskData ad, int parentAimId) async{
+  Future<int?> createTask(TaskData ad, int parentAimId) async{
     try {
-      await repository.createTask(ad, parentAimId, mainScreenState?.moon.id??0);
+      int taskId = (await repository.createTask(ad, parentAimId, mainScreenState?.moon.id??0))??-1;
+      currentTask=(TaskData(id: taskId, text: ad.text, description: ad.description, isChecked: ad.isChecked));
+      return taskId;
+    }catch(ex){
+      addError(ex.toString());
+    }
+  }
+  Future<void> updateTask(TaskData ad) async{
+    try {
+      await repository.updateTask(ad, mainScreenState?.moon.id??0);
+      currentTask=(TaskData(id: ad.id, text: ad.text, description: ad.description, isChecked: ad.isChecked));
     }catch(ex){
       addError(ex.toString());
     }

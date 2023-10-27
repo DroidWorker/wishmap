@@ -22,7 +22,10 @@ class MainSphereEditScreen extends StatelessWidget {
                   IconButton(
                     icon: const Icon(Icons.menu),
                     iconSize: 30,
-                    onPressed: () {},
+                    onPressed: () {
+                      BlocProvider.of<NavigationBloc>(context)
+                          .add(NavigateToProfileScreenEvent());
+                    },
                   ),
                   const Spacer(),
                   GestureDetector(

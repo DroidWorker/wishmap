@@ -9,10 +9,17 @@ import 'package:wishmap/data/models.dart';
 
 import '../ViewModel.dart';
 
-class MainScreen extends StatelessWidget {
+class MainScreen extends StatefulWidget {
   MainScreen({super.key});
+
   final GlobalKey columnKey = GlobalKey();
 
+  @override
+  _MainScreenState createState() => _MainScreenState();
+}
+
+class _MainScreenState extends State<MainScreen>{
+  bool isPauseIcon = true;
   @override
   Widget build(BuildContext context) {
     return Consumer<AppViewModel>(
@@ -30,23 +37,34 @@ class MainScreen extends StatelessWidget {
                             IconButton(
                               icon: const Icon(Icons.menu),
                               iconSize: 30,
-                              onPressed: () {},
+                              onPressed: () {
+                                BlocProvider.of<NavigationBloc>(context)
+                                    .add(NavigateToProfileScreenEvent());
+                              },
                             )
                           ],
                         ),
                         const SizedBox(height: 10.0),
-                        const Row(
+                        Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
                             Expanded(
                                 flex: 4,
-                                child: Column(
-                                  children: [
-                                    MoonWidget(fillPercentage: 0.7),
-                                    Text("08.10.2023")
-                                  ],
-                                )),
-                            Expanded(
+                                child: GestureDetector(
+                                  onTap: (){
+                                    appVM.mainScreenState = null;
+                                    BlocProvider.of<NavigationBloc>(context)
+                                        .add(NavigateToCardsScreenEvent());
+                                  },
+                                  child: Column(
+                                    children: [
+                                      MoonWidget(fillPercentage: appVM.mainScreenState?.moon.filling??0.01),
+                                      Text(appVM.mainScreenState?.moon.date??"")
+                                    ],
+                                  ),
+                                )
+                            ),
+                            const Expanded(
                                 flex: 6,
                                 child:
                                 Text("подсказка")
@@ -72,11 +90,13 @@ class MainScreen extends StatelessWidget {
                             ),
                             const SizedBox(width: 20),
                             IconButton(
-                              icon: const Icon(Icons.pause_circle_outline),
+                              icon: isPauseIcon?const Icon(Icons.pause_circle_outline):const Icon(Icons.play_circle_outline),
                               iconSize: 50,
                               onPressed: () {
-                                BlocProvider.of<NavigationBloc>(context)
-                                    .add(NavigateToAuthScreenEvent());
+                                setState((){
+                                  isPauseIcon=!isPauseIcon;
+                                });
+
                               },
                             ),
                             const SizedBox(width: 20),
@@ -95,8 +115,9 @@ class MainScreen extends StatelessWidget {
                           color: Colors.black,
                         ),
                         Padding(
-                          padding: const EdgeInsets.all(5),
+                          padding: const EdgeInsets.fromLTRB(5, 5, 5, 0),
                           child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
                               IconButton(
@@ -119,10 +140,10 @@ class MainScreen extends StatelessWidget {
                               ),
                               IconButton(
                                 icon: Image.asset('assets/icons/wheel2526426.png'),
-                                iconSize: 30,
+                                iconSize: 40,
                                 onPressed: () {
                                   BlocProvider.of<NavigationBloc>(context)
-                                      .add(NavigateToAimsScreenEvent());
+                                      .add(NavigateToMainScreenEvent());
                                 },
                               ),
                               IconButton(
@@ -138,8 +159,7 @@ class MainScreen extends StatelessWidget {
                                 icon: Image.asset('assets/icons/notepad2725914.png'),
                                 iconSize: 30,
                                 onPressed: () {
-                                  BlocProvider.of<NavigationBloc>(context)
-                                      .add(NavigateToProfileScreenEvent());
+
                                 },
                               )
                             ],

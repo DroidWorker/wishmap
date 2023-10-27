@@ -25,15 +25,13 @@ class _TaskItem extends State<WishItemWidget>{
           widget.onClick(widget.ti.id);
         },
       ),
-      if(widget.ti.isChecked)
-        IconButton(
+      IconButton(
           icon: Image.asset('assets/icons/delete6161554.png'),
           iconSize: 30,
           onPressed: () {
             widget.onDelete(widget.ti.id);
           },
         )
-      else const SizedBox(height: 30, width: 50,)
     ],);
   }
 

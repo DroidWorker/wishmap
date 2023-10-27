@@ -24,7 +24,7 @@ class AimEditScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<AppViewModel>(
         builder: (context, appVM, child) {
-          AimItem ai = appVM.aimItems.firstWhere((element) => element.id==aimId, orElse: ()=>AimItem(id: -1, text: 'объект не найден', isChecked: false));
+          AimData ai = appVM.currentAim??AimData(id: -1, text: 'объект не найден', description: "", isChecked: false);
           return Scaffold(
             backgroundColor: AppColors.backgroundColor,
             body: SafeArea(child: Padding(
@@ -33,12 +33,12 @@ class AimEditScreen extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Column(
+                    Column(
                       children: [
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Expanded(
+                            const Expanded(
                               child: Align(
                                 alignment: Alignment.center,
                                 child: Text(
@@ -50,28 +50,43 @@ class AimEditScreen extends StatelessWidget {
                             ),
                             Align(
                               alignment: Alignment.centerRight,
-                              child: Text(
-                                "Сохранить",
-                                style: TextStyle(color: AppColors.blueTextColor),
-                              ),
+                              child: GestureDetector(
+                                onTap: (){
+                                  appVM.updateAim(ai);
+                                },
+                                child: const Text(
+                                  "Сохранить",
+                                  style: TextStyle(color: AppColors.blueTextColor),
+                                ),
+                              )
                             ),
                           ],
                         ),
                         Align(
                           alignment: Alignment.centerRight,
-                          child: Text(
-                            "Удалить",
-                            style: TextStyle(color: AppColors.greytextColor),
-                          ),
+                          child: GestureDetector(
+                            onTap: (){
+                              appVM.deleteAim(aimId);
+                            },
+                            child: const Text(
+                              "Удалить",
+                              style: TextStyle(color: AppColors.greytextColor),
+                            ),
+                          )
                         ),
                         Align(
                           alignment: Alignment.centerRight,
-                          child: Text(
-                            "Достигнута",
-                            style: TextStyle(color: AppColors.pinkTextColor),
-                          ),
+                          child: GestureDetector(
+                            onTap: (){
+                              appVM.updateAimStatus(aimId, true);
+                            },
+                            child: const Text(
+                              "Достигнута",
+                              style: TextStyle(color: AppColors.pinkTextColor),
+                            ),
+                          )
                         ),
-                        Divider(
+                        const Divider(
                           height: 3,
                           color: AppColors.dividerGreyColor,
                           indent: 5,
@@ -79,9 +94,8 @@ class AimEditScreen extends StatelessWidget {
                         ),
                       ],
                     ),
-                    const Text("Вес 90 кг", style: TextStyle(fontSize: 20),),
-                    const Text("я хочу весить 90 кг? процент жира не более 5%",
-                      style: TextStyle(fontSize: 16),),
+                    Text(ai.text, style: const TextStyle(fontSize: 20),),
+                    Text(ai.description, style: const TextStyle(fontSize: 16),),
                     const Align(
                         alignment: Alignment.centerLeft,
                         child: SizedBox(
@@ -104,7 +118,7 @@ class AimEditScreen extends StatelessWidget {
                             ),
                             onPressed: () {
                               BlocProvider.of<NavigationBloc>(context)
-                                  .add(NavigateToTaskCreateScreenEvent());
+                                  .add(NavigateToTaskCreateScreenEvent(ai.id));
                             },
                             child: const Text("Создать задачу",
                               style: TextStyle(color: AppColors.greytextColor),)

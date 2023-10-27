@@ -19,8 +19,11 @@ class _AimsScreenState extends State<AimsScreen>{
   late List<AimItem> allAims;
   late List<AimItem> filteredAimList;
 
+  late AppViewModel appViewModel;
+
   @override
   Widget build(BuildContext context) {
+    appViewModel = Provider.of<AppViewModel>(context);
     return Consumer<AppViewModel>(
         builder: (context, appVM, child) {
           allAims = appVM.aimItems;
@@ -35,7 +38,10 @@ class _AimsScreenState extends State<AimsScreen>{
                     IconButton(
                       icon: const Icon(Icons.menu),
                       iconSize: 30,
-                      onPressed: () {},
+                      onPressed: () {
+                        BlocProvider.of<NavigationBloc>(context)
+                            .add(NavigateToProfileScreenEvent());
+                      },
                     ),
                     const Spacer(),
                     const Text("Мои желания", style: TextStyle(fontSize: 18),),
@@ -104,14 +110,16 @@ class _AimsScreenState extends State<AimsScreen>{
                     color: Colors.black,
                   ),
                   Padding(
-                    padding: const EdgeInsets.all(5),
+                    padding: const EdgeInsets.fromLTRB(5, 5, 5, 0),
                     child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         IconButton(
                           icon: Image.asset('assets/icons/checklist2665651.png'),
                           iconSize: 30,
                           onPressed: () {
+                            appVM.startMyTasksScreen();
                             BlocProvider.of<NavigationBloc>(context)
                                 .add(NavigateToTasksScreenEvent());
                           },
@@ -120,28 +128,33 @@ class _AimsScreenState extends State<AimsScreen>{
                           icon: Image.asset('assets/icons/goal6002764.png'),
                           iconSize: 30,
                           onPressed: () {
-
-                          },
-                        ),
-                        IconButton(
-                          icon: Image.asset('assets/icons/wheel2526426.png'),
-                          iconSize: 30,
-                          onPressed: () {
+                            appVM.startMyAimsScreen();
                             BlocProvider.of<NavigationBloc>(context)
                                 .add(NavigateToAimsScreenEvent());
                           },
                         ),
                         IconButton(
+                          icon: Image.asset('assets/icons/wheel2526426.png'),
+                          iconSize: 40,
+                          onPressed: () {
+                            BlocProvider.of<NavigationBloc>(context)
+                                .add(NavigateToMainScreenEvent());
+                          },
+                        ),
+                        IconButton(
                           icon: Image.asset('assets/icons/notelove1648387.png'),
                           iconSize: 30,
-                          onPressed: () {},
+                          onPressed: () {
+                            appVM.startMyWishesScreen();
+                            BlocProvider.of<NavigationBloc>(context)
+                                .add(NavigateToWishesScreenEvent());
+                          },
                         ),
                         IconButton(
                           icon: Image.asset('assets/icons/notepad2725914.png'),
                           iconSize: 30,
                           onPressed: () {
-                            BlocProvider.of<NavigationBloc>(context)
-                                .add(NavigateToProfileScreenEvent());
+
                           },
                         )
                       ],
@@ -161,13 +174,16 @@ class _AimsScreenState extends State<AimsScreen>{
   }
 
   onItemClick(int id){
+    bool status = false;
     setState((){
-      filteredAimList.where((element) => element.id==id).forEach((element) {element.isChecked=!element.isChecked;});
+      filteredAimList.where((element) => element.id==id).forEach((element) {element.isChecked=!element.isChecked;status = !element.isChecked;});
     });
+    appViewModel.updateAimStatus(id, status);
   }
   onItemDelete(int id){
     setState(() {
       filteredAimList.removeWhere((element) => element.id==id);
     });
+    appViewModel.deleteAim(id);
   }
 }

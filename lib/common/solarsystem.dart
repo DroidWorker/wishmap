@@ -125,16 +125,22 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
     afterMovingController = AnimationController.unbounded(vsync: this);
     showHideController = AnimationController.unbounded(vsync: this);
     final angleBetween = 2*pi/widget.circles.length;
+    plusesPositions.clear();
+    plusesRotations.clear();
+    final centerX = widget.center.key-40;
+    final centerY = widget.center.value-40;
     for (int i = 0; i < widget.circles.length; i++) {
-      final x = widget.center.key-40 + (widget.size-widget.circles[i].radius)/2 * cos(2 * pi * i / widget.circles.length);
-      final y = widget.center.value-40 + (widget.size-widget.circles[i].radius)/2 * sin(2 * pi * i / widget.circles.length);
-      circlePositions.add(Offset(x, y));
+      widget.circles[i].radius=(widget.size*0.2).toInt();
       circleRotations.add(2 * pi * i / widget.circles.length);
-      final px = widget.center.key-40 + (widget.size-widget.circles[i].radius)/2 * cos((2 * pi * i / widget.circles.length)+angleBetween/2);
-      final py = widget.center.value-40 + (widget.size-widget.circles[i].radius)/2 * sin((2 * pi * i / widget.circles.length)+angleBetween/2);
-      plusesPositions.add(Offset(px,py));
-      plusesRotations.add((2 * pi * i / widget.circles.length)+angleBetween/2);
+      plusesRotations.add((2 * pi * i / widget.circles.length) + angleBetween / 2);
+      final x = (centerX + (widget.size/2-40) * cos(circleRotations[i]))+(80-widget.circles[i].radius)/2;
+      final y = (centerY + (widget.size/2-40) * sin(circleRotations[i]))+(80-widget.circles[i].radius)/2;
+      final px = centerX + (widget.size/2-40) * cos(plusesRotations[i]);
+      final py = centerY + (widget.size/2-40) * sin(plusesRotations[i]);
+      circlePositions.add(Offset(x, y));
+      plusesPositions.add(Offset(px, py));
     }
+
     //screenSize = getScreenSize(this as BuildContext);
     movingController = AnimationController(
       vsync: this,
@@ -161,14 +167,19 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
 
     showHideController.addStatusListener((status) {
       if(status==AnimationStatus.completed){
-        widget.circles.add(Circle(id: widget.circles.isNotEmpty?widget.circles.last.id+1:0, text: "new item", color: Colors.red));
+        vm?.createNewSphereWish(WishData(id: vm!.mainScreenState!.allCircles.isNotEmpty?vm!.mainScreenState!.allCircles.last.id+1:-101, parentId: widget.centralCircles.last.id, text: "new item", description: "", affirmation: "", color: Colors.red));
+        widget.circles.add(Circle(id: vm!.mainScreenState!.allCircles.isNotEmpty?vm!.mainScreenState!.allCircles.last.id+1:-101, text: "new item", color: Colors.red, radius: (widget.size*0.2).toInt()));
         circlePositions.clear();
         circleRotations.clear();
         plusesPositions.clear();
         plusesRotations.clear();
         final angleBetween = 2*pi/widget.circles.length;
+        final centerX = widget.center.key-40;
+        final centerY = widget.center.value-40;
         for (int i = 0; i < widget.circles.length; i++) {
+          widget.circles[i].radius=(widget.size*0.2).toInt();
           circleRotations.add(2 * pi * i / widget.circles.length);
+          plusesRotations.add((2 * pi * i / widget.circles.length) + angleBetween / 2);
           if(widget.circles.length>8){
             if (circleRotations[i]%(2*pi) >= pi && circleRotations[i]%(2*pi) <= 2*pi){widget.circles[i].radius=80-(40*(cos(circleRotations[i]))).toInt().abs();}
             else{widget.circles[i].radius=40;}
@@ -178,15 +189,14 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
               else{widget.circles[i].radius=30;}
             }
           }
-          final x = (widget.center.key-40 + (widget.size/2-40) * cos(2 * pi * i / widget.circles.length))+(80-widget.circles[i].radius)/2;
-          final y = (widget.center.value-40 + (widget.size/2-40) * sin(2 * pi * i / widget.circles.length))+(80-widget.circles[i].radius)/2;
+          final x = (centerX + (widget.size/2-40) * cos(circleRotations[i]))+(80-widget.circles[i].radius)/2;
+          final y = (centerY + (widget.size/2-40) * sin(circleRotations[i]))+(80-widget.circles[i].radius)/2;
+          final px = centerX + (widget.size/2-40) * cos(plusesRotations[i]);
+          final py = centerY + (widget.size/2-40) * sin(plusesRotations[i]);
           circlePositions.add(Offset(x, y));
-          final px = widget.center.key-40 + (widget.size/2-40) * cos((2 * pi * i / widget.circles.length)+angleBetween/2);
-          final py = widget.center.value-40 + (widget.size/2-40) * sin((2 * pi * i / widget.circles.length)+angleBetween/2);
-          plusesPositions.add(Offset(px,py));
-          plusesRotations.add((2 * pi * i / widget.circles.length)+angleBetween/2);
+          plusesPositions.add(Offset(px, py));
         }
-        if(widget.circles.length>8){
+        /*if(widget.circles.length>8){
           for(int i = 0; i < widget.circles.length; i++){
             if (circleRotations[i]%(2*pi) >= pi && circleRotations[i]%(2*pi) <= 2*pi){widget.circles[i].radius=80-(40*(cos(circleRotations[i]))).toInt().abs();}
             else{widget.circles[i].radius=40;}
@@ -196,7 +206,7 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
             if (circleRotations[i]%(2*pi) >= pi && circleRotations[i]%(2*pi) <= 2*pi){widget.circles[i].radius=80-(40*(cos(circleRotations[i]))).toInt().abs();}
             else{widget.circles[i].radius=30;}
           }
-        }
+        }*/
         showHideController.reverse();
       }
     });
@@ -222,10 +232,10 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
     final finalTop = animationDirectionForward?widget.circles[itemId].radius*-0.5:widget.center.value-widget.centralCircles[widget.centralCircles.length-2].radius;
     final finalRight = animationDirectionForward?widget.center.key * 2 - widget.centralCircles.last.radius*1.5:widget.center.key-widget.centralCircles[widget.centralCircles.length-2].radius;
 
-    final radiusToCenterInitialTop = animationDirectionForward?circlePositions[itemId].dy:widget.center.value - 40;
-    final radiusToCenterInitialLeft = animationDirectionForward?circlePositions[itemId].dx:widget.center.key - 40;
-    final radiusToCenterFinalTop = animationDirectionForward?widget.center.value - 40:circlePositions[itemId].dy;
-    final radiusToCenterFinalLeft = animationDirectionForward?widget.center.key - 40:circlePositions[itemId].dx;
+    final radiusToCenterInitialTop = animationDirectionForward?circlePositions[itemId].dy:widget.center.value - widget.circles[itemId].radius/2;
+    final radiusToCenterInitialLeft = animationDirectionForward?circlePositions[itemId].dx:widget.center.key - widget.circles[itemId].radius/2;
+    final radiusToCenterFinalTop = animationDirectionForward?widget.center.value - widget.circles[itemId].radius/2:circlePositions[itemId].dy;
+    final radiusToCenterFinalLeft = animationDirectionForward?widget.center.key - widget.circles[itemId].radius/2:circlePositions[itemId].dx;
     //duplicate clicked sphere
     if(animationDirectionForward) {
       widget.centralCircles.add(MainCircle(id: id,
@@ -341,15 +351,18 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
           plusesRotations.add(1);
         }
         final angleBetween = 2*pi/widget.circles.length;
+        final centerX = widget.center.key-40;
+        final centerY = widget.center.value-40;
         for (int i = 0; i < widget.circles.length; i++) {
-          final x = widget.center.key-40 + (widget.size-widget.circles[i].radius)/2 * cos(2 * pi * i / widget.circles.length);
-          final y = widget.center.value-40 + (widget.size-widget.circles[i].radius)/2 * sin(2 * pi * i / widget.circles.length);
-          circlePositions.add(Offset(x, y));
+          widget.circles[i].radius=(widget.size*0.2).toInt();
           circleRotations.add(2 * pi * i / widget.circles.length);
-          final px = widget.center.key-40 + (widget.size-widget.circles[i].radius)/2 * cos((2 * pi * i / widget.circles.length)+angleBetween/2);
-          final py = widget.center.value-40 + (widget.size-widget.circles[i].radius)/2 * sin((2 * pi * i / widget.circles.length)+angleBetween/2);
-          plusesPositions.add(Offset(px,py));
-          plusesRotations.add((2 * pi * i / widget.circles.length)+angleBetween/2);
+          plusesRotations.add((2 * pi * i / widget.circles.length) + angleBetween / 2);
+          final x = (centerX + (widget.size/2-40) * cos(circleRotations[i]))+(80-widget.circles[i].radius)/2;
+          final y = (centerY + (widget.size/2-40) * sin(circleRotations[i]))+(80-widget.circles[i].radius)/2;
+          final px = centerX + (widget.size/2-40) * cos(plusesRotations[i]);
+          final py = centerY + (widget.size/2-40) * sin(plusesRotations[i]);
+          circlePositions.add(Offset(x, y));
+          plusesPositions.add(Offset(px, py));
         }
         afterMovingController.reset();
         afterMovingController.forward();
@@ -366,6 +379,8 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
 
   @override
   Widget build(BuildContext context) {
+    print("cccccccccc${plusesPositions.length}");
+
     vm = Provider.of<AppViewModel>(context);
     if(widget.centralCircles.isEmpty) {
       widget.centralCircles = List<MainCircle>.from(vm!.mainCircles);
@@ -384,31 +399,35 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
       newHash+=element.id;
     });
     if(newHash!= circlesHash) {
+      circleRotations.clear();
+      plusesRotations.clear();
+      circlePositions.clear();
+      plusesPositions.clear();
       final angleBetween = 2 * pi / widget.circles.length;
+      final centerX = widget.center.key-40;
+      final centerY = widget.center.value-40;
+
       for (int i = 0; i < widget.circles.length; i++) {
-        final x = widget.center.key - 40 +
-            (widget.size - widget.circles[i].radius) / 2 *
-                cos(2 * pi * i / widget.circles.length);
-        final y = widget.center.value - 40 +
-            (widget.size - widget.circles[i].radius) / 2 *
-                sin(2 * pi * i / widget.circles.length);
-        circlePositions.add(Offset(x, y));
+        widget.circles[i].radius=(widget.size*0.2).toInt();
         circleRotations.add(2 * pi * i / widget.circles.length);
-        final px = widget.center.key - 40 +
-            (widget.size - widget.circles[i].radius) / 2 *
-                cos((2 * pi * i / widget.circles.length) + angleBetween / 2);
-        final py = widget.center.value - 40 +
-            (widget.size - widget.circles[i].radius) / 2 *
-                sin((2 * pi * i / widget.circles.length) + angleBetween / 2);
+        plusesRotations.add((2 * pi * i / widget.circles.length) + angleBetween / 2);
+        final x = (centerX + (widget.size/2-40) * cos(circleRotations[i]))+(80-widget.circles[i].radius)/2;
+        final y = (centerY + (widget.size/2-40) * sin(circleRotations[i]))+(80-widget.circles[i].radius)/2;
+        final px = centerX + (widget.size/2-40) * cos(plusesRotations[i]);
+        final py = centerY + (widget.size/2-40) * sin(plusesRotations[i]);
+        circlePositions.add(Offset(x, y));
         plusesPositions.add(Offset(px, py));
-        plusesRotations.add(
-            (2 * pi * i / widget.circles.length) + angleBetween / 2);
+      }
+      if(widget.circles.isEmpty){
+        final px = widget.center.key-40 + (widget.size/2-40) * cos(1);
+        final py = widget.center.value-40 + (widget.size/2-40) * sin(1);
+        plusesPositions.add(Offset(px,py));
+        plusesRotations.add(1);
       }
       circlesHash = newHash;
     }
 
     final appViewModel = Provider.of<AppViewModel>(context);
-
     return Container(
      child:AnimatedBuilder(
           animation: ctrl,
@@ -456,12 +475,12 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
                           ),
                         ),
                         onTap: () {
-                          //showHideController.reset();
-                          //showHideController.forward();
+                          showHideController.reset();
+                          showHideController.forward();
                           //open sphere creation screen
-                          appViewModel.startWishScreen(appViewModel.mainScreenState!.allCircles.isNotEmpty?appViewModel.mainScreenState!.allCircles.last.id+1:-101, widget.centralCircles.last.id);
+                          /*appViewModel.startWishScreen(appViewModel.mainScreenState!.allCircles.isNotEmpty?appViewModel.mainScreenState!.allCircles.last.id+1:-101, widget.centralCircles.last.id);
                           BlocProvider.of<NavigationBloc>(context)
-                              .add(NavigateToWishScreenEvent());
+                              .add(NavigateToWishScreenEvent());*/
                         },
                       )
                   );
@@ -473,7 +492,6 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
                     .map((entry) {
                   final index = entry.key;
                   final circle = entry.value;
-
                   return Positioned(
                       left: circlePositions[index].dx,
                       top: circlePositions[index].dy,
@@ -575,6 +593,7 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
                             plusesRotations.clear();
                             final angleBetween = 2 * pi / widget.circles.length;
                             for (int i = 0; i < widget.circles.length; i++) {
+                              widget.circles[i].radius=(widget.size*0.2).toInt();
                               final x = widget.center.key - 40 +
                                   (widget.size - widget.circles[i].radius) / 2 *
                                       cos(2 * pi * i / widget.circles.length);
@@ -604,7 +623,7 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
                             movingController.forward();
                           } else if (widget.centralCircles[index].id == 0) {
                             BlocProvider.of<NavigationBloc>(context)
-                                .add(NavigateToMainSphereEditScreenEvent());
+                                .add(NavigateToSpheresOfLifeScreenEvent());
                           } else {
                             appViewModel.startWishScreen(widget.centralCircles[index].id, 0);
                             BlocProvider.of<NavigationBloc>(context)
@@ -622,7 +641,6 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
   }
 
   void _updateCircleRotation(double newRotation, double size, Pair center, double radius, {bool isAnim = false}) {
-
     for (int i = 0; i < widget.circles.length; i++) {
       final oldRotation = circleRotations[i];
       final oldPlusRotation = plusesRotations[i];
@@ -651,7 +669,7 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
     if(widget.circles.length>8){
       for(int i = 0; i < widget.circles.length; i++){
         if (circleRotations[i]%(2*pi) >= pi && circleRotations[i]%(2*pi) <= 2*pi){widget.circles[i].radius=80-(40*(cos(circleRotations[i]))).toInt().abs();}
-        else{widget.circles[i].radius=40;}
+        else{widget.circles[i].radius=(widget.size*0.2).toInt();}
       }
     }else if(widget.circles.length>16){
       for(int i = 0; i < widget.circles.length; i++){
@@ -659,7 +677,6 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
         else{widget.circles[i].radius=30;}
       }
     }
-
     // Вызываем setState, чтобы обновить виджет
     if(!isAnim)setState(() {});
   }
