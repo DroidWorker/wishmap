@@ -50,6 +50,7 @@ class _ProfileScreenState extends State<ProfileScreen>{
               GestureDetector(
                 child: const Text("<Назад", style: TextStyle(color: AppColors.greytextColor),),
                 onTap: (){
+                  if(appViewModel.mainScreenState!=null)appViewModel.startMainScreen(appViewModel.mainScreenState!.moon);
                   BlocProvider.of<NavigationBloc>(context)
                       .add(NavigateToMainScreenEvent());
                 },

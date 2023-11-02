@@ -5,9 +5,16 @@ import '../common/colorpicker_widget.dart';
 import '../navigation/navigation_block.dart';
 import '../res/colors.dart';
 
-class MainSphereEditScreen extends StatelessWidget {
+class MainSphereEditScreen extends StatefulWidget{
 
   const MainSphereEditScreen({super.key});
+
+  @override
+  _MainSphereEditScreenState createState() => _MainSphereEditScreenState();
+}
+
+class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
+  Color circleColor = Colors.redAccent;
 
   @override
   Widget build(BuildContext context) {
@@ -120,19 +127,17 @@ class MainSphereEditScreen extends StatelessWidget {
                       Container(
                         width: 100.0, // Ширина круга
                         height: 100.0, // Высота круга
-                        decoration: const BoxDecoration(
+                        decoration: BoxDecoration(
                           shape: BoxShape.circle, // Задаем форму круга
-                          color: Colors.pink, // Устанавливаем цвет
+                          color: circleColor, // Устанавливаем цвет
                         ),
                       )
                     ],),
-                      onTap: (){
+                      onTap: () {
                         showDialog(
                           context: context,
                           builder: (context) {
-                            return const AlertDialog(
-                              content: ColorPickerWidget(),
-                            );
+                            return ColorPickerWidget(onColorSelected: (Color c){setState(() {circleColor=c; });});
                           },
                         );
                       },

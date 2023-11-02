@@ -3,13 +3,14 @@ import 'package:wishmap/res/colors.dart';
 
 class MoonWidget extends StatelessWidget {
   final double fillPercentage; // Процентное заполнение Луны
+  double moonSize=100;
 
-  const MoonWidget({super.key, required this.fillPercentage});
+  MoonWidget({super.key, required this.fillPercentage, required this.moonSize});
 
   @override
   Widget build(BuildContext context) {
     return CustomPaint(
-      size: const Size(100.0, 100.0), // Устанавливаем размер для Луны (можете настроить по своему усмотрению)
+      size: Size(moonSize, moonSize), // Устанавливаем размер для Луны (можете настроить по своему усмотрению)
       painter: MoonPainter(fillPercentage),
     );
   }
@@ -22,7 +23,7 @@ class MoonPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final moonRadius = size.width / 2;
+    final moonRadius = size.width/2;
     final moonCenter = Offset(size.width / 2, size.height / 2);
 
     final moonPaint = Paint()..color = AppColors.moonColor; // Цвет Луны

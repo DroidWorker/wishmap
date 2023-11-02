@@ -24,6 +24,7 @@ class _MainScreenState extends State<MainScreen>{
   Widget build(BuildContext context) {
     return Consumer<AppViewModel>(
         builder: (context, appVM, child){
+          print("ttttttttttt ${(MediaQuery.of(context).size.height-MediaQuery.of(context).size.width)*0.7}");
           return Scaffold(
               backgroundColor: AppColors.backgroundColor,
               body: SafeArea(child:Stack(
@@ -58,7 +59,7 @@ class _MainScreenState extends State<MainScreen>{
                                   },
                                   child: Column(
                                     children: [
-                                      MoonWidget(fillPercentage: appVM.mainScreenState?.moon.filling??0.01),
+                                      MoonWidget(fillPercentage: appVM.mainScreenState?.moon.filling??0.01, moonSize: (MediaQuery.of(context).size.height-MediaQuery.of(context).size.width)*0.3,),
                                       Text(appVM.mainScreenState?.moon.date??"")
                                     ],
                                   ),
@@ -84,13 +85,13 @@ class _MainScreenState extends State<MainScreen>{
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             IconButton(
-                              icon: const Icon(Icons.skip_previous_outlined),
+                              icon: Image.asset('assets/icons/prev.png'),
                               iconSize: 50,
                               onPressed: () {},
                             ),
                             const SizedBox(width: 20),
                             IconButton(
-                              icon: isPauseIcon?const Icon(Icons.pause_circle_outline):const Icon(Icons.play_circle_outline),
+                              icon: isPauseIcon?Image.asset('assets/icons/plau.png'):Image.asset('assets/icons/pause.png'),
                               iconSize: 50,
                               onPressed: () {
                                 setState((){
@@ -99,75 +100,99 @@ class _MainScreenState extends State<MainScreen>{
 
                               },
                             ),
-                            const SizedBox(width: 20),
+                            const SizedBox(width: 15),
                             IconButton(
-                              icon: const Icon(Icons.skip_next_outlined),
+                              icon: Image.asset('assets/icons/next.png'),
                               iconSize: 50,
                               onPressed: () {},
                             )
                           ],),
                         const SizedBox(height: 20),
                         const Divider(
-                          height: 10,
-                          thickness: 5,
+                          height: 2,
+                          thickness: 1,
                           indent: 0,
                           endIndent: 0,
                           color: Colors.black,
                         ),
                         Padding(
-                          padding: const EdgeInsets.fromLTRB(5, 5, 5, 0),
+                          padding: const EdgeInsets.fromLTRB(5, 3, 5, 0),
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.center,
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
-                              IconButton(
-                                icon: Image.asset('assets/icons/checklist2665651.png'),
-                                iconSize: 30,
-                                onPressed: () {
-                                  appVM.startMyTasksScreen();
-                                  BlocProvider.of<NavigationBloc>(context)
-                                      .add(NavigateToTasksScreenEvent());
-                                },
+                              ElevatedButton(
+                                  onPressed: () {
+                                    appVM.startMyTasksScreen();
+                                    BlocProvider.of<NavigationBloc>(context)
+                                        .add(NavigateToTasksScreenEvent());
+                                  },
+                                  style: ElevatedButton.styleFrom(elevation: 0, backgroundColor: Colors.transparent,),                                  child: Column(
+                                      children: [
+                                        Image.asset('assets/icons/checklist2665651.png', height: 30, width: 30),
+                                        const Text("Задачи", style:  TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.black),)
+                                      ]
+                                  ),
                               ),
-                              IconButton(
-                                icon: Image.asset('assets/icons/goal6002764.png'),
-                                iconSize: 30,
-                                onPressed: () {
-                                  appVM.startMyAimsScreen();
-                                  BlocProvider.of<NavigationBloc>(context)
-                                      .add(NavigateToAimsScreenEvent());
-                                },
+                              ElevatedButton(
+                                  onPressed: () {
+                                    appVM.startMyAimsScreen();
+                                    BlocProvider.of<NavigationBloc>(context)
+                                        .add(NavigateToAimsScreenEvent());
+                                  },
+                                  style: ElevatedButton.styleFrom(elevation: 0, backgroundColor: Colors.transparent,),                                   child: Column(
+                                      children: [
+                                        Image.asset('assets/icons/goal6002764.png', height: 30, width: 30),
+                                        const Text("Задачи", style:  TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.black),)
+                                      ]
+                                  )
                               ),
-                              IconButton(
-                                icon: Image.asset('assets/icons/wheel2526426.png'),
-                                iconSize: 40,
-                                onPressed: () {
-                                  BlocProvider.of<NavigationBloc>(context)
-                                      .add(NavigateToMainScreenEvent());
-                                },
+                              ElevatedButton(
+                                  onPressed: () {
+                                    if(appVM.mainScreenState!=null){
+                                      appVM.mainCircles.clear();
+                                      appVM.startMainScreen(appVM.mainScreenState!.moon);
+                                    }
+                                    BlocProvider.of<NavigationBloc>(context)
+                                        .add(NavigateToMainScreenEvent());
+                                  },
+                                  style: ElevatedButton.styleFrom(elevation: 0, backgroundColor: Colors.transparent,),                                   child: Column(
+                                      children: [
+                                        Image.asset('assets/icons/wheel2526426.png', height: 35, width: 35),
+                                        const Text("Задачи", style:  TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.black),)
+                                      ]
+                                  )
                               ),
-                              IconButton(
-                                icon: Image.asset('assets/icons/notelove1648387.png'),
-                                iconSize: 30,
-                                onPressed: () {
-                                  appVM.startMyWishesScreen();
-                                  BlocProvider.of<NavigationBloc>(context)
-                                      .add(NavigateToWishesScreenEvent());
-                                },
+                              ElevatedButton(
+                                  onPressed: () {
+                                    appVM.startMyWishesScreen();
+                                    BlocProvider.of<NavigationBloc>(context)
+                                        .add(NavigateToWishesScreenEvent());
+                                  },
+                                  style: ElevatedButton.styleFrom(elevation: 0, backgroundColor: Colors.transparent,),                                   child: Column(
+                                      children: [
+                                        Image.asset('assets/icons/notelove1648387.png', height: 30, width: 30),
+                                        const Text("Задачи", style:  TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.black),)
+                                      ]
+                                  )
                               ),
-                              IconButton(
-                                icon: Image.asset('assets/icons/notepad2725914.png'),
-                                iconSize: 30,
-                                onPressed: () {
+                              ElevatedButton(
+                                  onPressed: () {
 
-                                },
-                              )
+                                  },
+                                  style: ElevatedButton.styleFrom(elevation: 0, backgroundColor: Colors.transparent,),                                   child: Column(
+                                      children: [
+                                        Image.asset('assets/icons/notepad2725914.png', height: 30, width: 30),
+                                        const Text("Задачи", style:  TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.black),)
+                                      ]
+                                  )
+                              ),
                             ],
                           ),)
                       ],
                     ),
                   ),
-                  CircularDraggableCircles(circles: appVM.currentCircles, size: MediaQuery.of(context).size.height-350<MediaQuery.of(context).size.width-20? MediaQuery.of(context).size.height-350 : MediaQuery.of(context).size.width-20, center: Pair(key: MediaQuery.of(context).size.width/2, value: MediaQuery.of(context).size.height*0.50)),
+                  CircularDraggableCircles(circles: appVM.currentCircles, size: MediaQuery.of(context).size.width-20, center: Pair(key: MediaQuery.of(context).size.width/2, value: MediaQuery.of(context).size.height*0.50)),
                 ],))
           );
         }

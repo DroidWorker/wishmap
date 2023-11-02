@@ -46,9 +46,10 @@ class AppViewModel with ChangeNotifier {
   }
 
   void addError(String text){
-    messageError.text = text;
-    print("eeeeeerrrrror $text");
-    notifyListeners();
+    if(text!=messageError.text) {
+      messageError.text = text;
+      notifyListeners();
+    }
   }
 
   Future<void> signIn(String login, String password) async{
@@ -57,7 +58,7 @@ class AppViewModel with ChangeNotifier {
       ProfileData? pd = await repository.signIn(login, password);
       if (pd != null) {
         await localRep.saveProfile(pd);
-        init();
+        await init();
       } else {
         throw Exception("unknown error #vm001");
       }
@@ -73,7 +74,7 @@ class AppViewModel with ChangeNotifier {
         pd.id = userUid;
         localRep.saveProfile(pd);
         localRep.saveAuth(ad.login, ad.password);
-        init();
+        await init();
       }
     }catch(ex){
       addError(ex.toString());
@@ -149,13 +150,30 @@ class AppViewModel with ChangeNotifier {
         var ms = mainScreenState!.allCircles.first;
         mainCircles.add(MainCircle(id: ms.id, coords: Pair(key: 0.0, value: 0.0), text: ms.text, color: ms.color));
         var cc = mainScreenState!.allCircles.where((element) => element.parenId == mainCircles.last.id).toList();
+        currentCircles.clear();
         cc.forEach((element) {
           currentCircles.add(Circle(id: element.id, text: element.text, color: element.color));
         });
+        notifyListeners();
       } catch (ex) {
         addError(ex.toString());
       }
-      notifyListeners();
+    }else if(mainScreenState!.moon.id==mi.id){
+      var tmp = List<CircleData>.from(mainScreenState!.allCircles);
+      mainScreenState = MainScreenState(moon: mi, musicId: 0);
+      try {
+        mainScreenState!.allCircles = tmp;
+        var ms = mainScreenState!.allCircles.first;
+        mainCircles.add(MainCircle(id: ms.id, coords: Pair(key: 0.0, value: 0.0), text: ms.text, color: ms.color));
+        var cc = mainScreenState!.allCircles.where((element) => element.parenId == mainCircles.last.id).toList();
+        currentCircles.clear();
+        cc.forEach((element) {
+          currentCircles.add(Circle(id: element.id, text: element.text, color: element.color));
+        });
+        notifyListeners();
+      } catch (ex) {
+        addError(ex.toString());
+      }
     }
   }
 

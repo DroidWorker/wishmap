@@ -13,6 +13,7 @@ class CardsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print("start cardsscreen");
     final appViewModel = Provider.of<AppViewModel>(context);
     if(appViewModel.moonItems.isEmpty)appViewModel.getMoons();
 
@@ -30,7 +31,7 @@ class CardsScreen extends StatelessWidget {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        MoonWidget(fillPercentage: items[index].filling),
+                        MoonWidget(fillPercentage: items[index].filling, moonSize: 100,),
                         Text(items[index].date)
                       ],
                     ),

@@ -7,30 +7,42 @@ import '../common/colorpicker_widget.dart';
 import '../navigation/navigation_block.dart';
 import '../res/colors.dart';
 
-class WishScreen extends StatelessWidget {
+class WishScreen extends StatefulWidget {
 
   WishScreen({super.key});
+
+  @override
+  _WishScreenState createState() => _WishScreenState();
+}
+
+class _WishScreenState extends State<WishScreen>{
+  Color circleColor = Colors.redAccent;
 
   late TextEditingController _title;
   late TextEditingController _description;
   late TextEditingController _affirmation;
-  late Color _color;
+  Color? _color;
+
+  bool isDataLoaded = false;
 
   @override
   Widget build(BuildContext context) {
     final appViewModel = Provider.of<AppViewModel>(context);
-    _title = TextEditingController(text: "");
-    _description = TextEditingController(text: "");
-    _affirmation = TextEditingController(text: "");
-    _color = Colors.black12;
+    if(_color==null){
+      _title = TextEditingController(text: "");
+      _description = TextEditingController(text: "");
+      _affirmation = TextEditingController(text: "");
+      _color = Colors.black12;
+    }
 
     return  Consumer<AppViewModel>(
         builder: (context, appVM, child){
-          if(appVM.wishScreenState!=null) {
+          if(appVM.wishScreenState!=null&&!isDataLoaded) {
             _title.text = appVM.wishScreenState!.wish.text;
             _description.text = appVM.wishScreenState!.wish.description;
             _affirmation.text = appVM.wishScreenState!.wish.affirmation;
             _color = appVM.wishScreenState!.wish.color;
+            isDataLoaded = true;
           }
 
           return Scaffold(
@@ -46,7 +58,7 @@ class WishScreen extends StatelessWidget {
                       iconSize: 30,
                       onPressed: () {
                         BlocProvider.of<NavigationBloc>(context)
-                            .add(NavigateToMainScreenEvent());
+                            .add(NavigateToProfileScreenEvent());
                       },
                     ),
                     const Expanded(child: SizedBox(),),
@@ -58,7 +70,7 @@ class WishScreen extends StatelessWidget {
                             ..text=_title.text
                             ..description=_description.text
                             ..affirmation=_affirmation.text
-                            ..color = _color;
+                            ..color = _color!;
                           appViewModel.createNewSphereWish(appVM.wishScreenState!.wish);
                           BlocProvider.of<NavigationBloc>(context).handleBackPress();
                         }
@@ -169,13 +181,11 @@ class WishScreen extends StatelessWidget {
                           ),
                         )
                       ],),
-                        onTap: (){
+                        onTap: () {
                           showDialog(
                             context: context,
                             builder: (context) {
-                              return const AlertDialog(
-                                content: ColorPickerWidget(),
-                              );
+                              return ColorPickerWidget(onColorSelected: (Color c){setState(() {_color=c; print("aaaaaaaaasss");});});
                             },
                           );
                         },

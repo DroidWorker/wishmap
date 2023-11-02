@@ -35,15 +35,18 @@ class LocalRepository{
     if (_prefs == null) {
       await init(); // Дождитесь завершения инициализации
     }
-    _prefs!.setString("id", pd.id);
-    _prefs!.setString("name", pd.name);
-    _prefs!.setString("surname", pd.surname);
+    print("aaaaaaaaaaaa1");
+    await _prefs!.setString("id", pd.id);
+    await _prefs!.setString("name", pd.name);
+    await _prefs!.setString("surname", pd.surname);
   }
 
   Future<ProfileData?> getProfile() async {
     if (_prefs == null) {
       await init(); // Дождитесь завершения инициализации
     }
+    print("aaaaaaaaaaaa2");
+
     String? id = _prefs!.getString("id");
     String? name = _prefs!.getString("name");
     String? surname = _prefs!.getString("surname");

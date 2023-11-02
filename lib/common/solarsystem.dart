@@ -8,7 +8,6 @@ import 'dart:math';
 import 'package:flutter/physics.dart';
 
 import '../navigation/navigation_block.dart';
-import '../repository/Repository.dart';
 
 class CircleWidget extends StatefulWidget {
   final itemId;
@@ -120,6 +119,8 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
   @override
   void initState() {
     super.initState();
+    var firstCercle = vm?.mainScreenState?.allCircles.firstWhere((element) => element.id==0);
+    if(firstCercle!=null)vm?.mainCircles=[MainCircle(id: 0, coords: Pair(key:0.0,value:0.0), text: firstCercle.text, color: firstCercle.color)];
     ctrl = AnimationController.unbounded(vsync: this);
     movingController = AnimationController.unbounded(vsync: this);
     afterMovingController = AnimationController.unbounded(vsync: this);
@@ -180,15 +181,6 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
           widget.circles[i].radius=(widget.size*0.2).toInt();
           circleRotations.add(2 * pi * i / widget.circles.length);
           plusesRotations.add((2 * pi * i / widget.circles.length) + angleBetween / 2);
-          if(widget.circles.length>8){
-            if (circleRotations[i]%(2*pi) >= pi && circleRotations[i]%(2*pi) <= 2*pi){widget.circles[i].radius=80-(40*(cos(circleRotations[i]))).toInt().abs();}
-            else{widget.circles[i].radius=40;}
-          }else if(widget.circles.length>16){
-            for(int i = 0; i < widget.circles.length; i++){
-              if (circleRotations[i]%(2*pi) >= pi && circleRotations[i]%(2*pi) <= 2*pi){widget.circles[i].radius=80-(40*(cos(circleRotations[i]))).toInt().abs();}
-              else{widget.circles[i].radius=30;}
-            }
-          }
           final x = (centerX + (widget.size/2-40) * cos(circleRotations[i]))+(80-widget.circles[i].radius)/2;
           final y = (centerY + (widget.size/2-40) * sin(circleRotations[i]))+(80-widget.circles[i].radius)/2;
           final px = centerX + (widget.size/2-40) * cos(plusesRotations[i]);
@@ -196,17 +188,18 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
           circlePositions.add(Offset(x, y));
           plusesPositions.add(Offset(px, py));
         }
-        /*if(widget.circles.length>8){
+        var diametr = (widget.size*0.2).toInt();
+        if(widget.circles.length>8&&widget.circles.length<=16){
           for(int i = 0; i < widget.circles.length; i++){
-            if (circleRotations[i]%(2*pi) >= pi && circleRotations[i]%(2*pi) <= 2*pi){widget.circles[i].radius=80-(40*(cos(circleRotations[i]))).toInt().abs();}
-            else{widget.circles[i].radius=40;}
+            if (circleRotations[i]%(2*pi) >= pi && circleRotations[i]%(2*pi) <= 2*pi){widget.circles[i].radius=diametr-(diametr/2*(cos(circleRotations[i]))).toInt().abs();}
+            else{widget.circles[i].radius=(widget.size*0.10).toInt();}
           }
         }else if(widget.circles.length>16){
           for(int i = 0; i < widget.circles.length; i++){
-            if (circleRotations[i]%(2*pi) >= pi && circleRotations[i]%(2*pi) <= 2*pi){widget.circles[i].radius=80-(40*(cos(circleRotations[i]))).toInt().abs();}
-            else{widget.circles[i].radius=30;}
+            if (circleRotations[i]%(2*pi) >= pi && circleRotations[i]%(2*pi) <= 2*pi){widget.circles[i].radius=diametr-(diametr/2*(cos(circleRotations[i]))).toInt().abs();}
+            else{widget.circles[i].radius=(widget.size*0.07).toInt();}
           }
-        }*/
+        }
         showHideController.reverse();
       }
     });
@@ -232,10 +225,10 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
     final finalTop = animationDirectionForward?widget.circles[itemId].radius*-0.5:widget.center.value-widget.centralCircles[widget.centralCircles.length-2].radius;
     final finalRight = animationDirectionForward?widget.center.key * 2 - widget.centralCircles.last.radius*1.5:widget.center.key-widget.centralCircles[widget.centralCircles.length-2].radius;
 
-    final radiusToCenterInitialTop = animationDirectionForward?circlePositions[itemId].dy:widget.center.value - widget.circles[itemId].radius/2;
-    final radiusToCenterInitialLeft = animationDirectionForward?circlePositions[itemId].dx:widget.center.key - widget.circles[itemId].radius/2;
-    final radiusToCenterFinalTop = animationDirectionForward?widget.center.value - widget.circles[itemId].radius/2:circlePositions[itemId].dy;
-    final radiusToCenterFinalLeft = animationDirectionForward?widget.center.key - widget.circles[itemId].radius/2:circlePositions[itemId].dx;
+    final radiusToCenterInitialTop = animationDirectionForward?circlePositions[itemId].dy:widget.center.value - widget.centralCircles[0].radius;
+    final radiusToCenterInitialLeft = animationDirectionForward?circlePositions[itemId].dx:widget.center.key - widget.centralCircles[0].radius;
+    final radiusToCenterFinalTop = animationDirectionForward?widget.center.value - widget.centralCircles[0].radius:circlePositions[itemId].dy;
+    final radiusToCenterFinalLeft = animationDirectionForward?widget.center.key - widget.centralCircles[0].radius:circlePositions[itemId].dx;
     //duplicate clicked sphere
     if(animationDirectionForward) {
       widget.centralCircles.add(MainCircle(id: id,
@@ -244,7 +237,7 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
           text: widget.circles[itemId].text,
           textSize: 12,
           color: widget.circles[itemId].color,
-          radius: widget.circles[itemId].radius / 2));
+          radius: widget.centralCircles[0].radius));
       if (widget.centralCircles.length > 2) {
         widget.centralCircles[widget.centralCircles
             .length - 3].isVisible = false;
@@ -379,14 +372,13 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
 
   @override
   Widget build(BuildContext context) {
-    print("cccccccccc${plusesPositions.length}");
-
     vm = Provider.of<AppViewModel>(context);
     if(widget.centralCircles.isEmpty) {
       widget.centralCircles = List<MainCircle>.from(vm!.mainCircles);
     }
 
     for (int i = 0; i<widget.centralCircles.length; i++) {
+      widget.centralCircles[i].radius= MediaQuery.of(context).size.width*0.15;
       if (widget.centralCircles[i].coords.key == 0.0 ||
           widget.centralCircles[i].coords.value == 0.0) {
         widget.centralCircles[i].coords = Pair(
@@ -399,6 +391,18 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
       newHash+=element.id;
     });
     if(newHash!= circlesHash) {
+      var diametr = (widget.size*0.2).toInt();
+      if(widget.circles.length>8&&widget.circles.length<=16){
+        for(int i = 0; i < widget.circles.length; i++){
+          if (circleRotations[i]%(2*pi) >= pi && circleRotations[i]%(2*pi) <= 2*pi){widget.circles[i].radius=diametr-(diametr/2*(cos(circleRotations[i]))).toInt().abs();}
+          else{widget.circles[i].radius=(widget.size*0.10).toInt();}
+        }
+      }else if(widget.circles.length>16){
+        for(int i = 0; i < widget.circles.length; i++){
+          if (circleRotations[i]%(2*pi) >= pi && circleRotations[i]%(2*pi) <= 2*pi){widget.circles[i].radius=diametr-(diametr/2*(cos(circleRotations[i]))).toInt().abs();}
+          else{widget.circles[i].radius=(widget.size*0.07).toInt();}
+        }
+      }
       circleRotations.clear();
       plusesRotations.clear();
       circlePositions.clear();
@@ -411,6 +415,13 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
         widget.circles[i].radius=(widget.size*0.2).toInt();
         circleRotations.add(2 * pi * i / widget.circles.length);
         plusesRotations.add((2 * pi * i / widget.circles.length) + angleBetween / 2);
+        if(widget.circles.length>8&&widget.circles.length<=16){
+            if (circleRotations[i]%(2*pi) >= pi && circleRotations[i]%(2*pi) <= 2*pi){widget.circles[i].radius=diametr-(diametr/2*(cos(circleRotations[i]))).toInt().abs();}
+            else{widget.circles[i].radius=(widget.size*0.10).toInt();}
+        }else if(widget.circles.length>16){
+            if (circleRotations[i]%(2*pi) >= pi && circleRotations[i]%(2*pi) <= 2*pi){widget.circles[i].radius=diametr-(diametr/2*(cos(circleRotations[i]))).toInt().abs();}
+            else{widget.circles[i].radius=(widget.size*0.07).toInt();}
+        }
         final x = (centerX + (widget.size/2-40) * cos(circleRotations[i]))+(80-widget.circles[i].radius)/2;
         final y = (centerY + (widget.size/2-40) * sin(circleRotations[i]))+(80-widget.circles[i].radius)/2;
         final px = centerX + (widget.size/2-40) * cos(plusesRotations[i]);
@@ -434,9 +445,11 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
           builder: (context, child) {
             final newRotation = ctrl.value - lastRotation;
             lastRotation = ctrl.value;
-            if (ctrl.isAnimating) _updateCircleRotation(
+            if (ctrl.isAnimating) {
+              _updateCircleRotation(
                 newRotation, widget.size, widget.center, widget.size / 2,
                 isAnim: true);
+            }
             return Stack(
               children: [
                 Positioned(
@@ -666,15 +679,16 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
       plusesPositions[i] = Offset(newPlusX, newPlusY);
     }
 
-    if(widget.circles.length>8){
+    var diametr = (widget.size*0.2).toInt();
+    if(widget.circles.length>8&&widget.circles.length<=16){
       for(int i = 0; i < widget.circles.length; i++){
-        if (circleRotations[i]%(2*pi) >= pi && circleRotations[i]%(2*pi) <= 2*pi){widget.circles[i].radius=80-(40*(cos(circleRotations[i]))).toInt().abs();}
-        else{widget.circles[i].radius=(widget.size*0.2).toInt();}
+        if (circleRotations[i]%(2*pi) >= pi && circleRotations[i]%(2*pi) <= 2*pi){widget.circles[i].radius=diametr-(diametr/2*(cos(circleRotations[i]))).toInt().abs();}
+        else{widget.circles[i].radius=(widget.size*0.10).toInt();}
       }
     }else if(widget.circles.length>16){
       for(int i = 0; i < widget.circles.length; i++){
-        if (circleRotations[i]%(2*pi) >= pi && circleRotations[i]%(2*pi) <= 2*pi){widget.circles[i].radius=80-(40*(cos(circleRotations[i]))).toInt().abs();}
-        else{widget.circles[i].radius=30;}
+        if (circleRotations[i]%(2*pi) >= pi && circleRotations[i]%(2*pi) <= 2*pi){widget.circles[i].radius=diametr-(diametr/2*(cos(circleRotations[i]))).toInt().abs();}
+        else{widget.circles[i].radius=(widget.size*0.07).toInt();}
       }
     }
     // Вызываем setState, чтобы обновить виджет

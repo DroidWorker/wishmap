@@ -27,7 +27,7 @@ class _TaskScreenState extends State{
           return Scaffold(
               backgroundColor: AppColors.backgroundColor,
               body: SafeArea(child: Padding(
-                padding: const EdgeInsets.all(15),
+                padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
                 child: Column(
                   children: [
                     Row(children: [
@@ -65,6 +65,7 @@ class _TaskScreenState extends State{
                           ),
                         ),
                         onPressed: () {
+                          if(appViewModel.mainScreenState!=null)appViewModel.startMainScreen(appViewModel.mainScreenState!.moon);
                           BlocProvider.of<NavigationBloc>(context)
                               .add(NavigateToMainScreenEvent());
                         },
@@ -73,62 +74,84 @@ class _TaskScreenState extends State{
                     ),
                     const SizedBox(height: 20),
                     const Divider(
-                      height: 10,
-                      thickness: 5,
+                      height: 2,
+                      thickness: 1,
                       indent: 0,
                       endIndent: 0,
                       color: Colors.black,
                     ),
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(5, 5, 5, 0),
+                      padding: const EdgeInsets.fromLTRB(5, 3, 5, 0),
                       child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
-                          IconButton(
-                            icon: Image.asset(
-                                'assets/icons/checklist2665651.png'),
-                            iconSize: 30,
+                          ElevatedButton(
                             onPressed: () {
                               appVM.startMyTasksScreen();
                               BlocProvider.of<NavigationBloc>(context)
                                   .add(NavigateToTasksScreenEvent());
                             },
+                            style: ElevatedButton.styleFrom(elevation: 0, backgroundColor: Colors.transparent,),                                  child: Column(
+                              children: [
+                                Image.asset('assets/icons/checklist2665651.png', height: 30, width: 30),
+                                const Text("Задачи", style:  TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.black),)
+                              ]
                           ),
-                          IconButton(
-                            icon: Image.asset('assets/icons/goal6002764.png'),
-                            iconSize: 30,
-                            onPressed: () {
-                              appVM.startMyAimsScreen();
-                              BlocProvider.of<NavigationBloc>(context)
-                                  .add(NavigateToAimsScreenEvent());
-                            },
                           ),
-                          IconButton(
-                            icon: Image.asset('assets/icons/wheel2526426.png'),
-                            iconSize: 40,
-                            onPressed: () {
-                              BlocProvider.of<NavigationBloc>(context)
-                                  .add(NavigateToMainScreenEvent());
-                            },
-                          ),
-                          IconButton(
-                            icon: Image.asset(
-                                'assets/icons/notelove1648387.png'),
-                            iconSize: 30,
-                            onPressed: () {
-                              appVM.startMyWishesScreen();
-                              BlocProvider.of<NavigationBloc>(context)
-                                  .add(NavigateToWishesScreenEvent());
-                            },
-                          ),
-                          IconButton(
-                            icon: Image.asset(
-                                'assets/icons/notepad2725914.png'),
-                            iconSize: 30,
-                            onPressed: () {
-                            },
+                          ElevatedButton(
+                              onPressed: () {
+                                appVM.startMyAimsScreen();
+                                BlocProvider.of<NavigationBloc>(context)
+                                    .add(NavigateToAimsScreenEvent());
+                              },
+                              style: ElevatedButton.styleFrom(elevation: 0, backgroundColor: Colors.transparent,),                                   child: Column(
+                              children: [
+                                Image.asset('assets/icons/goal6002764.png', height: 30, width: 30),
+                                const Text("Задачи", style:  TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.black),)
+                              ]
                           )
+                          ),
+                          ElevatedButton(
+                              onPressed: () {
+                                if(appVM.mainScreenState!=null){
+                                  appVM.mainCircles.clear();
+                                  appVM.startMainScreen(appVM.mainScreenState!.moon);
+                                }
+                                BlocProvider.of<NavigationBloc>(context)
+                                    .add(NavigateToMainScreenEvent());
+                              },
+                              style: ElevatedButton.styleFrom(elevation: 0, backgroundColor: Colors.transparent,),                                   child: Column(
+                              children: [
+                                Image.asset('assets/icons/wheel2526426.png', height: 35, width: 35),
+                                const Text("Задачи", style:  TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.black),)
+                              ]
+                          )
+                          ),
+                          ElevatedButton(
+                              onPressed: () {
+                                appVM.startMyWishesScreen();
+                                BlocProvider.of<NavigationBloc>(context)
+                                    .add(NavigateToWishesScreenEvent());
+                              },
+                              style: ElevatedButton.styleFrom(elevation: 0, backgroundColor: Colors.transparent,),                                   child: Column(
+                              children: [
+                                Image.asset('assets/icons/notelove1648387.png', height: 30, width: 30),
+                                const Text("Задачи", style:  TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.black),)
+                              ]
+                          )
+                          ),
+                          ElevatedButton(
+                              onPressed: () {
+
+                              },
+                              style: ElevatedButton.styleFrom(elevation: 0, backgroundColor: Colors.transparent,),                                   child: Column(
+                              children: [
+                                Image.asset('assets/icons/notepad2725914.png', height: 30, width: 30),
+                                const Text("Задачи", style:  TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.black),)
+                              ]
+                          )
+                          ),
                         ],
                       ),)
                   ],

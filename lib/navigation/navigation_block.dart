@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:wishmap/data/models.dart';
 
 abstract class NavigationEvent {}
 
@@ -90,7 +89,7 @@ class NavigationTaskEditScreenState extends NavigationState {
 class NavigationMainSphereEditScreenState extends NavigationState {}
 
 class NavigationBloc extends Bloc<NavigationEvent, NavigationState> {
-  NavigationBloc() : super(NavigationCardsScreenState());
+  NavigationBloc() : super(NavigationMainScreenState());
 
   final List<NavigationState> _navigationHistory = [NavigationCardsScreenState()];
 

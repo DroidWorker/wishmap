@@ -8,9 +8,16 @@ import '../common/colorpicker_widget.dart';
 import '../data/models.dart';
 import '../res/colors.dart';
 
-class SpheresOfLifeScreen extends StatelessWidget {
+class SpheresOfLifeScreen extends StatefulWidget {
 
   const SpheresOfLifeScreen({super.key});
+
+  @override
+  _SpheresOfLifeScreenState createState() => _SpheresOfLifeScreenState();
+}
+
+class _SpheresOfLifeScreenState extends State<SpheresOfLifeScreen>{
+  Color circleColor = Colors.redAccent;
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +39,7 @@ class SpheresOfLifeScreen extends StatelessWidget {
                 iconSize: 30,
                 onPressed: () {
                   BlocProvider.of<NavigationBloc>(context)
-                      .add(NavigateToMainScreenEvent());
+                      .add(NavigateToProfileScreenEvent());
                 },
               ),
               const Expanded(child: SizedBox(),),
@@ -40,6 +47,7 @@ class SpheresOfLifeScreen extends StatelessWidget {
                 child: const Text("Cохранить  ", style: TextStyle(color: AppColors.blueTextColor),),
                 onTap: () async {
                   await appViewModel.updateSphereWish(WishData(id: curWd.id, parentId: curWd.parenId, text: curWd.text, description: curWd.subText, affirmation: curWd.affirmation, color: curWd.color));
+                  if(appViewModel.mainScreenState!=null)appViewModel.startMainScreen(appViewModel.mainScreenState!.moon);
                   BlocProvider.of<NavigationBloc>(context)
                       .add(NavigateToMainScreenEvent());
                 },
@@ -103,19 +111,17 @@ class SpheresOfLifeScreen extends StatelessWidget {
                     Container(
                       width: 100.0, // Ширина круга
                       height: 100.0, // Высота круга
-                      decoration: const BoxDecoration(
+                      decoration: BoxDecoration(
                         shape: BoxShape.circle, // Задаем форму круга
-                        color: Colors.pink, // Устанавливаем цвет
+                        color: circleColor, // Устанавливаем цвет
                       ),
                     )
                   ],),
-                  onTap: (){
+                  onTap: () {
                     showDialog(
                       context: context,
                       builder: (context) {
-                        return const AlertDialog(
-                          content: ColorPickerWidget(),
-                        );
+                        return ColorPickerWidget(onColorSelected: (Color c){setState(() {circleColor=c; });});
                       },
                     );
                   },

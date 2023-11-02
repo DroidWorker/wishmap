@@ -41,7 +41,7 @@ class MainCircle {
   final String text;
   int textSize = 24;
   final Color color;
-  final double radius;
+  double radius;
   bool isVisible;
 
   MainCircle({required this.id, required this.coords, required this.text, this.textSize = 24, required this.color, this.radius=52, this.isVisible = true});

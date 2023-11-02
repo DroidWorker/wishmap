@@ -183,10 +183,12 @@ class _AuthScreen_State extends State<AuthScreen> {
                                   String password = _passwordController.text;
                                   try{
                                     await appViewModel.signIn(login, password);
+                                    print("sgnin");
                                     BlocProvider.of<NavigationBloc>(context)
                                         .removeLastFromBS();
                                     BlocProvider.of<NavigationBloc>(context)
                                         .add(NavigateToCardsScreenEvent());
+                                    print("open cards");
                                   }catch(ex){}
                                 }else{
                                   String name = _nameController.text;
