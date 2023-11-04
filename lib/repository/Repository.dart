@@ -311,6 +311,11 @@ class Repository{
       userRef.child(_auth.currentUser!.uid).child("moonlist").child(currentMoonId.toString()).child("spheres").child(wd.id.toString()).remove();
     }
   }
+  Future changeWishStatus(int id, int currentMoonId, bool status) async {
+    if(_auth.currentUser!=null){
+      userRef.child(_auth.currentUser!.uid).child("moonlist").child(currentMoonId.toString()).child("spheres").child(id.toString()).child("isChecked").set(status);
+    }
+  }
 
   Future<int?> createAim(AimData ad, int parentWishId, int currentMoonId) async {
     if(_auth.currentUser!=null){
@@ -323,6 +328,7 @@ class Repository{
       // Преобразуем каждый объект в Map
       Map<String, dynamic> dataMap = {
         'id': index,
+        'parentId': parentWishId,
         'text': ad.text,
         'subText': ad.description,
         'childTasks': ad.childTasks,

@@ -35,7 +35,6 @@ class LocalRepository{
     if (_prefs == null) {
       await init(); // Дождитесь завершения инициализации
     }
-    print("aaaaaaaaaaaa1");
     await _prefs!.setString("id", pd.id);
     await _prefs!.setString("name", pd.name);
     await _prefs!.setString("surname", pd.surname);
@@ -45,7 +44,6 @@ class LocalRepository{
     if (_prefs == null) {
       await init(); // Дождитесь завершения инициализации
     }
-    print("aaaaaaaaaaaa2");
 
     String? id = _prefs!.getString("id");
     String? name = _prefs!.getString("name");

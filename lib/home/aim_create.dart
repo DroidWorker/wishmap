@@ -45,7 +45,7 @@ class AimScreen extends StatelessWidget {
                           style: TextStyle(color: AppColors.blueTextColor),
                         ),
                         onTap: () async {
-                          int? aimId = await appViewModel.createAim(AimData(id: 999, text: text.text, description: description.text), parentCircleId);
+                          int? aimId = await appViewModel.createAim(AimData(id: 999, parentId: parentCircleId, text: text.text, description: description.text), parentCircleId);
                           if(aimId!=null) {
                             BlocProvider.of<NavigationBloc>(context)
                                 .add(NavigateToAimEditScreenEvent(aimId));

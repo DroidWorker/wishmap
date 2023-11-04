@@ -181,7 +181,7 @@ class AppViewModel with ChangeNotifier {
     if (mainScreenState != null&&mainScreenState!.allCircles.isNotEmpty) {
       try {
         var mc = mainScreenState!.allCircles.firstWhere((element) => element.id == id);
-        mainCircles.add(MainCircle(id: mc.id, coords: Pair(key: 0.0, value: 0.0), text: mc.text, color: mc.color));
+        id>mainCircles.last.id?mainCircles.add(MainCircle(id: mc.id, coords: Pair(key: 0.0, value: 0.0), text: mc.text, color: mc.color)):mainCircles.removeLast();
         var cc = mainScreenState!.allCircles.where((element) => element.parenId == id).toList();
         currentCircles.clear();
         cc.forEach((element) {
@@ -279,7 +279,14 @@ class AppViewModel with ChangeNotifier {
   Future<void> createNewSphereWish(WishData wd) async{
     try {
       await repository.createSphereWish(wd, mainScreenState?.moon.id??0);
-      mainScreenState!.allCircles.add(CircleData(id: wd.id, text: wd.text, color: wd.color, parenId: wd.parentId));
+      var sphereInAllCircles= mainScreenState!.allCircles.indexWhere((element) => element.id==wd.id);
+      if(sphereInAllCircles==-1){mainScreenState!.allCircles.add(CircleData(id: wd.id, text: wd.text, color: wd.color, parenId: wd.parentId));}
+      else{
+        mainScreenState!.allCircles[sphereInAllCircles]
+        ..text = wd.text
+        ..color = wd.color;
+        if(mainCircles.last.id==wd.id) mainCircles.last..color=wd.color..text=wd.text;
+      }
     }catch(ex){
       addError("сфера не была сохранена: $ex");
     }
@@ -299,11 +306,18 @@ class AppViewModel with ChangeNotifier {
       addError("сфера не была удалена: $ex");
     }
   }
+  Future<void> updateWishStatus(int wishId, bool status) async{
+    try {
+      await repository.changeWishStatus(wishId, mainScreenState?.moon.id??0, status);
+    }catch(ex){
+      addError(ex.toString());
+    }
+  }
 
   Future<int?> createAim(AimData ad, int parentCircleId) async{
     try {
       int? aimId = (await repository.createAim(ad, parentCircleId, mainScreenState?.moon.id??0))??-1;
-      currentAim=(AimData(id: aimId, text: ad.text, description: ad.description, isChecked: ad.isChecked));
+      currentAim=(AimData(id: aimId, parentId: ad.parentId, text: ad.text, description: ad.description, isChecked: ad.isChecked));
       return aimId;
     }catch(ex){
       addError(ex.toString());
@@ -312,7 +326,7 @@ class AppViewModel with ChangeNotifier {
   Future<void> updateAim(AimData ad) async{
     try {
       await repository.updateAim(ad, mainScreenState?.moon.id??0);
-      currentAim=(AimData(id: ad.id, text: ad.text, description: ad.description, isChecked: ad.isChecked));
+      currentAim=(AimData(id: ad.id, parentId: ad.parentId, text: ad.text, description: ad.description, isChecked: ad.isChecked));
     }catch(ex){
       addError(ex.toString());
     }
@@ -362,5 +376,34 @@ class AppViewModel with ChangeNotifier {
     }catch(ex){
       addError(ex.toString());
     }
+  }
+
+  List<MyTreeNode> convertToMyTreeNode(CircleData circle) {
+    List<CircleData> allCircles = getParentTree(circle.parenId);
+    List<MyTreeNode> children = <MyTreeNode>[MyTreeNode(title: circle.text)];
+    for (var element in allCircles) {
+      children=[MyTreeNode(title: element.text, children: children)];
+    }
+    return children;
+  }
+
+  List<CircleData> getParentTree(int targetId) {
+    if(mainScreenState==null||targetId==-1)return List.empty();
+    List<CircleData> objects = mainScreenState!.allCircles;
+    List<CircleData> path = [];
+
+    CircleData targetObject = objects.firstWhere((obj) => obj.id == targetId, orElse: () => CircleData(id: -1, text: "", color: Colors.transparent, parenId: -1));
+
+    if (targetObject.id == -1) {
+      return path; // Возвращаем пустой список, если объект с заданным идентификатором не найден
+    }
+
+    path.add(targetObject);
+
+    while (targetObject.parenId >= 0) {
+      targetObject = objects.firstWhere((obj) => obj.id == targetObject.parenId);
+      path.add(targetObject);
+    }
+    return path;
   }
 }

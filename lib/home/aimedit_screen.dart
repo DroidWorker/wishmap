@@ -11,20 +11,14 @@ class AimEditScreen extends StatelessWidget {
   int aimId = 0;
   AimEditScreen({super.key,required this.aimId});
 
-  static const List<MyTreeNode> roots = <MyTreeNode>[
-    MyTreeNode(
-      title: 'Я',
-      children: <MyTreeNode>[
-        MyTreeNode(title: 'Вес 90'),
-      ],
-    )
-  ];
+  List<MyTreeNode> roots = [];
 
   @override
   Widget build(BuildContext context) {
     return Consumer<AppViewModel>(
         builder: (context, appVM, child) {
-          AimData ai = appVM.currentAim??AimData(id: -1, text: 'объект не найден', description: "", isChecked: false);
+          AimData ai = appVM.currentAim??AimData(id: -1, parentId: -1, text: 'объект не найден', description: "", isChecked: false);
+          roots = appVM.convertToMyTreeNode(CircleData(id: ai.id, text: ai.text, color: Colors.transparent, parenId: ai.parentId));
           return Scaffold(
             backgroundColor: AppColors.backgroundColor,
             body: SafeArea(child: Padding(
@@ -96,7 +90,7 @@ class AimEditScreen extends StatelessWidget {
                     ),
                     Text(ai.text, style: const TextStyle(fontSize: 20),),
                     Text(ai.description, style: const TextStyle(fontSize: 16),),
-                    const Align(
+                    Align(
                         alignment: Alignment.centerLeft,
                         child: SizedBox(
                           height: 200,

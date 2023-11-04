@@ -17,9 +17,9 @@ class ProfileData {
 
 class CircleData{
   final int id;
-  final String text;
+  String text;
   String subText = "";
-  final Color color;
+  Color color;
   final int parenId;
   String affirmation;
 
@@ -38,9 +38,9 @@ class Circle {
 class MainCircle {
   final int id;
   Pair coords;
-  final String text;
+  String text;
   int textSize = 24;
-  final Color color;
+  Color color;
   double radius;
   bool isVisible;
 
@@ -113,12 +113,13 @@ class AimItem {
 
 class AimData {
   final int id;
+  final int parentId;
   final String text;
   final String description;
   List<int> childTasks = [];
   bool isChecked = false;
 
-  AimData({required this.id, required this.text, required this.description, this.isChecked=false});
+  AimData({required this.id, required this.parentId, required this.text, required this.description, this.isChecked=false});
 }
 
 class ProfileItem {

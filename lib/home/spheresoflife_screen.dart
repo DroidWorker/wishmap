@@ -17,15 +17,19 @@ class SpheresOfLifeScreen extends StatefulWidget {
 }
 
 class _SpheresOfLifeScreenState extends State<SpheresOfLifeScreen>{
-  Color circleColor = Colors.redAccent;
+  String saveText = "Сохранить  ";
+  CircleData curWd = CircleData(id: -1, text: "", color: Colors.red, parenId: -1);
 
   @override
   Widget build(BuildContext context) {
     final appViewModel = Provider.of<AppViewModel>(context);
-    CircleData curWd = appViewModel.mainScreenState?.allCircles[0]??CircleData(id: 0, text: "", color: Colors.red, parenId: -1);
+    if(curWd.id==-1)curWd = appViewModel.mainScreenState?.allCircles[0]??CircleData(id: 0, text: "", color: Colors.red, parenId: -1);
     TextEditingController text = TextEditingController(text: curWd.text);
     TextEditingController description = TextEditingController(text: curWd.subText);
     TextEditingController affirmation = TextEditingController(text: curWd.affirmation);
+    text.addListener(() { curWd.text=text.text;});
+    description.addListener(() { curWd.subText=description.text;});
+    affirmation.addListener(() { curWd.affirmation=affirmation.text;});
 
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
@@ -44,8 +48,14 @@ class _SpheresOfLifeScreenState extends State<SpheresOfLifeScreen>{
               ),
               const Expanded(child: SizedBox(),),
               GestureDetector(
-                child: const Text("Cохранить  ", style: TextStyle(color: AppColors.blueTextColor),),
+                child: Padding(
+                  padding: const EdgeInsets.all(10),
+                  child: Text(saveText, style: const TextStyle(color: AppColors.blueTextColor),),
+                ),
                 onTap: () async {
+                  setState(() {
+                    saveText = "Сохранение";
+                  });
                   await appViewModel.updateSphereWish(WishData(id: curWd.id, parentId: curWd.parenId, text: curWd.text, description: curWd.subText, affirmation: curWd.affirmation, color: curWd.color));
                   if(appViewModel.mainScreenState!=null)appViewModel.startMainScreen(appViewModel.mainScreenState!.moon);
                   BlocProvider.of<NavigationBloc>(context)
@@ -53,7 +63,10 @@ class _SpheresOfLifeScreenState extends State<SpheresOfLifeScreen>{
                 },
               ),
               GestureDetector(
-                child: const Text("Удалить", style: TextStyle(color: AppColors.greytextColor)),
+                child: const Padding(
+                  padding: EdgeInsets.all(10),
+                  child: Text("Удалить", style: TextStyle(color: AppColors.greytextColor)),
+                ),
                 onTap: (){},
               )
             ],),
@@ -113,7 +126,7 @@ class _SpheresOfLifeScreenState extends State<SpheresOfLifeScreen>{
                       height: 100.0, // Высота круга
                       decoration: BoxDecoration(
                         shape: BoxShape.circle, // Задаем форму круга
-                        color: circleColor, // Устанавливаем цвет
+                        color: curWd.color, // Устанавливаем цвет
                       ),
                     )
                   ],),
@@ -121,7 +134,7 @@ class _SpheresOfLifeScreenState extends State<SpheresOfLifeScreen>{
                     showDialog(
                       context: context,
                       builder: (context) {
-                        return ColorPickerWidget(onColorSelected: (Color c){setState(() {circleColor=c; });});
+                        return ColorPickerWidget(onColorSelected: (Color c){setState(() {curWd.color=c;});});
                       },
                     );
                   },

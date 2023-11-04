@@ -34,6 +34,7 @@ class _WishScreenState extends State<WishScreen>{
       _affirmation = TextEditingController(text: "");
       _color = Colors.black12;
     }
+    String saveText = "Сохранить  ";
 
     return  Consumer<AppViewModel>(
         builder: (context, appVM, child){
@@ -63,21 +64,29 @@ class _WishScreenState extends State<WishScreen>{
                     ),
                     const Expanded(child: SizedBox(),),
                     GestureDetector(
-                      child: const Text("Cохранить  ", style: TextStyle(color: AppColors.pinkTextColor)),
-                      onTap: (){
+                      child: Padding(
+                        padding: const EdgeInsets.all(10),
+                        child: Text(saveText, style: const TextStyle(color: AppColors.pinkTextColor)),
+                      ),
+                      onTap: () async {
                         if(appVM.wishScreenState!=null){
+                          setState(() {
+                            saveText = "Сохранение  ";
+                          });
                           appVM.wishScreenState!.wish
                             ..text=_title.text
                             ..description=_description.text
                             ..affirmation=_affirmation.text
                             ..color = _color!;
-                          appViewModel.createNewSphereWish(appVM.wishScreenState!.wish);
+                          await appViewModel.createNewSphereWish(appVM.wishScreenState!.wish);
                           BlocProvider.of<NavigationBloc>(context).handleBackPress();
                         }
                       },
                     ),
                     GestureDetector(
-                      child: const Text("Удалить", style: TextStyle(color: AppColors.greytextColor),),
+                      child: const Padding(
+                        padding: EdgeInsets.all(10),
+                        child: Text("Удалить", style: TextStyle(color: AppColors.greytextColor),),                      ),
                       onTap: (){
                         appViewModel.deleteSphereWish(appVM.wishScreenState!.wish);
                         BlocProvider.of<NavigationBloc>(context).handleBackPress();
@@ -88,7 +97,10 @@ class _WishScreenState extends State<WishScreen>{
                       alignment: Alignment.centerRight,
                       child: GestureDetector(
                         child: const Text("Исполнено"),
-                        onTap: (){},
+                        onTap: (){
+                          appVM.wishScreenState!.wish.isChecked=true;
+                          appViewModel.updateWishStatus(appVM.wishScreenState!.wish.id, true);
+                        },
                       )
                   ),
                   const SizedBox(height: 5),

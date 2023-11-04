@@ -471,20 +471,23 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
                     .entries
                     .map((e) {
                   return Positioned(
-                      left: plusesPositions[e.key].dx + 35,
-                      top: plusesPositions[e.key].dy + 35,
+                      left: plusesPositions[e.key].dx + 25,
+                      top: plusesPositions[e.key].dy + 25,
                       child:
                       GestureDetector(
-                        child: Container(
-                          width: 10, // Ширина контейнера
-                          height: 10, // Высота контейнера
-                          decoration: const BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.grey,
-                          ),
-                          child: const Center(
-                            child: Text("+", style: TextStyle(
-                                fontSize: 8, color: Colors.white),),
+                        behavior: HitTestBehavior.opaque,
+                        child: Padding(
+                          padding: const EdgeInsets.all(10), // Увеличьте внешний отступ, чтобы увеличить область срабатывания
+                          child: Container(
+                            width: 10, // Ширина контейнера
+                            height: 10, // Высота контейнера
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.grey,
+                            ),
+                            child: const Center(
+                              child: Text("+", style: TextStyle(fontSize: 8, color: Colors.white),),
+                            ),
                           ),
                         ),
                         onTap: () {
@@ -550,6 +553,7 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
                     .asMap()
                     .entries
                     .where((entry) {
+                      print("gggggggg${widget.centralCircles.length}");
                   return entry.value
                       .isVisible; // Фильтруем элементы по условию isVisible
                 }).map((entry) {
@@ -582,9 +586,9 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
                                       builder: (context, child) {
                                         return Opacity(
                                           opacity: AlphaAnimation.value,
-                                          child: const Text(
-                                            "состояние",
-                                            style: TextStyle(
+                                          child: Text(
+                                            value.id==0?"состояние":"",
+                                            style: const TextStyle(
                                                 color: Colors.white,
                                                 fontSize: 10),
                                             textAlign: TextAlign.center,
