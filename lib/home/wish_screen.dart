@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
+import 'package:wishmap/data/models.dart';
 
 import '../ViewModel.dart';
 import '../common/colorpicker_widget.dart';
@@ -25,6 +26,9 @@ class _WishScreenState extends State<WishScreen>{
 
   bool isDataLoaded = false;
 
+  TaskItem? wishTasks;
+  AimItem? wishAims;
+
   @override
   Widget build(BuildContext context) {
     final appViewModel = Provider.of<AppViewModel>(context);
@@ -44,6 +48,7 @@ class _WishScreenState extends State<WishScreen>{
             _affirmation.text = appVM.wishScreenState!.wish.affirmation;
             _color = appVM.wishScreenState!.wish.color;
             isDataLoaded = true;
+            appViewModel.getAimsForCircles(appVM.wishScreenState!.wish.id);
           }
 
           return Scaffold(
@@ -88,7 +93,7 @@ class _WishScreenState extends State<WishScreen>{
                         padding: EdgeInsets.all(10),
                         child: Text("Удалить", style: TextStyle(color: AppColors.greytextColor),),                      ),
                       onTap: (){
-                        appViewModel.deleteSphereWish(appVM.wishScreenState!.wish);
+                        appViewModel.deleteSphereWish(appVM.wishScreenState!.wish.id);
                         BlocProvider.of<NavigationBloc>(context).handleBackPress();
                       },
                     )
@@ -206,6 +211,61 @@ class _WishScreenState extends State<WishScreen>{
                     alignment: Alignment.centerLeft,
                     child: Column(children: [
                       const Text("Цели и задачи", style: TextStyle(color: Colors.black54, decoration: TextDecoration.underline),),
+                      const SizedBox(height: 5),
+                      ...appVM.wishScreenState?.wishAims.asMap()
+                          .entries
+                          .map((entry) {
+                        return GestureDetector(
+                          onTap: () async {
+                            await appViewModel.getAim(entry.value.id);
+                            BlocProvider.of<NavigationBloc>(context)
+                                .add(NavigateToAimEditScreenEvent(entry.value.id));
+                          },
+                          child: Row(
+                            children: [
+                              Text(entry.value.text),
+                              const Expanded(child: SizedBox()),
+                              IconButton(
+                                icon: entry.value.isChecked?Image.asset('assets/icons/target1914412.png'):Image.asset('assets/icons/nountarget423422.png'),
+                                iconSize: 18,
+                                onPressed: () {
+                                  setState(() {
+                                    appViewModel.wishScreenState?.wishAims[entry.key].isChecked=!entry.value.isChecked;
+                                    appViewModel.updateAimStatus(entry.value.id, !entry.value.isChecked);
+                                  });
+                                },
+                              ),
+                            ],
+                          ),
+                        );
+                      }).toList()??[],
+                      ...appVM.wishScreenState?.wishTasks.asMap()
+                          .entries
+                          .map((entry) {
+                        return GestureDetector(
+                          onTap: () async {
+                            await appViewModel.getTask(entry.value.id);
+                            BlocProvider.of<NavigationBloc>(context)
+                                .add(NavigateToTaskEditScreenEvent(entry.value.id));
+                          },
+                          child: Row(
+                            children: [
+                              Text(entry.value.text),
+                              const Expanded(child: SizedBox()),
+                              IconButton(
+                                icon: entry.value.isChecked?const Icon(Icons.check_circle_outline):const Icon(Icons.circle_outlined),
+                                iconSize: 18,
+                                onPressed: () {
+                                  setState(() {
+                                    appViewModel.wishScreenState?.wishTasks[entry.key].isChecked=!entry.value.isChecked;
+                                    appViewModel.updateTaskStatus(entry.value.id, !entry.value.isChecked);
+                                  });
+                                },
+                              ),
+                            ],
+                          ),
+                        );
+                      }).toList()??[],
                       const SizedBox(height: 5),
                       ElevatedButton(
                           style: ElevatedButton.styleFrom(

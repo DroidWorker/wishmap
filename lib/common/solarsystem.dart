@@ -126,6 +126,7 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
     afterMovingController = AnimationController.unbounded(vsync: this);
     showHideController = AnimationController.unbounded(vsync: this);
     final angleBetween = 2*pi/widget.circles.length;
+    print("iniiiiiiiiiiiit");
     plusesPositions.clear();
     plusesRotations.clear();
     final centerX = widget.center.key-40;
@@ -141,7 +142,12 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
       circlePositions.add(Offset(x, y));
       plusesPositions.add(Offset(px, py));
     }
-
+    if(widget.circles.isEmpty){
+      final px = widget.center.key-40 + (widget.size/2-40) * cos(1);
+      final py = widget.center.value-40 + (widget.size/2-40) * sin(1);
+      plusesPositions.add(Offset(px,py));
+      plusesRotations.add(1);
+    }
     //screenSize = getScreenSize(this as BuildContext);
     movingController = AnimationController(
       vsync: this,
@@ -642,6 +648,7 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
                             BlocProvider.of<NavigationBloc>(context)
                                 .add(NavigateToSpheresOfLifeScreenEvent());
                           } else {
+                            appViewModel.wishScreenState=null;
                             appViewModel.startWishScreen(widget.centralCircles[index].id, 0);
                             BlocProvider.of<NavigationBloc>(context)
                                 .add(NavigateToWishScreenEvent());

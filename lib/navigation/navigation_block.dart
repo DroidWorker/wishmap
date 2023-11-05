@@ -115,6 +115,13 @@ class NavigationBloc extends Bloc<NavigationEvent, NavigationState> {
     }
   }
 
+  void clearHistory() {
+    if (_navigationHistory.length > 1) {
+      _navigationHistory.clear();
+      _navigationHistory.add(NavigationMainScreenState());
+    }
+  }
+
   @override
   Future<void> close() {
     _backPressController.close();

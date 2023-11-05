@@ -86,13 +86,13 @@ class _MainScreenState extends State<MainScreen>{
                           children: [
                             IconButton(
                               icon: Image.asset('assets/icons/prev.png'),
-                              iconSize: 50,
+                              iconSize: 35,
                               onPressed: () {},
                             ),
                             const SizedBox(width: 20),
                             IconButton(
                               icon: isPauseIcon?Image.asset('assets/icons/plau.png'):Image.asset('assets/icons/pause.png'),
-                              iconSize: 50,
+                              iconSize: 35,
                               onPressed: () {
                                 setState((){
                                   isPauseIcon=!isPauseIcon;
@@ -103,7 +103,7 @@ class _MainScreenState extends State<MainScreen>{
                             const SizedBox(width: 15),
                             IconButton(
                               icon: Image.asset('assets/icons/next.png'),
-                              iconSize: 50,
+                              iconSize: 35,
                               onPressed: () {},
                             )
                           ],),

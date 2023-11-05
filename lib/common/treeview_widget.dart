@@ -5,7 +5,8 @@ import '../data/models.dart';
 
 class MyTreeView extends StatefulWidget {
   final List<MyTreeNode> roots;
-  const MyTreeView({super.key, required this.roots});
+  final Function(int id, String type) onTap;
+  const MyTreeView({super.key, required this.roots, required this.onTap});
 
   @override
   State<MyTreeView> createState() => _MyTreeViewState();
@@ -76,7 +77,7 @@ class _MyTreeViewState extends State<MyTreeView> {
           // are always up to date.
           entry: entry,
           // Add a callback to toggle the expansion state of this node.
-          onTap: () {},
+          onTap: () {widget.onTap(entry.node.id, entry.node.type);},
         );
       },
     );

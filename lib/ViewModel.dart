@@ -219,16 +219,18 @@ class AppViewModel with ChangeNotifier {
       addError(ex.toString());
     }
   }
-  Future<List<TaskItem>?> getTasksForAim(int aimId) async {
+  Future getTasksForAims(List<int> aimId) async {
     try {
-      var list = (await repository.getAimsChildTasks(
-          aimId, mainScreenState?.moon.id ?? 0)) ?? [];
+      List<int> list = [];
+      for (var element in aimId) {
+        list.addAll((await repository.getAimsChildTasks(element, mainScreenState?.moon.id ?? 0))??[]);
+      }
       if (list.isNotEmpty){
         if(taskItems.isNotEmpty){
-          return taskItems.where((element) => list.contains(element.id)).toList();
+          wishScreenState?.wishTasks = taskItems.where((element) => list.contains(element.id)).toList();
         }else{
           taskItems = (await repository.getMyTasks(mainScreenState?.moon.id??0)) ?? [];
-          return taskItems.where((element) => list.contains(element.id)).toList();
+          wishScreenState?.wishTasks = taskItems.where((element) => list.contains(element.id)).toList();
         }
       }else {
         return null;
@@ -236,7 +238,6 @@ class AppViewModel with ChangeNotifier {
     }catch(ex){
       addError("Ошибка загрузки задач: $ex");
     }
-    return null;
   }
 
   Future<void> startMyAimsScreen() async{
@@ -247,24 +248,25 @@ class AppViewModel with ChangeNotifier {
       addError(ex.toString());
     }
   }
-  Future<List<AimItem>?> getAimsForCircles(int sphereId) async {
+  Future getAimsForCircles(int sphereId) async {
     try {
       var list = (await repository.getSpheresChildAims(
           sphereId, mainScreenState?.moon.id ?? 0)) ?? [];
       if (list.isNotEmpty){
         if(aimItems.isNotEmpty){
-          return aimItems.where((element) => list.contains(element.id)).toList();
+          wishScreenState?.wishAims = aimItems.where((element) => list.contains(element.id)).toList();
         }else{
           aimItems = (await repository.getMyAims(mainScreenState?.moon.id??0)) ?? [];
-          return aimItems.where((element) => list.contains(element.id)).toList();
+          wishScreenState?.wishAims = aimItems.where((element) => list.contains(element.id)).toList();
         }
+        await getTasksForAims(list);
+        notifyListeners();
       }else {
         return null;
       }
     }catch(ex){
       addError("Ошибка загрузки задач: $ex");
     }
-    return null;
   }
 
   Future<void> startMyWishesScreen() async{
@@ -299,9 +301,9 @@ class AppViewModel with ChangeNotifier {
       addError("сфера не была сохранена: $ex");
     }
   }
-  Future<void> deleteSphereWish(WishData wd) async{
+  Future<void> deleteSphereWish(int id) async{
     try {
-      await repository.deleteSphereWish(wd, mainScreenState?.moon.id??0);
+      await repository.deleteSphereWish(id, mainScreenState?.moon.id??0);
     }catch(ex){
       addError("сфера не была удалена: $ex");
     }
@@ -319,6 +321,18 @@ class AppViewModel with ChangeNotifier {
       int? aimId = (await repository.createAim(ad, parentCircleId, mainScreenState?.moon.id??0))??-1;
       currentAim=(AimData(id: aimId, parentId: ad.parentId, text: ad.text, description: ad.description, isChecked: ad.isChecked));
       return aimId;
+    }catch(ex){
+      addError(ex.toString());
+    }
+  }
+  Future getAim(int id) async{
+    try{
+      if(mainScreenState!=null) {
+        currentAim = await repository.getMyAim(id, mainScreenState!.moon.id);
+        notifyListeners();
+      } else {
+        throw Exception("#2365 lost datas");
+      }
     }catch(ex){
       addError(ex.toString());
     }
@@ -349,8 +363,20 @@ class AppViewModel with ChangeNotifier {
   Future<int?> createTask(TaskData ad, int parentAimId) async{
     try {
       int taskId = (await repository.createTask(ad, parentAimId, mainScreenState?.moon.id??0))??-1;
-      currentTask=(TaskData(id: taskId, text: ad.text, description: ad.description, isChecked: ad.isChecked));
+      currentTask=(TaskData(id: taskId, parentId: ad.parentId, text: ad.text, description: ad.description, isChecked: ad.isChecked));
       return taskId;
+    }catch(ex){
+      addError(ex.toString());
+    }
+  }
+  Future getTask(int id) async{
+    try{
+      if(mainScreenState!=null) {
+        currentTask = await repository.getMyTask(id, mainScreenState!.moon.id);
+        notifyListeners();
+      } else {
+        throw Exception("#2366 lost datas");
+      }
     }catch(ex){
       addError(ex.toString());
     }
@@ -358,7 +384,7 @@ class AppViewModel with ChangeNotifier {
   Future<void> updateTask(TaskData ad) async{
     try {
       await repository.updateTask(ad, mainScreenState?.moon.id??0);
-      currentTask=(TaskData(id: ad.id, text: ad.text, description: ad.description, isChecked: ad.isChecked));
+      currentTask=(TaskData(id: ad.id, parentId: ad.parentId, text: ad.text, description: ad.description, isChecked: ad.isChecked));
     }catch(ex){
       addError(ex.toString());
     }
@@ -380,9 +406,18 @@ class AppViewModel with ChangeNotifier {
 
   List<MyTreeNode> convertToMyTreeNode(CircleData circle) {
     List<CircleData> allCircles = getParentTree(circle.parenId);
-    List<MyTreeNode> children = <MyTreeNode>[MyTreeNode(title: circle.text)];
+    List<MyTreeNode> children = <MyTreeNode>[MyTreeNode(id: circle.id, type: "a", title: circle.text)];
     for (var element in allCircles) {
-      children=[MyTreeNode(title: element.text, children: children)];
+      children=[MyTreeNode(id: element.id, type: element.id==0?"m":"w", title: element.text, children: children)];
+    }
+    return children;
+  }
+
+  List<MyTreeNode> convertToMyTreeNodeIncludedAimsTasks(MyTreeNode childNodes, int wishId) {
+    List<CircleData> allCircles = getParentTree(wishId);
+    List<MyTreeNode> children = [childNodes];
+    for (var element in allCircles) {
+      children=[MyTreeNode(id: element.id, type: element.id==0?"m":"w", title: element.text, children: children)];
     }
     return children;
   }

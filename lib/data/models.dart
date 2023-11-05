@@ -73,11 +73,12 @@ class TaskItem {
 
 class TaskData {
   final int id;
+  final int parentId;
   final String text;
   final String description;
   bool isChecked = false;
 
-  TaskData({required this.id, required this.text, required this.description, this.isChecked=false});
+  TaskData({required this.id, required this.parentId, required this.text, required this.description, this.isChecked=false});
 }
 
 class WishItem {
@@ -97,7 +98,7 @@ class WishData {
   List<int> photolist = [];
   String affirmation;
   Color color;
-  List<int> childAims = [];
+  Map<String, int> childAims = {};
   bool isChecked = false;
 
   WishData({required this.id, required this.parentId, required this.text, required this.description, required this.affirmation, required this.color});
@@ -134,10 +135,14 @@ class ProfileItem {
 
 class MyTreeNode {
   const MyTreeNode({
+    required this.id,
+    required this.type,
     required this.title,
     this.children = const <MyTreeNode>[],
   });
 
+  final int  id;
+  final String type;//m-maincircle w-wish a-aim t-task
   final String title;
   final List<MyTreeNode> children;
 }
@@ -152,6 +157,8 @@ class MainScreenState {
 
 class WishScreenState {
   final WishData wish;
+  List<AimItem> wishAims = [];
+  List<TaskItem>wishTasks = [];
 
   WishScreenState({required this.wish});
 }

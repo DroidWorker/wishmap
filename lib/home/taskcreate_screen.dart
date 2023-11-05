@@ -40,12 +40,12 @@ class TaskScreen extends StatelessWidget {
                     Align(
                         alignment: Alignment.centerRight,
                         child: GestureDetector(
-                          child: const Text(
-                            "Сохранить",
-                            style: TextStyle(color: AppColors.blueTextColor),
+                          child: const Padding(
+                            padding: EdgeInsets.all(10),
+                            child: Text("Сохранить", style: TextStyle(color: AppColors.blueTextColor),),
                           ),
                           onTap: () async {
-                            int? taskId = await appViewModel.createTask(TaskData(id: 999, text: text.text, description: description.text), parentAimId);
+                            int? taskId = await appViewModel.createTask(TaskData(id: 999, parentId: parentAimId, text: text.text, description: description.text), parentAimId);
                             if(taskId!=null) {
                               BlocProvider.of<NavigationBloc>(context)
                                   .add(NavigateToTaskEditScreenEvent(taskId));
@@ -76,7 +76,7 @@ class TaskScreen extends StatelessWidget {
                   decoration: InputDecoration(
                       filled: true,
                       fillColor: AppColors.fieldFillColor,
-                      hintText: 'Название цели',
+                      hintText: 'Название задачи',
                       hintStyle: TextStyle(color: Colors.black.withOpacity(0.3)),
                       border: InputBorder.none
                   ),
@@ -90,7 +90,7 @@ class TaskScreen extends StatelessWidget {
                   decoration: InputDecoration(
                       filled: true,
                       fillColor: AppColors.fieldFillColor,
-                      hintText: 'Опиши подробно свое желание',
+                      hintText: 'Опиши подробно свою задачу',
                       hintStyle: TextStyle(color: Colors.black.withOpacity(0.3)),
                       border: InputBorder.none
                   ),

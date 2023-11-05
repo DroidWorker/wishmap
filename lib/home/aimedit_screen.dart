@@ -95,7 +95,28 @@ class AimEditScreen extends StatelessWidget {
                         child: SizedBox(
                           height: 200,
                           width: 200,
-                          child: MyTreeView(roots: roots,),
+                          child: MyTreeView(roots: roots, onTap: (id, type){
+                            if(type=="m"){
+                              BlocProvider.of<NavigationBloc>(context).clearHistory();
+                              BlocProvider.of<NavigationBloc>(context)
+                                  .add(NavigateToSpheresOfLifeScreenEvent());
+                            }else if(type=="w"){
+                              BlocProvider.of<NavigationBloc>(context).clearHistory();
+                              appVM.startWishScreen(id, 0);
+                              BlocProvider.of<NavigationBloc>(context)
+                                  .add(NavigateToWishScreenEvent());
+                            }else if(type=="a"&&aimId!=id){
+                              appVM.getAim(id);
+                              BlocProvider.of<NavigationBloc>(context).clearHistory();
+                              BlocProvider.of<NavigationBloc>(context)
+                                  .add(NavigateToAimEditScreenEvent(id));
+                            }else if(type=="t"){
+                              appVM.currentTask=null;
+                              BlocProvider.of<NavigationBloc>(context).clearHistory();
+                              BlocProvider.of<NavigationBloc>(context)
+                                  .add(NavigateToTaskEditScreenEvent(id));
+                            }
+                          },),
                         )
                     ),
                     const SizedBox(height: 30),

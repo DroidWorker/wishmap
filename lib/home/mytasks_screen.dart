@@ -51,6 +51,7 @@ class _TaskScreenState extends State{
                         itemCount: taskList.length,
                         itemBuilder: (context, index) {
                           return TaskItemWidget(ti: taskList[index],
+                              onSelect: onItemSelect,
                               onClick: onItemClick,
                               onDelete: onItemDelete);
                         }
@@ -161,10 +162,15 @@ class _TaskScreenState extends State{
         });
   }
 
+  onItemSelect(int id) async {
+    await appViewModel.getTask(id);
+    BlocProvider.of<NavigationBloc>(context)
+        .add(NavigateToTaskEditScreenEvent(id));
+  }
   onItemClick(int id){
     bool status = false;
     setState((){
-      taskList.where((element) => element.id==id).forEach((element) {element.isChecked=!element.isChecked;status = !element.isChecked;});
+      taskList.where((element) => element.id==id).forEach((element) {element.isChecked=!element.isChecked;status = element.isChecked;});
     });
     appViewModel.updateTaskStatus(id, status);
   }

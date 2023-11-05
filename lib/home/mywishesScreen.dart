@@ -18,11 +18,13 @@ class _WishesScreenState extends State<WishesScreen>{
   bool page = false;//false - Исполнено true - Все желания
   List<WishItem> allWishList = [];
   List<WishItem> filteredWishList = [];
+  AppViewModel? appViewModel;
 
   @override
   Widget build(BuildContext context) {
     return Consumer<AppViewModel>(
         builder: (context, appVM, child) {
+          appViewModel=appVM;
           allWishList = appVM.wishItems;
           filteredWishList = appVM.wishItems;
           return Scaffold(
@@ -195,12 +197,13 @@ class _WishesScreenState extends State<WishesScreen>{
 
   onItemClick(int id){
     setState((){
-      filteredWishList.where((element) => element.id==id).forEach((element) {element.isChecked=!element.isChecked;});
+      filteredWishList.where((element) => element.id==id).forEach((element) {element.isChecked=!element.isChecked;appViewModel?.updateWishStatus(id, element.isChecked);});
     });
   }
   onItemDelete(int id){
     setState(() {
       filteredWishList.removeWhere((element) => element.id==id);
     });
+    appViewModel?.deleteSphereWish(id);
   }
 }

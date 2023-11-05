@@ -40,9 +40,9 @@ class AimScreen extends StatelessWidget {
                     Align(
                       alignment: Alignment.centerRight,
                       child: GestureDetector(
-                        child: const Text(
-                          "Сохранить",
-                          style: TextStyle(color: AppColors.blueTextColor),
+                        child: const Padding(
+                          padding: EdgeInsets.all(10),
+                          child: Text("Сохранить", style: TextStyle(color: AppColors.blueTextColor),),
                         ),
                         onTap: () async {
                           int? aimId = await appViewModel.createAim(AimData(id: 999, parentId: parentCircleId, text: text.text, description: description.text), parentCircleId);

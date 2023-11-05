@@ -44,7 +44,7 @@ class _AimsScreenState extends State<AimsScreen>{
                       },
                     ),
                     const Spacer(),
-                    const Text("Мои желания", style: TextStyle(fontSize: 18),),
+                    const Text("Мои цели", style: TextStyle(fontSize: 18),),
                     const Spacer(),
                   ],
                   ),
@@ -81,6 +81,7 @@ class _AimsScreenState extends State<AimsScreen>{
                       itemCount: filteredAimList.length,
                       itemBuilder: (context, index) {
                         return AimItemWidget(ai: filteredAimList[index],
+                            onItemSelect: onItemSelect,
                             onClick: onItemClick,
                             onDelete: onItemDelete);
                       }
@@ -197,11 +198,15 @@ class _AimsScreenState extends State<AimsScreen>{
         filteredAimList = allAims;
     });
   }
-
+  onItemSelect(int id) async {
+    await appViewModel.getAim(id);
+    BlocProvider.of<NavigationBloc>(context)
+        .add(NavigateToAimEditScreenEvent(id));
+  }
   onItemClick(int id){
     bool status = false;
     setState((){
-      filteredAimList.where((element) => element.id==id).forEach((element) {element.isChecked=!element.isChecked;status = !element.isChecked;});
+      filteredAimList.where((element) => element.id==id).forEach((element) {element.isChecked=!element.isChecked;status = element.isChecked;});
     });
     appViewModel.updateAimStatus(id, status);
   }
