@@ -109,7 +109,7 @@ class _TaskScreenState extends State{
                               style: ElevatedButton.styleFrom(elevation: 0, backgroundColor: Colors.transparent,),                                   child: Column(
                               children: [
                                 Image.asset('assets/icons/goal6002764.png', height: 30, width: 30),
-                                const Text("Задачи", style:  TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.black),)
+                                const Text("Цели", style:  TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.black),)
                               ]
                           )
                           ),
@@ -125,7 +125,7 @@ class _TaskScreenState extends State{
                               style: ElevatedButton.styleFrom(elevation: 0, backgroundColor: Colors.transparent,),                                   child: Column(
                               children: [
                                 Image.asset('assets/icons/wheel2526426.png', height: 35, width: 35),
-                                const Text("Задачи", style:  TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.black),)
+                                const Text("Карта", style:  TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.black),)
                               ]
                           )
                           ),
@@ -138,7 +138,7 @@ class _TaskScreenState extends State{
                               style: ElevatedButton.styleFrom(elevation: 0, backgroundColor: Colors.transparent,),                                   child: Column(
                               children: [
                                 Image.asset('assets/icons/notelove1648387.png', height: 30, width: 30),
-                                const Text("Задачи", style:  TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.black),)
+                                const Text("Желания", style:  TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.black),)
                               ]
                           )
                           ),
@@ -149,7 +149,7 @@ class _TaskScreenState extends State{
                               style: ElevatedButton.styleFrom(elevation: 0, backgroundColor: Colors.transparent,),                                   child: Column(
                               children: [
                                 Image.asset('assets/icons/notepad2725914.png', height: 30, width: 30),
-                                const Text("Задачи", style:  TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.black),)
+                                const Text("Дневник", style:  TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.black),)
                               ]
                           )
                           ),

@@ -126,7 +126,6 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
     afterMovingController = AnimationController.unbounded(vsync: this);
     showHideController = AnimationController.unbounded(vsync: this);
     final angleBetween = 2*pi/widget.circles.length;
-    print("iniiiiiiiiiiiit");
     plusesPositions.clear();
     plusesRotations.clear();
     final centerX = widget.center.key-40;
@@ -456,11 +455,13 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
                 newRotation, widget.size, widget.center, widget.size / 2,
                 isAnim: true);
             }
+            var lcent =  widget.center.key + 40 - widget.size / 2;
+            var tcent = widget.center.value + 40 - widget.size / 2;
             return Stack(
               children: [
                 Positioned(
-                  left: widget.center.key + 40 - widget.size / 2,
-                  top: widget.center.value + 40 - widget.size / 2,
+                  left: lcent,
+                  top: tcent,
                   child:
                   Container(
                     width: widget.size - 80, // Ширина контейнера
@@ -472,6 +473,15 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
                     ),
                     child: const SizedBox(),
                   ),),
+                if(widget.centralCircles.length>1)Positioned(
+                    left: widget.center.key+10,
+                    bottom: widget.center.value,
+                    width: widget.centralCircles[widget.centralCircles.length-2].coords.key-widget.center.key+50,
+                    height: widget.center.value-widget.centralCircles[widget.centralCircles.length-2].coords.value-50,
+                    child: CustomPaint(
+                      painter: LinePainter(),
+                    ),
+                ),
                 ...plusesPositions
                     .asMap()
                     .entries
@@ -499,10 +509,6 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
                         onTap: () {
                           showHideController.reset();
                           showHideController.forward();
-                          //open sphere creation screen
-                          /*appViewModel.startWishScreen(appViewModel.mainScreenState!.allCircles.isNotEmpty?appViewModel.mainScreenState!.allCircles.last.id+1:-101, widget.centralCircles.last.id);
-                          BlocProvider.of<NavigationBloc>(context)
-                              .add(NavigateToWishScreenEvent());*/
                         },
                       )
                   );
@@ -559,7 +565,6 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
                     .asMap()
                     .entries
                     .where((entry) {
-                      print("gggggggg${widget.centralCircles.length}");
                   return entry.value
                       .isVisible; // Фильтруем элементы по условию isVisible
                 }).map((entry) {
@@ -706,3 +711,24 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
     if(!isAnim)setState(() {});
   }
 }
+
+class LinePainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.grey
+      ..strokeWidth = 2.0
+      ..strokeCap = StrokeCap.round;
+
+    final start = Offset(0, size.height);
+    final end = Offset(size.width, 0);
+
+    canvas.drawLine(start, end, paint);
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) {
+    return false;
+  }
+}
+
