@@ -144,7 +144,9 @@ class _TaskScreenState extends State{
                           ),
                           ElevatedButton(
                               onPressed: () {
-
+                                appVM.getDiary();
+                                BlocProvider.of<NavigationBloc>(context)
+                                    .add(NavigateToDiaryScreenEvent());
                               },
                               style: ElevatedButton.styleFrom(elevation: 0, backgroundColor: Colors.transparent,),                                   child: Column(
                               children: [

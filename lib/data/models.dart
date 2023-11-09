@@ -168,3 +168,14 @@ class MessageError {
 
   MessageError();
 }
+
+class CardData{
+  final int id;
+  String emoji;
+  String title;
+  String description;
+  String text;
+  Color color;
+
+  CardData({required this.id, required this.emoji, required this.title, required this.description, required this.text, required this.color});
+}

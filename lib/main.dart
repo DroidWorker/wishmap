@@ -7,6 +7,8 @@ import 'package:provider/provider.dart';
 import 'package:wishmap/home/aim_create.dart';
 import 'package:wishmap/home/aimedit_screen.dart';
 import 'package:wishmap/home/cards_screen.dart';
+import 'package:wishmap/home/diary_screen.dart';
+import 'package:wishmap/home/diaryedit_screen.dart';
 import 'package:wishmap/home/mainsphereedit_screen.dart';
 import 'package:wishmap/home/mytasks_screen.dart';
 import 'package:wishmap/home/taskcreate_screen.dart';
@@ -101,6 +103,10 @@ class MyApp extends StatelessWidget {
       return TaskEditScreen(aimId: state.aimId);
     } else if (state is NavigationMainSphereEditScreenState) {
       return const MainSphereEditScreen();
+    }  else if (state is NavigationDiaryScreenState) {
+      return DiaryScreen();
+    } else if (state is NavigationDiaryEditScreenState) {
+      return DiaryEditScreen(diaryId: state.id);
     } else {
       return Container(); // По умолчанию или для других состояний.
     }

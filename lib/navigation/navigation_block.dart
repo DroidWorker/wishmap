@@ -46,6 +46,13 @@ class NavigateToTaskEditScreenEvent extends NavigationEvent {
 
 class NavigateToMainSphereEditScreenEvent extends NavigationEvent {}
 
+class NavigateToDiaryScreenEvent extends NavigationEvent {}
+
+class NavigateToDiaryEditScreenEvent extends NavigationEvent {
+  int id = 0;
+  NavigateToDiaryEditScreenEvent(this.id);
+}
+
 abstract class NavigationState {}
 
 class NavigationAuthScreenState extends NavigationState {}
@@ -87,6 +94,13 @@ class NavigationTaskEditScreenState extends NavigationState {
 }
 
 class NavigationMainSphereEditScreenState extends NavigationState {}
+
+class NavigationDiaryScreenState extends NavigationState {}
+
+class NavigationDiaryEditScreenState extends NavigationState {
+  int id = 0;
+  NavigationDiaryEditScreenState(this.id);
+}
 
 class NavigationBloc extends Bloc<NavigationEvent, NavigationState> {
   NavigationBloc() : super(NavigationMainScreenState());
@@ -168,7 +182,11 @@ class NavigationBloc extends Bloc<NavigationEvent, NavigationState> {
       _navigationHistory.add(NavigationTaskEditScreenState(event.taskId));
     } else if (event is NavigateToMainSphereEditScreenEvent) {
       _navigationHistory.add(NavigationMainSphereEditScreenState());
-    } else if(event is NavigateBackEvent) {
+    } else if (event is NavigateToDiaryScreenEvent) {
+      _navigationHistory.add(NavigationDiaryScreenState());
+    } else if (event is NavigateToDiaryEditScreenEvent) {
+      _navigationHistory.add(NavigationDiaryEditScreenState(event.id)); }
+    else if(event is NavigateBackEvent) {
       yield _navigationHistory.last;
     }
 

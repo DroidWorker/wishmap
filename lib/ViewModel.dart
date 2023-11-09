@@ -39,6 +39,16 @@ class AppViewModel with ChangeNotifier {
   AimData? currentAim;
   TaskData? currentTask;
 
+  //diaryScreen
+  List<CardData> diaryItems = [
+    CardData(id: 1, emoji: "😃", title: "Счастье", description: "Описание 1", text: "no text", color: Colors.blue),
+    CardData(id: 2, emoji: "🌟", title: "Звезда", description: "Описание 2", text: "no text", color: Colors.lightGreen),
+    CardData(id: 3, emoji: "🎉", title: "Праздник", description: "Описание 3", text: "no text", color: Colors.purpleAccent),
+    CardData(id: 4, emoji: "❤️", title: "Любовь", description: "Описание 4", text: "no text", color: Colors.amber),
+    CardData(id: 5, emoji: "🌺", title: "Цветок", description: "Описание 5", text: "no text", color: Colors.white54),
+    CardData(id: 6, emoji: "🍔", title: "Бургер", description: "Описание 6", text: "no text", color: Colors.cyanAccent),
+   ];
+
   Future<void> init() async {
     authData = await localRep.getAuth();
     profileData = await localRep.getProfile();
@@ -399,6 +409,47 @@ class AppViewModel with ChangeNotifier {
   Future<void> updateTaskStatus(int taskId, bool status) async{
     try {
       await repository.changeTaskStatus(taskId, mainScreenState?.moon.id??0, status);
+    }catch(ex){
+      addError(ex.toString());
+    }
+  }
+
+  Future<void> getDiary() async{
+    List<CardData> cardData = [
+      CardData(id: 1, emoji: "😃", title: "Счастье", description: "Описание 1", text: "no text", color: Colors.blue),
+      CardData(id: 2, emoji: "🌟", title: "Звезда", description: "Описание 2", text: "no text", color: Colors.lightGreen),
+      CardData(id: 3, emoji: "🎉", title: "Праздник", description: "Описание 3", text: "no text", color: Colors.purpleAccent),
+      CardData(id: 4, emoji: "❤️", title: "Любовь", description: "Описание 4", text: "no text", color: Colors.amber),
+      CardData(id: 5, emoji: "🌺", title: "Цветок", description: "Описание 5", text: "no text", color: Colors.white54),
+      CardData(id: 6, emoji: "🍔", title: "Бургер", description: "Описание 6", text: "no text", color: Colors.cyanAccent),
+      ];
+    try {
+      diaryItems = (await repository.getDiaryList(mainScreenState!.moon.id))??[CardData(id: 0, emoji: "⚽", title: "ничего не найдено", description: "", text: "", color: Colors.transparent),];
+      if(diaryItems.isEmpty) {
+        repository.addDiary(cardData, mainScreenState!.moon.id);
+        diaryItems = cardData;
+      }
+      notifyListeners();
+    }catch(ex){
+      addError(ex.toString());
+    }
+  }
+  Future<void> addDiary(CardData cd)async {
+    try{
+      diaryItems.add(cd);
+      await repository.addDiary([cd], mainScreenState!.moon.id);
+      notifyListeners();
+    }catch(ex){
+      addError(ex.toString());
+    }
+  }
+  Future<void> updateDiary(CardData cd)async{
+    try{
+      final index = diaryItems.indexWhere((element) => element.id==cd.id);
+      if(index==-1)throw Exception("error#vm6794");
+      diaryItems[index]=cd;
+      await repository.updateDiary(cd, mainScreenState!.moon.id);
+      notifyListeners();
     }catch(ex){
       addError(ex.toString());
     }

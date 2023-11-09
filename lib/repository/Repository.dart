@@ -468,6 +468,79 @@ class Repository{
     }
   }
 
+  Future addDiary(List<CardData> data, int moonId) async {
+    if(_auth.currentUser!=null){
+      if(data.length>1){
+        List<Map<String, dynamic>> diary = [];
+        data.forEach((element) {
+          diary.add(
+              {
+                'id': element.id,
+                'emoji': element.emoji,
+                'title': element.title,
+                'description': element.description,
+                'text': element.text,
+                'color': element.color.value
+              }
+          );
+        });
+        userRef.child(_auth.currentUser!.uid).child("moonlist").child(moonId.toString()).child("diary").set(
+            diary
+        );
+      }else{
+        Map<String, dynamic> dataMap ={
+          'id': data.last.id,
+          'emoji': data.last.emoji,
+          'title': data.last.title,
+          'description': data.last.description,
+          'text': data.last.text,
+          'color': data.last.color.value
+        };
+        userRef.child(_auth.currentUser!.uid).child("moonlist").child(moonId.toString()).child("diary").child(data.last.id.toString()).set(
+            dataMap
+        );
+      }
+    }
+  }
+  Future updateDiary(CardData data, int moonId) async {
+    if(_auth.currentUser!=null){
+        Map<String, dynamic> dataMap ={
+          'id': data.id,
+          'emoji': data.emoji,
+          'title': data.title,
+          'description': data.description,
+          'text': data.text,
+          'color': data.color.value
+        };
+        userRef.child(_auth.currentUser!.uid).child("moonlist").child(moonId.toString()).child("diary").child(data.id.toString()).set(
+            dataMap
+        );
+    }
+  }
+  Future<List<CardData>?> getDiaryList(int moonId) async{
+    if(_auth.currentUser!=null) {
+      List<CardData> diaryList = [];
+      DataSnapshot dataSnapshot = (await userRef.child(_auth.currentUser!.uid)
+          .child("moonlist").child(moonId.toString()).child("diary")
+          .once()).snapshot;
+      if (dataSnapshot.children.isNotEmpty) {
+        dataSnapshot.children.forEach((element) {
+          final Map<dynamic, dynamic> dataList = element.value as Map<dynamic,dynamic>;
+          diaryList.add(CardData(
+              id: int.parse(dataList['id'].toString()),
+              emoji: dataList['emoji'],
+              title: dataList['title'],
+              description: dataList['description'],
+              text: dataList['text'],
+              color: Color(int.parse(dataList['color'].toString())),
+          ));
+        });
+      }
+      return diaryList;
+    }
+    return null;
+  }
+
   //temp data
   static getChildrenSpheres(int parentId){
     switch(parentId){
