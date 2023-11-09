@@ -132,6 +132,7 @@ class Repository{
             'subText': circleData.subText,
             'color': circleData.color.value, // Сохраняем цвет как строку
             'parentId': circleData.parenId,
+            'isActive': circleData.isActive
           };
           circleDataList.add(circleDataMap);
         }
@@ -157,6 +158,7 @@ class Repository{
             subText: dataList['subText'] ?? "",
             color: Color(int.parse(dataList['color'].toString())),
             parenId: int.parse(dataList['parentId'].toString()),
+            isActive: dataList["isActive"]??true
           );
           circleDataList.add(circleData);
         });
@@ -310,7 +312,8 @@ class Repository{
           'childAims': wd.childAims,
           'color': wd.color.value, // Сохраняем цвет как строку
           'parentId': wd.parentId,
-          'affirmation': wd.affirmation
+          'affirmation': wd.affirmation,
+          'isActive': true
         };
       userRef.child(_auth.currentUser!.uid).child("moonlist").child(currentMoonId.toString()).child("spheres").child(wd.id.toString()).set(
           dataMap

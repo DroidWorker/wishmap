@@ -41,12 +41,12 @@ class AppViewModel with ChangeNotifier {
 
   //diaryScreen
   List<CardData> diaryItems = [
-    CardData(id: 1, emoji: "😃", title: "Счастье", description: "Описание 1", text: "no text", color: Colors.blue),
-    CardData(id: 2, emoji: "🌟", title: "Звезда", description: "Описание 2", text: "no text", color: Colors.lightGreen),
-    CardData(id: 3, emoji: "🎉", title: "Праздник", description: "Описание 3", text: "no text", color: Colors.purpleAccent),
-    CardData(id: 4, emoji: "❤️", title: "Любовь", description: "Описание 4", text: "no text", color: Colors.amber),
-    CardData(id: 5, emoji: "🌺", title: "Цветок", description: "Описание 5", text: "no text", color: Colors.white54),
-    CardData(id: 6, emoji: "🍔", title: "Бургер", description: "Описание 6", text: "no text", color: Colors.cyanAccent),
+    CardData(id: 1, emoji: "😃", title: "Благодраность", description: "Чтобы разблокировать путь к желаниям, каждый день начинай с благодарности", text: "no text", color: const Color.fromARGB(255, 233, 255, 250)),
+    CardData(id: 2, emoji: "🌟", title: "Виденье на 5 лет", description: "Глабольное видиние своей жизни лежит в основе всех твоих желаний", text: "no text", color: const Color.fromARGB(255, 226, 246, 255)),
+    CardData(id: 3, emoji: "🎉", title: "Лучший день", description: "Опиши самый замечательный день или момент жизни за прошедший год", text: "no text", color: const Color.fromARGB(255, 255, 240, 233)),
+    CardData(id: 4, emoji: "❤️", title: "100 желаний", description: "Создай свой банк желаний, пусть даже самых невообразимых, и пусть они хранятся здесь", text: "no text", color: const Color.fromARGB(255, 235, 229, 229)),
+    CardData(id: 5, emoji: "🌺", title: "Мои сны", description: "Если записывыать свои сны каждый день, ты обретешь суперспособности", text: "no text",color: const Color.fromARGB(255, 244, 205, 221)),
+    CardData(id: 6, emoji: "🍔", title: "Мои страхи", description: "Выписывай все свои страхи и они начнут растворятся сами собой", text: "no text", color: const Color.fromARGB(255, 238, 255, 210)),
    ];
 
   Future<void> init() async {
@@ -120,6 +120,9 @@ class AppViewModel with ChangeNotifier {
         }else{
           List<CircleData> moonCircles = (await repository.getSpheres(moonId-1))??[];
           if(moonCircles.isNotEmpty){
+            for (int i=0; i<moonCircles.length; i++){
+              moonCircles[i].isActive = false;
+            }
             repository.addMoon(moonItems.last, moonCircles);
           }else{
             repository.addMoon(moonItems.last, defaultCircles);
@@ -158,11 +161,11 @@ class AppViewModel with ChangeNotifier {
       try {
         mainScreenState!.allCircles = (await repository.getSpheres(mi.id)) ?? [];
         var ms = mainScreenState!.allCircles.first;
-        mainCircles.add(MainCircle(id: ms.id, coords: Pair(key: 0.0, value: 0.0), text: ms.text, color: ms.color));
+        mainCircles.add(MainCircle(id: ms.id, coords: Pair(key: 0.0, value: 0.0), text: ms.text, color: ms.color, isActive: ms.isActive));
         var cc = mainScreenState!.allCircles.where((element) => element.parenId == mainCircles.last.id).toList();
         currentCircles.clear();
         cc.forEach((element) {
-          currentCircles.add(Circle(id: element.id, text: element.text, color: element.color));
+          currentCircles.add(Circle(id: element.id, text: element.text, color: element.color, isActive: element.isActive));
         });
         notifyListeners();
       } catch (ex) {
@@ -174,11 +177,11 @@ class AppViewModel with ChangeNotifier {
       try {
         mainScreenState!.allCircles = tmp;
         var ms = mainScreenState!.allCircles.first;
-        mainCircles.add(MainCircle(id: ms.id, coords: Pair(key: 0.0, value: 0.0), text: ms.text, color: ms.color));
+        mainCircles.add(MainCircle(id: ms.id, coords: Pair(key: 0.0, value: 0.0), text: ms.text, color: ms.color, isActive: ms.isActive));
         var cc = mainScreenState!.allCircles.where((element) => element.parenId == mainCircles.last.id).toList();
         currentCircles.clear();
         cc.forEach((element) {
-          currentCircles.add(Circle(id: element.id, text: element.text, color: element.color));
+          currentCircles.add(Circle(id: element.id, text: element.text, color: element.color, isActive: element.isActive));
         });
         notifyListeners();
       } catch (ex) {
@@ -191,11 +194,11 @@ class AppViewModel with ChangeNotifier {
     if (mainScreenState != null&&mainScreenState!.allCircles.isNotEmpty) {
       try {
         var mc = mainScreenState!.allCircles.firstWhere((element) => element.id == id);
-        id>mainCircles.last.id?mainCircles.add(MainCircle(id: mc.id, coords: Pair(key: 0.0, value: 0.0), text: mc.text, color: mc.color)):mainCircles.removeLast();
+        id>mainCircles.last.id?mainCircles.add(MainCircle(id: mc.id, coords: Pair(key: 0.0, value: 0.0), text: mc.text, color: mc.color, isActive: mc.isActive)):mainCircles.removeLast();
         var cc = mainScreenState!.allCircles.where((element) => element.parenId == id).toList();
         currentCircles.clear();
         cc.forEach((element) {
-          currentCircles.add(Circle(id: element.id, text: element.text, color: element.color));
+          currentCircles.add(Circle(id: element.id, text: element.text, color: element.color, isActive: element.isActive));
         });
       } catch (ex) {
         addError(ex.toString());
@@ -296,8 +299,9 @@ class AppViewModel with ChangeNotifier {
       else{
         mainScreenState!.allCircles[sphereInAllCircles]
         ..text = wd.text
-        ..color = wd.color;
-        if(mainCircles.last.id==wd.id) mainCircles.last..color=wd.color..text=wd.text;
+        ..color = wd.color
+        ..isActive = true;
+        if(mainCircles.last.id==wd.id) mainCircles.last..color=wd.color..text=wd.text..isActive=true;
       }
     }catch(ex){
       addError("сфера не была сохранена: $ex");
@@ -416,12 +420,12 @@ class AppViewModel with ChangeNotifier {
 
   Future<void> getDiary() async{
     List<CardData> cardData = [
-      CardData(id: 1, emoji: "😃", title: "Счастье", description: "Описание 1", text: "no text", color: Colors.blue),
-      CardData(id: 2, emoji: "🌟", title: "Звезда", description: "Описание 2", text: "no text", color: Colors.lightGreen),
-      CardData(id: 3, emoji: "🎉", title: "Праздник", description: "Описание 3", text: "no text", color: Colors.purpleAccent),
-      CardData(id: 4, emoji: "❤️", title: "Любовь", description: "Описание 4", text: "no text", color: Colors.amber),
-      CardData(id: 5, emoji: "🌺", title: "Цветок", description: "Описание 5", text: "no text", color: Colors.white54),
-      CardData(id: 6, emoji: "🍔", title: "Бургер", description: "Описание 6", text: "no text", color: Colors.cyanAccent),
+      CardData(id: 1, emoji: "😃", title: "Благодраность", description: "Чтобы разблокировать путь к желаниям, каждый день начинай с благодарности", text: "no text", color: Colors.blue),
+      CardData(id: 2, emoji: "🌟", title: "Виденье на 5 лет", description: "Глабольное видиние своей жизни лежит в основе всех твоих желаний", text: "no text", color: Colors.lightGreen),
+      CardData(id: 3, emoji: "🎉", title: "Лучший день", description: "Опиши самый замечательный день или момент жизни за прошедший год", text: "no text", color: Colors.purpleAccent),
+      CardData(id: 4, emoji: "❤️", title: "100 желаний", description: "Создай свой банк желаний, пусть даже самых невообразимых, и пусть они хранятся здесь", text: "no text", color: Colors.amber),
+      CardData(id: 5, emoji: "🌺", title: "Мои сны", description: "Если записывыать свои сны каждый день, ты обретешь суперспособности", text: "no text", color: Colors.white54),
+      CardData(id: 6, emoji: "🍔", title: "Мои страхи", description: "Выписывай все свои страхи и они начнут растворятся сами собой", text: "no text", color: Colors.cyanAccent),
       ];
     try {
       diaryItems = (await repository.getDiaryList(mainScreenState!.moon.id))??[CardData(id: 0, emoji: "⚽", title: "ничего не найдено", description: "", text: "", color: Colors.transparent),];

@@ -57,7 +57,7 @@ class _CircleWidgetState extends State<CircleWidget>{
         height: widget.circle.radius.toDouble(),
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: widget.circle.color,
+          color: widget.circle.isActive?widget.circle.color:const Color.fromARGB(255, 217, 217, 217),
         ),
         child: Center( // Используйте Center, чтобы разместить текст по центру
           child: AutoSizeText(
@@ -242,7 +242,8 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
           text: widget.circles[itemId].text,
           textSize: 12,
           color: widget.circles[itemId].color,
-          radius: widget.centralCircles[0].radius));
+          radius: widget.centralCircles[0].radius,
+          isActive: widget.circles[itemId].isActive));
       if (widget.centralCircles.length > 2) {
         widget.centralCircles[widget.centralCircles
             .length - 3].isVisible = false;
@@ -579,7 +580,7 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
                             height: value.radius * 2,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: value.color,
+                              color: value.isActive?value.color:const Color.fromARGB(255, 217, 217, 217),
                             ),
                             child: Center(
                                 child: IntrinsicHeight(

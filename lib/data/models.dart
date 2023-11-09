@@ -22,8 +22,9 @@ class CircleData{
   Color color;
   final int parenId;
   String affirmation;
+  bool isActive;
 
-  CircleData({required this.id, required this.text, this.subText = "", required this.color, required this.parenId, this.affirmation=""});
+  CircleData({required this.id, required this.text, this.subText = "", required this.color, required this.parenId, this.affirmation="", this.isActive = true});
 }
 
 class Circle {
@@ -31,8 +32,9 @@ class Circle {
   final String text;
   final Color color;
   int radius;
+  bool isActive;
 
-  Circle({required this.id, required this.text, required this.color, this.radius=80});
+  Circle({required this.id, required this.text, required this.color, this.radius=80, this.isActive = true});
 }
 
 class MainCircle {
@@ -43,8 +45,9 @@ class MainCircle {
   Color color;
   double radius;
   bool isVisible;
+  bool isActive;
 
-  MainCircle({required this.id, required this.coords, required this.text, this.textSize = 24, required this.color, this.radius=52, this.isVisible = true});
+  MainCircle({required this.id, required this.coords, required this.text, this.textSize = 24, required this.color, this.radius=52, this.isVisible = true, this.isActive = true});
 }
 
 class Pair{
