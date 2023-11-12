@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:keyboard_attachable/keyboard_attachable.dart';
 import 'package:provider/provider.dart';
 import 'package:wishmap/navigation/navigation_block.dart';
 
@@ -33,42 +34,79 @@ class _SpheresOfLifeScreenState extends State<SpheresOfLifeScreen>{
 
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
-      body: SafeArea(child:Padding(
+      body: SafeArea(maintainBottomViewPadding: true,
+        child:Padding(
         padding: const EdgeInsets.all(15),
         child: Column(
           children: [
             Row(children: [
               IconButton(
-                icon: const Icon(Icons.menu),
+                icon: const Icon(Icons.keyboard_arrow_left),
                 iconSize: 30,
                 onPressed: () {
-                  BlocProvider.of<NavigationBloc>(context)
-                      .add(NavigateToProfileScreenEvent());
-                },
-              ),
-              const Expanded(child: SizedBox(),),
-              GestureDetector(
-                child: Padding(
-                  padding: const EdgeInsets.all(10),
-                  child: Text(saveText, style: const TextStyle(color: AppColors.blueTextColor),),
-                ),
-                onTap: () async {
-                  setState(() {
-                    saveText = "Сохранение";
-                  });
-                  await appViewModel.updateSphereWish(WishData(id: curWd.id, parentId: curWd.parenId, text: curWd.text, description: curWd.subText, affirmation: curWd.affirmation, color: curWd.color));
-                  if(appViewModel.mainScreenState!=null)appViewModel.startMainScreen(appViewModel.mainScreenState!.moon);
                   BlocProvider.of<NavigationBloc>(context)
                       .add(NavigateToMainScreenEvent());
                 },
               ),
-              GestureDetector(
-                child: const Padding(
-                  padding: EdgeInsets.all(10),
-                  child: Text("Удалить", style: TextStyle(color: AppColors.greytextColor)),
-                ),
-                onTap: (){},
-              )
+              const Expanded(child: SizedBox(),),
+              ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.blueButtonBack,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(
+                          10), // <-- Radius
+                    ),
+                  ),
+                  onPressed: () async {
+                    await appViewModel.updateSphereWish(WishData(id: curWd.id, parentId: curWd.parenId, text: curWd.text, description: curWd.subText, affirmation: curWd.affirmation, color: curWd.color));
+                    if(appViewModel.mainScreenState!=null)appViewModel.startMainScreen(appViewModel.mainScreenState!.moon);
+                    showDialog(context: context,
+                      builder: (BuildContext context) => AlertDialog(
+                        title: const Text('сохранено'),
+                        actions: <Widget>[
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, 'OK'),
+                            child: const Text('OK'),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                  child: const Text("Cохранить",
+                    style: TextStyle(color: AppColors.greytextColor),)
+              ),
+              ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.blueButtonBack,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(
+                          10), // <-- Radius
+                    ),
+                  ),
+                  onPressed: () async {
+                    await appViewModel.deleteSphereWish(curWd.id);
+                    if(appViewModel.mainScreenState!=null)appViewModel.startMainScreen(appViewModel.mainScreenState!.moon);
+                    showDialog(context: context,
+                      builder: (BuildContext context) => AlertDialog(
+                        title: const Text('удалено'),
+                        actions: <Widget>[
+                          TextButton(
+                            onPressed: () {
+                              Navigator.pop(context, 'OK');
+                              if(appViewModel.mainScreenState!=null)appViewModel.startMainScreen(appViewModel.mainScreenState!.moon);
+                              BlocProvider.of<NavigationBloc>(context).clearHistory();
+                              BlocProvider.of<NavigationBloc>(context)
+                                  .add(NavigateToMainScreenEvent());
+                            },
+                            child: const Text('OK'),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                  child: const Text("Удалить",
+                    style: TextStyle(color: AppColors.greytextColor),)
+              ),
             ],),
             TextField(
               controller: text,
@@ -138,7 +176,16 @@ class _SpheresOfLifeScreenState extends State<SpheresOfLifeScreen>{
                       },
                     );
                   },
-            ))
+            )),
+            if(MediaQuery.of(context).viewInsets.bottom!=0) SizedBox(height: 30,
+              child: FooterLayout(
+                footer: Container(height: 30,color: Colors.white,alignment: Alignment.centerRight, child:
+                GestureDetector(
+                  onTap: (){FocusManager.instance.primaryFocus?.unfocus();},
+                  child: const Text("готово", style: TextStyle(fontSize: 20),),
+                )
+                  ,),
+              ),)
           ],
         ),),
     ));

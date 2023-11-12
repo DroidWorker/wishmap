@@ -36,11 +36,11 @@ class _AimsScreenState extends State<AimsScreen>{
                 children: [
                   Row(children: [
                     IconButton(
-                      icon: const Icon(Icons.menu),
+                      icon: const Icon(Icons.keyboard_arrow_left),
                       iconSize: 30,
                       onPressed: () {
                         BlocProvider.of<NavigationBloc>(context)
-                            .add(NavigateToProfileScreenEvent());
+                            .add(NavigateToMainScreenEvent());
                       },
                     ),
                     const Spacer(),
@@ -195,10 +195,10 @@ class _AimsScreenState extends State<AimsScreen>{
   }
 
   filterAims(bool isAll){
-    setState(() {
+    //setState(() {
       !isAll?filteredAimList = allAims.where((element) => element.isChecked).toList():
         filteredAimList = allAims;
-    });
+    //});
   }
   onItemSelect(int id) async {
     await appViewModel.getAim(id);
@@ -206,11 +206,6 @@ class _AimsScreenState extends State<AimsScreen>{
         .add(NavigateToAimEditScreenEvent(id));
   }
   onItemClick(int id){
-    bool status = false;
-    setState((){
-      filteredAimList.where((element) => element.id==id).forEach((element) {element.isChecked=!element.isChecked;status = element.isChecked;});
-    });
-    appViewModel.updateAimStatus(id, status);
   }
   onItemDelete(int id){
     setState(() {

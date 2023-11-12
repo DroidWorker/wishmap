@@ -38,17 +38,32 @@ class TaskScreen extends StatelessWidget {
                       ),
                     ),
                     Align(
-                        alignment: Alignment.centerRight,
-                        child: GestureDetector(
-                          child: const Padding(
-                            padding: EdgeInsets.all(10),
-                            child: Text("Сохранить", style: TextStyle(color: AppColors.blueTextColor),),
+                      alignment: Alignment.centerRight,
+                      child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.blueButtonBack,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(
+                                  10), // <-- Radius
+                            ),
                           ),
-                          onTap: () async {
+                          onPressed: () async {
                             int? taskId = await appViewModel.createTask(TaskData(id: 999, parentId: parentAimId, text: text.text, description: description.text), parentAimId);
                             if(taskId!=null) {
-                              BlocProvider.of<NavigationBloc>(context)
-                                  .add(NavigateToTaskEditScreenEvent(taskId));
+                              showDialog(context: context,
+                                builder: (BuildContext context) => AlertDialog(
+                                  title: const Text('сохранено'),
+                                  actions: <Widget>[
+                                    TextButton(
+                                      onPressed: () { Navigator.pop(context, 'OK');
+                                      BlocProvider.of<NavigationBloc>(context)
+                                          .add(NavigateToTaskEditScreenEvent(taskId));},
+                                      child: const Text('OK'),
+                                    ),
+                                  ],
+                                ),
+                              );
+
                             }else{
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
@@ -59,7 +74,8 @@ class TaskScreen extends StatelessWidget {
                               );
                             }
                           },
-                        )
+                          child: const Text("Сохранить")
+                      ),
                     ),
                   ],
                 ),

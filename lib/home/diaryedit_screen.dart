@@ -1,6 +1,7 @@
 import 'package:emoji_choose/emoji_choose.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:keyboard_attachable/keyboard_attachable.dart';
 import 'package:provider/provider.dart';
 
 import '../ViewModel.dart';
@@ -47,7 +48,8 @@ class DiaryEditScreenState extends State<DiaryEditScreen>{
           tecdescription.text =currentdescription;
           return Scaffold(
             backgroundColor: AppColors.backgroundColor,
-            body: SafeArea(child:
+            body: SafeArea(maintainBottomViewPadding: true,
+                child:
             Padding(
               padding: EdgeInsets.all(5),
               child: Column(
@@ -125,6 +127,15 @@ class DiaryEditScreenState extends State<DiaryEditScreen>{
                       hintText: currentTitle,
                     ),
                   ),
+                  if(MediaQuery.of(context).viewInsets.bottom!=0) SizedBox(height: 30,
+                    child: FooterLayout(
+                      footer: Container(height: 30,color: Colors.white,alignment: Alignment.centerRight, child:
+                      GestureDetector(
+                        onTap: (){FocusManager.instance.primaryFocus?.unfocus();},
+                        child: const Text("готово", style: TextStyle(fontSize: 20),),
+                      )
+                        ,),
+                    ),)
                 ],
               ),
             )

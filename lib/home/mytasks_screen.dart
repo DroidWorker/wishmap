@@ -32,11 +32,11 @@ class _TaskScreenState extends State{
                   children: [
                     Row(children: [
                       IconButton(
-                        icon: const Icon(Icons.menu),
+                        icon: const Icon(Icons.keyboard_arrow_left),
                         iconSize: 30,
                         onPressed: () {
                           BlocProvider.of<NavigationBloc>(context)
-                              .add(NavigateToProfileScreenEvent());
+                              .add(NavigateToMainScreenEvent());
                         },
                       ),
                       const Spacer(),
@@ -170,11 +170,6 @@ class _TaskScreenState extends State{
         .add(NavigateToTaskEditScreenEvent(id));
   }
   onItemClick(int id){
-    bool status = false;
-    setState((){
-      taskList.where((element) => element.id==id).forEach((element) {element.isChecked=!element.isChecked;status = element.isChecked;});
-    });
-    appViewModel.updateTaskStatus(id, status);
   }
   onItemDelete(int id){
     setState(() {

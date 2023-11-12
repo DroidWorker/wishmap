@@ -508,8 +508,17 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
                           ),
                         ),
                         onTap: () {
-                          showHideController.reset();
-                          showHideController.forward();
+                          if(widget.circles.length<=12) {
+                            showHideController.reset();
+                            showHideController.forward();
+                          }else{
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text("максимальное количество сфер - 12"),
+                                duration: Duration(seconds: 3),
+                              ),
+                            );
+                          }
                         },
                       )
                   );

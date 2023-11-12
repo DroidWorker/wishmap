@@ -35,11 +35,11 @@ class _WishesScreenState extends State<WishesScreen>{
                 children: [
                   Row(children: [
                     IconButton(
-                      icon: const Icon(Icons.menu),
+                      icon: const Icon(Icons.keyboard_arrow_left),
                       iconSize: 30,
                       onPressed: () {
                         BlocProvider.of<NavigationBloc>(context)
-                            .add(NavigateToProfileScreenEvent());
+                            .add(NavigateToMainScreenEvent());
                       },
                     ),
                     const Spacer(),
@@ -198,9 +198,6 @@ class _WishesScreenState extends State<WishesScreen>{
   }
 
   onItemClick(int id){
-    setState((){
-      filteredWishList.where((element) => element.id==id).forEach((element) {element.isChecked=!element.isChecked;appViewModel?.updateWishStatus(id, element.isChecked);});
-    });
   }
   onItemDelete(int id){
     setState(() {

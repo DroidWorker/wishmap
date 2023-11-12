@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:keyboard_attachable/keyboard_attachable.dart';
 import 'package:provider/provider.dart';
 import 'package:wishmap/data/models.dart';
 
@@ -53,61 +54,104 @@ class _WishScreenState extends State<WishScreen>{
 
           return Scaffold(
           backgroundColor: AppColors.backgroundColor,
-          body: SafeArea(child:SingleChildScrollView(
+          body: SafeArea(
+              maintainBottomViewPadding: true,
+              child:Column(children:[Expanded(child:SingleChildScrollView(
             child: Padding(
               padding: const EdgeInsets.all(15),
               child: Column(
                 children: [
                   Row(children: [
                     IconButton(
-                      icon: const Icon(Icons.menu),
+                      icon: const Icon(Icons.keyboard_arrow_left),
                       iconSize: 30,
                       onPressed: () {
                         BlocProvider.of<NavigationBloc>(context)
-                            .add(NavigateToProfileScreenEvent());
+                            .add(NavigateToMainScreenEvent());
                       },
                     ),
                     const Expanded(child: SizedBox(),),
-                    GestureDetector(
-                      child: Padding(
-                        padding: const EdgeInsets.all(10),
-                        child: Text(saveText, style: const TextStyle(color: AppColors.pinkTextColor)),
-                      ),
-                      onTap: () async {
-                        if(appVM.wishScreenState!=null){
-                          setState(() {
-                            saveText = "Сохранение  ";
-                          });
+                    ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.blueButtonBack,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(
+                                10), // <-- Radius
+                          ),
+                        ),
+                        onPressed: () async {
+                          appVM.wishScreenState!.wish.isChecked=true;
+                          appViewModel.updateWishStatus(appVM.wishScreenState!.wish.id, true);
+                          showDialog(context: context,
+                            builder: (BuildContext context) => AlertDialog(
+                              title: const Text('исполнено'),
+                              actions: <Widget>[
+                                TextButton(
+                                  onPressed: () { Navigator.pop(context, 'OK');},
+                                  child: const Text('OK'),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                        child: const Text("Исполнено")
+                    ),
+                    ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.blueButtonBack,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(
+                                10), // <-- Radius
+                          ),
+                        ),
+                        onPressed: () async {
+                          appViewModel.deleteSphereWish(appVM.wishScreenState!.wish.id);
+                          showDialog(context: context,
+                            builder: (BuildContext context) => AlertDialog(
+                              title: const Text('удалено'),
+                              actions: <Widget>[
+                                TextButton(
+                                  onPressed: () { Navigator.pop(context, 'OK');
+                                  BlocProvider.of<NavigationBloc>(context).handleBackPress();},
+                                  child: const Text('OK'),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                        child: const Text("Удалить")
+                    ),
+                    ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.blueButtonBack,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(
+                                10), // <-- Radius
+                          ),
+                        ),
+                        onPressed: () async {
                           appVM.wishScreenState!.wish
                             ..text=_title.text
                             ..description=_description.text
                             ..affirmation=_affirmation.text
                             ..color = _color!;
                           await appViewModel.createNewSphereWish(appVM.wishScreenState!.wish);
-                          BlocProvider.of<NavigationBloc>(context).handleBackPress();
-                        }
-                      },
-                    ),
-                    GestureDetector(
-                      child: const Padding(
-                        padding: EdgeInsets.all(10),
-                        child: Text("Удалить", style: TextStyle(color: AppColors.greytextColor),),                      ),
-                      onTap: (){
-                        appViewModel.deleteSphereWish(appVM.wishScreenState!.wish.id);
-                        BlocProvider.of<NavigationBloc>(context).handleBackPress();
-                      },
-                    )
-                  ],),
-                  Align(
-                      alignment: Alignment.centerRight,
-                      child: GestureDetector(
-                        child: const Text("Исполнено"),
-                        onTap: (){
-                          appVM.wishScreenState!.wish.isChecked=true;
-                          appViewModel.updateWishStatus(appVM.wishScreenState!.wish.id, true);
+                          showDialog(context: context,
+                            builder: (BuildContext context) => AlertDialog(
+                              title: const Text('сохранено'),
+                              actions: <Widget>[
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context, 'OK'),
+                                  child: const Text('OK'),
+                                ),
+                              ],
+                            ),
+                          );
                         },
-                      )
-                  ),
+                        child: const Text("Cохранить",
+                          style: TextStyle(color: AppColors.greytextColor),)
+                    ),
+                  ],),
                   const SizedBox(height: 5),
                   TextField(
                     controller: _title,
@@ -183,11 +227,11 @@ class _WishScreenState extends State<WishScreen>{
                   ),
                   const SizedBox(height: 10),
                   Align(
-                      alignment: Alignment.centerLeft,
+                      alignment: Alignment.center,
                       child:
                       GestureDetector(child:
                       Column(children: [
-                        const Text("Выбери цвет", style: TextStyle(color: Colors.black54, decoration: TextDecoration.underline),),
+                        const Text("Выбери цвет", style: TextStyle(color: Colors.black54),),
                         const SizedBox(height: 10),
                         Container(
                           width: 100.0, // Ширина круга
@@ -208,9 +252,9 @@ class _WishScreenState extends State<WishScreen>{
                         },
                       )),
                   Align(
-                    alignment: Alignment.centerLeft,
+                    alignment: Alignment.center,
                     child: Column(children: [
-                      const Text("Цели и задачи", style: TextStyle(color: Colors.black54, decoration: TextDecoration.underline),),
+                      const Text("Цели и задачи", style: TextStyle(color: Colors.black54),),
                       const SizedBox(height: 5),
                       ...appVM.wishScreenState?.wishAims.asMap()
                           .entries
@@ -290,12 +334,21 @@ class _WishScreenState extends State<WishScreen>{
                             }
                           },
                           child: const Text("Добавить", style: TextStyle(color: AppColors.greytextColor))
-                      )
+                      ),
                     ],),
-                  )
-                ],
+                  )                ],
               ),),
-          ))
+          )),
+                if(MediaQuery.of(context).viewInsets.bottom!=0) SizedBox(height: 30,
+                  child: FooterLayout(
+                    footer: Container(height: 30,color: Colors.white,alignment: Alignment.centerRight, child:
+                      GestureDetector(
+                        onTap: (){FocusManager.instance.primaryFocus?.unfocus();},
+                        child: const Text("готово", style: TextStyle(fontSize: 20),),
+                      )
+                      ,),
+                  ),)
+              ]))
     );});
   }
 }

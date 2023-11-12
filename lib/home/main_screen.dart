@@ -24,7 +24,6 @@ class _MainScreenState extends State<MainScreen>{
   Widget build(BuildContext context) {
     return Consumer<AppViewModel>(
         builder: (context, appVM, child){
-          print("ttttttttttt ${(MediaQuery.of(context).size.height-MediaQuery.of(context).size.width)*0.7}");
           return Scaffold(
               backgroundColor: AppColors.backgroundColor,
               body: SafeArea(child:Stack(

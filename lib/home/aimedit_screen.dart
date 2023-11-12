@@ -42,44 +42,83 @@ class AimEditScreen extends StatelessWidget {
                                 ),
                               ),
                             ),
-                            Align(
-                              alignment: Alignment.centerRight,
-                              child: GestureDetector(
-                                onTap: (){
-                                  appVM.updateAim(ai);
-                                },
-                                child: const Text(
-                                  "Сохранить",
-                                  style: TextStyle(color: AppColors.blueTextColor),
+                            ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.blueButtonBack,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(
+                                        10), // <-- Radius
+                                  ),
                                 ),
-                              )
+                                onPressed: () async {
+                                  appVM.updateAimStatus(aimId, true);
+                                  showDialog(context: context,
+                                    builder: (BuildContext context) => AlertDialog(
+                                      title: const Text('достигнута'),
+                                      actions: <Widget>[
+                                        TextButton(
+                                          onPressed: () { Navigator.pop(context, 'OK');},
+                                          child: const Text('OK'),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
+                                child: const Text("Достигнута")
+                            ),
+                            ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.blueButtonBack,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(
+                                        10), // <-- Radius
+                                  ),
+                                ),
+                                onPressed: () async {
+                                  appVM.deleteAim(aimId);
+                                  showDialog(context: context,
+                                    builder: (BuildContext context) => AlertDialog(
+                                      title: const Text('удаленa'),
+                                      actions: <Widget>[
+                                        TextButton(
+                                          onPressed: () { Navigator.pop(context, 'OK');
+                                          BlocProvider.of<NavigationBloc>(context).handleBackPress();},
+                                          child: const Text('OK'),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
+                                child: const Text("Удалить")
+                            ),
+                            ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.blueButtonBack,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(
+                                        10), // <-- Radius
+                                  ),
+                                ),
+                                onPressed: () async {
+                                  appVM.updateAim(ai);
+                                  showDialog(context: context,
+                                    builder: (BuildContext context) => AlertDialog(
+                                      title: const Text('сохраненa'),
+                                      actions: <Widget>[
+                                        TextButton(
+                                          onPressed: () => Navigator.pop(context, 'OK'),
+                                          child: const Text('OK'),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
+                                child: const Text("Cохранить",
+                                  style: TextStyle(color: AppColors.blueTextColor),)
                             ),
                           ],
                         ),
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: GestureDetector(
-                            onTap: (){
-                              appVM.deleteAim(aimId);
-                            },
-                            child: const Text(
-                              "Удалить",
-                              style: TextStyle(color: AppColors.greytextColor),
-                            ),
-                          )
-                        ),
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: GestureDetector(
-                            onTap: (){
-                              appVM.updateAimStatus(aimId, true);
-                            },
-                            child: const Text(
-                              "Достигнута",
-                              style: TextStyle(color: AppColors.pinkTextColor),
-                            ),
-                          )
-                        ),
+
                         const Divider(
                           height: 3,
                           color: AppColors.dividerGreyColor,

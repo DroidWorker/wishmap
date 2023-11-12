@@ -48,49 +48,81 @@ class TaskEditScreen extends StatelessWidget {
                                 ),
                               ),
                             ),
-                            Align(
-                              alignment: Alignment.centerRight,
-                              child: GestureDetector(
-                                onTap: (){
-                                  appVM.updateTask(ai);
-                                  BlocProvider.of<NavigationBloc>(context).clearHistory();
-                                  BlocProvider.of<NavigationBloc>(context)
-                                      .add(NavigateToMainScreenEvent());
-                                },
-                                child: const Padding(
-                                  padding: EdgeInsets.fromLTRB(0, 0, 5, 5),
-                                  child: Text("Сохранить", style: TextStyle(color: AppColors.blueTextColor),),
+                            ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.blueButtonBack,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(
+                                        10), // <-- Radius
+                                  ),
                                 ),
-                              )
+                                onPressed: () async {
+                                  appVM.updateTaskStatus(ai.id, true);
+                                  showDialog(context: context,
+                                    builder: (BuildContext context) => AlertDialog(
+                                      title: const Text('достигнута'),
+                                      actions: <Widget>[
+                                        TextButton(
+                                          onPressed: () { Navigator.pop(context, 'OK');},
+                                          child: const Text('OK'),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
+                                child: const Text("Достигнута")
+                            ),
+                            ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.blueButtonBack,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(
+                                        10), // <-- Radius
+                                  ),
+                                ),
+                                onPressed: () async {
+                                  appVM.deleteTask(ai.id);
+                                  showDialog(context: context,
+                                    builder: (BuildContext context) => AlertDialog(
+                                      title: const Text('удаленa'),
+                                      actions: <Widget>[
+                                        TextButton(
+                                          onPressed: () { Navigator.pop(context, 'OK');
+                                          BlocProvider.of<NavigationBloc>(context).handleBackPress();},
+                                          child: const Text('OK'),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
+                                child: const Text("Удалить")
+                            ),
+                            ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.blueButtonBack,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(
+                                        10), // <-- Radius
+                                  ),
+                                ),
+                                onPressed: () async {
+                                  appVM.updateTask(ai);
+                                  showDialog(context: context,
+                                    builder: (BuildContext context) => AlertDialog(
+                                      title: const Text('сохраненa'),
+                                      actions: <Widget>[
+                                        TextButton(
+                                          onPressed: () => Navigator.pop(context, 'OK'),
+                                          child: const Text('OK'),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
+                                child: const Text("Cохранить",
+                                  style: TextStyle(color: AppColors.blueTextColor),)
                             ),
                           ],
-                        ),
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: GestureDetector(
-                            onTap: () {
-                              appVM.deleteTask(ai.id);
-                              BlocProvider.of<NavigationBloc>(context).clearHistory();
-                              BlocProvider.of<NavigationBloc>(context)
-                                  .add(NavigateToMainScreenEvent());
-                            },
-                            child: const Padding(
-                              padding: EdgeInsets.all(5),
-                              child: Text("Удалить", style: TextStyle(color: AppColors.greytextColor),),
-                            ),
-                          )
-                        ),
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: GestureDetector(
-                            onTap: (){
-                              appVM.updateTaskStatus(ai.id, true);
-                            },
-                            child: const Padding(
-                              padding: EdgeInsets.all(5),
-                              child: Text("Достигнута", style: TextStyle(color: AppColors.pinkTextColor),),
-                            ),
-                          )
                         ),
                         const Divider(
                           height: 3,

@@ -37,11 +37,11 @@ class DiaryScreen extends StatefulWidget {
                                   Row(
                                     children: [
                                       IconButton(
-                                        icon: const Icon(Icons.menu),
+                                        icon: const Icon(Icons.keyboard_arrow_left),
                                         iconSize: 30,
                                         onPressed: () {
                                           BlocProvider.of<NavigationBloc>(context)
-                                              .add(NavigateToProfileScreenEvent());
+                                              .add(NavigateToMainScreenEvent());
                                         },
                                       ),
                                       const Spacer(),

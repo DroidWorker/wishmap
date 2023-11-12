@@ -39,27 +39,43 @@ class AimScreen extends StatelessWidget {
                     ),
                     Align(
                       alignment: Alignment.centerRight,
-                      child: GestureDetector(
-                        child: const Padding(
-                          padding: EdgeInsets.all(10),
-                          child: Text("Сохранить", style: TextStyle(color: AppColors.blueTextColor),),
-                        ),
-                        onTap: () async {
-                          int? aimId = await appViewModel.createAim(AimData(id: 999, parentId: parentCircleId, text: text.text, description: description.text), parentCircleId);
-                          if(aimId!=null) {
-                            BlocProvider.of<NavigationBloc>(context)
-                                .add(NavigateToAimEditScreenEvent(aimId));
-                          }else{
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Ошибка сохранения'),
-                                duration: Duration(
-                                    seconds: 3), // Установите желаемую продолжительность отображения
-                              ),
-                            );
-                          }
-                        },
-                      )
+                      child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.blueButtonBack,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(
+                                  10), // <-- Radius
+                            ),
+                          ),
+                          onPressed: () async {
+                            int? aimId = await appViewModel.createAim(AimData(id: 999, parentId: parentCircleId, text: text.text, description: description.text), parentCircleId);
+                            if(aimId!=null) {
+                              showDialog(context: context,
+                                builder: (BuildContext context) => AlertDialog(
+                                  title: const Text('сохранено'),
+                                  actions: <Widget>[
+                                    TextButton(
+                                      onPressed: () { Navigator.pop(context, 'OK');
+                                      BlocProvider.of<NavigationBloc>(context)
+                                          .add(NavigateToAimEditScreenEvent(aimId));},
+                                      child: const Text('OK'),
+                                    ),
+                                  ],
+                                ),
+                              );
+
+                            }else{
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Ошибка сохранения'),
+                                  duration: Duration(
+                                      seconds: 3), // Установите желаемую продолжительность отображения
+                                ),
+                              );
+                            }
+                          },
+                          child: const Text("Сохранить")
+                      ),
                     ),
                   ],
                 ),

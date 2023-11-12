@@ -122,6 +122,7 @@ class MyTreeTile extends StatelessWidget {
                 fit: BoxFit.contain,
                 child: Text(
                   entry.node.title,
+                  style: const TextStyle(decoration: TextDecoration.underline),
                 ),
               )
             ],
