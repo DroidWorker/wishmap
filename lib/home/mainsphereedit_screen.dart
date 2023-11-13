@@ -36,8 +36,6 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
         backgroundColor: AppColors.backgroundColor,
         body: SafeArea(
           maintainBottomViewPadding: true,
-          child: Padding(
-            padding: const EdgeInsets.all(15),
             child: Column(
               children: [
                 Row(children: [
@@ -50,12 +48,11 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
                     },
                   ),
                   const Spacer(),
-                  ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.blueButtonBack,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(
-                              10), // <-- Radius
+                  TextButton(
+                      style: TextButton.styleFrom(
+                        backgroundColor: AppColors.greyBackButton,
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(10)),
                         ),
                       ),
                       onPressed: () async {
@@ -63,7 +60,7 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
                         if(appViewModel.mainScreenState!=null)appViewModel.startMainScreen(appViewModel.mainScreenState!.moon);
                         showDialog(context: context,
                         builder: (BuildContext context) => AlertDialog(
-                          title: const Text('AlertDialog Title'),
+                          title: const Text('Сохранено'),
                           actions: <Widget>[
                             TextButton(
                               onPressed: () => Navigator.pop(context, 'OK'),
@@ -74,12 +71,13 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
                         );
                       },
                       child: const Text("Cохранить",
-                        style: TextStyle(color: AppColors.greytextColor),)
+                        style: TextStyle(color: AppColors.blueTextColor),)
                   ),
                 ],),
                 const SizedBox(height: 5),
-                SingleChildScrollView(child:
-                Column(children: [
+                Expanded(child: SingleChildScrollView(child:Padding(
+                    padding: const EdgeInsets.all(15),
+                child: Column(children: [
                 TextField(
                   controller: text,
                   style: const TextStyle(color: Colors.black), // Черный текст ввода
@@ -199,7 +197,7 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
                         child: const Text("Добавить", style: TextStyle(color: AppColors.greytextColor))
                     )
                   ],),
-                )])),
+                )]))),),
                 if(MediaQuery.of(context).viewInsets.bottom!=0) SizedBox(height: 30,
                   child: FooterLayout(
                     footer: Container(height: 30,color: Colors.white,alignment: Alignment.centerRight, child:
@@ -210,7 +208,7 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
                       ,),
                   ),)
               ],
-            ),),
+            ),
     ));
   }
 }

@@ -22,9 +22,10 @@ class CircleData{
   Color color;
   final int parenId;
   String affirmation;
+  bool isChecked;
   bool isActive;
 
-  CircleData({required this.id, required this.text, this.subText = "", required this.color, required this.parenId, this.affirmation="", this.isActive = true});
+  CircleData({required this.id, required this.text, this.subText = "", required this.color, required this.parenId, this.affirmation="", this.isChecked = false, this.isActive = true});
 }
 
 class Circle {
@@ -77,8 +78,8 @@ class TaskItem {
 class TaskData {
   final int id;
   final int parentId;
-  final String text;
-  final String description;
+  String text;
+  String description;
   bool isChecked = false;
 
   TaskData({required this.id, required this.parentId, required this.text, required this.description, this.isChecked=false});
@@ -118,8 +119,8 @@ class AimItem {
 class AimData {
   final int id;
   final int parentId;
-  final String text;
-  final String description;
+  String text;
+  String description;
   List<int> childTasks = [];
   bool isChecked = false;
 
@@ -137,16 +138,18 @@ class ProfileItem {
 }
 
 class MyTreeNode {
-  const MyTreeNode({
+  MyTreeNode({
     required this.id,
     required this.type,
     required this.title,
+    required this.isChecked,
     this.children = const <MyTreeNode>[],
   });
 
   final int  id;
   final String type;//m-maincircle w-wish a-aim t-task
   final String title;
+  bool isChecked;
   final List<MyTreeNode> children;
 }
 

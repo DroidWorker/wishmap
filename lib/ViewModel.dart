@@ -348,7 +348,7 @@ class AppViewModel with ChangeNotifier {
         throw Exception("#2365 lost datas");
       }
     }catch(ex){
-      addError(ex.toString());
+      addError("#764$ex");
     }
   }
   Future<void> updateAim(AimData ad) async{
@@ -368,7 +368,9 @@ class AppViewModel with ChangeNotifier {
   }
   Future<void> updateAimStatus(int aimId, bool status) async{
     try {
+      currentAim?.isChecked = status;
       await repository.changeAimStatus(aimId, mainScreenState?.moon.id??0, status);
+      notifyListeners();
     }catch(ex){
       addError(ex.toString());
     }
@@ -392,7 +394,7 @@ class AppViewModel with ChangeNotifier {
         throw Exception("#2366 lost datas");
       }
     }catch(ex){
-      addError(ex.toString());
+      addError("#2456$ex");
     }
   }
   Future<void> updateTask(TaskData ad) async{
@@ -412,7 +414,9 @@ class AppViewModel with ChangeNotifier {
   }
   Future<void> updateTaskStatus(int taskId, bool status) async{
     try {
+      currentTask?.isChecked = status;
       await repository.changeTaskStatus(taskId, mainScreenState?.moon.id??0, status);
+      notifyListeners();
     }catch(ex){
       addError(ex.toString());
     }
@@ -461,9 +465,9 @@ class AppViewModel with ChangeNotifier {
 
   List<MyTreeNode> convertToMyTreeNode(CircleData circle) {
     List<CircleData> allCircles = getParentTree(circle.parenId);
-    List<MyTreeNode> children = <MyTreeNode>[MyTreeNode(id: circle.id, type: "a", title: circle.text)];
+    List<MyTreeNode> children = <MyTreeNode>[MyTreeNode(id: circle.id, type: "a", title: circle.text, isChecked: circle.isChecked)];
     for (var element in allCircles) {
-      children=[MyTreeNode(id: element.id, type: element.id==0?"m":"w", title: element.text, children: children)];
+      children=[MyTreeNode(id: element.id, type: element.id==0?"m":"w", title: element.text, children: children, isChecked: element.isChecked)];
     }
     return children;
   }
@@ -472,7 +476,7 @@ class AppViewModel with ChangeNotifier {
     List<CircleData> allCircles = getParentTree(wishId);
     List<MyTreeNode> children = [childNodes];
     for (var element in allCircles) {
-      children=[MyTreeNode(id: element.id, type: element.id==0?"m":"w", title: element.text, children: children)];
+      children=[MyTreeNode(id: element.id, type: element.id==0?"m":"w", title: element.text, isChecked:  element.isChecked, children: children)];
     }
     return children;
   }

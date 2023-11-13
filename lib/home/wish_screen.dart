@@ -56,102 +56,102 @@ class _WishScreenState extends State<WishScreen>{
           backgroundColor: AppColors.backgroundColor,
           body: SafeArea(
               maintainBottomViewPadding: true,
-              child:Column(children:[Expanded(child:SingleChildScrollView(
+              child:Column(children:[
+                Row(children: [
+                  IconButton(
+                    icon: const Icon(Icons.keyboard_arrow_left),
+                    iconSize: 30,
+                    onPressed: () {
+                      BlocProvider.of<NavigationBloc>(context)
+                          .add(NavigateToMainScreenEvent());
+                    },
+                  ),
+                  const Expanded(child: SizedBox(),),
+                  TextButton(
+                      style: TextButton.styleFrom(
+                        backgroundColor: AppColors.greyBackButton,
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(10)),
+                        ),
+                      ),
+                      onPressed: () async {
+                        appVM.wishScreenState!.wish.isChecked=true;
+                        appViewModel.updateWishStatus(appVM.wishScreenState!.wish.id, true);
+                        showDialog(context: context,
+                          builder: (BuildContext context) => AlertDialog(
+                            title: const Text('исполнено'),
+                            actions: <Widget>[
+                              TextButton(
+                                onPressed: () { Navigator.pop(context, 'OK');},
+                                child: const Text('OK'),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                      child: const Text("Исполнено",style: TextStyle(color: Colors.black, fontSize: 12))
+                  ),
+                  const SizedBox(width: 3,),
+                  TextButton(
+                      style: TextButton.styleFrom(
+                        backgroundColor: AppColors.greyBackButton,
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(10)),
+                        ),
+                      ),
+                      onPressed: () async {
+                        appViewModel.deleteSphereWish(appVM.wishScreenState!.wish.id);
+                        showDialog(context: context,
+                          builder: (BuildContext context) => AlertDialog(
+                            title: const Text('удалено'),
+                            actions: <Widget>[
+                              TextButton(
+                                onPressed: () { Navigator.pop(context, 'OK');
+                                BlocProvider.of<NavigationBloc>(context).handleBackPress();},
+                                child: const Text('OK'),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                      child: const Text("Удалить",style: TextStyle(color: Colors.black, fontSize: 12))
+                  ),
+                  const SizedBox(width: 3,),
+                  TextButton(
+                      style: TextButton.styleFrom(
+                        backgroundColor: AppColors.greyBackButton,
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(10)),
+                        ),
+                      ),
+                      onPressed: () async {
+                        appVM.wishScreenState!.wish
+                          ..text=_title.text
+                          ..description=_description.text
+                          ..affirmation=_affirmation.text
+                          ..color = _color!;
+                        await appViewModel.createNewSphereWish(appVM.wishScreenState!.wish);
+                        showDialog(context: context,
+                          builder: (BuildContext context) => AlertDialog(
+                            title: const Text('сохранено'),
+                            actions: <Widget>[
+                              TextButton(
+                                onPressed: () => Navigator.pop(context, 'OK'),
+                                child: const Text('OK'),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                      child: const Text("Cохранить",
+                        style: TextStyle(color: AppColors.blueTextColor, fontSize: 12),)
+                  ),
+                ],),
+                Expanded(child:SingleChildScrollView(
             child: Padding(
               padding: const EdgeInsets.all(15),
               child: Column(
                 children: [
-                  Row(children: [
-                    IconButton(
-                      icon: const Icon(Icons.keyboard_arrow_left),
-                      iconSize: 30,
-                      onPressed: () {
-                        BlocProvider.of<NavigationBloc>(context)
-                            .add(NavigateToMainScreenEvent());
-                      },
-                    ),
-                    const Expanded(child: SizedBox(),),
-                    ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.blueButtonBack,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(
-                                10), // <-- Radius
-                          ),
-                        ),
-                        onPressed: () async {
-                          appVM.wishScreenState!.wish.isChecked=true;
-                          appViewModel.updateWishStatus(appVM.wishScreenState!.wish.id, true);
-                          showDialog(context: context,
-                            builder: (BuildContext context) => AlertDialog(
-                              title: const Text('исполнено'),
-                              actions: <Widget>[
-                                TextButton(
-                                  onPressed: () { Navigator.pop(context, 'OK');},
-                                  child: const Text('OK'),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                        child: const Text("Исполнено")
-                    ),
-                    ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.blueButtonBack,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(
-                                10), // <-- Radius
-                          ),
-                        ),
-                        onPressed: () async {
-                          appViewModel.deleteSphereWish(appVM.wishScreenState!.wish.id);
-                          showDialog(context: context,
-                            builder: (BuildContext context) => AlertDialog(
-                              title: const Text('удалено'),
-                              actions: <Widget>[
-                                TextButton(
-                                  onPressed: () { Navigator.pop(context, 'OK');
-                                  BlocProvider.of<NavigationBloc>(context).handleBackPress();},
-                                  child: const Text('OK'),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                        child: const Text("Удалить")
-                    ),
-                    ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.blueButtonBack,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(
-                                10), // <-- Radius
-                          ),
-                        ),
-                        onPressed: () async {
-                          appVM.wishScreenState!.wish
-                            ..text=_title.text
-                            ..description=_description.text
-                            ..affirmation=_affirmation.text
-                            ..color = _color!;
-                          await appViewModel.createNewSphereWish(appVM.wishScreenState!.wish);
-                          showDialog(context: context,
-                            builder: (BuildContext context) => AlertDialog(
-                              title: const Text('сохранено'),
-                              actions: <Widget>[
-                                TextButton(
-                                  onPressed: () => Navigator.pop(context, 'OK'),
-                                  child: const Text('OK'),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                        child: const Text("Cохранить",
-                          style: TextStyle(color: AppColors.greytextColor),)
-                    ),
-                  ],),
                   const SizedBox(height: 5),
                   TextField(
                     controller: _title,

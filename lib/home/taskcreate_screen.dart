@@ -1,24 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:keyboard_attachable/keyboard_attachable.dart';
 import 'package:provider/provider.dart';
 import '../ViewModel.dart';
 import '../data/models.dart';
 import '../navigation/navigation_block.dart';
 import '../res/colors.dart';
 
-class TaskScreen extends StatelessWidget {
+class TaskScreen extends StatefulWidget {
   int parentAimId = 0;
-  TaskScreen({super.key, required this.parentAimId});
 
+  TaskScreen({super.key, required this.parentAimId});
+  @override
+  TaskScreenState createState() => TaskScreenState();
+}
+
+class TaskScreenState extends State<TaskScreen>{
+  final TextEditingController text = TextEditingController();
+  final TextEditingController description = TextEditingController();
   @override
   Widget build(BuildContext context) {
     final appViewModel = Provider.of<AppViewModel>(context);
-    final TextEditingController text = TextEditingController();
-    final TextEditingController description = TextEditingController();
 
     return Scaffold(
         backgroundColor: AppColors.backgroundColor,
-        body: SafeArea(child:SingleChildScrollView(
+        body: SafeArea(
+            maintainBottomViewPadding: true,
+            child:Column(children:[Expanded(child:SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(15),
             child: Column(
@@ -27,28 +35,40 @@ class TaskScreen extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Expanded(
-                      child: Align(
-                        alignment: Alignment.center,
-                        child: Text(
-                          "Задача",
-                          textAlign: TextAlign.center,
-                          style: TextStyle(color: AppColors.greytextColor),
-                        ),
-                      ),
+                    IconButton(
+                      icon: const Icon(Icons.keyboard_arrow_left),
+                      iconSize: 30,
+                      onPressed: () {
+                        BlocProvider.of<NavigationBloc>(context)
+                            .handleBackPress();
+                      },
                     ),
+                    const Spacer(),
                     Align(
                       alignment: Alignment.centerRight,
-                      child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.blueButtonBack,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(
-                                  10), // <-- Radius
+                      child: TextButton(
+                          style: TextButton.styleFrom(
+                            backgroundColor: AppColors.greyBackButton,
+                            shape: const RoundedRectangleBorder(
+                              borderRadius: BorderRadius.all(Radius.circular(10)),
                             ),
                           ),
                           onPressed: () async {
-                            int? taskId = await appViewModel.createTask(TaskData(id: 999, parentId: parentAimId, text: text.text, description: description.text), parentAimId);
+                            if(text.text.isEmpty||description.text.isEmpty){
+                              showDialog(context: context,
+                                builder: (BuildContext context) => AlertDialog(
+                                  title: const Text('Заполните поля', textAlign: TextAlign.center,),
+                                  actions: <Widget>[
+                                    TextButton(
+                                      onPressed: () { Navigator.pop(context, 'OK');},
+                                      child: const Text('OK'),
+                                    ),
+                                  ],
+                                ),
+                              );
+                              return;
+                            }
+                            int? taskId = await appViewModel.createTask(TaskData(id: 999, parentId: widget.parentAimId, text: text.text, description: description.text), widget.parentAimId);
                             if(taskId!=null) {
                               showDialog(context: context,
                                 builder: (BuildContext context) => AlertDialog(
@@ -56,6 +76,7 @@ class TaskScreen extends StatelessWidget {
                                   actions: <Widget>[
                                     TextButton(
                                       onPressed: () { Navigator.pop(context, 'OK');
+                                      BlocProvider.of<NavigationBloc>(context).removeLastFromBS();
                                       BlocProvider.of<NavigationBloc>(context)
                                           .add(NavigateToTaskEditScreenEvent(taskId));},
                                       child: const Text('OK'),
@@ -74,7 +95,7 @@ class TaskScreen extends StatelessWidget {
                               );
                             }
                           },
-                          child: const Text("Сохранить")
+                          child: const Text("Сохранить задачу", style: TextStyle(color: AppColors.blueButtonTextColor),)
                       ),
                     ),
                   ],
@@ -113,7 +134,16 @@ class TaskScreen extends StatelessWidget {
                 ),
                 ],
             ),),
-        ))
+        )),
+              if(MediaQuery.of(context).viewInsets.bottom!=0) SizedBox(height: 30,
+                child: FooterLayout(
+                  footer: Container(height: 30,color: Colors.white,alignment: Alignment.centerRight, child:
+                  GestureDetector(
+                    onTap: (){FocusManager.instance.primaryFocus?.unfocus();},
+                    child: const Text("готово", style: TextStyle(fontSize: 20),),
+                  )
+                    ,),
+                ),)]))
     );
   }
 }

@@ -8,6 +8,7 @@ class AppColors {
   static const Color blueTextColor = Color(0xFF46C8FF);
   static const Color dividerGreyColor = Color(0xFF3E3E3E);
   static const Color pinkTextColor = Color(0XFFFF006B);
-  static const Color blueButtonBack = Color(0X99000099);
-
+  static const Color blueButtonBack = Color(0x7C3CB4FF);
+  static const Color greyBackButton = Color(0xFFD9D9D9);
+  static const Color blueButtonTextColor = Color(0xFF46C8FF);
 }

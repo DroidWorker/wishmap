@@ -158,6 +158,7 @@ class Repository{
             subText: dataList['subText'] ?? "",
             color: Color(int.parse(dataList['color'].toString())),
             parenId: int.parse(dataList['parentId'].toString()),
+            isChecked: dataList['isChecked']??false,
             isActive: dataList["isActive"]??true
           );
           circleDataList.add(circleData);
@@ -414,6 +415,7 @@ class Repository{
       Map<String, dynamic> dataMap = {
         'id': index,
         'text': td.text,
+        'parentId': parentAimId,
         'subText': td.description,
         'isChecked': false
       };

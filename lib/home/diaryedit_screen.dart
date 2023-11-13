@@ -49,9 +49,9 @@ class DiaryEditScreenState extends State<DiaryEditScreen>{
           return Scaffold(
             backgroundColor: AppColors.backgroundColor,
             body: SafeArea(maintainBottomViewPadding: true,
-                child:
-            Padding(
-              padding: EdgeInsets.all(5),
+                child:Column(children:[
+            Expanded(child:Padding(
+              padding: const EdgeInsets.all(5),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -127,6 +127,10 @@ class DiaryEditScreenState extends State<DiaryEditScreen>{
                       hintText: currentTitle,
                     ),
                   ),
+
+                ],
+              ),
+            )),
                   if(MediaQuery.of(context).viewInsets.bottom!=0) SizedBox(height: 30,
                     child: FooterLayout(
                       footer: Container(height: 30,color: Colors.white,alignment: Alignment.centerRight, child:
@@ -135,10 +139,7 @@ class DiaryEditScreenState extends State<DiaryEditScreen>{
                         child: const Text("готово", style: TextStyle(fontSize: 20),),
                       )
                         ,),
-                    ),)
-                ],
-              ),
-            )
+                    ),)])
             ),
           );
     });

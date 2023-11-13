@@ -197,7 +197,7 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
         if(widget.circles.length>8&&widget.circles.length<=16){
           for(int i = 0; i < widget.circles.length; i++){
             if (circleRotations[i]%(2*pi) >= pi && circleRotations[i]%(2*pi) <= 2*pi){widget.circles[i].radius=diametr-(diametr/2*(cos(circleRotations[i]))).toInt().abs();}
-            else{widget.circles[i].radius=(widget.size*0.10).toInt();}
+            else{widget.circles[i].radius=(widget.size*0.15).toInt();}
           }
         }else if(widget.circles.length>16){
           for(int i = 0; i < widget.circles.length; i++){
@@ -398,10 +398,10 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
     });
     if(newHash!= circlesHash) {
       var diametr = (widget.size*0.2).toInt();
-      if(widget.circles.length>8&&widget.circles.length<=16){
+      if(widget.circles.length>8&&widget.circles.length<=16&&circleRotations.length==widget.circles.length){
         for(int i = 0; i < widget.circles.length; i++){
-          if (circleRotations[i]%(2*pi) >= pi && circleRotations[i]%(2*pi) <= 2*pi){widget.circles[i].radius=diametr-(diametr/2*(cos(circleRotations[i]))).toInt().abs();}
-          else{widget.circles[i].radius=(widget.size*0.10).toInt();}
+          //if (circleRotations[i]%(2*pi) >= pi && circleRotations[i]%(2*pi) <= 2*pi){widget.circles[i].radius=diametr-(diametr/3.7*(cos(circleRotations[i]))).toInt().abs();}
+          /*else{*/widget.circles[i].radius=(widget.size*0.15).toInt();//}
         }
       }else if(widget.circles.length>16){
         for(int i = 0; i < widget.circles.length; i++){
@@ -422,8 +422,8 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
         circleRotations.add(2 * pi * i / widget.circles.length);
         plusesRotations.add((2 * pi * i / widget.circles.length) + angleBetween / 2);
         if(widget.circles.length>8&&widget.circles.length<=16){
-            if (circleRotations[i]%(2*pi) >= pi && circleRotations[i]%(2*pi) <= 2*pi){widget.circles[i].radius=diametr-(diametr/2*(cos(circleRotations[i]))).toInt().abs();}
-            else{widget.circles[i].radius=(widget.size*0.10).toInt();}
+          //if (circleRotations[i]%(2*pi) >= pi && circleRotations[i]%(2*pi) <= 2*pi){widget.circles[i].radius=diametr-(diametr/3.7*(cos(circleRotations[i]))).toInt().abs();}
+          /*else{*/widget.circles[i].radius=(widget.size*0.15).toInt();//}
         }else if(widget.circles.length>16){
             if (circleRotations[i]%(2*pi) >= pi && circleRotations[i]%(2*pi) <= 2*pi){widget.circles[i].radius=diametr-(diametr/2*(cos(circleRotations[i]))).toInt().abs();}
             else{widget.circles[i].radius=(widget.size*0.07).toInt();}
@@ -661,7 +661,7 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
                             movingController.forward();
                           } else if (widget.centralCircles[index].id == 0) {
                             BlocProvider.of<NavigationBloc>(context)
-                                .add(NavigateToSpheresOfLifeScreenEvent());
+                                .add(NavigateToMainSphereEditScreenEvent());
                           } else {
                             appViewModel.wishScreenState=null;
                             appViewModel.startWishScreen(widget.centralCircles[index].id, 0);
@@ -708,8 +708,8 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
     var diametr = (widget.size*0.2).toInt();
     if(widget.circles.length>8&&widget.circles.length<=16){
       for(int i = 0; i < widget.circles.length; i++){
-        if (circleRotations[i]%(2*pi) >= pi && circleRotations[i]%(2*pi) <= 2*pi){widget.circles[i].radius=diametr-(diametr/2*(cos(circleRotations[i]))).toInt().abs();}
-        else{widget.circles[i].radius=(widget.size*0.10).toInt();}
+        //if (circleRotations[i]%(2*pi) >= pi && circleRotations[i]%(2*pi) <= 2*pi){widget.circles[i].radius=diametr-(diametr/3.7*(cos(circleRotations[i]))).toInt().abs();}
+        /*else{*/widget.circles[i].radius=(widget.size*0.15).toInt();//}
       }
     }else if(widget.circles.length>16){
       for(int i = 0; i < widget.circles.length; i++){

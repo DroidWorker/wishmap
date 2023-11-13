@@ -96,6 +96,7 @@ class MyTreeTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print("creeeeeeeeeeeeeee${entry.node.isChecked}");
     return InkWell(
       onTap: onTap,
       // Wrap your content in a TreeIndentation widget which will properly
@@ -124,7 +125,21 @@ class MyTreeTile extends StatelessWidget {
                   entry.node.title,
                   style: const TextStyle(decoration: TextDecoration.underline),
                 ),
-              )
+              ),
+              const Spacer(),
+              entry.node.type == "w"&&entry.node.id>8
+                  ? (entry.node.isChecked
+                  ? Image.asset('assets/icons/love5110868fill.png', width: 20, height: 20,)
+                  : Image.asset('assets/icons/love5110868.png', width: 20, height: 20))
+                  : (entry.node.type == "a"
+                  ? (entry.node.isChecked
+                  ? Image.asset('assets/icons/target1914412.png', width: 20, height: 30)
+                  : Image.asset('assets/icons/nountarget423422.png', width: 20, height: 30))
+                  : (entry.node.type == "t"
+                  ? (entry.node.isChecked
+                  ? const Icon(Icons.check_circle_outline, size: 20)
+                  : const Icon(Icons.circle_outlined, size: 20))
+                  : Container())),
             ],
           ),
         ),
