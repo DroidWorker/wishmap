@@ -660,6 +660,7 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
                             movingController.reset();
                             movingController.forward();
                           } else if (widget.centralCircles[index].id == 0) {
+                            appViewModel.cachedImages.clear();
                             BlocProvider.of<NavigationBloc>(context)
                                 .add(NavigateToMainSphereEditScreenEvent());
                           } else {

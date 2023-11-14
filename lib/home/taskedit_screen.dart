@@ -191,6 +191,7 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                           child: MyTreeView(key: UniqueKey(),roots: roots, onTap: (id,type){
                             if(type=="m"){
                               BlocProvider.of<NavigationBloc>(context).clearHistory();
+                              appVM.cachedImages.clear();
                               BlocProvider.of<NavigationBloc>(context)
                                   .add(NavigateToMainSphereEditScreenEvent());
                             }else if(type=="w"){

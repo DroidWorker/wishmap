@@ -107,6 +107,7 @@ class _WishScreenState extends State<WishScreen>{
                             actions: <Widget>[
                               TextButton(
                                 onPressed: () { Navigator.pop(context, 'OK');
+                                  appViewModel.startMainScreen(appVM.mainScreenState!.moon);
                                 BlocProvider.of<NavigationBloc>(context).handleBackPress();},
                                 child: const Text('OK'),
                               ),
@@ -185,12 +186,18 @@ class _WishScreenState extends State<WishScreen>{
                       double rightWidth = constraints.maxWidth - leftWidth - 2;
                       return Row(
                         children: [
-                          Container(width: leftWidth, height: leftWidth, color: AppColors.fieldFillColor),
+                          Container(width: leftWidth, height: leftWidth, color: AppColors.fieldFillColor,
+                            child: appViewModel.cachedImages.isNotEmpty?Image.memory(appViewModel.cachedImages.first, fit: BoxFit.cover):Container(),
+                          ),
                           const SizedBox(width: 2),
                           Column(children: [
-                            Container(width: rightWidth, height: leftWidth/2-2, color: AppColors.fieldFillColor),
+                            Container(width: rightWidth, height: leftWidth/2-2, color: AppColors.fieldFillColor,
+                              child: appViewModel.cachedImages.length>1?Image.memory(appViewModel.cachedImages[1], fit: BoxFit.cover):Container(),
+                            ),
                             const SizedBox(height: 2),
-                            Container(width: rightWidth, height: leftWidth/2-1, color: AppColors.fieldFillColor),
+                            Container(width: rightWidth, height: leftWidth/2-1, color: AppColors.fieldFillColor,
+                              child: appViewModel.cachedImages.length>2?Image.memory(appViewModel.cachedImages[2], fit: BoxFit.cover):Container(),
+                            ),
                           ],)
                         ],
                       );
@@ -204,7 +211,10 @@ class _WishScreenState extends State<WishScreen>{
                           borderRadius: BorderRadius.circular(10), // <-- Radius
                         ),
                       ),
-                      onPressed: (){},
+                      onPressed: (){
+                        BlocProvider.of<NavigationBloc>(context)
+                            .add(NavigateToGalleryScreenEvent());
+                      },
                       child: const Text("Добавить", style: TextStyle(color: AppColors.greytextColor),)
                   ),
                   const SizedBox(height: 10),

@@ -45,7 +45,8 @@ class _AuthScreen_State extends State<AuthScreen> {
                     isAuth?'Авторизация':'Регистрация',
                     style: TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold),
                   ),
-                  Form(
+                  SingleChildScrollView(
+                      child: Form(
                     key: _formKey,
                     child: Column(children: [
                       if(!isAuth) ...[TextFormField(
@@ -223,7 +224,7 @@ class _AuthScreen_State extends State<AuthScreen> {
                           )),
                       const SizedBox(height: 10.0),
                       const Text('Восстановить пароль')
-                    ],),),
+                    ],),)),
                   const SizedBox(height: 10.0)
                 ],
               );

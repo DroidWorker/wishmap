@@ -9,6 +9,7 @@ import 'package:wishmap/home/aimedit_screen.dart';
 import 'package:wishmap/home/cards_screen.dart';
 import 'package:wishmap/home/diary_screen.dart';
 import 'package:wishmap/home/diaryedit_screen.dart';
+import 'package:wishmap/home/gaery_screen.dart';
 import 'package:wishmap/home/mainsphereedit_screen.dart';
 import 'package:wishmap/home/mytasks_screen.dart';
 import 'package:wishmap/home/taskcreate_screen.dart';
@@ -107,6 +108,8 @@ class MyApp extends StatelessWidget {
       return DiaryScreen();
     } else if (state is NavigationDiaryEditScreenState) {
       return DiaryEditScreen(diaryId: state.id);
+    } else if (state is NavigationGalleryScreenState) {
+      return const GalleryScreen();
     } else {
       return Container(); // По умолчанию или для других состояний.
     }

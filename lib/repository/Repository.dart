@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:typed_data';
 import 'dart:ui';
 
 import 'package:firebase_core/firebase_core.dart';
@@ -92,6 +94,37 @@ class Repository{
     }
   }
 
+  Future<int?> getLastImageId() async{
+    if(_auth.currentUser!=null){
+      DataSnapshot snapshot = (await userRef.child(_auth.currentUser!.uid).child("images").once()).snapshot;
+      if(snapshot.children.isNotEmpty){
+        return int.parse(snapshot.children.last.key!);
+      }else {
+        return 0;
+      }
+    }
+    return null;
+  }
+
+  Future<Uint8List?> getImage(int id) async{
+    if(_auth.currentUser!=null){
+      DataSnapshot snapshot = (await userRef.child(_auth.currentUser!.uid).child("images").child(id.toString()).once()).snapshot;
+      if(snapshot.value!=null){
+        return base64Decode(snapshot.value.toString());
+      }
+    }
+    return null;
+  }
+
+  Future addImage(int id, Uint8List image) async{
+    if(_auth.currentUser!=null){
+      String encodedImage = base64Encode(image);
+      userRef.child(_auth.currentUser!.uid).child("images").child(id.toString()).set(
+          encodedImage
+      );
+    }
+  }
+
   Future<List<MoonItem>?> getMoonList() async {
     if (_auth.currentUser != null) {
       DataSnapshot snapshot = (await userRef.child(_auth.currentUser!.uid).child("moonlist").once()).snapshot;
@@ -158,6 +191,7 @@ class Repository{
             subText: dataList['subText'] ?? "",
             color: Color(int.parse(dataList['color'].toString())),
             parenId: int.parse(dataList['parentId'].toString()),
+            photosIds: dataList['photosIds']??"",
             isChecked: dataList['isChecked']??false,
             isActive: dataList["isActive"]??true
           );
@@ -305,6 +339,12 @@ class Repository{
 
   Future createSphereWish(WishData wd, int currentMoonId) async {
     if(_auth.currentUser!=null){
+      String photosId = "";
+      wd.photos.forEach((key, value) {
+        if(photosId.isNotEmpty)photosId+="|";
+        photosId+="$key";
+        addImage(key, value);
+      });
       // Преобразуем каждый объект в Map
         Map<String, dynamic> dataMap = {
           'id': wd.id,
@@ -313,6 +353,7 @@ class Repository{
           'childAims': wd.childAims,
           'color': wd.color.value, // Сохраняем цвет как строку
           'parentId': wd.parentId,
+          'photosIds': photosId,
           'affirmation': wd.affirmation,
           'isActive': true
         };

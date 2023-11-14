@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 
 class AuthData {
@@ -22,10 +24,11 @@ class CircleData{
   Color color;
   final int parenId;
   String affirmation;
+  String photosIds = "";
   bool isChecked;
   bool isActive;
 
-  CircleData({required this.id, required this.text, this.subText = "", required this.color, required this.parenId, this.affirmation="", this.isChecked = false, this.isActive = true});
+  CircleData({required this.id, required this.text, this.subText = "", required this.color, required this.parenId, this.affirmation="", this.photosIds="", this.isChecked = false, this.isActive = true});
 }
 
 class Circle {
@@ -103,6 +106,7 @@ class WishData {
   String affirmation;
   Color color;
   Map<String, int> childAims = {};
+  Map<int, Uint8List> photos = {};
   bool isChecked = false;
 
   WishData({required this.id, required this.parentId, required this.text, required this.description, required this.affirmation, required this.color});

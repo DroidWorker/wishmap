@@ -79,7 +79,7 @@ class _MainScreenState extends State<MainScreen>{
                           },
                         )
                         ),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 35),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [

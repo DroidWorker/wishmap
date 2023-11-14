@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:wishmap/repository/Repository.dart';
@@ -38,6 +40,10 @@ class AppViewModel with ChangeNotifier {
   //
   AimData? currentAim;
   TaskData? currentTask;
+
+  //images
+  List<Uint8List> cachedImages = [];
+  int lastImageId = -1;
 
   //diaryScreen
   List<CardData> diaryItems = [
@@ -130,9 +136,19 @@ class AppViewModel with ChangeNotifier {
         }
       }
       notifyListeners();
+      lastImageId = await repository.getLastImageId()??-1;
     }catch(ex){
       addError(ex.toString());
     }
+  }
+
+  Future getImages(List<int> ids) async {
+    cachedImages.clear();
+    for (var element in ids) {
+      final photo = await repository.getImage(element);
+      if(photo!=null)cachedImages.add(photo);
+    }
+    notifyListeners();
   }
 
   bool isDateAfter(DateTime firstDate, String secondDate){
@@ -309,6 +325,12 @@ class AppViewModel with ChangeNotifier {
   }
   Future<void> updateSphereWish(WishData wd) async{
     try {
+      Map<int, Uint8List> photos = {};
+      for (var element in cachedImages) {
+        lastImageId++;
+        photos[lastImageId]=element;
+      }
+      wd.photos = photos;
       await repository.createSphereWish(wd, mainScreenState?.moon.id??0);
       mainScreenState!.allCircles[mainScreenState!.allCircles.indexWhere((element) => element.id==wd.id)] = CircleData(id: wd.id, text: wd.text, color: wd.color, parenId: wd.parentId, affirmation: wd.affirmation, subText: wd.description);
     }catch(ex){

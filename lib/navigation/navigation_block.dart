@@ -53,6 +53,9 @@ class NavigateToDiaryEditScreenEvent extends NavigationEvent {
   NavigateToDiaryEditScreenEvent(this.id);
 }
 
+class NavigateToGalleryScreenEvent extends NavigationEvent {}
+
+
 abstract class NavigationState {}
 
 class NavigationAuthScreenState extends NavigationState {}
@@ -101,6 +104,9 @@ class NavigationDiaryEditScreenState extends NavigationState {
   int id = 0;
   NavigationDiaryEditScreenState(this.id);
 }
+
+class NavigationGalleryScreenState extends NavigationState {}
+
 
 class NavigationBloc extends Bloc<NavigationEvent, NavigationState> {
   NavigationBloc() : super(NavigationMainScreenState());
@@ -185,7 +191,9 @@ class NavigationBloc extends Bloc<NavigationEvent, NavigationState> {
     } else if (event is NavigateToDiaryScreenEvent) {
       _navigationHistory.add(NavigationDiaryScreenState());
     } else if (event is NavigateToDiaryEditScreenEvent) {
-      _navigationHistory.add(NavigationDiaryEditScreenState(event.id)); }
+      _navigationHistory.add(NavigationDiaryEditScreenState(event.id));
+    } else if (event is NavigateToGalleryScreenEvent) {
+      _navigationHistory.add(NavigationGalleryScreenState()); }
     else if(event is NavigateBackEvent) {
       yield _navigationHistory.last;
     }

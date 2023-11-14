@@ -48,6 +48,10 @@ dependencies:
   page_view_dot_indicator: ^2.3.0
   emoji_choose: ^0.0.4
   keyboard_attachable: ^2.2.0
+  photo_manager: ^2.8.1
+  permission_handler: ^11.0.1
+  device_info_plus: ^9.1.0
+  flutter_image_compress: ^2.1.0
 
 
 dev_dependencies:
