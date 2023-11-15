@@ -17,7 +17,7 @@ class AimsScreen extends StatefulWidget {
 class _AimsScreenState extends State<AimsScreen>{
   bool page = false;//false - Исполнено true - Все желания
   late List<AimItem> allAims;
-  late List<AimItem> filteredAimList;
+  List<AimItem> filteredAimList = [];
 
   late AppViewModel appViewModel;
 
@@ -27,7 +27,7 @@ class _AimsScreenState extends State<AimsScreen>{
     return Consumer<AppViewModel>(
         builder: (context, appVM, child) {
           allAims = appVM.aimItems;
-          filteredAimList = appVM.aimItems;
+          if(filteredAimList.isEmpty)filteredAimList = appVM.aimItems;
           return Scaffold(
             backgroundColor: AppColors.backgroundColor,
             body: SafeArea(child: Padding(
@@ -195,10 +195,10 @@ class _AimsScreenState extends State<AimsScreen>{
   }
 
   filterAims(bool isAll){
-    //setState(() {
+    setState(() {
       !isAll?filteredAimList = allAims.where((element) => element.isChecked).toList():
         filteredAimList = allAims;
-    //});
+    });
   }
   onItemSelect(int id) async {
     await appViewModel.getAim(id);

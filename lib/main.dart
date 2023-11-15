@@ -15,6 +15,7 @@ import 'package:wishmap/home/mytasks_screen.dart';
 import 'package:wishmap/home/taskcreate_screen.dart';
 import 'package:wishmap/home/wish_screen.dart';
 import 'ViewModel.dart';
+import 'common/error_widget.dart';
 import 'firebase_options.dart';
 import 'home/myaims_screen.dart';
 import 'home/mywishesScreen.dart';
@@ -51,6 +52,12 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
           return MaterialApp(
             title: 'wishMap',
+              builder: (BuildContext context, Widget? widget) {
+                ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
+                  return CustomError(errorDetails: errorDetails);
+                };
+                return widget!;
+              },
             home: BlocBuilder<NavigationBloc, NavigationState>(
               builder: (context, state)
           {

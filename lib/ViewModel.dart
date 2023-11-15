@@ -309,6 +309,12 @@ class AppViewModel with ChangeNotifier {
 
   Future<void> createNewSphereWish(WishData wd) async{
     try {
+      Map<int, Uint8List> photos = {};
+      for (var element in cachedImages) {
+        lastImageId++;
+        photos[lastImageId]=element;
+      }
+      wd.photos = photos;
       await repository.createSphereWish(wd, mainScreenState?.moon.id??0);
       var sphereInAllCircles= mainScreenState!.allCircles.indexWhere((element) => element.id==wd.id);
       if(sphereInAllCircles==-1){mainScreenState!.allCircles.add(CircleData(id: wd.id, text: wd.text, color: wd.color, parenId: wd.parentId));}

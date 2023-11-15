@@ -10,12 +10,12 @@ import '../res/colors.dart';
 class AimScreen extends StatelessWidget {
   int parentCircleId = 0;
   AimScreen({super.key, required this.parentCircleId});
+  final TextEditingController text = TextEditingController();
+  final TextEditingController description = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     final appViewModel = Provider.of<AppViewModel>(context);
-    final TextEditingController text = TextEditingController();
-    final TextEditingController description = TextEditingController();
 
     return Scaffold(
         backgroundColor: AppColors.backgroundColor,

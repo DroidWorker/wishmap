@@ -50,6 +50,18 @@ class _WishScreenState extends State<WishScreen>{
             _color = appVM.wishScreenState!.wish.color;
             isDataLoaded = true;
             appViewModel.getAimsForCircles(appVM.wishScreenState!.wish.id);
+            if(appVM.wishScreenState!.wish.photoIds.isNotEmpty){
+              final ids = appVM.wishScreenState!.wish.photoIds.split("|");
+              if(ids.isNotEmpty) {
+                List<int> intList = ids
+                    .where((str) => str != null)
+                    .map((str) => int.tryParse(str!))
+                    .where((value) => value != null)
+                    .cast<int>()
+                    .toList();
+                if (intList.isNotEmpty) appViewModel.getImages(intList);
+              }
+            }
           }
 
           return Scaffold(
@@ -107,7 +119,9 @@ class _WishScreenState extends State<WishScreen>{
                             actions: <Widget>[
                               TextButton(
                                 onPressed: () { Navigator.pop(context, 'OK');
-                                  appViewModel.startMainScreen(appVM.mainScreenState!.moon);
+                                  var moon = appVM.mainScreenState!.moon;
+                                  appViewModel.mainScreenState = null;
+                                  appViewModel.startMainScreen(moon);
                                 BlocProvider.of<NavigationBloc>(context).handleBackPress();},
                                 child: const Text('OK'),
                               ),

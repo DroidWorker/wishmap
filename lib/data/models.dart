@@ -103,13 +103,14 @@ class WishData {
   String text;
   String description;
   List<int> photolist = [];
+  String photoIds = "";
   String affirmation;
   Color color;
   Map<String, int> childAims = {};
   Map<int, Uint8List> photos = {};
   bool isChecked = false;
 
-  WishData({required this.id, required this.parentId, required this.text, required this.description, required this.affirmation, required this.color});
+  WishData({required this.id, required this.parentId, required this.text, required this.description, this.photoIds = "", required this.affirmation, required this.color});
 }
 
 class AimItem {

@@ -328,6 +328,7 @@ class Repository{
             description: dataList['subText'] ?? "",
             color: Color(int.parse(dataList['color'].toString())),
             parentId: int.parse(dataList['parentId'].toString()),
+            photoIds: dataList['photosIds'].toString()??"",
             affirmation: dataList['affirmation'] ?? '',
           );
           wd.childAims = childAims;
@@ -341,6 +342,7 @@ class Repository{
     if(_auth.currentUser!=null){
       String photosId = "";
       wd.photos.forEach((key, value) {
+        print("mmmmmmmmmmm${key}");
         if(photosId.isNotEmpty)photosId+="|";
         photosId+="$key";
         addImage(key, value);

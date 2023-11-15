@@ -664,8 +664,10 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
                             BlocProvider.of<NavigationBloc>(context)
                                 .add(NavigateToMainSphereEditScreenEvent());
                           } else {
+                            appViewModel.cachedImages.clear();
                             appViewModel.wishScreenState=null;
                             appViewModel.startWishScreen(widget.centralCircles[index].id, 0);
+                            appViewModel.mainCircles = widget.centralCircles;
                             BlocProvider.of<NavigationBloc>(context)
                                 .add(NavigateToWishScreenEvent());
                           }

@@ -1,7 +1,10 @@
 
+import 'dart:typed_data';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
 import '../ViewModel.dart';
@@ -81,8 +84,13 @@ class GalleryScreenState extends State<GalleryScreen>{
                 BlocProvider.of<NavigationBloc>(context).handleBackPress();
               })): Center(
                 child: GestureDetector(
-                  onTap: (){
+                  onTap: () async {
+                    Uint8List? imageBytes = await getImageFromCamera();
 
+                    if (imageBytes != null) {
+                      appViewModel.cachedImages.add(imageBytes);
+                      BlocProvider.of<NavigationBloc>(context).handleBackPress();
+                    }
                   },
                   child: const Icon(Icons.photo_camera, size: 90, color: Colors.black,),
                 )
@@ -91,5 +99,27 @@ class GalleryScreenState extends State<GalleryScreen>{
           ),
       ),
     );
+  }
+
+  Future<Uint8List?> getImageFromCamera() async {
+    final picker = ImagePicker();
+    try {
+      final pickedFile = await picker.pickImage(source: ImageSource.camera);
+
+      if (pickedFile != null) {
+        final bytes = await pickedFile.readAsBytes();
+
+        // Преобразование List<int> в Uint8List
+        final uint8List = Uint8List.fromList(bytes);
+
+        return uint8List;
+      } else {
+        print("Отменено пользователем");
+      }
+    } catch (e) {
+      print("Ошибка: $e");
+    }
+
+    return null;
   }
 }
