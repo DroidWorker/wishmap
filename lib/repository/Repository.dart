@@ -155,22 +155,23 @@ class Repository{
           'date': moonItem.date,
           'filling': moonItem.filling
         });
-        List<Map<String, dynamic>> circleDataList = [];
 
-        // Преобразуем каждый объект CircleData в Map
+        // Записываем данные для circles, используя индексы из объектов
+        Map<String, dynamic> circleDataMap = {};
+
         for (CircleData circleData in defaultCircles) {
-          Map<String, dynamic> circleDataMap = {
-            'id': circleData.id,
+          String circleId = circleData.id.toString();
+          circleDataMap[circleId] = {
+            "id": circleData.id,
             'text': circleData.text,
             'subText': circleData.subText,
-            'color': circleData.color.value, // Сохраняем цвет как строку
+            'color': circleData.color.value,
             'parentId': circleData.parenId,
-            'isActive': circleData.isActive
+            'isActive': circleData.isActive,
           };
-          circleDataList.add(circleDataMap);
         }
         userRef.child(_auth.currentUser!.uid).child("moonlist").child(moonItem.id.toString()).child("spheres").set(
-          circleDataList
+          circleDataMap
         );
     }
   }
@@ -342,7 +343,6 @@ class Repository{
     if(_auth.currentUser!=null){
       String photosId = "";
       wd.photos.forEach((key, value) {
-        print("mmmmmmmmmmm${key}");
         if(photosId.isNotEmpty)photosId+="|";
         photosId+="$key";
         addImage(key, value);

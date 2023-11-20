@@ -78,7 +78,11 @@ class AimScreen extends StatelessWidget {
                                     ),
                                   ],
                                 ),
-                              );
+                              ).then((value) {
+                                BlocProvider.of<NavigationBloc>(context).removeLastFromBS();
+                                BlocProvider.of<NavigationBloc>(context)
+                                    .add(NavigateToAimEditScreenEvent(aimId));
+                              });
 
                             }else{
                               ScaffoldMessenger.of(context).showSnackBar(

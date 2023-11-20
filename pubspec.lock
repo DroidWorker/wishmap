@@ -41,6 +41,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.1"
+  capped_progress_indicator:
+    dependency: "direct main"
+    description:
+      name: capped_progress_indicator
+      sha256: dd71156a63d990d581c1e35d02b39945c4fb51ca82ada9547ec0c2388924f20c
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.2"
   characters:
     dependency: transitive
     description:

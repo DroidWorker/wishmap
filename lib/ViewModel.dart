@@ -45,6 +45,9 @@ class AppViewModel with ChangeNotifier {
   List<Uint8List> cachedImages = [];
   int lastImageId = -1;
 
+  //appcfg
+  var isinLoading = false;
+
   //diaryScreen
   List<CardData> diaryItems = [
     CardData(id: 1, emoji: "😃", title: "Благодраность", description: "Чтобы разблокировать путь к желаниям, каждый день начинай с благодарности", text: "no text", color: const Color.fromARGB(255, 233, 255, 250)),
@@ -101,14 +104,14 @@ class AppViewModel with ChangeNotifier {
   Future<void> getMoons() async{
     List<CircleData> defaultCircles = [
       CircleData(id: 0, text: 'Я', subText: "состояние", color: const Color(0xFF000000), parenId: -1),
-      CircleData(id: 1, text: 'Икигай', color: const Color(0xFFFF0000), parenId: 0),
-      CircleData(id: 2, text: 'Любовь', color: const Color(0xFFFF006B), parenId: 0),
-      CircleData(id: 3, text: 'Дети', color: const Color(0xFFD9D9D9), parenId: 0),
-      CircleData(id: 4, text: 'Путешествия', color: const Color(0xFFFFE600), parenId: 0),
-      CircleData(id: 5, text: 'Карьера', color: const Color(0xFF0029FF), parenId: 0),
-      CircleData(id: 6, text: 'Образование', color: const Color(0xFF46C8FF), parenId: 0),
-      CircleData(id: 7, text: 'Семья', color: const Color(0xFF3FA600), parenId: 0),
-      CircleData(id: 8, text: 'Богатство', color: const Color(0xFFB4EB5A), parenId: 0),
+      CircleData(id: 100, text: 'Икигай', color: const Color(0xFFFF0000), parenId: 0),
+      CircleData(id: 200, text: 'Любовь', color: const Color(0xFFFF006B), parenId: 0),
+      CircleData(id: 300, text: 'Дети', color: const Color(0xFFD9D9D9), parenId: 0),
+      CircleData(id: 400, text: 'Путешествия', color: const Color(0xFFFFE600), parenId: 0),
+      CircleData(id: 500, text: 'Карьера', color: const Color(0xFF0029FF), parenId: 0),
+      CircleData(id: 600, text: 'Образование', color: const Color(0xFF46C8FF), parenId: 0),
+      CircleData(id: 700, text: 'Семья', color: const Color(0xFF3FA600), parenId: 0),
+      CircleData(id: 800, text: 'Богатство', color: const Color(0xFFB4EB5A), parenId: 0),
     ];
     try {
       DateTime now = DateTime.now();
@@ -173,16 +176,18 @@ class AppViewModel with ChangeNotifier {
 
   Future<void> startMainScreen(MoonItem mi) async {
     if (mainScreenState == null) {
+      isinLoading = true;
       mainScreenState = MainScreenState(moon: mi, musicId: 0);
       try {
         mainScreenState!.allCircles = (await repository.getSpheres(mi.id)) ?? [];
         var ms = mainScreenState!.allCircles.first;
-        mainCircles.add(MainCircle(id: ms.id, coords: Pair(key: 0.0, value: 0.0), text: ms.text, color: ms.color, isActive: ms.isActive));
+        mainCircles.add(MainCircle(id: ms.id, coords: Pair(key: 0.0, value: 0.0), text: ms.text, substring: ms.subText, color: ms.color, isActive: ms.isActive));
         var cc = mainScreenState!.allCircles.where((element) => element.parenId == mainCircles.last.id).toList();
         currentCircles.clear();
         cc.forEach((element) {
           currentCircles.add(Circle(id: element.id, text: element.text, color: element.color, isActive: element.isActive));
         });
+        isinLoading=false;
         notifyListeners();
       } catch (ex) {
         addError(ex.toString());
@@ -193,12 +198,13 @@ class AppViewModel with ChangeNotifier {
       try {
         mainScreenState!.allCircles = tmp;
         var ms = mainScreenState!.allCircles.first;
-        mainCircles.add(MainCircle(id: ms.id, coords: Pair(key: 0.0, value: 0.0), text: ms.text, color: ms.color, isActive: ms.isActive));
+        mainCircles.add(MainCircle(id: ms.id, coords: Pair(key: 0.0, value: 0.0), text: ms.text, substring: ms.subText, color: ms.color, isActive: ms.isActive));
         var cc = mainScreenState!.allCircles.where((element) => element.parenId == mainCircles.last.id).toList();
         currentCircles.clear();
         cc.forEach((element) {
           currentCircles.add(Circle(id: element.id, text: element.text, color: element.color, isActive: element.isActive));
         });
+        isinLoading=false;
         notifyListeners();
       } catch (ex) {
         addError(ex.toString());
@@ -242,7 +248,9 @@ class AppViewModel with ChangeNotifier {
 
   Future<void> startMyTasksScreen() async{
     try {
+      isinLoading = true;
       taskItems = (await repository.getMyTasks(mainScreenState?.moon.id??0)) ?? [];
+      isinLoading = false;
       notifyListeners();
     }catch(ex){
       addError(ex.toString());
@@ -271,7 +279,9 @@ class AppViewModel with ChangeNotifier {
 
   Future<void> startMyAimsScreen() async{
     try {
+      isinLoading = true;
       aimItems = (await repository.getMyAims(mainScreenState?.moon.id??0)) ?? [];
+      isinLoading = false;
       notifyListeners();
     }catch(ex){
       addError(ex.toString());
@@ -300,7 +310,9 @@ class AppViewModel with ChangeNotifier {
 
   Future<void> startMyWishesScreen() async{
     try {
+      isinLoading = true;
       wishItems = (await repository.getMyWishs(mainScreenState?.moon.id??0)) ?? [];
+      isinLoading = false;
       notifyListeners();
     }catch(ex){
       addError(ex.toString());
@@ -345,9 +357,42 @@ class AppViewModel with ChangeNotifier {
   }
   Future<void> deleteSphereWish(int id) async{
     try {
+      if(mainScreenState!=null){
+        for (var element in mainScreenState!.allCircles) {
+          if(element.parenId==id){
+            deleteSphereWish(element.id);
+          }
+        }
+      }
+      await deleteallChildAims(id);
       await repository.deleteSphereWish(id, mainScreenState?.moon.id??0);
     }catch(ex){
       addError("сфера не была удалена: $ex");
+    }
+  }
+  Future<void> deleteallChildAims(int wishId)async{
+    try{
+      final wish = await repository.getMyWish(wishId, mainScreenState!.moon.id);
+      if(wish!=null&&wish.childAims.isNotEmpty){
+        wish.childAims.forEach((key, value) async {
+          await deleteallChildTasks(value);
+          repository.deleteAim(value, mainScreenState!.moon.id);
+        });
+      }
+    }catch(e){
+      addError("ошибка при удалении целей");
+    }
+  }
+  Future<void> deleteallChildTasks(int aimId)async{
+    try{
+      final aim = await repository.getMyAim(aimId, mainScreenState!.moon.id);
+      if(aim!=null&&aim.childTasks.isNotEmpty){
+        for (var element in aim.childTasks) {
+          repository.deleteTask(element, mainScreenState!.moon.id);
+        }
+      }
+    }catch(e){
+      addError("ошибка при удалении задач");
     }
   }
   Future<void> updateWishStatus(int wishId, bool status) async{
@@ -362,6 +407,7 @@ class AppViewModel with ChangeNotifier {
     try {
       int? aimId = (await repository.createAim(ad, parentCircleId, mainScreenState?.moon.id??0))??-1;
       currentAim=(AimData(id: aimId, parentId: ad.parentId, text: ad.text, description: ad.description, isChecked: ad.isChecked));
+      aimItems.add(AimItem(id: ad.id, text: ad.text, isChecked: ad.isChecked));
       return aimId;
     }catch(ex){
       addError(ex.toString());
@@ -390,6 +436,7 @@ class AppViewModel with ChangeNotifier {
   Future<void> deleteAim(int aimId) async{
     try {
       await repository.deleteAim(aimId, mainScreenState?.moon.id??0);
+      aimItems.removeWhere((element) => element.id == aimId);
     }catch(ex){
       addError(ex.toString());
     }
@@ -397,6 +444,10 @@ class AppViewModel with ChangeNotifier {
   Future<void> updateAimStatus(int aimId, bool status) async{
     try {
       currentAim?.isChecked = status;
+      if(currentAim!=null){
+        final i = aimItems.indexWhere((element) => element.id == currentAim!.id);
+        if(i>=0)aimItems[i].isChecked = status;
+      }
       await repository.changeAimStatus(aimId, mainScreenState?.moon.id??0, status);
       notifyListeners();
     }catch(ex){
@@ -408,6 +459,7 @@ class AppViewModel with ChangeNotifier {
     try {
       int taskId = (await repository.createTask(ad, parentAimId, mainScreenState?.moon.id??0))??-1;
       currentTask=(TaskData(id: taskId, parentId: ad.parentId, text: ad.text, description: ad.description, isChecked: ad.isChecked));
+      taskItems.add(TaskItem(id: ad.id, text: ad.text, isChecked: ad.isChecked));
       return taskId;
     }catch(ex){
       addError(ex.toString());
@@ -436,6 +488,7 @@ class AppViewModel with ChangeNotifier {
   Future<void> deleteTask(int taskId) async{
     try {
       await repository.deleteTask(taskId, mainScreenState?.moon.id??0);
+      taskItems.removeWhere((element) => element.id == taskId);
     }catch(ex){
       addError(ex.toString());
     }
@@ -443,6 +496,10 @@ class AppViewModel with ChangeNotifier {
   Future<void> updateTaskStatus(int taskId, bool status) async{
     try {
       currentTask?.isChecked = status;
+      if(currentTask!=null){
+        final i = taskItems.indexWhere((element) => element.id == currentTask!.id);
+        if(i>=0)taskItems[i].isChecked = status;
+      }
       await repository.changeTaskStatus(taskId, mainScreenState?.moon.id??0, status);
       notifyListeners();
     }catch(ex){

@@ -85,6 +85,8 @@ class CircularDraggableCircles extends StatefulWidget {
 
 class _CircularDraggableCirclesState extends State<CircularDraggableCircles> with TickerProviderStateMixin {
   AppViewModel? vm;
+
+  int plusId = -1;//used for insert sphere in selected place
   
   List<Offset> circlePositions = [];
   List<double> circleRotations = [];
@@ -173,8 +175,18 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
 
     showHideController.addStatusListener((status) {
       if(status==AnimationStatus.completed){
-        vm?.createNewSphereWish(WishData(id: vm!.mainScreenState!.allCircles.isNotEmpty?vm!.mainScreenState!.allCircles.last.id+1:-101, parentId: widget.centralCircles.last.id, text: "new item", description: "", affirmation: "", color: Colors.red));
-        widget.circles.add(Circle(id: vm!.mainScreenState!.allCircles.isNotEmpty?vm!.mainScreenState!.allCircles.last.id+1:-101, text: "new item", color: Colors.red, radius: (widget.size*0.2).toInt()));
+        int circleid = -101;
+        if(plusId>=0){
+          if(widget.circles.length>plusId&&widget.circles[plusId].id<vm!.mainScreenState!.allCircles.last.id){
+            circleid = (widget.circles[plusId+1].id-widget.circles[plusId].id)~/2+widget.circles[plusId].id;
+          }else{
+            circleid = vm!.mainScreenState!.allCircles.isNotEmpty?((vm!.mainScreenState!.allCircles.last.id) ~/ 100) * 100 + 100:-101;
+          }
+        }
+        if(widget.circles.isNotEmpty)plusId++;
+        vm?.createNewSphereWish(WishData(id: circleid, parentId: widget.centralCircles.last.id, text: "new item", description: "", affirmation: "", color: Colors.red));
+        widget.circles.insert(plusId, Circle(id: circleid, text: "new item", color: Colors.red, radius: (widget.size*0.2).toInt()));
+        plusId=-1;
         circlePositions.clear();
         circleRotations.clear();
         plusesPositions.clear();
@@ -212,6 +224,9 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
   @override
   void dispose() {
     ctrl.dispose();
+    movingController.dispose();
+    afterMovingController.dispose();
+    showHideController.dispose();
     super.dispose();
   }
   void startInertia(double velocity) {
@@ -418,7 +433,6 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
       final centerY = widget.center.value-40;
 
       for (int i = 0; i < widget.circles.length; i++) {
-        widget.circles[i].radius=(widget.size*0.2).toInt();
         circleRotations.add(2 * pi * i / widget.circles.length);
         plusesRotations.add((2 * pi * i / widget.circles.length) + angleBetween / 2);
         if(widget.circles.length>8&&widget.circles.length<=16){
@@ -427,6 +441,8 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
         }else if(widget.circles.length>16){
             if (circleRotations[i]%(2*pi) >= pi && circleRotations[i]%(2*pi) <= 2*pi){widget.circles[i].radius=diametr-(diametr/2*(cos(circleRotations[i]))).toInt().abs();}
             else{widget.circles[i].radius=(widget.size*0.07).toInt();}
+        } else{
+          widget.circles[i].radius=(widget.size*0.2).toInt();
         }
         final x = (centerX + (widget.size/2-40) * cos(circleRotations[i]))+(80-widget.circles[i].radius)/2;
         final y = (centerY + (widget.size/2-40) * sin(circleRotations[i]))+(80-widget.circles[i].radius)/2;
@@ -442,6 +458,15 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
         plusesRotations.add(1);
       }
       circlesHash = newHash;
+    }
+    else{
+      for(int i = 0; i<widget.circles.length; i++){
+        if(widget.circles.length>8&&widget.circles.length<=16){
+          widget.circles[i].radius=(widget.size*0.15).toInt();
+        } else{
+          widget.circles[i].radius=(widget.size*0.2).toInt();
+        }
+      }
     }
 
     final appViewModel = Provider.of<AppViewModel>(context);
@@ -509,6 +534,7 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
                         ),
                         onTap: () {
                           if(widget.circles.length<=12) {
+                            plusId= e.key;
                             showHideController.reset();
                             showHideController.forward();
                           }else{
@@ -608,7 +634,7 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
                                         return Opacity(
                                           opacity: AlphaAnimation.value,
                                           child: Text(
-                                            value.id==0?"состояние":"",
+                                            value.id==0?value.substring:"",
                                             style: const TextStyle(
                                                 color: Colors.white,
                                                 fontSize: 10),

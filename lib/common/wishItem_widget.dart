@@ -25,13 +25,13 @@ class _TaskItem extends State<WishItemWidget>{
           widget.onClick(widget.ti.id);
         },
       ),
-      IconButton(
-          icon: Image.asset('assets/icons/delete6161554.png'),
-          iconSize: 30,
-          onPressed: () {
-            widget.onDelete(widget.ti.id);
-          },
-        )
+      // IconButton(
+      //     icon: Image.asset('assets/icons/delete6161554.png'),
+      //     iconSize: 30,
+      //     onPressed: () {
+      //       widget.onDelete(widget.ti.id);
+      //     },
+      //   )
     ],);
   }
 

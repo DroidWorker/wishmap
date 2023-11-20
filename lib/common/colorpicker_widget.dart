@@ -31,18 +31,18 @@ class _ColorPickerWidgetState extends State<ColorPickerWidget> {
       Colors.yellow,
       Colors.purple,
       Colors.orange,
-      Colors.red,
-      Colors.green,
-      Colors.blue,
-      Colors.yellow,
+      Colors.redAccent,
+      Colors.grey,
+      Colors.brown,
+      Colors.yellowAccent,
+      Colors.pink,
+      Colors.orangeAccent,
+      Colors.deepPurple,
+      Colors.deepOrange,
+      Colors.cyanAccent,
+      Colors.blueGrey,
       Colors.purple,
-      Colors.orange,
-      Colors.red,
-      Colors.green,
-      Colors.blue,
-      Colors.yellow,
-      Colors.purple,
-      Colors.orange,
+      Colors.amber,
     ];
 
     return AlertDialog(
@@ -61,7 +61,7 @@ class _ColorPickerWidgetState extends State<ColorPickerWidget> {
                       height: 50,
                       child: GridView.builder(
                         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 8, // Количество столбцов
+                          crossAxisCount: 6, // Количество столбцов
                         ),
                         itemCount: colors.length,
                         itemBuilder: (context, index) {
@@ -75,8 +75,8 @@ class _ColorPickerWidgetState extends State<ColorPickerWidget> {
                             },
                             child: Container(
                               margin: const EdgeInsets.all(1),
-                              width: 3.0,
-                              height: 3.0,
+                              width: 9.0,
+                              height: 9.0,
                               color: colors[index],
                             ),
                           );
@@ -87,12 +87,12 @@ class _ColorPickerWidgetState extends State<ColorPickerWidget> {
                 ),
                 const SizedBox(width: 5),
                 SizedBox(
-                  width: 100,
+                  width: 120,
                   child: PaletteHuePicker(
-                    palettePadding: const EdgeInsets.fromLTRB(0, 6, 0, 0),
-                    paletteHeight: 130,
+                    palettePadding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
+                    paletteHeight: 140,
                     hueBorderRadius: const BorderRadius.all(Radius.circular(6)),
-                    hueHeight: 5,
+                    hueHeight: 20,
                     color: hsvCurrent,
                     onChanged: (value) => super.setState(() => onChanged(value)),
                   ),

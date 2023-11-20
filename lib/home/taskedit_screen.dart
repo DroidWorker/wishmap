@@ -104,7 +104,9 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                                         ),
                                       ],
                                     ),
-                                  );
+                                  ).then((value) {
+                                    BlocProvider.of<NavigationBloc>(context).handleBackPress();
+                                  });
                                 },
                                 child: const Text("Удалить",style: TextStyle(color: Colors.black, fontSize: 12))
                             ),

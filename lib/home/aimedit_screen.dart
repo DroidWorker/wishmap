@@ -97,7 +97,9 @@ class AimEditScreenState extends State<AimEditScreen>{
                                         ),
                                       ],
                                     ),
-                                  );
+                                  ).then((value) {
+                                    BlocProvider.of<NavigationBloc>(context).handleBackPress();
+                                  });
                                 },
                                 child: const Text("Удалить",style: TextStyle(color: Colors.black, fontSize: 12))
                             ),

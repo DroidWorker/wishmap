@@ -32,13 +32,13 @@ class _AimItem extends State<AimItemWidget>{
           widget.onClick(widget.ai.id);
         },
       ),
-      IconButton(
-        icon: Image.asset('assets/icons/delete6161554.png'),
-        iconSize: 30,
-        onPressed: () {
-            widget.onDelete(widget.ai.id);
-          },
-      )
+      // IconButton(
+      //   icon: Image.asset('assets/icons/delete6161554.png'),
+      //   iconSize: 30,
+      //   onPressed: () {
+      //       widget.onDelete(widget.ai.id);
+      //     },
+      // )
     ],);
   }
 

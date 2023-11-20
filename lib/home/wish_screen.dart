@@ -39,11 +39,13 @@ class _WishScreenState extends State<WishScreen>{
       _affirmation = TextEditingController(text: "");
       _color = Colors.black12;
     }
-    String saveText = "Сохранить  ";
+
+    WishData curwish = WishData(id: -1, parentId: -1, text: "", description: "", affirmation: "", color: Colors.grey);
 
     return  Consumer<AppViewModel>(
         builder: (context, appVM, child){
           if(appVM.wishScreenState!=null&&!isDataLoaded) {
+            curwish = appVM.wishScreenState!.wish;
             _title.text = appVM.wishScreenState!.wish.text;
             _description.text = appVM.wishScreenState!.wish.description;
             _affirmation.text = appVM.wishScreenState!.wish.affirmation;
@@ -79,30 +81,31 @@ class _WishScreenState extends State<WishScreen>{
                     },
                   ),
                   const Expanded(child: SizedBox(),),
-                  TextButton(
-                      style: TextButton.styleFrom(
-                        backgroundColor: AppColors.greyBackButton,
-                        shape: const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(10)),
-                        ),
-                      ),
-                      onPressed: () async {
-                        appVM.wishScreenState!.wish.isChecked=true;
-                        appViewModel.updateWishStatus(appVM.wishScreenState!.wish.id, true);
-                        showDialog(context: context,
-                          builder: (BuildContext context) => AlertDialog(
-                            title: const Text('исполнено'),
-                            actions: <Widget>[
-                              TextButton(
-                                onPressed: () { Navigator.pop(context, 'OK');},
-                                child: const Text('OK'),
-                              ),
-                            ],
+                  if(curwish.id > 800)
+                    TextButton(
+                        style: TextButton.styleFrom(
+                          backgroundColor: AppColors.greyBackButton,
+                          shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(10)),
                           ),
-                        );
-                      },
-                      child: const Text("Исполнено",style: TextStyle(color: Colors.black, fontSize: 12))
-                  ),
+                        ),
+                        onPressed: () async {
+                          appVM.wishScreenState!.wish.isChecked=true;
+                          appViewModel.updateWishStatus(appVM.wishScreenState!.wish.id, true);
+                          showDialog(context: context,
+                            builder: (BuildContext context) => AlertDialog(
+                              title: const Text('исполнено'),
+                              actions: <Widget>[
+                                TextButton(
+                                  onPressed: () { Navigator.pop(context, 'OK');},
+                                  child: const Text('OK'),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                        child: const Text("Исполнено",style: TextStyle(color: Colors.black, fontSize: 12))
+                    ),
                   const SizedBox(width: 3,),
                   TextButton(
                       style: TextButton.styleFrom(
@@ -121,13 +124,20 @@ class _WishScreenState extends State<WishScreen>{
                                 onPressed: () { Navigator.pop(context, 'OK');
                                   var moon = appVM.mainScreenState!.moon;
                                   appViewModel.mainScreenState = null;
+                                  appViewModel.mainCircles.clear();
                                   appViewModel.startMainScreen(moon);
                                 BlocProvider.of<NavigationBloc>(context).handleBackPress();},
                                 child: const Text('OK'),
                               ),
                             ],
                           ),
-                        );
+                        ).then((value) {
+                          var moon = appVM.mainScreenState!.moon;
+                          appViewModel.mainScreenState = null;
+                          appViewModel.mainCircles.clear();
+                          appViewModel.startMainScreen(moon);
+                          BlocProvider.of<NavigationBloc>(context).handleBackPress();
+                        });
                       },
                       child: const Text("Удалить",style: TextStyle(color: Colors.black, fontSize: 12))
                   ),
@@ -146,16 +156,19 @@ class _WishScreenState extends State<WishScreen>{
                           ..affirmation=_affirmation.text
                           ..color = _color!;
                         await appViewModel.createNewSphereWish(appVM.wishScreenState!.wish);
-                        showDialog(context: context,
-                          builder: (BuildContext context) => AlertDialog(
-                            title: const Text('сохранено'),
-                            actions: <Widget>[
-                              TextButton(
-                                onPressed: () => Navigator.pop(context, 'OK'),
-                                child: const Text('OK'),
-                              ),
-                            ],
-                          ),
+                        showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: const Text('сохранено'),
+                              actions: <Widget>[
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context, 'OK'),
+                                  child: const Text('OK'),
+                                ),
+                              ],
+                            );
+                            },
                         );
                       },
                       child: const Text("Cохранить",
@@ -194,6 +207,7 @@ class _WishScreenState extends State<WishScreen>{
                     ),
                   ),
                   const SizedBox(height: 10),
+                  if(curwish.id > 800)
                   LayoutBuilder(
                     builder: (context, constraints) {
                       double leftWidth = (constraints.maxWidth * 4 /7)-2;
@@ -218,6 +232,7 @@ class _WishScreenState extends State<WishScreen>{
                     },
                   ),
                   const SizedBox(height: 5),
+                  if(curwish.id > 800)
                   ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.fieldFillColor,
@@ -275,6 +290,7 @@ class _WishScreenState extends State<WishScreen>{
                           );
                         },
                       )),
+                  if(curwish.id > 800)
                   Align(
                     alignment: Alignment.center,
                     child: Column(children: [
@@ -335,6 +351,7 @@ class _WishScreenState extends State<WishScreen>{
                         );
                       }).toList()??[],
                       const SizedBox(height: 5),
+                      if(curwish.id > 800)
                       ElevatedButton(
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.fieldFillColor,

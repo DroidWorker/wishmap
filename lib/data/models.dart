@@ -45,13 +45,14 @@ class MainCircle {
   final int id;
   Pair coords;
   String text;
+  String substring = "";
   int textSize = 24;
   Color color;
   double radius;
   bool isVisible;
   bool isActive;
 
-  MainCircle({required this.id, required this.coords, required this.text, this.textSize = 24, required this.color, this.radius=52, this.isVisible = true, this.isActive = true});
+  MainCircle({required this.id, required this.coords, required this.text, this.substring = "", this.textSize = 24, required this.color, this.radius=52, this.isVisible = true, this.isActive = true});
 }
 
 class Pair{

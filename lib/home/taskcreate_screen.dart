@@ -83,7 +83,11 @@ class TaskScreenState extends State<TaskScreen>{
                                     ),
                                   ],
                                 ),
-                              );
+                              ).then((value) {
+                                BlocProvider.of<NavigationBloc>(context).removeLastFromBS();
+                                BlocProvider.of<NavigationBloc>(context)
+                                    .add(NavigateToTaskEditScreenEvent(taskId));
+                              });
 
                             }else{
                               ScaffoldMessenger.of(context).showSnackBar(

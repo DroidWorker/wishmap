@@ -66,6 +66,7 @@ class MyApp extends StatelessWidget {
                 if (appViewModel.messageError.text.isNotEmpty) {
                   WidgetsBinding.instance.addPostFrameCallback((_) {
                     _showError(context, appViewModel.messageError.text);
+                    appViewModel.messageError.text = '';
                   });
                 }
                 return WillPopScope(

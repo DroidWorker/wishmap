@@ -53,6 +53,7 @@ dependencies:
   device_info_plus: ^9.1.0
   flutter_image_compress: ^2.1.0
   image_picker: ^1.0.4
+  capped_progress_indicator: ^0.0.2
 
 
 dev_dependencies:

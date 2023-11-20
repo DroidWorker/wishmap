@@ -1,3 +1,4 @@
+import 'package:capped_progress_indicator/capped_progress_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:wishmap/navigation/navigation_block.dart';
@@ -53,6 +54,8 @@ class _MainScreenState extends State<MainScreen>{
                                 child: GestureDetector(
                                   onTap: (){
                                     appVM.mainScreenState = null;
+                                    appVM.mainCircles.clear();
+                                    appVM.currentCircles.clear();
                                     BlocProvider.of<NavigationBloc>(context)
                                         .add(NavigateToCardsScreenEvent());
                                   },
@@ -79,7 +82,7 @@ class _MainScreenState extends State<MainScreen>{
                           },
                         )
                         ),
-                        const SizedBox(height: 35),
+                        const SizedBox(height: 30),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
@@ -106,13 +109,17 @@ class _MainScreenState extends State<MainScreen>{
                               onPressed: () {},
                             )
                           ],),
-                        const SizedBox(height: 20),
-                        const Divider(
+                        const SizedBox(height: 10),
+                        !appVM.isinLoading?const Divider(
                           height: 2,
                           thickness: 1,
                           indent: 0,
                           endIndent: 0,
                           color: Colors.black,
+                        ):const LinearCappedProgressIndicator(
+                          backgroundColor: Colors.black26,
+                          color: Colors.black,
+                          cornerRadius: 0,
                         ),
                         Padding(
                           padding: const EdgeInsets.fromLTRB(5, 3, 5, 0),

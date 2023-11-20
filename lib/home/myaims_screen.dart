@@ -1,3 +1,4 @@
+import 'package:capped_progress_indicator/capped_progress_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
@@ -21,6 +22,8 @@ class _AimsScreenState extends State<AimsScreen>{
 
   late AppViewModel appViewModel;
 
+  var isPBActive = false;
+
   @override
   Widget build(BuildContext context) {
     appViewModel = Provider.of<AppViewModel>(context);
@@ -28,6 +31,7 @@ class _AimsScreenState extends State<AimsScreen>{
         builder: (context, appVM, child) {
           allAims = appVM.aimItems;
           if(filteredAimList.isEmpty)filteredAimList = appVM.aimItems;
+          isPBActive=appVM.isinLoading;
           return Scaffold(
             backgroundColor: AppColors.backgroundColor,
             body: SafeArea(child: Padding(
@@ -104,12 +108,16 @@ class _AimsScreenState extends State<AimsScreen>{
                         style: TextStyle(color: AppColors.greytextColor),)
                   ),
                   const SizedBox(height: 20),
-                  const Divider(
+                  !isPBActive?const Divider(
                     height: 2,
                     thickness: 1,
                     indent: 0,
                     endIndent: 0,
                     color: Colors.black,
+                  ):const LinearCappedProgressIndicator(
+                    backgroundColor: Colors.black26,
+                    color: Colors.black,
+                    cornerRadius: 0,
                   ),
                   Padding(
                     padding: const EdgeInsets.fromLTRB(5, 3, 5, 0),
@@ -132,9 +140,7 @@ class _AimsScreenState extends State<AimsScreen>{
                         ),
                         ElevatedButton(
                             onPressed: () {
-                              appVM.startMyAimsScreen();
-                              BlocProvider.of<NavigationBloc>(context)
-                                  .add(NavigateToAimsScreenEvent());
+
                             },
                             style: ElevatedButton.styleFrom(elevation: 0, backgroundColor: Colors.transparent,),                                   child: Column(
                             children: [
