@@ -28,8 +28,8 @@ class _AuthScreen_State extends State<AuthScreen> {
   Widget build(BuildContext context) {
     final appViewModel = Provider.of<AppViewModel>(context);
     return Scaffold(
-      body: SafeArea(child:Center(
-        child: Padding(
+      body: SafeArea(child:
+      Padding(
           padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
           child: ValueListenableBuilder<AuthData?>(
             valueListenable: Provider.of<AppViewModel>(context).authDataNotifier,
@@ -43,12 +43,16 @@ class _AuthScreen_State extends State<AuthScreen> {
                 children: [
                   Text(
                     isAuth?'Авторизация':'Регистрация',
-                    style: TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold),
+                    style: const TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold),
                   ),
-                  SingleChildScrollView(
-                      child: Form(
-                    key: _formKey,
-                    child: Column(children: [
+                  Expanded(
+                      child:Center(child:Form(
+                      key: _formKey,
+                      child: SingleChildScrollView(
+                        physics: const BouncingScrollPhysics(),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
                       if(!isAuth) ...[TextFormField(
                         controller: _nameController,
                         decoration: const InputDecoration(
@@ -224,13 +228,12 @@ class _AuthScreen_State extends State<AuthScreen> {
                           )),
                       const SizedBox(height: 10.0),
                       const Text('Восстановить пароль')
-                    ],),)),
+                    ],),)))),
                   const SizedBox(height: 10.0)
                 ],
               );
             },
           )
-        ),
       ),
     ));
   }

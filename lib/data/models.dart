@@ -156,6 +156,7 @@ class MyTreeNode {
   final String type;//m-maincircle w-wish a-aim t-task
   final String title;
   bool isChecked;
+  bool noClickable = false;
   final List<MyTreeNode> children;
 }
 

@@ -103,6 +103,7 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
   double widgetTop = 0.0;
   double widgetLeft = 0.0;
   double alphaAnimValue = 1.0;
+  double textAlphaAnimValue = 1.0;
   late Animation<double> AlphaAnimation;
   late Animation<double> SHAlphaAnimation;
   late Animation<double> ReverceAlphaAnimation;
@@ -232,9 +233,9 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
   void startInertia(double velocity) {
     ctrl.animateWith(
       FrictionSimulation(
-        0.03, // Коэффициент трения (настройте по своему усмотрению)
+        0.03, // Коэффициент трения
         ctrl.value,
-        velocity / 80, // Скорость инерции (настройте по своему усмотрению)
+        velocity / 80, // Скорость инерции
       ),
     );
   }
@@ -341,6 +342,7 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
     AlphaAnimation.addListener(() {
       setState(() {
         alphaAnimValue = AlphaAnimation.value;
+        textAlphaAnimValue = AlphaAnimation.value;
       });
     });
     ReverceAlphaAnimation.addListener(() {
@@ -396,6 +398,7 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
     vm = Provider.of<AppViewModel>(context);
     if(widget.centralCircles.isEmpty) {
       widget.centralCircles = List<MainCircle>.from(vm!.mainCircles);
+      textAlphaAnimValue = 1;
     }
 
     for (int i = 0; i<widget.centralCircles.length; i++) {
@@ -632,7 +635,7 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
                                       animation: AlphaAnimation,
                                       builder: (context, child) {
                                         return Opacity(
-                                          opacity: AlphaAnimation.value,
+                                          opacity: textAlphaAnimValue,
                                           child: Text(
                                             value.id==0?value.substring:"",
                                             style: const TextStyle(

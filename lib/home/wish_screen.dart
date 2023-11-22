@@ -30,6 +30,8 @@ class _WishScreenState extends State<WishScreen>{
   TaskItem? wishTasks;
   AimItem? wishAims;
 
+  WishData curwish = WishData(id: -1, parentId: -1, text: "", description: "", affirmation: "", color: Colors.grey);
+
   @override
   Widget build(BuildContext context) {
     final appViewModel = Provider.of<AppViewModel>(context);
@@ -39,8 +41,6 @@ class _WishScreenState extends State<WishScreen>{
       _affirmation = TextEditingController(text: "");
       _color = Colors.black12;
     }
-
-    WishData curwish = WishData(id: -1, parentId: -1, text: "", description: "", affirmation: "", color: Colors.grey);
 
     return  Consumer<AppViewModel>(
         builder: (context, appVM, child){
@@ -285,7 +285,7 @@ class _WishScreenState extends State<WishScreen>{
                           showDialog(
                             context: context,
                             builder: (context) {
-                              return ColorPickerWidget(onColorSelected: (Color c){setState(() {_color=c; print("aaaaaaaaasss");});});
+                              return ColorPickerWidget(initColor: _color, onColorSelected: (Color c){setState(() {_color=c;});});
                             },
                           );
                         },

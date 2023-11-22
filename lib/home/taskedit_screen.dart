@@ -31,7 +31,7 @@ class TaskEditScreenState extends State<TaskEditScreen>{
           TaskData ai = appVM.currentTask??TaskData(id: -1, parentId: -1, text: 'объект не найден', description: "", isChecked: false);
           if(appVM.currentAim!=null) {
             AimData ad = appVM.currentAim!;
-            var childNodes = MyTreeNode(id: ad.id, type: 'a', title: ad.text, isChecked: ad.isChecked, children: [MyTreeNode(id: ai.id, type: 't', title: ai.text, isChecked: ai.isChecked)]);
+            var childNodes = MyTreeNode(id: ad.id, type: 'a', title: ad.text, isChecked: ad.isChecked, children: [MyTreeNode(id: ai.id, type: 't', title: ai.text, isChecked: ai.isChecked)..noClickable=true]);
             roots = appVM.convertToMyTreeNodeIncludedAimsTasks(childNodes, ad.parentId);
           }else {
             appVM.getAim(ai.parentId);
@@ -189,7 +189,7 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                     Align(
                         alignment: Alignment.centerLeft,
                         child: SizedBox(
-                          height: roots.length * 150,
+                          height: roots.length * 200,
                           child: MyTreeView(key: UniqueKey(),roots: roots, onTap: (id,type){
                             if(type=="m"){
                               BlocProvider.of<NavigationBloc>(context).clearHistory();

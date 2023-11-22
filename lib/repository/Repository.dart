@@ -409,13 +409,22 @@ class Repository{
           .once()).snapshot;
       if (dataSnapshot.children.isNotEmpty) {
         final Map<dynamic, dynamic> dataList = dataSnapshot.value as Map<dynamic,dynamic>;
-        return AimData(
+        var tmp = dataSnapshot.child("childTasks").value as Map<dynamic, dynamic>?;
+        List<int> childTasks = [];
+        if(tmp!=null){
+          tmp.forEach((key, value) {
+            childTasks.add(int.parse(value.toString()));
+          });
+        }
+        var ad = AimData(
           id: int.parse(dataList['id'].toString()),
           text: dataList['text'],
           description: dataList['subText'] ?? "",
           parentId: int.parse(dataList['parentId'].toString()),
           isChecked: dataList['isChecked']
         );
+        ad.childTasks = childTasks;
+        return ad;
       }
     }
     return null;

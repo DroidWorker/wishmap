@@ -172,7 +172,7 @@ class _SpheresOfLifeScreenState extends State<SpheresOfLifeScreen>{
                     showDialog(
                       context: context,
                       builder: (context) {
-                        return ColorPickerWidget(onColorSelected: (Color c){setState(() {curWd.color=c;});});
+                        return ColorPickerWidget(initColor: curWd.color ,onColorSelected: (Color c){setState(() {curWd.color=c;});});
                       },
                     );
                   },

@@ -40,6 +40,8 @@ class AppViewModel with ChangeNotifier {
   //
   AimData? currentAim;
   TaskData? currentTask;
+  //treeNodes
+  List<MyTreeNode> myNodes = [];
 
   //images
   List<Uint8List> cachedImages = [];
@@ -147,10 +149,12 @@ class AppViewModel with ChangeNotifier {
 
   Future getImages(List<int> ids) async {
     cachedImages.clear();
+    isinLoading = true;
     for (var element in ids) {
       final photo = await repository.getImage(element);
       if(photo!=null)cachedImages.add(photo);
     }
+    isinLoading = false;
     notifyListeners();
   }
 
@@ -232,6 +236,7 @@ class AppViewModel with ChangeNotifier {
 
   Future<void> startWishScreen(int wishId, int parentId) async{
     try {
+      cachedImages.clear();
       WishData wdItem;
       var tmp = mainScreenState!.allCircles.where((element) => element.id==wishId);
       if(tmp.isNotEmpty){
@@ -329,7 +334,10 @@ class AppViewModel with ChangeNotifier {
       wd.photos = photos;
       await repository.createSphereWish(wd, mainScreenState?.moon.id??0);
       var sphereInAllCircles= mainScreenState!.allCircles.indexWhere((element) => element.id==wd.id);
-      if(sphereInAllCircles==-1){mainScreenState!.allCircles.add(CircleData(id: wd.id, text: wd.text, color: wd.color, parenId: wd.parentId));}
+      if(sphereInAllCircles==-1){
+        mainScreenState!.allCircles.add(CircleData(id: wd.id, text: wd.text, color: wd.color, parenId: wd.parentId));
+        wishItems.add(WishItem(id: wd.id, text: wd.text, isChecked: wd.isChecked));
+      }
       else{
         mainScreenState!.allCircles[sphereInAllCircles]
         ..text = wd.text
@@ -344,13 +352,16 @@ class AppViewModel with ChangeNotifier {
   Future<void> updateSphereWish(WishData wd) async{
     try {
       Map<int, Uint8List> photos = {};
+      String photosIds = "";
       for (var element in cachedImages) {
         lastImageId++;
+        if(photosIds.isNotEmpty)photosIds+="|";
+        photosIds+=lastImageId.toString();
         photos[lastImageId]=element;
       }
       wd.photos = photos;
       await repository.createSphereWish(wd, mainScreenState?.moon.id??0);
-      mainScreenState!.allCircles[mainScreenState!.allCircles.indexWhere((element) => element.id==wd.id)] = CircleData(id: wd.id, text: wd.text, color: wd.color, parenId: wd.parentId, affirmation: wd.affirmation, subText: wd.description);
+      mainScreenState!.allCircles[mainScreenState!.allCircles.indexWhere((element) => element.id==wd.id)] = CircleData(id: wd.id, text: wd.text, color: wd.color, parenId: wd.parentId, affirmation: wd.affirmation, subText: wd.description)..photosIds=photosIds;
     }catch(ex){
       addError("сфера не была сохранена: $ex");
     }
@@ -389,6 +400,7 @@ class AppViewModel with ChangeNotifier {
       if(aim!=null&&aim.childTasks.isNotEmpty){
         for (var element in aim.childTasks) {
           repository.deleteTask(element, mainScreenState!.moon.id);
+          taskItems.removeWhere((e) => e.id==element);
         }
       }
     }catch(e){
@@ -435,6 +447,7 @@ class AppViewModel with ChangeNotifier {
   }
   Future<void> deleteAim(int aimId) async{
     try {
+      await deleteallChildTasks(aimId);
       await repository.deleteAim(aimId, mainScreenState?.moon.id??0);
       aimItems.removeWhere((element) => element.id == aimId);
     }catch(ex){
@@ -548,13 +561,35 @@ class AppViewModel with ChangeNotifier {
     }
   }
 
-  List<MyTreeNode> convertToMyTreeNode(CircleData circle) {
+
+  Future<List<TaskItem>?> getTasksForAim(int aimId) async {
+    try {
+      List<int> list = [];
+      list.addAll((await repository.getAimsChildTasks(aimId, mainScreenState?.moon.id ?? 0))??[]);
+      if (list.isNotEmpty){
+        if(taskItems.isNotEmpty){
+          return taskItems.where((element) => list.contains(element.id)).toList();
+        }else{
+          taskItems = (await repository.getMyTasks(mainScreenState?.moon.id??0)) ?? [];
+          return  taskItems.where((element) => list.contains(element.id)).toList();
+        }
+      }else {
+        return null;
+      }
+    }catch(ex){
+      addError("Ошибка загрузки задач: $ex");
+    }
+    return null;
+  }
+  Future convertToMyTreeNode(CircleData circle) async {
+    final taskList = await getTasksForAim(circle.id);
     List<CircleData> allCircles = getParentTree(circle.parenId);
-    List<MyTreeNode> children = <MyTreeNode>[MyTreeNode(id: circle.id, type: "a", title: circle.text, isChecked: circle.isChecked)];
+    List<MyTreeNode> children = <MyTreeNode>[MyTreeNode(id: circle.id, type: "a", title: circle.text, isChecked: circle.isChecked, children: (taskList?.map((e) =>  MyTreeNode(id: e.id, type: 't', title: e.text, isChecked: e.isChecked)))?.toList()??[])..noClickable=true];
     for (var element in allCircles) {
       children=[MyTreeNode(id: element.id, type: element.id==0?"m":"w", title: element.text, children: children, isChecked: element.isChecked)];
     }
-    return children;
+    myNodes = children;
+    notifyListeners();
   }
 
   List<MyTreeNode> convertToMyTreeNodeIncludedAimsTasks(MyTreeNode childNodes, int wishId) {

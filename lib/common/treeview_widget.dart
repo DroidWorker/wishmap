@@ -96,7 +96,6 @@ class MyTreeTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print("creeeeeeeeeeeeeee${entry.node.isChecked}");
     return InkWell(
       onTap: onTap,
       // Wrap your content in a TreeIndentation widget which will properly
@@ -123,7 +122,7 @@ class MyTreeTile extends StatelessWidget {
                 fit: BoxFit.contain,
                 child: Text(
                   entry.node.title,
-                  style: const TextStyle(decoration: TextDecoration.underline),
+                  style: entry.node.noClickable?const TextStyle():const TextStyle(decoration: TextDecoration.underline),
                 ),
               ),
               const Spacer(),

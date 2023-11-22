@@ -1,3 +1,4 @@
+import 'package:capped_progress_indicator/capped_progress_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:keyboard_attachable/keyboard_attachable.dart';
@@ -18,8 +19,8 @@ class MainSphereEditScreen extends StatefulWidget{
 }
 
 class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
-  Color circleColor = Colors.redAccent;
-  CircleData curWd = CircleData(id: -1, text: "", color: Colors.red, parenId: -1);
+  Color circleColor = Colors.black12;
+  CircleData curWd = CircleData(id: -1, text: "", color: Colors.black12, parenId: -1);
 
 
   @override
@@ -27,7 +28,7 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
     final appViewModel = Provider.of<AppViewModel>(context);
     if(curWd.id==-1){
       curWd = appViewModel.mainScreenState?.allCircles[0]??CircleData(id: 0, text: "", color: Colors.red, parenId: -1);
-      if(curWd.photosIds.isNotEmpty){
+      if(curWd.photosIds.isNotEmpty&&appViewModel.cachedImages.isEmpty){
         final ids = curWd.photosIds.split("|");
         List<int> intList = ids.map((str) => int.parse(str)).toList();
         appViewModel.getImages(intList);
@@ -36,6 +37,7 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
     TextEditingController text = TextEditingController(text: curWd.text);
     TextEditingController description = TextEditingController(text: curWd.subText);
     TextEditingController affirmation = TextEditingController(text: curWd.affirmation);
+    circleColor = curWd.color;
     text.addListener(() { curWd.text=text.text;});
     description.addListener(() { curWd.subText=description.text;});
     affirmation.addListener(() { curWd.affirmation=affirmation.text;});
@@ -118,16 +120,34 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
                     return Row(
                       children: [
                         Container(width: leftWidth, height: leftWidth, color: AppColors.fieldFillColor,
-                        child: appViewModel.cachedImages.isNotEmpty?Image.memory(appViewModel.cachedImages.first, fit: BoxFit.cover):Container(),
+                        child: appViewModel.isinLoading? const Align(alignment: Alignment.bottomCenter,
+                          child: LinearCappedProgressIndicator(
+                          backgroundColor: Colors.black26,
+                          color: Colors.black,
+                          cornerRadius: 0,
+                        ),):
+                        (appViewModel.cachedImages.isNotEmpty?Image.memory(appViewModel.cachedImages.first, fit: BoxFit.cover):Container()),
                         ),
                         const SizedBox(width: 2),
                         Column(children: [
                           Container(width: rightWidth, height: leftWidth/2-2, color: AppColors.fieldFillColor,
-                            child: appViewModel.cachedImages.length>1?Image.memory(appViewModel.cachedImages[1], fit: BoxFit.cover):Container(),
+                            child: appViewModel.isinLoading? const Align(alignment: Alignment.bottomCenter,
+                              child: LinearCappedProgressIndicator(
+                                backgroundColor: Colors.black26,
+                                color: Colors.black,
+                                cornerRadius: 0,
+                              ),):
+                            (appViewModel.cachedImages.length>1?Image.memory(appViewModel.cachedImages[1], fit: BoxFit.cover):Container()),
                           ),
                           const SizedBox(height: 2),
                           Container(width: rightWidth, height: leftWidth/2-1, color: AppColors.fieldFillColor,
-                            child: appViewModel.cachedImages.length>2?Image.memory(appViewModel.cachedImages[2], fit: BoxFit.cover):Container(),
+                            child: appViewModel.isinLoading? const Align(alignment: Alignment.bottomCenter,
+                              child: LinearCappedProgressIndicator(
+                                backgroundColor: Colors.black26,
+                                color: Colors.black,
+                                cornerRadius: 0,
+                              ),):
+                            (appViewModel.cachedImages.length>2?Image.memory(appViewModel.cachedImages[2], fit: BoxFit.cover):Container()),
                           ),
                         ],)
                       ],
@@ -168,7 +188,7 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
                 ),
                 const SizedBox(height: 10),
                 Align(
-                    alignment: Alignment.centerLeft,
+                    alignment: Alignment.center,
                     child:
                     GestureDetector(child:
                     Column(children: [
@@ -187,13 +207,13 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
                         showDialog(
                           context: context,
                           builder: (context) {
-                            return ColorPickerWidget(onColorSelected: (Color c){setState(() {curWd.color=c; circleColor = c;});});
+                            return ColorPickerWidget(initColor: circleColor ,onColorSelected: (Color c){setState(() {curWd.color=c; circleColor = c;});});
                           },
                         );
                       },
                     )),
                 Align(
-                  alignment: Alignment.centerLeft,
+                  alignment: Alignment.center,
                   child: Column(children: [
                     const Text("Цели и задачи", style: TextStyle(color: Colors.black54, decoration: TextDecoration.underline),),
                     const SizedBox(height: 5),

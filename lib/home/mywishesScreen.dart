@@ -29,7 +29,8 @@ class _WishesScreenState extends State<WishesScreen>{
         builder: (context, appVM, child) {
           appViewModel=appVM;
           allWishList = appVM.wishItems;
-          if(filteredWishList.isEmpty) filteredWishList = appVM.wishItems;
+          page?filteredWishList = allWishList.where((element) => element.isChecked).toList():
+          filteredWishList = allWishList;
           isPBActive=appVM.isinLoading;
           return Scaffold(
             backgroundColor: AppColors.backgroundColor,

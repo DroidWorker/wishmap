@@ -1,14 +1,9 @@
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_manager/photo_manager.dart';
-import 'package:provider/provider.dart';
-
-import '../ViewModel.dart';
-import '../navigation/navigation_block.dart';
 
 class RoundedPhotoGallery extends StatefulWidget {
   @override
@@ -30,7 +25,8 @@ class _RoundedPhotoGalleryState extends State<RoundedPhotoGallery> {
 
   Future<void> _checkPermissionAndLoadImages() async {
     var status = await Permission.photos.request();
-    if (status.isGranted) {
+    var statusOld = await Permission.storage.request();
+    if (status.isGranted||statusOld.isGranted) {
       await _loadImages();
     } else {
       // Handle the case where the user denied permission

@@ -4,7 +4,8 @@ import "package:flutter_hsvcolor_picker/flutter_hsvcolor_picker.dart";
 typedef ValueCallback<T> = void Function(T value);
 class ColorPickerWidget extends StatefulWidget {
   final ValueCallback<Color> onColorSelected;
-  const ColorPickerWidget({super.key, required this.onColorSelected});
+  final Color? initColor;
+  const ColorPickerWidget({super.key, required this.onColorSelected, required this.initColor});
 
   @override
   _ColorPickerWidgetState createState() => _ColorPickerWidgetState();
@@ -12,10 +13,19 @@ class ColorPickerWidget extends StatefulWidget {
 
 class _ColorPickerWidgetState extends State<ColorPickerWidget> {
   Color selectedColor = Colors.blue;
-  List<Color> presetColors = [Colors.red, Colors.green, Colors.blue];
 
   Color currentColor = Colors.red;
   HSVColor hsvCurrent = HSVColor.fromColor(Colors.red);
+
+  @override
+  void initState() {
+    if(widget.initColor!=null) {
+      currentColor = widget.initColor!;
+      hsvCurrent = HSVColor.fromColor(widget.initColor!);
+    }
+    super.initState();
+  }
+
   void onChanged(HSVColor color) {
     currentColor = color.toColor();
     hsvCurrent = color;
