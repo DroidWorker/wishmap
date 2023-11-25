@@ -31,11 +31,12 @@ class TaskEditScreenState extends State<TaskEditScreen>{
           TaskData ai = appVM.currentTask??TaskData(id: -1, parentId: -1, text: 'объект не найден', description: "", isChecked: false);
           if(appVM.currentAim!=null) {
             AimData ad = appVM.currentAim!;
-            var childNodes = MyTreeNode(id: ad.id, type: 'a', title: ad.text, isChecked: ad.isChecked, children: [MyTreeNode(id: ai.id, type: 't', title: ai.text, isChecked: ai.isChecked)..noClickable=true]);
-            roots = appVM.convertToMyTreeNodeIncludedAimsTasks(childNodes, ad.parentId);
+            var childNodes = MyTreeNode(id: ad.id, type: 'a', title: ad.text, isChecked: ad.isChecked, children: []);
+            if(roots.isEmpty)appVM.convertToMyTreeNodeIncludedAimsTasks(childNodes, ai.id, ad.parentId);
           }else {
             appVM.getAim(ai.parentId);
           }
+          roots=appVM.myNodes;
           text.text = ai.text;
           description.text = ai.description;
           return Scaffold(
@@ -62,7 +63,7 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                             const Spacer(),
                             TextButton(
                                 style: TextButton.styleFrom(
-                                  backgroundColor: AppColors.greyBackButton,
+                                  backgroundColor: ai.isChecked?AppColors.pinkButtonTextColor:AppColors.greyBackButton,
                                   shape: const RoundedRectangleBorder(
                                     borderRadius: BorderRadius.all(Radius.circular(10)),
                                   ),
@@ -71,7 +72,7 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                                   appVM.updateTaskStatus(ai.id, !ai.isChecked);
                                   showDialog(context: context,
                                     builder: (BuildContext context) => AlertDialog(
-                                      title: ai.isChecked? const Text('достигнута'):const Text(' не достигнута'),
+                                      title: ai.isChecked? const Text('исполнена'):const Text(' не исполнена'),
                                       actions: <Widget>[
                                         TextButton(
                                           onPressed: () { Navigator.pop(context, 'OK');},
@@ -81,7 +82,7 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                                     ),
                                   );
                                 },
-                                child: const Text("Достигнута",style: TextStyle(color: Colors.black, fontSize: 12))
+                                child: const Text("Исполнена",style: TextStyle(color: Colors.black, fontSize: 12))
                             ),
                             const SizedBox(width: 3,),
                             TextButton(
@@ -198,6 +199,8 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                                   .add(NavigateToMainSphereEditScreenEvent());
                             }else if(type=="w"){
                               BlocProvider.of<NavigationBloc>(context).clearHistory();
+                              appVM.cachedImages.clear();
+                              appVM.wishScreenState=null;
                               appVM.startWishScreen(id, 0);
                               BlocProvider.of<NavigationBloc>(context)
                                   .add(NavigateToWishScreenEvent());

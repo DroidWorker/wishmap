@@ -73,11 +73,11 @@ class _CircleWidgetState extends State<CircleWidget>{
 }
 class CircularDraggableCircles extends StatefulWidget {
   List<Circle> circles;
-  List<MainCircle> centralCircles = [];
+  bool clearData = true;
   double size;
   Pair center;
 
-  CircularDraggableCircles({super.key, required this.circles, required this.size, required this.center});
+  CircularDraggableCircles({super.key, required this.circles, required this.size, required this.center,this.clearData=true});
 
   @override
   _CircularDraggableCirclesState createState() => _CircularDraggableCirclesState();
@@ -85,6 +85,8 @@ class CircularDraggableCircles extends StatefulWidget {
 
 class _CircularDraggableCirclesState extends State<CircularDraggableCircles> with TickerProviderStateMixin {
   AppViewModel? vm;
+
+  List<MainCircle> centralCircles = [];
 
   int plusId = -1;//used for insert sphere in selected place
   
@@ -185,7 +187,8 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
           }
         }
         if(widget.circles.isNotEmpty)plusId++;
-        vm?.createNewSphereWish(WishData(id: circleid, parentId: widget.centralCircles.last.id, text: "new item", description: "", affirmation: "", color: Colors.red));
+        vm?.cachedImages.clear();
+        vm?.createNewSphereWish(WishData(id: circleid, parentId: centralCircles.last.id, text: "new item", description: "", affirmation: "", color: Colors.red));
         widget.circles.insert(plusId, Circle(id: circleid, text: "new item", color: Colors.red, radius: (widget.size*0.2).toInt()));
         plusId=-1;
         circlePositions.clear();
@@ -241,27 +244,27 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
   }
 
   void initAnim(int id, int itemId){
-    final initialTop = animationDirectionForward?widget.center.value-widget.centralCircles.last.radius:widget.circles[itemId].radius*-0.5;//widget.centralCircles.last.coords.value;
-    final initialLeft = animationDirectionForward?widget.center.key-widget.centralCircles.last.radius:widget.center.key * 2 - widget.centralCircles.last.radius*1.5;//widget.centralCircles.last.coords.key;
-    final finalTop = animationDirectionForward?widget.circles[itemId].radius*-0.5:widget.center.value-widget.centralCircles[widget.centralCircles.length-2].radius;
-    final finalRight = animationDirectionForward?widget.center.key * 2 - widget.centralCircles.last.radius*1.5:widget.center.key-widget.centralCircles[widget.centralCircles.length-2].radius;
+    final initialTop = animationDirectionForward?widget.center.value-centralCircles.last.radius:widget.circles[itemId].radius*-0.5;//centralCircles.last.coords.value;
+    final initialLeft = animationDirectionForward?widget.center.key-centralCircles.last.radius:widget.center.key * 2 - centralCircles.last.radius*1.5;//centralCircles.last.coords.key;
+    final finalTop = animationDirectionForward?widget.circles[itemId].radius*-0.5:widget.center.value-centralCircles[centralCircles.length-2].radius;
+    final finalRight = animationDirectionForward?widget.center.key * 2 - centralCircles.last.radius*1.5:widget.center.key-centralCircles[centralCircles.length-2].radius;
 
-    final radiusToCenterInitialTop = animationDirectionForward?circlePositions[itemId].dy:widget.center.value - widget.centralCircles[0].radius;
-    final radiusToCenterInitialLeft = animationDirectionForward?circlePositions[itemId].dx:widget.center.key - widget.centralCircles[0].radius;
-    final radiusToCenterFinalTop = animationDirectionForward?widget.center.value - widget.centralCircles[0].radius:circlePositions[itemId].dy;
-    final radiusToCenterFinalLeft = animationDirectionForward?widget.center.key - widget.centralCircles[0].radius:circlePositions[itemId].dx;
+    final radiusToCenterInitialTop = animationDirectionForward?circlePositions[itemId].dy:widget.center.value - centralCircles[0].radius;
+    final radiusToCenterInitialLeft = animationDirectionForward?circlePositions[itemId].dx:widget.center.key - centralCircles[0].radius;
+    final radiusToCenterFinalTop = animationDirectionForward?widget.center.value - centralCircles[0].radius:circlePositions[itemId].dy;
+    final radiusToCenterFinalLeft = animationDirectionForward?widget.center.key - centralCircles[0].radius:circlePositions[itemId].dx;
     //duplicate clicked sphere
     if(animationDirectionForward) {
-      widget.centralCircles.add(MainCircle(id: id,
+      centralCircles.add(MainCircle(id: id,
           coords: Pair(key: circlePositions[itemId].dx,
               value: circlePositions[itemId].dy),
           text: widget.circles[itemId].text,
-          textSize: 12,
+          textSize: 24,
           color: widget.circles[itemId].color,
-          radius: widget.centralCircles[0].radius,
+          radius: centralCircles[0].radius,
           isActive: widget.circles[itemId].isActive));
-      if (widget.centralCircles.length > 2) {
-        widget.centralCircles[widget.centralCircles
+      if (centralCircles.length > 2) {
+        centralCircles[centralCircles
             .length - 3].isVisible = false;
       }
       AlphaAnimation = Tween(begin: 1.0, end: 0.0).animate(movingController);
@@ -313,28 +316,28 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
     // Добавляем слушателя анимации для обновления состояния и перерисовки виджета
     Vanimation.addListener(() {
       setState(() {
-        widget.centralCircles[widget.centralCircles
+        centralCircles[centralCircles
             .length - 2].coords.value =
             Vanimation.value;
       });
     });
     Hanimation.addListener(() {
       setState(() {
-        widget.centralCircles[widget.centralCircles
+        centralCircles[centralCircles
             .length - 2].coords.key =
             Hanimation.value;
       });
     });
     radiusToCenterVanimation.addListener(() {
       setState(() {
-        widget.centralCircles[widget.centralCircles
+        centralCircles[centralCircles
             .length - 1].coords.value =
             radiusToCenterVanimation.value;
       });
     });
     radiusToCenterHanimation.addListener(() {
       setState(() {
-        widget.centralCircles[widget.centralCircles
+        centralCircles[centralCircles
             .length - 1].coords.key =
             radiusToCenterHanimation.value;
       });
@@ -355,7 +358,7 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
   void animStatusListener(status){
     if (status == AnimationStatus.completed) {
       if(animationDirectionForward){
-        widget.circles = vm?.openSphere(widget.centralCircles.last.id)??[];
+        widget.circles = vm?.openSphere(centralCircles.last.id)??[];
         circlePositions.clear();
         circleRotations.clear();
         plusesPositions.clear();
@@ -383,11 +386,11 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
         afterMovingController.reset();
         afterMovingController.forward();
       }else{{
-        if(widget.centralCircles.length>2){
-          widget.centralCircles[widget.centralCircles.length-3].isVisible = true;
+        if(centralCircles.length>2){
+          centralCircles[centralCircles.length-3].isVisible = true;
         }
         setState(() {
-          widget.centralCircles.removeLast();
+          centralCircles.removeLast();
         });
       }}
     }
@@ -396,18 +399,20 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
   @override
   Widget build(BuildContext context) {
     vm = Provider.of<AppViewModel>(context);
-    if(widget.centralCircles.isEmpty) {
-      widget.centralCircles = List<MainCircle>.from(vm!.mainCircles);
-      textAlphaAnimValue = 1;
+    if(centralCircles.isEmpty||widget.clearData) {
+      centralCircles = List<MainCircle>.from(vm!.mainCircles);
+      if(centralCircles.length==1)textAlphaAnimValue = 1;
+      widget.clearData=false;
     }
 
-    for (int i = 0; i<widget.centralCircles.length; i++) {
-      widget.centralCircles[i].radius= MediaQuery.of(context).size.width*0.15;
-      if (widget.centralCircles[i].coords.key == 0.0 ||
-          widget.centralCircles[i].coords.value == 0.0) {
-        widget.centralCircles[i].coords = Pair(
-            key: widget.center.key - widget.centralCircles[i].radius,
-            value: widget.center.value - widget.centralCircles[i].radius);
+
+    for (int i = 0; i<centralCircles.length; i++) {
+      centralCircles[i].radius= MediaQuery.of(context).size.width*0.15;
+      if (centralCircles[i].coords.key == 0.0 ||
+          centralCircles[i].coords.value == 0.0) {
+        centralCircles[i].coords = Pair(
+            key: widget.center.key - centralCircles[i].radius,
+            value: widget.center.value - centralCircles[i].radius);
       }
     }
     var newHash = 0;
@@ -502,11 +507,11 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
                     ),
                     child: const SizedBox(),
                   ),),
-                if(widget.centralCircles.length>1)Positioned(
+                if(centralCircles.length>1)Positioned(
                     left: widget.center.key+10,
                     bottom: widget.center.value,
-                    width: widget.centralCircles[widget.centralCircles.length-2].coords.key-widget.center.key+50,
-                    height: widget.center.value-widget.centralCircles[widget.centralCircles.length-2].coords.value-50,
+                    width: centralCircles[centralCircles.length-2].coords.key-widget.center.key+50,
+                    height: widget.center.value-centralCircles[centralCircles.length-2].coords.value-50,
                     child: CustomPaint(
                       painter: LinePainter(),
                     ),
@@ -600,7 +605,7 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
                       )
                   );
                 }).toList(),
-                ...widget.centralCircles
+                ...centralCircles
                     .asMap()
                     .entries
                     .where((entry) {
@@ -621,14 +626,14 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
                               color: value.isActive?value.color:const Color.fromARGB(255, 217, 217, 217),
                             ),
                             child: Center(
-                                child: IntrinsicHeight(
-                                  child: Column(children: [
+                                  child: Column(mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
                                     const SizedBox(height: 5,),
-                                    Text(
+                                    AutoSizeText(
                                       value.text,
-                                      style: TextStyle(color: Colors.white,
-                                          fontSize: (value.textSize)
-                                              .toDouble()),
+                                      maxLines: 1,
+                                      minFontSize: 14,
+                                      style: const TextStyle(color: Colors.white, fontSize: 24),
                                       textAlign: TextAlign.center,
                                     ),
                                     AnimatedBuilder(
@@ -648,10 +653,9 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
                                     )
                                   ],),
                                 )
-                            )
                         ),
                         onTap: () {
-                          if (widget.centralCircles.length - 1 != index) {
+                          if (centralCircles.length - 1 != index) {
                             animationDirectionForward = false;
                             widget.circles = vm?.openSphere(value.id)??[];
                             circleRotations.clear();
@@ -683,20 +687,20 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
                                   (2 * pi * i / widget.circles.length) +
                                       angleBetween / 2);
                             }
-                            initAnim(widget.centralCircles.last.id,
+                            initAnim(centralCircles.last.id,
                                 widget.circles.indexWhere((element) => element
-                                    .id == widget.centralCircles.last.id));
+                                    .id == centralCircles.last.id));
                             movingController.reset();
                             movingController.forward();
-                          } else if (widget.centralCircles[index].id == 0) {
+                          } else if (centralCircles[index].id == 0) {
                             appViewModel.cachedImages.clear();
                             BlocProvider.of<NavigationBloc>(context)
                                 .add(NavigateToMainSphereEditScreenEvent());
                           } else {
                             appViewModel.cachedImages.clear();
                             appViewModel.wishScreenState=null;
-                            appViewModel.startWishScreen(widget.centralCircles[index].id, 0);
-                            appViewModel.mainCircles = widget.centralCircles;
+                            appViewModel.startWishScreen(centralCircles[index].id, 0);
+                            appViewModel.mainCircles = centralCircles;
                             BlocProvider.of<NavigationBloc>(context)
                                 .add(NavigateToWishScreenEvent());
                           }

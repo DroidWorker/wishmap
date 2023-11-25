@@ -19,10 +19,6 @@ class WishScreen extends StatefulWidget {
 
 class _WishScreenState extends State<WishScreen>{
   Color circleColor = Colors.redAccent;
-
-  late TextEditingController _title;
-  late TextEditingController _description;
-  late TextEditingController _affirmation;
   Color? _color;
 
   bool isDataLoaded = false;
@@ -35,16 +31,16 @@ class _WishScreenState extends State<WishScreen>{
   @override
   Widget build(BuildContext context) {
     final appViewModel = Provider.of<AppViewModel>(context);
-    if(_color==null){
-      _title = TextEditingController(text: "");
-      _description = TextEditingController(text: "");
-      _affirmation = TextEditingController(text: "");
-      _color = Colors.black12;
-    }
+    TextEditingController _title = TextEditingController(text: curwish.text);
+    TextEditingController _description = TextEditingController(text: curwish.description);
+    TextEditingController _affirmation = TextEditingController(text: curwish.affirmation);
+    _title.addListener(() { curwish.text=_title.text;});
+    _description.addListener(() { curwish.description=_description.text;});
+    _affirmation.addListener(() { curwish.affirmation=_affirmation.text;});
 
     return  Consumer<AppViewModel>(
         builder: (context, appVM, child){
-          if(appVM.wishScreenState!=null&&!isDataLoaded) {
+          if(appVM.wishScreenState!=null&&curwish.id==-1) {
             curwish = appVM.wishScreenState!.wish;
             _title.text = appVM.wishScreenState!.wish.text;
             _description.text = appVM.wishScreenState!.wish.description;
@@ -84,17 +80,17 @@ class _WishScreenState extends State<WishScreen>{
                   if(curwish.id > 800)
                     TextButton(
                         style: TextButton.styleFrom(
-                          backgroundColor: AppColors.greyBackButton,
+                          backgroundColor: curwish.isChecked?AppColors.pinkButtonTextColor:AppColors.greyBackButton,
                           shape: const RoundedRectangleBorder(
                             borderRadius: BorderRadius.all(Radius.circular(10)),
                           ),
                         ),
                         onPressed: () async {
-                          appVM.wishScreenState!.wish.isChecked=true;
-                          appViewModel.updateWishStatus(appVM.wishScreenState!.wish.id, true);
+                          curwish.isChecked=!curwish.isChecked;
+                          appViewModel.updateWishStatus(appVM.wishScreenState!.wish.id, curwish.isChecked);
                           showDialog(context: context,
                             builder: (BuildContext context) => AlertDialog(
-                              title: const Text('исполнено'),
+                              title: curwish.isChecked?const Text('исполнено'):const Text('не исполнено'),
                               actions: <Widget>[
                                 TextButton(
                                   onPressed: () { Navigator.pop(context, 'OK');},
@@ -285,7 +281,7 @@ class _WishScreenState extends State<WishScreen>{
                           showDialog(
                             context: context,
                             builder: (context) {
-                              return ColorPickerWidget(initColor: _color, onColorSelected: (Color c){setState(() {_color=c;});});
+                              return ColorPickerWidget(initColor: _color, onColorSelected: (Color c){setState(() {_color=c;curwish.color=c;});});
                             },
                           );
                         },
@@ -307,18 +303,11 @@ class _WishScreenState extends State<WishScreen>{
                           },
                           child: Row(
                             children: [
-                              Text(entry.value.text),
+                              Expanded(child:Text(entry.value.text, maxLines: 3,),flex: 7,),
                               const Expanded(child: SizedBox()),
-                              IconButton(
-                                icon: entry.value.isChecked?Image.asset('assets/icons/target1914412.png'):Image.asset('assets/icons/nountarget423422.png'),
-                                iconSize: 18,
-                                onPressed: () {
-                                  setState(() {
-                                    appViewModel.wishScreenState?.wishAims[entry.key].isChecked=!entry.value.isChecked;
-                                    appViewModel.updateAimStatus(entry.value.id, !entry.value.isChecked);
-                                  });
-                                },
-                              ),
+                              Padding(padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 0),
+                                child: entry.value.isChecked?Image.asset('assets/icons/target1914412.png', width: 25, height: 25,):Image.asset('assets/icons/nountarget423422.png', width: 25, height: 25),
+                              )
                             ],
                           ),
                         );
@@ -334,18 +323,11 @@ class _WishScreenState extends State<WishScreen>{
                           },
                           child: Row(
                             children: [
-                              Text(entry.value.text),
+                              Expanded(child:Text(entry.value.text, maxLines: 3,),flex: 7),
                               const Expanded(child: SizedBox()),
-                              IconButton(
-                                icon: entry.value.isChecked?const Icon(Icons.check_circle_outline):const Icon(Icons.circle_outlined),
-                                iconSize: 18,
-                                onPressed: () {
-                                  setState(() {
-                                    appViewModel.wishScreenState?.wishTasks[entry.key].isChecked=!entry.value.isChecked;
-                                    appViewModel.updateTaskStatus(entry.value.id, !entry.value.isChecked);
-                                  });
-                                },
-                              ),
+                              Padding(padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 0),
+                                child: entry.value.isChecked?const Icon(Icons.check_circle_outline, size: 19,):const Icon(Icons.circle_outlined, size: 19,),
+                              )
                             ],
                           ),
                         );

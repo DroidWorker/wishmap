@@ -75,10 +75,7 @@ class TaskScreenState extends State<TaskScreen>{
                                   title: const Text('сохранено'),
                                   actions: <Widget>[
                                     TextButton(
-                                      onPressed: () { Navigator.pop(context, 'OK');
-                                      BlocProvider.of<NavigationBloc>(context).removeLastFromBS();
-                                      BlocProvider.of<NavigationBloc>(context)
-                                          .add(NavigateToTaskEditScreenEvent(taskId));},
+                                      onPressed: () { Navigator.pop(context, 'OK');},
                                       child: const Text('OK'),
                                     ),
                                   ],

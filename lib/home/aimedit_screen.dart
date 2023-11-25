@@ -57,7 +57,7 @@ class AimEditScreenState extends State<AimEditScreen>{
                             const Spacer(),
                             TextButton(
                                 style: TextButton.styleFrom(
-                                  backgroundColor: AppColors.greyBackButton,
+                                  backgroundColor: ai!.isChecked?AppColors.pinkButtonTextColor:AppColors.greyBackButton,
                                   shape: const RoundedRectangleBorder(
                                     borderRadius: BorderRadius.all(Radius.circular(10)),
                                   ),

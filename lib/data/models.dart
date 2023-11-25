@@ -169,7 +169,7 @@ class MainScreenState {
 }
 
 class WishScreenState {
-  final WishData wish;
+  WishData wish;
   List<AimItem> wishAims = [];
   List<TaskItem>wishTasks = [];
 

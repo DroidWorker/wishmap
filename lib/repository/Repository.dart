@@ -333,6 +333,7 @@ class Repository{
             affirmation: dataList['affirmation'] ?? '',
           );
           wd.childAims = childAims;
+          wd.isChecked = dataList['isChecked']??false;
           return wd;
       }
     }

@@ -16,7 +16,7 @@ class WishesScreen extends StatefulWidget {
 }
 
 class _WishesScreenState extends State<WishesScreen>{
-  bool page = false;//false - Исполнено true - Все желания
+  int page = 0;//2 - не исполнено 1 - Исполнено 0 - Все желания
   List<WishItem> allWishList = [];
   List<WishItem> filteredWishList = [];
   AppViewModel? appViewModel;
@@ -29,8 +29,8 @@ class _WishesScreenState extends State<WishesScreen>{
         builder: (context, appVM, child) {
           appViewModel=appVM;
           allWishList = appVM.wishItems;
-          page?filteredWishList = allWishList.where((element) => element.isChecked).toList():
-          filteredWishList = allWishList;
+          page==1?filteredWishList = allWishList.where((element) => element.isChecked).toList():
+          page==2?filteredWishList = allWishList.where((element) => !element.isChecked).toList():filteredWishList = allWishList;
           isPBActive=appVM.isinLoading;
           return Scaffold(
             backgroundColor: AppColors.backgroundColor,
@@ -55,27 +55,49 @@ class _WishesScreenState extends State<WishesScreen>{
                   const SizedBox(height: 20),
                   Row(children: [
                     GestureDetector(
-                      child: !page
-                          ? const Text("Все желания",
-                          style: TextStyle(decoration: TextDecoration.underline))
-                          : const Text("Все желания"),
+                      child: Container(
+                    height: 30,
+                    child: page==0
+                        ? const Text("Все желания",
+                        style: TextStyle(decoration: TextDecoration.underline))
+                        : const Text("Все желания"),
+                  ),
                       onTap: () {
                         setState(() {
-                          page = !page;
-                          filterAims(!page);
+                          page = 0;
+                          filterAims(page);
                         });
                       },
                     ),
                     const SizedBox(width: 5),
                     GestureDetector(
-                      child: page
-                          ? const Text("Исполнено",
-                          style: TextStyle(decoration: TextDecoration.underline))
-                          : const Text("Исполнено"),
+                      child: Container(
+                      height: 30,
+                        child: page==1
+                            ? const Text("Исполнено",
+                            style: TextStyle(decoration: TextDecoration.underline))
+                            : const Text("Исполнено"),
+                      ),
                       onTap: () {
                         setState(() {
-                          page = !page;
-                          filterAims(!page);
+                          page = 1;
+                          filterAims(page);
+                        });
+                      },
+                    ),
+                    const SizedBox(width: 5),
+                    GestureDetector(
+                      child: Container(
+                        height: 30,
+                        child:page==2
+                            ? const Text("не исполнено",
+                            style: TextStyle(decoration: TextDecoration.underline))
+                            : const Text("не исполнено"),
+                      ),
+                      onTap: () {
+                        setState(() {
+                          page = 2;
+                          filterAims(page);
                         });
                       },
                     )
@@ -85,6 +107,7 @@ class _WishesScreenState extends State<WishesScreen>{
                       itemCount: filteredWishList.length,
                       itemBuilder: (context, index) {
                         return WishItemWidget(ti: filteredWishList[index],
+                          onItemSelect: onItemClick,
                           onClick: onItemClick,
                           onDelete: onItemDelete,);
                       }
@@ -199,14 +222,19 @@ class _WishesScreenState extends State<WishesScreen>{
             ));
     });
   }
-  filterAims(bool isAll){
+  filterAims(int type){
     setState(() {
-      !isAll?filteredWishList = allWishList.where((element) => element.isChecked).toList():
-      filteredWishList = allWishList;
+      page==1?filteredWishList = allWishList.where((element) => element.isChecked).toList():
+      page==2?filteredWishList = allWishList.where((element) => !element.isChecked).toList():filteredWishList = allWishList;
     });
   }
 
-  onItemClick(int id){
+  onItemClick(int id) {
+    appViewModel?.cachedImages.clear();
+    appViewModel?.wishScreenState=null;
+    appViewModel?.startWishScreen(id, 0);
+    BlocProvider.of<NavigationBloc>(context)
+        .add(NavigateToWishScreenEvent());
   }
   onItemDelete(int id){
     setState(() {

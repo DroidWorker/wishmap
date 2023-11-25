@@ -110,7 +110,7 @@ class MyTreeTile extends StatelessWidget {
         // add decorations to the indentation of tree nodes.
         // This could also be provided through a DefaultTreeIndentGuide
         // inherited widget placed above the tree view.
-        guide: const IndentGuide.connectingLines(indent: 48),
+        guide: const IndentGuide.connectingLines(indent: 25),
         // The widget to render next to the indentation. TreeIndentation
         // respects the text direction of `Directionality.maybeOf(context)`
         // and defaults to left-to-right.
@@ -118,10 +118,11 @@ class MyTreeTile extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(15, 8, 8, 8),
           child: Row(
             children: [
-              FittedBox(
-                fit: BoxFit.contain,
+              Expanded(
+                flex: 5,
                 child: Text(
                   entry.node.title,
+                  maxLines: 5,
                   style: entry.node.noClickable?const TextStyle():const TextStyle(decoration: TextDecoration.underline),
                 ),
               ),

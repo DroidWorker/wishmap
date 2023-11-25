@@ -70,10 +70,7 @@ class AimScreen extends StatelessWidget {
                                   title: const Text('сохранено'),
                                   actions: <Widget>[
                                     TextButton(
-                                      onPressed: () { Navigator.pop(context, 'OK');
-                                        BlocProvider.of<NavigationBloc>(context).removeLastFromBS();
-                                      BlocProvider.of<NavigationBloc>(context)
-                                          .add(NavigateToAimEditScreenEvent(aimId));},
+                                      onPressed: () { Navigator.pop(context, 'OK');},
                                       child: const Text('OK'),
                                     ),
                                   ],

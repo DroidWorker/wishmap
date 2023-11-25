@@ -21,11 +21,12 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen>{
   bool isPauseIcon = true;
+  bool clearData = true;
   @override
   Widget build(BuildContext context) {
     return Consumer<AppViewModel>(
         builder: (context, appVM, child){
-          return Scaffold(
+          Widget w = Scaffold(
               backgroundColor: AppColors.backgroundColor,
               body: SafeArea(child:Stack(
                 children: [
@@ -98,6 +99,7 @@ class _MainScreenState extends State<MainScreen>{
                               onPressed: () {
                                 setState((){
                                   isPauseIcon=!isPauseIcon;
+                                  clearData=false;
                                 });
 
                               },
@@ -200,9 +202,11 @@ class _MainScreenState extends State<MainScreen>{
                       ],
                     ),
                   ),
-                  CircularDraggableCircles(circles: appVM.currentCircles, size: MediaQuery.of(context).size.width-20, center: Pair(key: MediaQuery.of(context).size.width/2, value: MediaQuery.of(context).size.height*0.50)),
+                  CircularDraggableCircles(circles: appVM.currentCircles, size: MediaQuery.of(context).size.width-20, center: Pair(key: MediaQuery.of(context).size.width/2, value: MediaQuery.of(context).size.height*0.50), clearData: clearData,),
                 ],))
           );
+          clearData=true;
+          return w;
         }
     );
   }

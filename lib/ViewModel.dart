@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:wishmap/main.dart';
 import 'package:wishmap/repository/Repository.dart';
 import 'package:wishmap/repository/local_repository.dart';
 import 'package:dart_suncalc/suncalc.dart';
@@ -345,6 +346,10 @@ class AppViewModel with ChangeNotifier {
         ..isActive = true;
         if(mainCircles.last.id==wd.id) mainCircles.last..color=wd.color..text=wd.text..isActive=true;
       }
+      var sphereInWishesList = wishItems.indexWhere((element) => element.id==wd.id);
+      if(sphereInWishesList>=0){
+        wishItems[sphereInWishesList]=WishItem(id: wd.id, text: wd.text, isChecked: wd.isChecked);
+      }
     }catch(ex){
       addError("сфера не была сохранена: $ex");
     }
@@ -410,6 +415,15 @@ class AppViewModel with ChangeNotifier {
   Future<void> updateWishStatus(int wishId, bool status) async{
     try {
       await repository.changeWishStatus(wishId, mainScreenState?.moon.id??0, status);
+      if(mainScreenState!=null){
+        final i = mainScreenState!.allCircles.indexWhere((element) => element.id==wishId);
+        if(i>=0)mainScreenState!.allCircles[i].isChecked=status;
+      }
+      if(wishItems.isNotEmpty){
+        final i = wishItems.indexWhere((element) => element.id == wishId);
+        if(i>=0)wishItems[i].isChecked = status;
+      }
+      notifyListeners();
     }catch(ex){
       addError(ex.toString());
     }
@@ -419,7 +433,7 @@ class AppViewModel with ChangeNotifier {
     try {
       int? aimId = (await repository.createAim(ad, parentCircleId, mainScreenState?.moon.id??0))??-1;
       currentAim=(AimData(id: aimId, parentId: ad.parentId, text: ad.text, description: ad.description, isChecked: ad.isChecked));
-      aimItems.add(AimItem(id: ad.id, text: ad.text, isChecked: ad.isChecked));
+      aimItems.add(AimItem(id: aimId, text: ad.text, isChecked: ad.isChecked));
       return aimId;
     }catch(ex){
       addError(ex.toString());
@@ -462,6 +476,7 @@ class AppViewModel with ChangeNotifier {
         if(i>=0)aimItems[i].isChecked = status;
       }
       await repository.changeAimStatus(aimId, mainScreenState?.moon.id??0, status);
+      toggleChecked(myNodes.first, 'a', aimId, status);
       notifyListeners();
     }catch(ex){
       addError(ex.toString());
@@ -472,7 +487,7 @@ class AppViewModel with ChangeNotifier {
     try {
       int taskId = (await repository.createTask(ad, parentAimId, mainScreenState?.moon.id??0))??-1;
       currentTask=(TaskData(id: taskId, parentId: ad.parentId, text: ad.text, description: ad.description, isChecked: ad.isChecked));
-      taskItems.add(TaskItem(id: ad.id, text: ad.text, isChecked: ad.isChecked));
+      taskItems.add(TaskItem(id: taskId, text: ad.text, isChecked: ad.isChecked));
       return taskId;
     }catch(ex){
       addError(ex.toString());
@@ -514,6 +529,7 @@ class AppViewModel with ChangeNotifier {
         if(i>=0)taskItems[i].isChecked = status;
       }
       await repository.changeTaskStatus(taskId, mainScreenState?.moon.id??0, status);
+      toggleChecked(myNodes.first, 't', taskId, status);
       notifyListeners();
     }catch(ex){
       addError(ex.toString());
@@ -592,13 +608,26 @@ class AppViewModel with ChangeNotifier {
     notifyListeners();
   }
 
-  List<MyTreeNode> convertToMyTreeNodeIncludedAimsTasks(MyTreeNode childNodes, int wishId) {
+  Future<List<MyTreeNode>> convertToMyTreeNodeIncludedAimsTasks(MyTreeNode aimNode, int taskId, int wishId) async {
+    final taskList = await getTasksForAim(aimNode.id);
     List<CircleData> allCircles = getParentTree(wishId);
-    List<MyTreeNode> children = [childNodes];
+    List<MyTreeNode> children = <MyTreeNode>[MyTreeNode(id: aimNode.id, type: "a", title: aimNode.title, isChecked: aimNode.isChecked, children: (taskList?.map((e) =>  MyTreeNode(id: e.id, type: 't', title: e.text, isChecked: e.isChecked)..noClickable=e.id==taskId?true:false))?.toList()??[])];
     for (var element in allCircles) {
       children=[MyTreeNode(id: element.id, type: element.id==0?"m":"w", title: element.text, isChecked:  element.isChecked, children: children)];
     }
+    myNodes= children;
+    notifyListeners();
     return children;
+  }
+
+  void toggleChecked(MyTreeNode e, String type, int targetId, bool value) {
+    if (e.id == targetId&&e.type==type) {
+      e.isChecked = value;
+    } else {
+      for (var child in e.children) {
+        toggleChecked(child, type, targetId, value);
+      }
+    }
   }
 
   List<CircleData> getParentTree(int targetId) {

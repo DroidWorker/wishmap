@@ -16,7 +16,7 @@ class AimsScreen extends StatefulWidget {
 }
 
 class _AimsScreenState extends State<AimsScreen>{
-  bool page = false;//false - Исполнено true - Все желания
+  int page = 0;//false - Исполнено true - Все желания
   late List<AimItem> allAims;
   List<AimItem> filteredAimList = [];
 
@@ -30,8 +30,8 @@ class _AimsScreenState extends State<AimsScreen>{
     return Consumer<AppViewModel>(
         builder: (context, appVM, child) {
           allAims = appVM.aimItems;
-          page?filteredAimList = allAims.where((element) => element.isChecked).toList():
-          filteredAimList = allAims;
+          page==1?filteredAimList = allAims.where((element) => element.isChecked).toList():
+          page==2?filteredAimList = allAims.where((element) => !element.isChecked).toList():filteredAimList = allAims;          filteredAimList = allAims;
           isPBActive=appVM.isinLoading;
           return Scaffold(
             backgroundColor: AppColors.backgroundColor,
@@ -56,27 +56,40 @@ class _AimsScreenState extends State<AimsScreen>{
                   const SizedBox(height: 20),
                   Row(children: [
                     GestureDetector(
-                      child: !page
+                      child: page==0
                           ? const Text("Все цели",
                           style: TextStyle(decoration: TextDecoration.underline))
                           : const Text("Все цели"),
                       onTap: () {
                         setState(() {
-                          page = !page;
-                          filterAims(!page);
+                          page = 0;
+                          filterAims(page);
                         });
                       },
                     ),
                     const SizedBox(width: 5),
                     GestureDetector(
-                      child: page
+                      child: page==1
                           ? const Text("Достигнуты",
                           style: TextStyle(decoration: TextDecoration.underline))
                           : const Text("Достигнуты"),
                       onTap: () {
                         setState(() {
-                          page = !page;
-                          filterAims(!page);
+                          page = 1;
+                          filterAims(page);
+                        });
+                      },
+                    ),
+                    const SizedBox(width: 5),
+                    GestureDetector(
+                      child: page==2
+                          ? const Text("Не достигнуты",
+                          style: TextStyle(decoration: TextDecoration.underline))
+                          : const Text("Не достигнуты"),
+                      onTap: () {
+                        setState(() {
+                          page = 2;
+                          filterAims(page);
                         });
                       },
                     )
@@ -201,10 +214,10 @@ class _AimsScreenState extends State<AimsScreen>{
     });
   }
 
-  filterAims(bool isAll){
+  filterAims(int type){
     setState(() {
-      !isAll?filteredAimList = allAims.where((element) => element.isChecked).toList():
-        filteredAimList = allAims;
+      page==1?filteredAimList = allAims.where((element) => element.isChecked).toList():
+      page==2?filteredAimList = allAims.where((element) => !element.isChecked).toList():filteredAimList = allAims;
     });
   }
   onItemSelect(int id) async {

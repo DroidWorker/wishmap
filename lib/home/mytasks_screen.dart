@@ -17,9 +17,12 @@ class TasksScreen extends StatefulWidget {
 
 class _TaskScreenState extends State{
   List<TaskItem> taskList = [];
+  List<TaskItem> filteredTaskList = [];
   late AppViewModel appViewModel;
 
   var isPBActive = false;
+
+  int page = 0;//2 - не исполнено 1 - Исполнено 0 - Все желания
 
   @override
   Widget build(BuildContext context) {
@@ -27,6 +30,8 @@ class _TaskScreenState extends State{
     return Consumer<AppViewModel>(
         builder: (context, appVM, child) {
           taskList = appVM.taskItems;
+          page==1?filteredTaskList = taskList.where((element) => element.isChecked).toList():
+          page==2?filteredTaskList = taskList.where((element) => !element.isChecked).toList():filteredTaskList = taskList;
           isPBActive=appVM.isinLoading;
           return Scaffold(
               backgroundColor: AppColors.backgroundColor,
@@ -50,11 +55,61 @@ class _TaskScreenState extends State{
                     ),
                     const Text("за последние 24 часа"),
                     const SizedBox(height: 20),
+                    Row(children: [
+                      GestureDetector(
+                        child: Container(
+                          height: 30,
+                          child: page==0
+                              ? const Text("Все задачи",
+                              style: TextStyle(decoration: TextDecoration.underline))
+                              : const Text("Все задачи"),
+                        ),
+                        onTap: () {
+                          setState(() {
+                            page = 0;
+                            filter(page);
+                          });
+                        },
+                      ),
+                      const SizedBox(width: 5),
+                      GestureDetector(
+                        child: Container(
+                          height: 30,
+                          child: page==1
+                              ? const Text("Выполнены",
+                              style: TextStyle(decoration: TextDecoration.underline))
+                              : const Text("Выполнены"),
+                        ),
+                        onTap: () {
+                          setState(() {
+                            page = 1;
+                            filter(page);
+                          });
+                        },
+                      ),
+                      const SizedBox(width: 5),
+                      GestureDetector(
+                        child: Container(
+                          height: 30,
+                          child:page==2
+                              ? const Text("не выполнены",
+                              style: TextStyle(decoration: TextDecoration.underline))
+                              : const Text("не выполнены"),
+                        ),
+                        onTap: () {
+                          setState((){
+                            page = 2;
+                            filter(page);
+                          });
+                        },
+                      )
+                    ],),
+                    const SizedBox(height: 10,),
                     Expanded(child:
                     ListView.builder(
-                        itemCount: taskList.length,
+                        itemCount: filteredTaskList.length,
                         itemBuilder: (context, index) {
-                          return TaskItemWidget(ti: taskList[index],
+                          return TaskItemWidget(ti: filteredTaskList[index],
                               onSelect: onItemSelect,
                               onClick: onItemClick,
                               onDelete: onItemDelete);
@@ -184,5 +239,11 @@ class _TaskScreenState extends State{
       taskList.removeWhere((element) => element.id==id);
     });
     appViewModel.deleteTask(id);
+  }
+  filter(int type){
+    setState(() {
+      page==1?filteredTaskList = taskList.where((element) => element.isChecked).toList():
+      page==2?filteredTaskList = taskList.where((element) => !element.isChecked).toList():filteredTaskList = taskList;
+    });
   }
 }
