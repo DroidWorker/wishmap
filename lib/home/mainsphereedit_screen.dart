@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 
 import '../ViewModel.dart';
 import '../common/colorpicker_widget.dart';
+import '../common/treeview_widget.dart';
 import '../data/models.dart';
 import '../navigation/navigation_block.dart';
 import '../res/colors.dart';
@@ -41,7 +42,17 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
     text.addListener(() { curWd.text=text.text;});
     description.addListener(() { curWd.subText=description.text;});
     affirmation.addListener(() { curWd.affirmation=affirmation.text;});
-    return Scaffold(
+    return Consumer<AppViewModel>(
+        builder: (context, appVM, child){
+          final aims = appVM.aimItems.where((element) => element.parentId==0).toList();
+          List<int> aimsids = aims.map((e) => e.id).toList();
+          final tasks = appVM.taskItems.where((element) => aimsids.contains(element.parentId)).toList();
+          final List<MyTreeNode> root = [];
+          for (var element in aims) {
+            final childTasks = tasks.where((e) => e.parentId==element.id).toList();
+            root.add(MyTreeNode(id: element.id, type: 'a', title: element.text, isChecked: element.isChecked, children: childTasks.map((item) => MyTreeNode(id: item.id, type: 't', title: item.text, isChecked: item.isChecked)).toList()));
+          }
+          return Scaffold(
         backgroundColor: AppColors.backgroundColor,
         body: SafeArea(
           maintainBottomViewPadding: true,
@@ -217,6 +228,75 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
                   child: Column(children: [
                     const Text("Цели и задачи", style: TextStyle(color: Colors.black54, decoration: TextDecoration.underline),),
                     const SizedBox(height: 5),
+                   Align(
+                          alignment: Alignment.centerLeft,
+                          child: SizedBox(
+                            height: root.length*150,
+                            child: MyTreeView(key: UniqueKey(),roots: root, onTap: (id, type){
+                              if(type=="m"){
+                                BlocProvider.of<NavigationBloc>(context).clearHistory();
+                                appVM.cachedImages.clear();
+                                appVM.startMainsphereeditScreen();
+                                BlocProvider.of<NavigationBloc>(context)
+                                    .add(NavigateToMainSphereEditScreenEvent());
+                              }else if(type=="w"){
+                                BlocProvider.of<NavigationBloc>(context).clearHistory();
+                                appVM.startWishScreen(id, 0);
+                                BlocProvider.of<NavigationBloc>(context)
+                                    .add(NavigateToWishScreenEvent());
+                              }else if(type=="a"){
+                                appVM.getAim(id);
+                                BlocProvider.of<NavigationBloc>(context)
+                                    .add(NavigateToAimEditScreenEvent(id));
+                              }else if(type=="t"){
+                                appVM.getTask(id);
+                                BlocProvider.of<NavigationBloc>(context)
+                                    .add(NavigateToTaskEditScreenEvent(id));
+                              }
+                            },),
+                          )
+                    ),
+                    /*...aims.asMap()
+                        .entries
+                        .map((entry) {
+                      return GestureDetector(
+                        onTap: () async {
+                          await appViewModel.getAim(entry.value.id);
+                          BlocProvider.of<NavigationBloc>(context)
+                              .add(NavigateToAimEditScreenEvent(entry.value.id));
+                        },
+                        child: Row(
+                          children: [
+                            Expanded(child:Text(entry.value.text, maxLines: 3,),flex: 7,),
+                            const Expanded(child: SizedBox()),
+                            Padding(padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 0),
+                              child: entry.value.isChecked?Image.asset('assets/icons/target1914412.png', width: 25, height: 25,):Image.asset('assets/icons/nountarget423422.png', width: 25, height: 25),
+                            )
+                          ],
+                        ),
+                      );
+                    }).toList(),
+                    ...tasks.asMap()
+                        .entries
+                        .map((entry) {
+                      return GestureDetector(
+                        onTap: () async {
+                          await appViewModel.getTask(entry.value.id);
+                          BlocProvider.of<NavigationBloc>(context)
+                              .add(NavigateToTaskEditScreenEvent(entry.value.id));
+                        },
+                        child: Row(
+                          children: [
+                            Expanded(child:Text(entry.value.text, maxLines: 3,),flex: 7),
+                            const Expanded(child: SizedBox()),
+                            Padding(padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 0),
+                              child: entry.value.isChecked?const Icon(Icons.check_circle_outline, size: 19,):const Icon(Icons.circle_outlined, size: 19,),
+                            )
+                          ],
+                        ),
+                      );
+                    }).toList()??[],*/
+                    const SizedBox(height: 5),
                     ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.fieldFillColor,
@@ -243,6 +323,6 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
                   ),)
               ],
             ),
-    ));
+    ));});
   }
 }

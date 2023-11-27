@@ -72,7 +72,7 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                                   appVM.updateTaskStatus(ai.id, !ai.isChecked);
                                   showDialog(context: context,
                                     builder: (BuildContext context) => AlertDialog(
-                                      title: ai.isChecked? const Text('исполнена'):const Text(' не исполнена'),
+                                      title: ai.isChecked? const Text('выполнена'):const Text(' не выполнена'),
                                       actions: <Widget>[
                                         TextButton(
                                           onPressed: () { Navigator.pop(context, 'OK');},
@@ -82,7 +82,7 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                                     ),
                                   );
                                 },
-                                child: const Text("Исполнена",style: TextStyle(color: Colors.black, fontSize: 12))
+                                child: const Text("Выполнена",style: TextStyle(color: Colors.black, fontSize: 12))
                             ),
                             const SizedBox(width: 3,),
                             TextButton(
@@ -195,6 +195,7 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                             if(type=="m"){
                               BlocProvider.of<NavigationBloc>(context).clearHistory();
                               appVM.cachedImages.clear();
+                              appVM.startMainsphereeditScreen();
                               BlocProvider.of<NavigationBloc>(context)
                                   .add(NavigateToMainSphereEditScreenEvent());
                             }else if(type=="w"){
@@ -206,12 +207,12 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                                   .add(NavigateToWishScreenEvent());
                             }else if(type=="a"){
                               appVM.getAim(id);
-                              BlocProvider.of<NavigationBloc>(context).clearHistory();
+                              BlocProvider.of<NavigationBloc>(context).removeLastFromBS();
                               BlocProvider.of<NavigationBloc>(context)
                                   .add(NavigateToAimEditScreenEvent(id));
                             }else if(type=="t"&&ai.id!=id){
                               appVM.getTask(id);
-                              BlocProvider.of<NavigationBloc>(context).clearHistory();
+                              BlocProvider.of<NavigationBloc>(context).removeLastFromBS();
                               BlocProvider.of<NavigationBloc>(context)
                                   .add(NavigateToTaskEditScreenEvent(id));
                             }

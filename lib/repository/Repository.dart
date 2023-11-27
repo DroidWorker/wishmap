@@ -256,6 +256,7 @@ class Repository{
           final Map<dynamic, dynamic> dataList = element.value as Map<dynamic,dynamic>;
           tasksList.add(TaskItem(
               id: int.parse(dataList['id'].toString()),
+              parentId: int.parse(dataList['parentId'].toString()),
               text: dataList['text'],
               isChecked: dataList['isChecked']
           ));
@@ -277,6 +278,7 @@ class Repository{
           final Map<dynamic, dynamic> dataList = element.value as Map<dynamic,dynamic>;
           aimsList.add(AimItem(
               id: int.parse(dataList['id'].toString()),
+              parentId: int.parse(dataList['parentId'].toString()),
               text: dataList['text'],
               isChecked: dataList['isChecked']
           ));

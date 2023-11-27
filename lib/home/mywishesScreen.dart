@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:wishmap/common/wishItem_widget.dart';
 import '../ViewModel.dart';
+import '../common/treeview_widget.dart';
 import '../data/models.dart';
 import '../navigation/navigation_block.dart';
 import '../res/colors.dart';
@@ -19,6 +20,7 @@ class _WishesScreenState extends State<WishesScreen>{
   int page = 0;//2 - не исполнено 1 - Исполнено 0 - Все желания
   List<WishItem> allWishList = [];
   List<WishItem> filteredWishList = [];
+  List<MyTreeNode> roots = [];
   AppViewModel? appViewModel;
 
   var isPBActive = false;
@@ -32,6 +34,9 @@ class _WishesScreenState extends State<WishesScreen>{
           page==1?filteredWishList = allWishList.where((element) => element.isChecked).toList():
           page==2?filteredWishList = allWishList.where((element) => !element.isChecked).toList():filteredWishList = allWishList;
           isPBActive=appVM.isinLoading;
+          if(filteredWishList.isNotEmpty){
+            roots = convertListToMyTreeNodes(filteredWishList);
+          }
           return Scaffold(
             backgroundColor: AppColors.backgroundColor,
             body: SafeArea(child: Padding(
@@ -102,7 +107,37 @@ class _WishesScreenState extends State<WishesScreen>{
                       },
                     )
                   ],),
-                  Expanded(child:
+                  Expanded(child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        return Align(
+                      alignment: Alignment.centerLeft,
+                      child: SizedBox(
+                        height: constraints.maxHeight,
+                        child: MyTreeView(key: UniqueKey(),roots: roots, onTap: (id, type){
+                          if(type=="m"){
+                            BlocProvider.of<NavigationBloc>(context).clearHistory();
+                            appVM.cachedImages.clear();
+                            appVM.startMainsphereeditScreen();
+                            BlocProvider.of<NavigationBloc>(context)
+                                .add(NavigateToMainSphereEditScreenEvent());
+                          }else if(type=="w"){
+                            BlocProvider.of<NavigationBloc>(context).clearHistory();
+                            appVM.startWishScreen(id, 0);
+                            BlocProvider.of<NavigationBloc>(context)
+                                .add(NavigateToWishScreenEvent());
+                          }else if(type=="a"){
+                            appVM.getAim(id);
+                            BlocProvider.of<NavigationBloc>(context)
+                                .add(NavigateToAimEditScreenEvent(id));
+                          }else if(type=="t"){
+                            appVM.getTask(id);
+                            BlocProvider.of<NavigationBloc>(context)
+                                .add(NavigateToTaskEditScreenEvent(id));
+                          }
+                        },),
+                      )
+                  );})),
+                  /*Expanded(child:
                   ListView.builder(
                       itemCount: filteredWishList.length,
                       itemBuilder: (context, index) {
@@ -111,7 +146,7 @@ class _WishesScreenState extends State<WishesScreen>{
                           onClick: onItemClick,
                           onDelete: onItemDelete,);
                       }
-                  ),),
+                  ),),*/
                   const SizedBox(height: 10),
                   ElevatedButton(
                       style: ElevatedButton.styleFrom(

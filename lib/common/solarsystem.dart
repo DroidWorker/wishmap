@@ -180,7 +180,7 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
       if(status==AnimationStatus.completed){
         int circleid = -101;
         if(plusId>=0){
-          if(widget.circles.length>plusId&&widget.circles[plusId].id<vm!.mainScreenState!.allCircles.last.id){
+          if(widget.circles.length>plusId+1&&widget.circles[plusId].id<vm!.mainScreenState!.allCircles.last.id){
             circleid = (widget.circles[plusId+1].id-widget.circles[plusId].id)~/2+widget.circles[plusId].id;
           }else{
             circleid = vm!.mainScreenState!.allCircles.isNotEmpty?((vm!.mainScreenState!.allCircles.last.id) ~/ 100) * 100 + 100:-101;
@@ -548,7 +548,7 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
                           }else{
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
-                                content: Text("максимальное количество сфер - 12"),
+                                content: Text("максимальное количество сфер - 13"),
                                 duration: Duration(seconds: 3),
                               ),
                             );
@@ -694,6 +694,7 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
                             movingController.forward();
                           } else if (centralCircles[index].id == 0) {
                             appViewModel.cachedImages.clear();
+                            appViewModel.startMainsphereeditScreen();
                             BlocProvider.of<NavigationBloc>(context)
                                 .add(NavigateToMainSphereEditScreenEvent());
                           } else {

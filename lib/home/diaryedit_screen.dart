@@ -50,24 +50,25 @@ class DiaryEditScreenState extends State<DiaryEditScreen>{
             backgroundColor: AppColors.backgroundColor,
             body: SafeArea(maintainBottomViewPadding: true,
                 child:Column(children:[
-            Expanded(child:Padding(
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child:IconButton(
+                      icon: const Icon(Icons.keyboard_arrow_left),
+                      iconSize: 30,
+                      onPressed: () {
+                        appVM.updateDiary(CardData(id: diaryItem.id, emoji: currentEmoji, title: currentTitle, description: currentSubtitle, text: currentdescription, color: diaryItem.color));
+                        BlocProvider.of<NavigationBloc>(context).handleBackPress();
+                      },
+                    ),
+                  ),
+                  Expanded(child:SingleChildScrollView(
+                      physics: const BouncingScrollPhysics(),
+                      child: Padding(
               padding: const EdgeInsets.all(5),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Padding(padding: const EdgeInsets.all(10),
-                      child: GestureDetector(
-                        child: const Text("<Назад", style: TextStyle(color: AppColors.greytextColor, fontSize: 16),),
-                        onTap: (){
-                          appVM.updateDiary(CardData(id: diaryItem.id, emoji: currentEmoji, title: currentTitle, description: currentSubtitle, text: currentdescription, color: diaryItem.color));
-                          BlocProvider.of<NavigationBloc>(context)
-                              .add(NavigateToDiaryScreenEvent());
-                        },
-                      ),),
-                  ),
                   GestureDetector(
                       onTap: () {
                         showModalBottomSheet<void>(
@@ -106,31 +107,31 @@ class DiaryEditScreenState extends State<DiaryEditScreen>{
                     controller: tectitle,
                     textAlign: TextAlign.center,
                     style: const TextStyle(color: AppColors.greytextColor, fontSize: 18),
-                    decoration: InputDecoration(
+                    /*decoration: InputDecoration(
                       hintText: currentTitle,
-                    ),
+                    ),*/
                   ),
                   TextField(
                     controller: tecsubtitle,
                     maxLines: 3,
                     minLines: 3,
                     style: const TextStyle(color:  AppColors.greytextColor, fontSize: 16),
-                    decoration: InputDecoration(
+                    /*decoration: InputDecoration(
                       hintText: currentTitle,
-                    ),
+                    ),*/
                   ),
                   TextField(
                     controller: tecdescription,
                     maxLines: 10,
                     style: const TextStyle(color: Colors.grey, fontSize: 14),
-                    decoration: InputDecoration(
+                    /*decoration: InputDecoration(
                       hintText: currentTitle,
-                    ),
+                    ),*/
                   ),
 
                 ],
               ),
-            )),
+            ))),
                   if(MediaQuery.of(context).viewInsets.bottom!=0) SizedBox(height: 30,
                     child: FooterLayout(
                       footer: Container(height: 30,color: Colors.white,alignment: Alignment.centerRight, child:

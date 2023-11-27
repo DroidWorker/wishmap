@@ -6,6 +6,7 @@ import 'package:wishmap/data/models.dart';
 
 import '../ViewModel.dart';
 import '../common/colorpicker_widget.dart';
+import '../common/treeview_widget.dart';
 import '../navigation/navigation_block.dart';
 import '../res/colors.dart';
 
@@ -25,6 +26,8 @@ class _WishScreenState extends State<WishScreen>{
 
   TaskItem? wishTasks;
   AimItem? wishAims;
+
+  final List<MyTreeNode> root = [];
 
   WishData curwish = WishData(id: -1, parentId: -1, text: "", description: "", affirmation: "", color: Colors.grey);
 
@@ -61,6 +64,15 @@ class _WishScreenState extends State<WishScreen>{
               }
             }
           }
+          final aims = appVM.wishScreenState?.wishAims;
+          final tasks = appVM.wishScreenState?.wishTasks;
+          if(aims!=null&&tasks!=null){
+            root.clear();
+            for (var element in aims) {
+              final childTasks = tasks.where((e) => e.parentId==element.id).toList();
+              root.add(MyTreeNode(id: element.id, type: 'a', title: element.text, isChecked: element.isChecked, children: childTasks.map((item) => MyTreeNode(id: item.id, type: 't', title: item.text, isChecked: item.isChecked)).toList()));
+            }
+          }
 
           return Scaffold(
           backgroundColor: AppColors.backgroundColor,
@@ -86,15 +98,46 @@ class _WishScreenState extends State<WishScreen>{
                           ),
                         ),
                         onPressed: () async {
-                          curwish.isChecked=!curwish.isChecked;
-                          appViewModel.updateWishStatus(appVM.wishScreenState!.wish.id, curwish.isChecked);
                           showDialog(context: context,
                             builder: (BuildContext context) => AlertDialog(
-                              title: curwish.isChecked?const Text('исполнено'):const Text('не исполнено'),
+                              contentPadding: EdgeInsets.zero,
+                              shape: const RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.all(Radius.circular(32.0))),
+                              title: const Text('Внимание', textAlign: TextAlign.center,),
+                              content: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  (!curwish.isChecked)?const Text("Если в данном желании создавались другие желания, цели и задачи, то они также получат статус 'исполнена' / 'достигнута' / 'выполнена'", maxLines: 6, textAlign: TextAlign.center,):
+                                  const Text("Если в данном желании создавались другие желания, цели и задачи, то они останутся в статусе 'исполнена' / 'достигнута' / 'выполнена'", maxLines: 6, textAlign: TextAlign.center,),
+                                  const SizedBox(height: 4,),
+                                  const Divider(color: AppColors.dividerGreyColor,),
+                                  const SizedBox(height: 4,),
+                                  (curwish.isChecked)?const Text("Не исполнено?", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),):
+                                  const Text("Исполнено?", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),)
+                                ],
+                              ),
                               actions: <Widget>[
                                 TextButton(
-                                  onPressed: () { Navigator.pop(context, 'OK');},
-                                  child: const Text('OK'),
+                                  onPressed: () { Navigator.pop(context, 'OK');
+                                  curwish.isChecked=!curwish.isChecked;
+                                  appViewModel.updateWishStatus(appVM.wishScreenState!.wish.id, curwish.isChecked);
+                                  showDialog(context: context,
+                                    builder: (BuildContext context) => AlertDialog(
+                                      title: curwish.isChecked?const Text('исполнено'):const Text('не исполнено'),
+                                      actions: <Widget>[
+                                        TextButton(
+                                          onPressed: () { Navigator.pop(context, 'OK');},
+                                          child: const Text('OK'),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                  },
+                                  child: const Text('Да'),
+                                ),
+                                TextButton(
+                                  onPressed: () { Navigator.pop(context, 'Cancel');},
+                                  child: const Text('Нет'),
                                 ),
                               ],
                             ),
@@ -111,29 +154,58 @@ class _WishScreenState extends State<WishScreen>{
                         ),
                       ),
                       onPressed: () async {
-                        appViewModel.deleteSphereWish(appVM.wishScreenState!.wish.id);
                         showDialog(context: context,
                           builder: (BuildContext context) => AlertDialog(
-                            title: const Text('удалено'),
+                            contentPadding: EdgeInsets.zero,
+                            shape: const RoundedRectangleBorder(
+                                borderRadius: BorderRadius.all(Radius.circular(32.0))),
+                            title: const Text('Внимание', textAlign: TextAlign.center,),
+                            content: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                (curwish.id > 800)?const Text("Если в данном желании создавались желания, цели и задачи, то они также будут удалены", maxLines: 4, textAlign: TextAlign.center,):
+                                const Text("Если в данной сфере\n создавались желания,\n цели и задачи, то они\n также будут удалены", maxLines: 4, textAlign: TextAlign.center,),
+                                const SizedBox(height: 4,),
+                                const Divider(color: AppColors.dividerGreyColor,),
+                                const SizedBox(height: 4,),
+                                const Text("Удалить?", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),)
+                              ],
+                            ),
                             actions: <Widget>[
                               TextButton(
                                 onPressed: () { Navigator.pop(context, 'OK');
+                                appViewModel.deleteSphereWish(appVM.wishScreenState!.wish.id);
+                                showDialog(context: context,
+                                  builder: (BuildContext context) => AlertDialog(
+                                    title: const Text('Удалено'),
+                                    actions: <Widget>[
+                                      TextButton(
+                                        onPressed: () { Navigator.pop(context, 'OK');
+                                        var moon = appVM.mainScreenState!.moon;
+                                        appViewModel.mainScreenState = null;
+                                        appViewModel.mainCircles.clear();
+                                        appViewModel.startMainScreen(moon);},
+                                        child: const Text('OK'),
+                                      ),
+                                    ],
+                                  ),
+                                ).then((value) {
                                   var moon = appVM.mainScreenState!.moon;
                                   appViewModel.mainScreenState = null;
                                   appViewModel.mainCircles.clear();
                                   appViewModel.startMainScreen(moon);
-                                BlocProvider.of<NavigationBloc>(context).handleBackPress();},
-                                child: const Text('OK'),
+                                  BlocProvider.of<NavigationBloc>(context).handleBackPress();
+                                });
+                                },
+                                child: const Text('Да'),
+                              ),
+                              TextButton(
+                                onPressed: () { Navigator.pop(context, 'Cancel');},
+                                child: const Text('Нет'),
                               ),
                             ],
                           ),
-                        ).then((value) {
-                          var moon = appVM.mainScreenState!.moon;
-                          appViewModel.mainScreenState = null;
-                          appViewModel.mainCircles.clear();
-                          appViewModel.startMainScreen(moon);
-                          BlocProvider.of<NavigationBloc>(context).handleBackPress();
-                        });
+                        );
                       },
                       child: const Text("Удалить",style: TextStyle(color: Colors.black, fontSize: 12))
                   ),
@@ -292,7 +364,35 @@ class _WishScreenState extends State<WishScreen>{
                     child: Column(children: [
                       const Text("Цели и задачи", style: TextStyle(color: Colors.black54),),
                       const SizedBox(height: 5),
-                      ...appVM.wishScreenState?.wishAims.asMap()
+                      Align(
+                          alignment: Alignment.centerLeft,
+                          child: SizedBox(
+                            height: root.length*150,
+                            child: MyTreeView(key: UniqueKey(),roots: root, onTap: (id, type){
+                              if(type=="m"){
+                                BlocProvider.of<NavigationBloc>(context).clearHistory();
+                                appVM.cachedImages.clear();
+                                appVM.startMainsphereeditScreen();
+                                BlocProvider.of<NavigationBloc>(context)
+                                    .add(NavigateToMainSphereEditScreenEvent());
+                              }else if(type=="w"){
+                                BlocProvider.of<NavigationBloc>(context).clearHistory();
+                                appVM.startWishScreen(id, 0);
+                                BlocProvider.of<NavigationBloc>(context)
+                                    .add(NavigateToWishScreenEvent());
+                              }else if(type=="a"){
+                                appVM.getAim(id);
+                                BlocProvider.of<NavigationBloc>(context)
+                                    .add(NavigateToAimEditScreenEvent(id));
+                              }else if(type=="t"){
+                                appVM.getTask(id);
+                                BlocProvider.of<NavigationBloc>(context)
+                                    .add(NavigateToTaskEditScreenEvent(id));
+                              }
+                            },),
+                          )
+                      ),
+                      /*...appVM.wishScreenState?.wishAims.asMap()
                           .entries
                           .map((entry) {
                         return GestureDetector(
@@ -331,7 +431,7 @@ class _WishScreenState extends State<WishScreen>{
                             ],
                           ),
                         );
-                      }).toList()??[],
+                      }).toList()??[],*/
                       const SizedBox(height: 5),
                       if(curwish.id > 800)
                       ElevatedButton(

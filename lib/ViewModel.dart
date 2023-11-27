@@ -283,6 +283,18 @@ class AppViewModel with ChangeNotifier {
     }
   }
 
+  Future<void> startMainsphereeditScreen() async{
+    try {
+      isinLoading = true;
+      if(aimItems.isEmpty)aimItems = (await repository.getMyAims(mainScreenState?.moon.id??0)) ?? [];
+      if(taskItems.isEmpty)taskItems = (await repository.getMyTasks(mainScreenState?.moon.id??0)) ?? [];
+      isinLoading = false;
+      notifyListeners();
+    }catch(ex){
+      addError(ex.toString());
+    }
+  }
+
   Future<void> startMyAimsScreen() async{
     try {
       isinLoading = true;
@@ -337,6 +349,7 @@ class AppViewModel with ChangeNotifier {
       var sphereInAllCircles= mainScreenState!.allCircles.indexWhere((element) => element.id==wd.id);
       if(sphereInAllCircles==-1){
         mainScreenState!.allCircles.add(CircleData(id: wd.id, text: wd.text, color: wd.color, parenId: wd.parentId));
+        mainScreenState!.allCircles.sort((a,b)=>a.id.compareTo(b.id));
         wishItems.add(WishItem(id: wd.id, text: wd.text, isChecked: wd.isChecked));
       }
       else{
@@ -406,14 +419,24 @@ class AppViewModel with ChangeNotifier {
         for (var element in aim.childTasks) {
           repository.deleteTask(element, mainScreenState!.moon.id);
           taskItems.removeWhere((e) => e.id==element);
+          wishScreenState?.wishTasks.removeWhere((e) => e.id==element);
         }
       }
+      notifyListeners();
     }catch(e){
       addError("ошибка при удалении задач");
     }
   }
   Future<void> updateWishStatus(int wishId, bool status) async{
     try {
+      if(status) {
+        final aims = await repository.getSpheresChildAims(wishId, mainScreenState!.moon.id);
+        if (aims != null && aims.isNotEmpty) {
+          for (var element in aims) {
+            updateAimStatus(element, status);
+          }
+        }
+      }
       await repository.changeWishStatus(wishId, mainScreenState?.moon.id??0, status);
       if(mainScreenState!=null){
         final i = mainScreenState!.allCircles.indexWhere((element) => element.id==wishId);
@@ -433,7 +456,7 @@ class AppViewModel with ChangeNotifier {
     try {
       int? aimId = (await repository.createAim(ad, parentCircleId, mainScreenState?.moon.id??0))??-1;
       currentAim=(AimData(id: aimId, parentId: ad.parentId, text: ad.text, description: ad.description, isChecked: ad.isChecked));
-      aimItems.add(AimItem(id: aimId, text: ad.text, isChecked: ad.isChecked));
+      aimItems.add(AimItem(id: aimId,parentId: parentCircleId, text: ad.text, isChecked: ad.isChecked));
       return aimId;
     }catch(ex){
       addError(ex.toString());
@@ -470,6 +493,14 @@ class AppViewModel with ChangeNotifier {
   }
   Future<void> updateAimStatus(int aimId, bool status) async{
     try {
+      if(status) {
+        final tasks = await repository.getAimsChildTasks(aimId, mainScreenState!.moon.id);
+        if (tasks != null && tasks.isNotEmpty) {
+          for (var element in tasks) {
+            updateTaskStatus(element, status);
+          }
+        }
+      }
       currentAim?.isChecked = status;
       if(currentAim!=null){
         final i = aimItems.indexWhere((element) => element.id == currentAim!.id);
@@ -487,7 +518,7 @@ class AppViewModel with ChangeNotifier {
     try {
       int taskId = (await repository.createTask(ad, parentAimId, mainScreenState?.moon.id??0))??-1;
       currentTask=(TaskData(id: taskId, parentId: ad.parentId, text: ad.text, description: ad.description, isChecked: ad.isChecked));
-      taskItems.add(TaskItem(id: taskId, text: ad.text, isChecked: ad.isChecked));
+      taskItems.add(TaskItem(id: taskId, parentId: parentAimId, text: ad.text, isChecked: ad.isChecked));
       return taskId;
     }catch(ex){
       addError(ex.toString());

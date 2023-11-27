@@ -73,10 +73,11 @@ class MoonItem {
 
 class TaskItem {
   final int id;
+  final int parentId;
   final String text;
   bool isChecked;
 
-  TaskItem({required this.id, required this.text, required this.isChecked});
+  TaskItem({required this.id, required this.parentId, required this.text, required this.isChecked});
 }
 
 class TaskData {
@@ -116,10 +117,11 @@ class WishData {
 
 class AimItem {
   final int id;
+  final parentId;
   final String text;
   bool isChecked;
 
-  AimItem({required this.id, required this.text, required this.isChecked});
+  AimItem({required this.id, required this.parentId, required this.text, required this.isChecked});
 }
 
 class AimData {
@@ -158,6 +160,44 @@ class MyTreeNode {
   bool isChecked;
   bool noClickable = false;
   final List<MyTreeNode> children;
+}
+
+List<MyTreeNode> convertListToMyTreeNodes(List<WishItem> dataList) {
+
+  List<MyTreeNode> roots = [];
+
+  var idsList = dataList.map((e) => e.id).toList();
+  idsList.forEach((element) {
+    final wi = dataList.firstWhere((e) => e.id==element);
+    roots.add(MyTreeNode(id: wi.id, type: 'w', title: wi.text, isChecked: wi.isChecked, children: getChildren(dataList, element)));
+  });
+  List<int> rootsIds = [];
+  List<MyTreeNode> finalroots = List.from(roots);
+  for (var element in roots) {
+    final v = getRootsIds(element);
+    v.forEach((e) {
+      if(rootsIds.contains(e)){
+        finalroots.removeWhere((i) => i.id==element.id);
+      }
+      else{
+        rootsIds.add(e);
+      }
+    });
+  }
+  return finalroots;
+}
+List<MyTreeNode> getChildren(List<WishItem> dataList, id){
+  final children = dataList.where((element) => element.parentId==id).toList();
+  return children.map((e) => MyTreeNode(id: e.id, type: 'w', title: e.text, isChecked: e.isChecked, children: getChildren(dataList, e.id))).toList();
+}
+List<int> getRootsIds(MyTreeNode node){
+  List<int> ids = [];
+  if(node.children.isNotEmpty) {
+    node.children.forEach((element) {
+      ids.addAll(getRootsIds(element));
+    });
+  }else{ids.add(node.id);}
+  return ids;
 }
 
 class MainScreenState {

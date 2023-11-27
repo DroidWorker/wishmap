@@ -64,14 +64,46 @@ class AimEditScreenState extends State<AimEditScreen>{
                                 ),
                                 onPressed: () async {
                                   if(ai!=null){
-                                    appVM.updateAimStatus(widget.aimId, !ai!.isChecked);
                                     showDialog(context: context,
                                       builder: (BuildContext context) => AlertDialog(
-                                        title: ai!.isChecked? const Text('достигнута'):const Text(' не достигнута'),
+                                        contentPadding: EdgeInsets.zero,
+                                        shape: const RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.all(Radius.circular(32.0))),
+                                        title: const Text('Внимание', textAlign: TextAlign.center,),
+                                        content: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            (!ai!.isChecked)?const Text("Если в данной цели создавались задачи, то они также получат статус 'выполнена'", maxLines: 6, textAlign: TextAlign.center,):
+                                            const Text("Если в данной цели создавались другие задачи, то они останутся в статусе 'выполнена'", maxLines: 6, textAlign: TextAlign.center,),
+                                            const SizedBox(height: 4,),
+                                            const Divider(color: AppColors.dividerGreyColor,),
+                                            const SizedBox(height: 4,),
+                                            (ai!.isChecked)?const Text("Не Достигнута?", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),):
+                                            const Text("Достигнута?", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),)
+                                          ],
+                                        ),
                                         actions: <Widget>[
                                           TextButton(
-                                            onPressed: () { Navigator.pop(context, 'OK');},
-                                            child: const Text('OK'),
+                                            onPressed: () { Navigator.pop(context, 'OK');
+                                            ai!.isChecked=!ai!.isChecked;
+                                            appVM.updateAimStatus(ai!.id, ai!.isChecked);
+                                            showDialog(context: context,
+                                              builder: (BuildContext context) => AlertDialog(
+                                                title: ai!.isChecked?const Text('Достигнута'):const Text('не Достигнута'),
+                                                actions: <Widget>[
+                                                  TextButton(
+                                                    onPressed: () { Navigator.pop(context, 'OK');},
+                                                    child: const Text('OK'),
+                                                  ),
+                                                ],
+                                              ),
+                                            );
+                                            },
+                                            child: const Text('Да'),
+                                          ),
+                                          TextButton(
+                                            onPressed: () { Navigator.pop(context, 'Cancel');},
+                                            child: const Text('Нет'),
                                           ),
                                         ],
                                       ),
@@ -89,21 +121,48 @@ class AimEditScreenState extends State<AimEditScreen>{
                                   ),
                                 ),
                                 onPressed: () async {
-                                  appVM.deleteAim(widget.aimId);
                                   showDialog(context: context,
                                     builder: (BuildContext context) => AlertDialog(
-                                      title: const Text('удаленa'),
+                                      contentPadding: EdgeInsets.zero,
+                                      shape: const RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.all(Radius.circular(32.0))),
+                                      title: const Text('Внимание', textAlign: TextAlign.center,),
+                                      content: const Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text("Если в данной цели создавались задачи, то они также будут удалены", maxLines: 4, textAlign: TextAlign.center,),
+                                          SizedBox(height: 4,),
+                                          Divider(color: AppColors.dividerGreyColor,),
+                                          SizedBox(height: 4,),
+                                          Text("Удалить?", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),)
+                                        ],
+                                      ),
                                       actions: <Widget>[
                                         TextButton(
                                           onPressed: () { Navigator.pop(context, 'OK');
-                                          BlocProvider.of<NavigationBloc>(context).handleBackPress();},
-                                          child: const Text('OK'),
+                                          appVM.deleteAim(widget.aimId);
+                                          BlocProvider.of<NavigationBloc>(context).handleBackPress();
+                                          showDialog(context: context,
+                                            builder: (BuildContext context) => AlertDialog(
+                                              title: const Text('Удалено'),
+                                              actions: <Widget>[
+                                                TextButton(
+                                                  onPressed: () { Navigator.pop(context, 'OK');},
+                                                  child: const Text('OK'),
+                                                ),
+                                              ],
+                                            ),
+                                          );
+                                          },
+                                          child: const Text('Да'),
+                                        ),
+                                        TextButton(
+                                          onPressed: () { Navigator.pop(context, 'Cancel');},
+                                          child: const Text('Нет'),
                                         ),
                                       ],
                                     ),
-                                  ).then((value) {
-                                    BlocProvider.of<NavigationBloc>(context).handleBackPress();
-                                  });
+                                  );
                                 },
                                 child: const Text("Удалить",style: TextStyle(color: Colors.black, fontSize: 12))
                             ),
@@ -224,6 +283,7 @@ class AimEditScreenState extends State<AimEditScreen>{
                             if(type=="m"){
                               BlocProvider.of<NavigationBloc>(context).clearHistory();
                               appVM.cachedImages.clear();
+                              appVM.startMainsphereeditScreen();
                               BlocProvider.of<NavigationBloc>(context)
                                   .add(NavigateToMainSphereEditScreenEvent());
                             }else if(type=="w"){
@@ -233,13 +293,13 @@ class AimEditScreenState extends State<AimEditScreen>{
                                   .add(NavigateToWishScreenEvent());
                             }else if(type=="a"&&widget.aimId!=id){
                               appVM.getAim(id);
-                              BlocProvider.of<NavigationBloc>(context).clearHistory();
+                              BlocProvider.of<NavigationBloc>(context).removeLastFromBS();
                               BlocProvider.of<NavigationBloc>(context)
                                   .add(NavigateToAimEditScreenEvent(id));
                             }else if(type=="t"){
                               appVM.currentTask=null;
                               appVM.getTask(id);
-                              BlocProvider.of<NavigationBloc>(context).clearHistory();
+                              BlocProvider.of<NavigationBloc>(context).removeLastFromBS();
                               BlocProvider.of<NavigationBloc>(context)
                                   .add(NavigateToTaskEditScreenEvent(id));
                             }
