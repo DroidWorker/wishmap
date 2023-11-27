@@ -36,7 +36,9 @@ class AimEditScreenState extends State<AimEditScreen>{
             backgroundColor: AppColors.backgroundColor,
             body: SafeArea(
                 maintainBottomViewPadding: true,
-                child: Column(children:[ Expanded(child:Padding(
+                child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      return  Column(children:[ Expanded(child:Padding(
               padding: const EdgeInsets.all(15),
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -90,6 +92,8 @@ class AimEditScreenState extends State<AimEditScreen>{
                                             showDialog(context: context,
                                               builder: (BuildContext context) => AlertDialog(
                                                 title: ai!.isChecked?const Text('Достигнута'):const Text('не Достигнута'),
+                                                shape: const RoundedRectangleBorder(
+                                                    borderRadius: BorderRadius.all(Radius.circular(32.0))),
                                                 actions: <Widget>[
                                                   TextButton(
                                                     onPressed: () { Navigator.pop(context, 'OK');},
@@ -122,7 +126,7 @@ class AimEditScreenState extends State<AimEditScreen>{
                                 ),
                                 onPressed: () async {
                                   showDialog(context: context,
-                                    builder: (BuildContext context) => AlertDialog(
+                                    builder: (BuildContext c) => AlertDialog(
                                       contentPadding: EdgeInsets.zero,
                                       shape: const RoundedRectangleBorder(
                                           borderRadius: BorderRadius.all(Radius.circular(32.0))),
@@ -145,6 +149,8 @@ class AimEditScreenState extends State<AimEditScreen>{
                                           showDialog(context: context,
                                             builder: (BuildContext context) => AlertDialog(
                                               title: const Text('Удалено'),
+                                              shape: const RoundedRectangleBorder(
+                                                  borderRadius: BorderRadius.all(Radius.circular(32.0))),
                                               actions: <Widget>[
                                                 TextButton(
                                                   onPressed: () { Navigator.pop(context, 'OK');},
@@ -180,6 +186,8 @@ class AimEditScreenState extends State<AimEditScreen>{
                                       showDialog(context: context,
                                         builder: (BuildContext context) => AlertDialog(
                                           title: const Text('Заполните поля'),
+                                          shape: const RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.all(Radius.circular(32.0))),
                                           actions: <Widget>[
                                             TextButton(
                                               onPressed: () => Navigator.pop(context, 'OK'),
@@ -198,6 +206,8 @@ class AimEditScreenState extends State<AimEditScreen>{
                                     showDialog(context: context,
                                       builder: (BuildContext context) => AlertDialog(
                                         title: const Text('сохраненa'),
+                                        shape: const RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.all(Radius.circular(32.0))),
                                         actions: <Widget>[
                                           TextButton(
                                             onPressed: () => Navigator.pop(context, 'OK'),
@@ -278,7 +288,7 @@ class AimEditScreenState extends State<AimEditScreen>{
                     Align(
                         alignment: Alignment.centerLeft,
                         child: SizedBox(
-                          height: roots.length*150,
+                          height: constraints.maxHeight-350,
                           child: MyTreeView(key: UniqueKey(),roots: roots, onTap: (id, type){
                             if(type=="m"){
                               BlocProvider.of<NavigationBloc>(context).clearHistory();
@@ -317,7 +327,7 @@ class AimEditScreenState extends State<AimEditScreen>{
                         child: const Text("готово", style: TextStyle(fontSize: 20),),
                       )
                         ,),
-                    ),)])
+                    ),)]);})
             ));
     });
   }

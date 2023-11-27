@@ -63,6 +63,8 @@ class _SpheresOfLifeScreenState extends State<SpheresOfLifeScreen>{
                     showDialog(context: context,
                       builder: (BuildContext context) => AlertDialog(
                         title: const Text('сохранено'),
+                        shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(32.0))),
                         actions: <Widget>[
                           TextButton(
                             onPressed: () => Navigator.pop(context, 'OK'),
@@ -89,6 +91,8 @@ class _SpheresOfLifeScreenState extends State<SpheresOfLifeScreen>{
                     showDialog(context: context,
                       builder: (BuildContext context) => AlertDialog(
                         title: const Text('удалено'),
+                        shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(32.0))),
                         actions: <Widget>[
                           TextButton(
                             onPressed: () {

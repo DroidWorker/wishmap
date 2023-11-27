@@ -59,6 +59,7 @@ class _MyTreeViewState extends State<MyTreeView> {
       // It is also used to store and manipulate the different states of the
       // tree nodes.
       treeController: treeController,
+      //physics: const BouncingScrollPhysics(),
       // Provide a widget builder callback to map your tree nodes into widgets.
       nodeBuilder: (BuildContext context, TreeEntry<MyTreeNode> entry) {
         // Provide a widget to display your tree nodes in the tree view.

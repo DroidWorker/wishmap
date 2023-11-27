@@ -42,7 +42,9 @@ class TaskEditScreenState extends State<TaskEditScreen>{
           return Scaffold(
             backgroundColor: AppColors.backgroundColor,
             body: SafeArea(
-                child: Column(children:[Padding(
+                child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      return Column(children:[Padding(
               padding: const EdgeInsets.all(15),
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -73,6 +75,8 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                                   showDialog(context: context,
                                     builder: (BuildContext context) => AlertDialog(
                                       title: ai.isChecked? const Text('выполнена'):const Text(' не выполнена'),
+                                      shape: const RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.all(Radius.circular(32.0))),
                                       actions: <Widget>[
                                         TextButton(
                                           onPressed: () { Navigator.pop(context, 'OK');},
@@ -95,8 +99,10 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                                 onPressed: () async {
                                   appVM.deleteTask(ai.id);
                                   showDialog(context: context,
-                                    builder: (BuildContext context) => AlertDialog(
+                                    builder: (BuildContext c) => AlertDialog(
                                       title: const Text('удаленa'),
+                                      shape: const RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.all(Radius.circular(32.0))),
                                       actions: <Widget>[
                                         TextButton(
                                           onPressed: () { Navigator.pop(context, 'OK');
@@ -124,6 +130,8 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                                     showDialog(context: context,
                                       builder: (BuildContext context) => AlertDialog(
                                         title: const Text('Заполните поля'),
+                                        shape: const RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.all(Radius.circular(32.0))),
                                         actions: <Widget>[
                                           TextButton(
                                             onPressed: () => Navigator.pop(context, 'OK'),
@@ -141,6 +149,8 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                                   showDialog(context: context,
                                     builder: (BuildContext context) => AlertDialog(
                                       title: const Text('сохраненa'),
+                                      shape: const RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.all(Radius.circular(32.0))),
                                       actions: <Widget>[
                                         TextButton(
                                           onPressed: () => Navigator.pop(context, 'OK'),
@@ -190,7 +200,7 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                     Align(
                         alignment: Alignment.centerLeft,
                         child: SizedBox(
-                          height: roots.length * 200,
+                          height: constraints.maxHeight-250,
                           child: MyTreeView(key: UniqueKey(),roots: roots, onTap: (id,type){
                             if(type=="m"){
                               BlocProvider.of<NavigationBloc>(context).clearHistory();
@@ -231,7 +241,7 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                       )
                         ,),
                     ),)
-            ]))
+            ]);}))
     );
   });
   }

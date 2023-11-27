@@ -185,6 +185,7 @@ class AppViewModel with ChangeNotifier {
       mainScreenState = MainScreenState(moon: mi, musicId: 0);
       try {
         mainScreenState!.allCircles = (await repository.getSpheres(mi.id)) ?? [];
+        if(mainScreenState!.allCircles.isEmpty) return;
         var ms = mainScreenState!.allCircles.first;
         mainCircles.add(MainCircle(id: ms.id, coords: Pair(key: 0.0, value: 0.0), text: ms.text, substring: ms.subText, color: ms.color, isActive: ms.isActive));
         var cc = mainScreenState!.allCircles.where((element) => element.parenId == mainCircles.last.id).toList();
@@ -194,8 +195,8 @@ class AppViewModel with ChangeNotifier {
         });
         isinLoading=false;
         notifyListeners();
-      } catch (ex) {
-        addError(ex.toString());
+      } catch (ex, s) {
+        addError("#579${ex.toString()}");
       }
     }else if(mainScreenState!.moon.id==mi.id){
       var tmp = List<CircleData>.from(mainScreenState!.allCircles);
@@ -212,7 +213,7 @@ class AppViewModel with ChangeNotifier {
         isinLoading=false;
         notifyListeners();
       } catch (ex) {
-        addError(ex.toString());
+        addError("#578${ex.toString()}");
       }
     }
   }
@@ -228,7 +229,7 @@ class AppViewModel with ChangeNotifier {
           currentCircles.add(Circle(id: element.id, text: element.text, color: element.color, isActive: element.isActive));
         });
       } catch (ex) {
-        addError(ex.toString());
+        addError("#5734${ex.toString()}");
       }
       return currentCircles;
     }
@@ -248,7 +249,7 @@ class AppViewModel with ChangeNotifier {
       wishScreenState = WishScreenState(wish: wdItem);
       notifyListeners();
     }catch(ex){
-      addError(ex.toString());
+      addError("#436${ex.toString()}");;
     }
   }
 
@@ -259,7 +260,7 @@ class AppViewModel with ChangeNotifier {
       isinLoading = false;
       notifyListeners();
     }catch(ex){
-      addError(ex.toString());
+      addError("#868${ex.toString()}");
     }
   }
   Future getTasksForAims(List<int> aimId) async {
@@ -291,7 +292,7 @@ class AppViewModel with ChangeNotifier {
       isinLoading = false;
       notifyListeners();
     }catch(ex){
-      addError(ex.toString());
+      addError("#448${ex.toString()}");
     }
   }
 
@@ -302,7 +303,7 @@ class AppViewModel with ChangeNotifier {
       isinLoading = false;
       notifyListeners();
     }catch(ex){
-      addError(ex.toString());
+      addError("#278${ex.toString()}");
     }
   }
   Future getAimsForCircles(int sphereId) async {
@@ -333,7 +334,7 @@ class AppViewModel with ChangeNotifier {
       isinLoading = false;
       notifyListeners();
     }catch(ex){
-      addError(ex.toString());
+      addError("#565${ex.toString()}");
     }
   }
 
@@ -448,7 +449,7 @@ class AppViewModel with ChangeNotifier {
       }
       notifyListeners();
     }catch(ex){
-      addError(ex.toString());
+      addError("#566${ex.toString()}");
     }
   }
 
@@ -459,7 +460,7 @@ class AppViewModel with ChangeNotifier {
       aimItems.add(AimItem(id: aimId,parentId: parentCircleId, text: ad.text, isChecked: ad.isChecked));
       return aimId;
     }catch(ex){
-      addError(ex.toString());
+      addError("#5711${ex.toString()}");
     }
   }
   Future getAim(int id) async{
@@ -479,7 +480,7 @@ class AppViewModel with ChangeNotifier {
       await repository.updateAim(ad, mainScreenState?.moon.id??0);
       currentAim=(AimData(id: ad.id, parentId: ad.parentId, text: ad.text, description: ad.description, isChecked: ad.isChecked));
     }catch(ex){
-      addError(ex.toString());
+      addError("#518${ex.toString()}");
     }
   }
   Future<void> deleteAim(int aimId) async{
@@ -488,7 +489,7 @@ class AppViewModel with ChangeNotifier {
       await repository.deleteAim(aimId, mainScreenState?.moon.id??0);
       aimItems.removeWhere((element) => element.id == aimId);
     }catch(ex){
-      addError(ex.toString());
+      addError("#519${ex.toString()}");
     }
   }
   Future<void> updateAimStatus(int aimId, bool status) async{
@@ -510,7 +511,7 @@ class AppViewModel with ChangeNotifier {
       toggleChecked(myNodes.first, 'a', aimId, status);
       notifyListeners();
     }catch(ex){
-      addError(ex.toString());
+      addError("#520${ex.toString()}");
     }
   }
 
@@ -521,7 +522,7 @@ class AppViewModel with ChangeNotifier {
       taskItems.add(TaskItem(id: taskId, parentId: parentAimId, text: ad.text, isChecked: ad.isChecked));
       return taskId;
     }catch(ex){
-      addError(ex.toString());
+      addError("#522${ex.toString()}");
     }
   }
   Future getTask(int id) async{
@@ -541,7 +542,7 @@ class AppViewModel with ChangeNotifier {
       await repository.updateTask(ad, mainScreenState?.moon.id??0);
       currentTask=(TaskData(id: ad.id, parentId: ad.parentId, text: ad.text, description: ad.description, isChecked: ad.isChecked));
     }catch(ex){
-      addError(ex.toString());
+      addError("#524${ex.toString()}");
     }
   }
   Future<void> deleteTask(int taskId) async{
@@ -549,7 +550,7 @@ class AppViewModel with ChangeNotifier {
       await repository.deleteTask(taskId, mainScreenState?.moon.id??0);
       taskItems.removeWhere((element) => element.id == taskId);
     }catch(ex){
-      addError(ex.toString());
+      addError("#526${ex.toString()}");
     }
   }
   Future<void> updateTaskStatus(int taskId, bool status) async{
@@ -563,7 +564,7 @@ class AppViewModel with ChangeNotifier {
       toggleChecked(myNodes.first, 't', taskId, status);
       notifyListeners();
     }catch(ex){
-      addError(ex.toString());
+      addError("#528${ex.toString()}");
     }
   }
 
@@ -584,7 +585,7 @@ class AppViewModel with ChangeNotifier {
       }
       notifyListeners();
     }catch(ex){
-      addError(ex.toString());
+      addError("#532${ex.toString()}");
     }
   }
   Future<void> addDiary(CardData cd)async {
@@ -593,7 +594,7 @@ class AppViewModel with ChangeNotifier {
       await repository.addDiary([cd], mainScreenState!.moon.id);
       notifyListeners();
     }catch(ex){
-      addError(ex.toString());
+      addError("#534${ex.toString()}");
     }
   }
   Future<void> updateDiary(CardData cd)async{
@@ -604,7 +605,7 @@ class AppViewModel with ChangeNotifier {
       await repository.updateDiary(cd, mainScreenState!.moon.id);
       notifyListeners();
     }catch(ex){
-      addError(ex.toString());
+      addError("#536${ex.toString()}");
     }
   }
 

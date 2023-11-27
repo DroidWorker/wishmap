@@ -1,3 +1,6 @@
+import 'dart:typed_data';
+
+import 'package:capped_progress_indicator/capped_progress_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:keyboard_attachable/keyboard_attachable.dart';
@@ -5,6 +8,7 @@ import 'package:provider/provider.dart';
 import 'package:wishmap/data/models.dart';
 
 import '../ViewModel.dart';
+import '../common/collage.dart';
 import '../common/colorpicker_widget.dart';
 import '../common/treeview_widget.dart';
 import '../navigation/navigation_block.dart';
@@ -124,6 +128,8 @@ class _WishScreenState extends State<WishScreen>{
                                   showDialog(context: context,
                                     builder: (BuildContext context) => AlertDialog(
                                       title: curwish.isChecked?const Text('исполнено'):const Text('не исполнено'),
+                                      shape: const RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.all(Radius.circular(32.0))),
                                       actions: <Widget>[
                                         TextButton(
                                           onPressed: () { Navigator.pop(context, 'OK');},
@@ -155,7 +161,7 @@ class _WishScreenState extends State<WishScreen>{
                       ),
                       onPressed: () async {
                         showDialog(context: context,
-                          builder: (BuildContext context) => AlertDialog(
+                          builder: (BuildContext c) => AlertDialog(
                             contentPadding: EdgeInsets.zero,
                             shape: const RoundedRectangleBorder(
                                 borderRadius: BorderRadius.all(Radius.circular(32.0))),
@@ -178,6 +184,8 @@ class _WishScreenState extends State<WishScreen>{
                                 showDialog(context: context,
                                   builder: (BuildContext context) => AlertDialog(
                                     title: const Text('Удалено'),
+                                    shape: const RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.all(Radius.circular(32.0))),
                                     actions: <Widget>[
                                       TextButton(
                                         onPressed: () { Navigator.pop(context, 'OK');
@@ -278,25 +286,54 @@ class _WishScreenState extends State<WishScreen>{
                   if(curwish.id > 800)
                   LayoutBuilder(
                     builder: (context, constraints) {
+                      double fullWidth = constraints.maxWidth-4;
                       double leftWidth = (constraints.maxWidth * 4 /7)-2;
                       double rightWidth = constraints.maxWidth - leftWidth - 2;
-                      return Row(
-                        children: [
-                          Container(width: leftWidth, height: leftWidth, color: AppColors.fieldFillColor,
-                            child: appViewModel.cachedImages.isNotEmpty?Image.memory(appViewModel.cachedImages.first, fit: BoxFit.cover):Container(),
+                      List<List<Uint8List>> imagesSet = [];
+                      appViewModel.cachedImages.forEach((element) {if(imagesSet.isNotEmpty&&imagesSet.last.length<3){imagesSet.last.add(element);}else{imagesSet.add([element]);}});
+                      if(imagesSet.isNotEmpty)imagesSet.removeAt(0);
+                      return Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children:[
+                          Row(
+                            children: [
+                              Container(width: leftWidth, height: leftWidth, color: AppColors.fieldFillColor,
+                                child: appViewModel.isinLoading? const Align(alignment: Alignment.bottomCenter,
+                                  child: LinearCappedProgressIndicator(
+                                    backgroundColor: Colors.black26,
+                                    color: Colors.black,
+                                    cornerRadius: 0,
+                                  ),): appViewModel.cachedImages.isNotEmpty?Image.memory(appViewModel.cachedImages.first, fit: BoxFit.cover):Container(),
+                              ),
+                              const SizedBox(width: 2),
+                              Column(children: [
+                                Container(width: rightWidth, height: leftWidth/2-2, color: AppColors.fieldFillColor,
+                                  child: appViewModel.isinLoading? const Align(alignment: Alignment.bottomCenter,
+                                    child: LinearCappedProgressIndicator(
+                                      backgroundColor: Colors.black26,
+                                      color: Colors.black,
+                                      cornerRadius: 0,
+                                    ),): appViewModel.cachedImages.length>1?Image.memory(appViewModel.cachedImages[1], fit: BoxFit.cover):Container(),
+                                ),
+                                const SizedBox(height: 2),
+                                Container(width: rightWidth, height: leftWidth/2-1, color: AppColors.fieldFillColor,
+                                  child: appViewModel.isinLoading? const Align(alignment: Alignment.bottomCenter,
+                                    child: LinearCappedProgressIndicator(
+                                      backgroundColor: Colors.black26,
+                                      color: Colors.black,
+                                      cornerRadius: 0,
+                                    ),): appViewModel.cachedImages.length>2?Image.memory(appViewModel.cachedImages[2], fit: BoxFit.cover):Container(),
+                                ),
+                              ],)
+                            ],
                           ),
-                          const SizedBox(width: 2),
-                          Column(children: [
-                            Container(width: rightWidth, height: leftWidth/2-2, color: AppColors.fieldFillColor,
-                              child: appViewModel.cachedImages.length>1?Image.memory(appViewModel.cachedImages[1], fit: BoxFit.cover):Container(),
-                            ),
-                            const SizedBox(height: 2),
-                            Container(width: rightWidth, height: leftWidth/2-1, color: AppColors.fieldFillColor,
-                              child: appViewModel.cachedImages.length>2?Image.memory(appViewModel.cachedImages[2], fit: BoxFit.cover):Container(),
-                            ),
-                          ],)
-                        ],
-                      );
+                          ...imagesSet.map((e) {
+                            if(e.length==1) return buildSingle(fullWidth, e.first, appVM.isinLoading);
+                            else if(e.length==2) return buildTwin(leftWidth, rightWidth, e, appVM.isinLoading);
+                            else if(imagesSet.indexOf(e)%2!=0) return buildTriple(leftWidth, rightWidth, e, appVM.isinLoading);
+                            else return buildTripleReverce(leftWidth, rightWidth, e, appVM.isinLoading);
+                          }).toList()
+                      ]);
                     },
                   ),
                   const SizedBox(height: 5),

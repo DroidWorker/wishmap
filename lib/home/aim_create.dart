@@ -53,6 +53,8 @@ class AimScreen extends StatelessWidget {
                               showDialog(context: context,
                                 builder: (BuildContext context) => AlertDialog(
                                   title: const Text('Заполните поля', textAlign: TextAlign.center,),
+                                  shape: const RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.all(Radius.circular(32.0))),
                                   actions: <Widget>[
                                     TextButton(
                                       onPressed: () { Navigator.pop(context, 'OK');},
@@ -68,6 +70,8 @@ class AimScreen extends StatelessWidget {
                               showDialog(context: context,
                                 builder: (BuildContext context) => AlertDialog(
                                   title: const Text('сохранено'),
+                                  shape: const RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.all(Radius.circular(32.0))),
                                   actions: <Widget>[
                                     TextButton(
                                       onPressed: () { Navigator.pop(context, 'OK');},
