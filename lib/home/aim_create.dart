@@ -34,8 +34,45 @@ class AimScreen extends StatelessWidget {
                       icon: const Icon(Icons.keyboard_arrow_left),
                       iconSize: 30,
                       onPressed: () {
-                        BlocProvider.of<NavigationBloc>(context)
-                            .handleBackPress();
+                        if(text.text.isNotEmpty&&description.text.isNotEmpty){
+                          showDialog(context: context,
+                            builder: (BuildContext c) => AlertDialog(
+                              contentPadding: EdgeInsets.zero,
+                              shape: const RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.all(Radius.circular(32.0))),
+                              title: const Text('Внимание', textAlign: TextAlign.center,),
+                              content: const Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text("Вы изменили поля но не нажали 'Сохранить'", maxLines: 6, textAlign: TextAlign.center,),
+                                  SizedBox(height: 4,),
+                                  Divider(color: AppColors.dividerGreyColor,),
+                                  SizedBox(height: 4,),
+                                  Text("Сохранить изменения?", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),)
+                                ],
+                              ),
+                              actions: <Widget>[
+                                TextButton(
+                                  onPressed: () async { Navigator.pop(c, 'OK');
+                                  await onSaveClicked(appViewModel,context);
+                                  BlocProvider.of<NavigationBloc>(context)
+                                      .handleBackPress();
+                                  },
+                                  child: const Text('Да'),
+                                ),
+                                TextButton(
+                                  onPressed: () { Navigator.pop(c, 'Cancel');
+                                  BlocProvider.of<NavigationBloc>(context)
+                                      .handleBackPress();
+                                  },
+                                  child: const Text('Нет'),
+                                ),
+                              ],
+                            ),
+                          );}else{
+                          BlocProvider.of<NavigationBloc>(context)
+                              .handleBackPress();
+                        }
                       },
                     ),
                     const Spacer(),
@@ -49,51 +86,7 @@ class AimScreen extends StatelessWidget {
                             ),
                           ),
                           onPressed: () async {
-                            if(text.text.isEmpty||description.text.isEmpty){
-                              showDialog(context: context,
-                                builder: (BuildContext context) => AlertDialog(
-                                  title: const Text('Заполните поля', textAlign: TextAlign.center,),
-                                  shape: const RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.all(Radius.circular(32.0))),
-                                  actions: <Widget>[
-                                    TextButton(
-                                      onPressed: () { Navigator.pop(context, 'OK');},
-                                      child: const Text('OK'),
-                                    ),
-                                  ],
-                                ),
-                              );
-                              return;
-                            }
-                            int? aimId = await appViewModel.createAim(AimData(id: 999, parentId: parentCircleId, text: text.text, description: description.text), parentCircleId);
-                            if(aimId!=null) {
-                              showDialog(context: context,
-                                builder: (BuildContext context) => AlertDialog(
-                                  title: const Text('сохранено'),
-                                  shape: const RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.all(Radius.circular(32.0))),
-                                  actions: <Widget>[
-                                    TextButton(
-                                      onPressed: () { Navigator.pop(context, 'OK');},
-                                      child: const Text('OK'),
-                                    ),
-                                  ],
-                                ),
-                              ).then((value) {
-                                BlocProvider.of<NavigationBloc>(context).removeLastFromBS();
-                                BlocProvider.of<NavigationBloc>(context)
-                                    .add(NavigateToAimEditScreenEvent(aimId));
-                              });
-
-                            }else{
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Ошибка сохранения'),
-                                  duration: Duration(
-                                      seconds: 3), // Установите желаемую продолжительность отображения
-                                ),
-                              );
-                            }
+                            await onSaveClicked(appViewModel,context);
                           },
                           child: const Text("Сохранить цель", style: TextStyle(color: AppColors.blueButtonTextColor))
                       ),
@@ -165,5 +158,52 @@ class AimScreen extends StatelessWidget {
                   ,),
               ),)])
     ));
+  }
+  Future<void> onSaveClicked(AppViewModel appViewModel, BuildContext maincontext) async {
+    if(text.text.isEmpty||description.text.isEmpty){
+      showDialog(context: maincontext,
+        builder: (BuildContext context) => AlertDialog(
+          title: const Text('Заполните поля', textAlign: TextAlign.center,),
+          shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(32.0))),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () { Navigator.pop(context, 'OK');},
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+    int? aimId = await appViewModel.createAim(AimData(id: 999, parentId: parentCircleId, text: text.text, description: description.text), parentCircleId);
+    if(aimId!=null) {
+      showDialog(context: maincontext,
+        builder: (BuildContext c) => AlertDialog(
+          title: const Text('сохранено'),
+          shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(32.0))),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () { Navigator.pop(c, 'OK');},
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      ).then((value) {
+        BlocProvider.of<NavigationBloc>(maincontext).removeLastFromBS();
+        BlocProvider.of<NavigationBloc>(maincontext)
+            .add(NavigateToAimEditScreenEvent(aimId));
+      });
+
+    }else{
+      ScaffoldMessenger.of(maincontext).showSnackBar(
+        const SnackBar(
+          content: Text('Ошибка сохранения'),
+          duration: Duration(
+              seconds: 3), // Установите желаемую продолжительность отображения
+        ),
+      );
+    }
   }
 }

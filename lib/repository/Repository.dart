@@ -439,6 +439,7 @@ class Repository{
         'id': ad.id,
         'text': ad.text,
         'subText': ad.description,
+        'parentId': ad.parentId,
         'childTasks': ad.childTasks,
         'isChecked': false
       };

@@ -22,9 +22,12 @@ class AimEditScreenState extends State<AimEditScreen>{
   final text = TextEditingController();
   final description = TextEditingController();
   AimData? ai;
+  var isChanged = false;
 
   @override
   Widget build(BuildContext context) {
+    text.addListener(() { if(ai?.text!=text.text)isChanged = true;});
+    description.addListener(() { if(ai?.description!=description.text)isChanged = true;});
     return Consumer<AppViewModel>(
         builder: (context, appVM, child) {
           ai ??= appVM.currentAim??AimData(id: -1, parentId: -1, text: 'объект не найден', description: "", isChecked: false);
@@ -52,8 +55,46 @@ class AimEditScreenState extends State<AimEditScreen>{
                               icon: const Icon(Icons.keyboard_arrow_left),
                               iconSize: 30,
                               onPressed: () {
-                                BlocProvider.of<NavigationBloc>(context)
-                                    .handleBackPress();
+                                if(text.text.isNotEmpty&&description.text.isNotEmpty&&isChanged){
+                                showDialog(context: context,
+                                  builder: (BuildContext context) => AlertDialog(
+                                    contentPadding: EdgeInsets.zero,
+                                    shape: const RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.all(Radius.circular(32.0))),
+                                    title: const Text('Внимание', textAlign: TextAlign.center,),
+                                    content: const Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text("Вы изменили поля но не нажали 'Сохранить'", maxLines: 6, textAlign: TextAlign.center,),
+                                        SizedBox(height: 4,),
+                                        Divider(color: AppColors.dividerGreyColor,),
+                                        SizedBox(height: 4,),
+                                        Text("Сохранить изменения?", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),)
+                                      ],
+                                    ),
+                                    actions: <Widget>[
+                                      TextButton(
+                                        onPressed: () async {
+                                          Navigator.pop(context, 'OK');
+                                          onSaveClick(appVM);
+                                          BlocProvider.of<NavigationBloc>(context)
+                                              .handleBackPress();
+                                        },
+                                        child: const Text('Да'),
+                                      ),
+                                      TextButton(
+                                        onPressed: () { Navigator.pop(context, 'Cancel');
+                                        BlocProvider.of<NavigationBloc>(context)
+                                            .handleBackPress();
+                                        },
+                                        child: const Text('Нет'),
+                                      ),
+                                    ],
+                                  ),
+                                );}else{
+                                  BlocProvider.of<NavigationBloc>(context)
+                                      .handleBackPress();
+                                }
                               },
                             ),
                             const Spacer(),
@@ -181,42 +222,7 @@ class AimEditScreenState extends State<AimEditScreen>{
                                   ),
                                 ),
                                 onPressed: () async {
-                                  if(ai!=null){
-                                    if(text.text.isEmpty||description.text.isEmpty){
-                                      showDialog(context: context,
-                                        builder: (BuildContext context) => AlertDialog(
-                                          title: const Text('Заполните поля'),
-                                          shape: const RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.all(Radius.circular(32.0))),
-                                          actions: <Widget>[
-                                            TextButton(
-                                              onPressed: () => Navigator.pop(context, 'OK'),
-                                              child: const Text('OK'),
-                                            ),
-                                          ],
-                                        ),
-                                      );
-                                      return;
-                                    }else{
-                                      ai!.text = text.text;
-                                      ai!.description = description.text;
-                                    }
-
-                                    appVM.updateAim(ai!);
-                                    showDialog(context: context,
-                                      builder: (BuildContext context) => AlertDialog(
-                                        title: const Text('сохраненa'),
-                                        shape: const RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.all(Radius.circular(32.0))),
-                                        actions: <Widget>[
-                                          TextButton(
-                                            onPressed: () => Navigator.pop(context, 'OK'),
-                                            child: const Text('OK'),
-                                          ),
-                                        ],
-                                      ),
-                                    );
-                                  }
+                                  onSaveClick(appVM);
                                 },
                                 child: const Text("Cохранить цель",
                                   style: TextStyle(color: AppColors.blueTextColor, fontSize: 12))
@@ -330,5 +336,44 @@ class AimEditScreenState extends State<AimEditScreen>{
                     ),)]);})
             ));
     });
+  }
+
+  void onSaveClick(AppViewModel appVM){
+    if(ai!=null){
+      if(text.text.isEmpty||description.text.isEmpty){
+        showDialog(context: context,
+          builder: (BuildContext context) => AlertDialog(
+            title: const Text('Заполните поля'),
+            shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(32.0))),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () => Navigator.pop(context, 'OK'),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+        );
+        return;
+      }else{
+        ai!.text = text.text;
+        ai!.description = description.text;
+      }
+      appVM.updateAim(ai!);
+      isChanged = false;
+      showDialog(context: context,
+        builder: (BuildContext context) => AlertDialog(
+          title: const Text('сохраненa'),
+          shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(32.0))),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.pop(context, 'OK'),
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+    }
   }
 }

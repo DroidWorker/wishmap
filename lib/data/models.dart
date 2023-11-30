@@ -29,6 +29,20 @@ class CircleData{
   bool isActive;
 
   CircleData({required this.id, required this.text, this.subText = "", required this.color, required this.parenId, this.affirmation="", this.photosIds="", this.isChecked = false, this.isActive = true});
+
+  CircleData copy(){
+    return CircleData(
+    id: id,
+    text: text,
+    subText: subText,
+    color: color,
+    parenId: parenId,
+    affirmation: affirmation,
+    photosIds:  photosIds,
+    isChecked: isChecked,
+    isActive: isActive,
+    );
+  }
 }
 
 class Circle {
@@ -111,6 +125,7 @@ class WishData {
   Map<String, int> childAims = {};
   Map<int, Uint8List> photos = {};
   bool isChecked = false;
+  bool isActive = true;
 
   WishData({required this.id, required this.parentId, required this.text, required this.description, this.photoIds = "", required this.affirmation, required this.color});
 }

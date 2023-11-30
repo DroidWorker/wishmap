@@ -80,10 +80,10 @@ class CircularDraggableCircles extends StatefulWidget {
   CircularDraggableCircles({super.key, required this.circles, required this.size, required this.center,this.clearData=true});
 
   @override
-  _CircularDraggableCirclesState createState() => _CircularDraggableCirclesState();
+  CircularDraggableCirclesState createState() => CircularDraggableCirclesState();
 }
 
-class _CircularDraggableCirclesState extends State<CircularDraggableCircles> with TickerProviderStateMixin {
+class CircularDraggableCirclesState extends State<CircularDraggableCircles> with TickerProviderStateMixin {
   AppViewModel? vm;
 
   List<MainCircle> centralCircles = [];
@@ -415,6 +415,7 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
             value: widget.center.value - centralCircles[i].radius);
       }
     }
+
     var newHash = 0;
     widget.circles.forEach((element) {
       newHash+=element.id;
@@ -636,7 +637,7 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
                                       style: const TextStyle(color: Colors.white, fontSize: 24),
                                       textAlign: TextAlign.center,
                                     ),
-                                    AnimatedBuilder(
+                                    /*AnimatedBuilder(
                                       animation: AlphaAnimation,
                                       builder: (context, child) {
                                         return Opacity(
@@ -650,7 +651,7 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
                                           ),
                                         );
                                       },
-                                    )
+                                    )*/
                                   ],),
                                 )
                         ),
@@ -715,6 +716,9 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
         )
     );
   }
+  void stateSnapshot(){
+    vm?.mainCircles = centralCircles;
+  }
 
   void _updateCircleRotation(double newRotation, double size, Pair center, double radius, {bool isAnim = false}) {
     for (int i = 0; i < widget.circles.length; i++) {
@@ -757,6 +761,7 @@ class _CircularDraggableCirclesState extends State<CircularDraggableCircles> wit
     // Вызываем setState, чтобы обновить виджет
     if(!isAnim)setState(() {});
   }
+
 }
 
 class LinePainter extends CustomPainter {

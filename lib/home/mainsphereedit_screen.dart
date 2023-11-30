@@ -25,13 +25,14 @@ class MainSphereEditScreen extends StatefulWidget{
 class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
   Color circleColor = Colors.black12;
   CircleData curWd = CircleData(id: -1, text: "", color: Colors.black12, parenId: -1);
-
+var isChanged = false;
 
   @override
   Widget build(BuildContext context) {
     final appViewModel = Provider.of<AppViewModel>(context);
     if(curWd.id==-1){
-      curWd = appViewModel.mainScreenState?.allCircles[0]??CircleData(id: 0, text: "", color: Colors.red, parenId: -1);
+      appViewModel.mainSphereEditCircle = appViewModel.mainScreenState?.allCircles[0];
+      curWd = appViewModel.mainSphereEditCircle?.copy()??CircleData(id: 0, text: "", color: Colors.grey, parenId: -1);
       if(curWd.photosIds.isNotEmpty&&appViewModel.cachedImages.isEmpty){
         final ids = curWd.photosIds.split("|");
         List<int> intList = ids.map((str) => int.parse(str)).toList();
@@ -42,9 +43,9 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
     TextEditingController description = TextEditingController(text: curWd.subText);
     TextEditingController affirmation = TextEditingController(text: curWd.affirmation);
     circleColor = curWd.color;
-    text.addListener(() { curWd.text=text.text;});
-    description.addListener(() { curWd.subText=description.text;});
-    affirmation.addListener(() { curWd.affirmation=affirmation.text;});
+    text.addListener(() { curWd.text=text.text;isChanged = true;});
+    description.addListener(() { curWd.subText=description.text;isChanged = true;});
+    affirmation.addListener(() { curWd.affirmation=affirmation.text;isChanged = true;});
     return Consumer<AppViewModel>(
         builder: (context, appVM, child){
           final aims = appVM.aimItems.where((element) => element.parentId==0).toList();
@@ -66,8 +67,59 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
                     icon: const Icon(Icons.keyboard_arrow_left),
                     iconSize: 30,
                     onPressed: () {
-                      BlocProvider.of<NavigationBloc>(context)
-                          .add(NavigateToMainScreenEvent());
+                      if(isChanged){
+                      showDialog(context: context,
+                        builder: (BuildContext context) => AlertDialog(
+                          contentPadding: EdgeInsets.zero,
+                          shape: const RoundedRectangleBorder(
+                              borderRadius: BorderRadius.all(Radius.circular(32.0))),
+                          title: const Text('Внимание', textAlign: TextAlign.center,),
+                          content: const Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text("Вы изменили поля но не нажали 'Сохранить'", maxLines: 6, textAlign: TextAlign.center,),
+                              SizedBox(height: 4,),
+                              Divider(color: AppColors.dividerGreyColor,),
+                              SizedBox(height: 4,),
+                              Text("Сохранить изменения?", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),)
+                            ],
+                          ),
+                          actions: <Widget>[
+                            TextButton(
+                              onPressed: () async { Navigator.pop(context, 'OK');
+                              await appViewModel.updateSphereWish(WishData(id: curWd.id, parentId: curWd.parenId, text: curWd.text, description: curWd.subText, affirmation: curWd.affirmation, color: curWd.color));
+                              if(appViewModel.mainScreenState!=null)appViewModel.startMainScreen(appViewModel.mainScreenState!.moon);
+                              isChanged = false;
+                              BlocProvider.of<NavigationBloc>(context)
+                                  .add(NavigateToMainScreenEvent());
+                              showDialog(context: context,
+                                builder: (BuildContext context) => AlertDialog(
+                                  title: const Text('Сохранено'),
+                                  shape: const RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.all(Radius.circular(32.0))),
+                                  actions: <Widget>[
+                                    TextButton(
+                                      onPressed: () { Navigator.pop(context, 'OK');},
+                                      child: const Text('OK'),
+                                    ),
+                                  ],
+                                ),
+                              );
+                              },
+                              child: const Text('Да'),
+                            ),
+                            TextButton(
+                              onPressed: () { Navigator.pop(context, 'Cancel');
+                              BlocProvider.of<NavigationBloc>(context)
+                                  .add(NavigateToMainScreenEvent());},
+                              child: const Text('Нет'),
+                            ),
+                          ],
+                        ),
+                      );}else{
+                        BlocProvider.of<NavigationBloc>(context)
+                            .add(NavigateToMainScreenEvent());
+                      }
                     },
                   ),
                   const Spacer(),
@@ -219,7 +271,7 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
                     child:
                     GestureDetector(child:
                     Column(children: [
-                      const Text("Выбери цвет", style: TextStyle(color: Colors.black54, decoration: TextDecoration.underline),),
+                      const Text("Выбери цвет", style: TextStyle(color: Colors.black54/*, decoration: TextDecoration.underline*/),),
                       const SizedBox(height: 10),
                       Container(
                         width: 100.0, // Ширина круга
@@ -242,7 +294,7 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
                 Align(
                   alignment: Alignment.center,
                   child: Column(children: [
-                    const Text("Цели и задачи", style: TextStyle(color: Colors.black54, decoration: TextDecoration.underline),),
+                    const Text("Цели и задачи", style: TextStyle(color: Colors.black54/*, decoration: TextDecoration.underline*/),),
                     const SizedBox(height: 5),
                    Align(
                           alignment: Alignment.centerLeft,

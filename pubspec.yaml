@@ -54,6 +54,7 @@ dependencies:
   flutter_image_compress: ^2.1.0
   image_picker: ^1.0.4
   capped_progress_indicator: ^0.0.2
+  sqflite: ^2.3.0
 
 
 dev_dependencies:

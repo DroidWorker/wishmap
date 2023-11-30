@@ -1,10 +1,14 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:typed_data';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:wishmap/repository/dbHelper.dart';
 
 import '../data/models.dart';
 
 class LocalRepository{
   SharedPreferences? _prefs;
+  late final DatabaseHelper dbHelper;
 
   LocalRepository() {
     init();
@@ -12,6 +16,7 @@ class LocalRepository{
 
   Future<void> init() async {
     _prefs = await SharedPreferences.getInstance();
+    dbHelper = DatabaseHelper();
   }
 //auth&reg
   Future<void> saveAuth(String login, String password) async {
@@ -56,5 +61,13 @@ class LocalRepository{
       await init(); // Дождитесь завершения инициализации
     }
     _prefs!.remove(key);
+  }
+
+  Future<Uint8List> getImage(int id) async {
+    final result = await dbHelper.getImage(id);
+    return base64Decode(result.first['img'].toString());
+  }
+  Future addImage(int id, Uint8List image) async{
+    dbHelper.insertImage(id, base64Encode(image));
   }
 }

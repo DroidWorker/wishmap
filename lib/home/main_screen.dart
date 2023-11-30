@@ -22,6 +22,9 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen>{
   bool isPauseIcon = true;
   bool clearData = true;
+
+  final GlobalKey<CircularDraggableCirclesState> _CDWidgetKey = GlobalKey();
+
   @override
   Widget build(BuildContext context) {
     return Consumer<AppViewModel>(
@@ -131,6 +134,7 @@ class _MainScreenState extends State<MainScreen>{
                             children: [
                               ElevatedButton(
                                   onPressed: () {
+                                    _CDWidgetKey.currentState?.stateSnapshot();
                                     appVM.startMyTasksScreen();
                                     BlocProvider.of<NavigationBloc>(context)
                                         .add(NavigateToTasksScreenEvent());
@@ -144,6 +148,7 @@ class _MainScreenState extends State<MainScreen>{
                               ),
                               ElevatedButton(
                                   onPressed: () {
+                                    _CDWidgetKey.currentState?.stateSnapshot();
                                     appVM.startMyAimsScreen();
                                     BlocProvider.of<NavigationBloc>(context)
                                         .add(NavigateToAimsScreenEvent());
@@ -173,6 +178,7 @@ class _MainScreenState extends State<MainScreen>{
                               ),
                               ElevatedButton(
                                   onPressed: () {
+                                    _CDWidgetKey.currentState?.stateSnapshot();
                                     appVM.startMyWishesScreen();
                                     BlocProvider.of<NavigationBloc>(context)
                                         .add(NavigateToWishesScreenEvent());
@@ -187,6 +193,7 @@ class _MainScreenState extends State<MainScreen>{
                               ElevatedButton(
                                   onPressed: () {
                                     appVM.getDiary();
+                                    _CDWidgetKey.currentState?.stateSnapshot();
                                     BlocProvider.of<NavigationBloc>(context)
                                         .add(NavigateToDiaryScreenEvent());
                                   },
@@ -202,7 +209,7 @@ class _MainScreenState extends State<MainScreen>{
                       ],
                     ),
                   ),
-                  CircularDraggableCircles(circles: appVM.currentCircles, size: MediaQuery.of(context).size.width-20, center: Pair(key: MediaQuery.of(context).size.width/2, value: MediaQuery.of(context).size.height*0.50), clearData: clearData,),
+                  CircularDraggableCircles(key: _CDWidgetKey,circles: appVM.currentCircles, size: MediaQuery.of(context).size.width-20, center: Pair(key: MediaQuery.of(context).size.width/2, value: MediaQuery.of(context).size.height*0.50), clearData: clearData,),
                 ],))
           );
           clearData=true;

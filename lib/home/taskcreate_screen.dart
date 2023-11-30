@@ -39,8 +39,45 @@ class TaskScreenState extends State<TaskScreen>{
                       icon: const Icon(Icons.keyboard_arrow_left),
                       iconSize: 30,
                       onPressed: () {
-                        BlocProvider.of<NavigationBloc>(context)
-                            .handleBackPress();
+                        if(text.text.isNotEmpty&&description.text.isNotEmpty){
+                          showDialog(context: context,
+                            builder: (BuildContext context) => AlertDialog(
+                              contentPadding: EdgeInsets.zero,
+                              shape: const RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.all(Radius.circular(32.0))),
+                              title: const Text('Внимание', textAlign: TextAlign.center,),
+                              content: const Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text("Вы изменили поля но не нажали 'Сохранить'", maxLines: 6, textAlign: TextAlign.center,),
+                                  SizedBox(height: 4,),
+                                  Divider(color: AppColors.dividerGreyColor,),
+                                  SizedBox(height: 4,),
+                                  Text("Сохранить изменения?", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),)
+                                ],
+                              ),
+                              actions: <Widget>[
+                                TextButton(
+                                  onPressed: () async { Navigator.pop(context, 'OK');
+                                  await onSaveClicked(appViewModel);
+                                  BlocProvider.of<NavigationBloc>(context)
+                                      .handleBackPress();
+                                  },
+                                  child: const Text('Да'),
+                                ),
+                                TextButton(
+                                  onPressed: () { Navigator.pop(context, 'Cancel');
+                                  BlocProvider.of<NavigationBloc>(context)
+                                      .handleBackPress();
+                                  },
+                                  child: const Text('Нет'),
+                                ),
+                              ],
+                            ),
+                          );}else{
+                          BlocProvider.of<NavigationBloc>(context)
+                              .handleBackPress();
+                        }
                       },
                     ),
                     const Spacer(),
@@ -54,51 +91,7 @@ class TaskScreenState extends State<TaskScreen>{
                             ),
                           ),
                           onPressed: () async {
-                            if(text.text.isEmpty||description.text.isEmpty){
-                              showDialog(context: context,
-                                builder: (BuildContext context) => AlertDialog(
-                                  title: const Text('Заполните поля', textAlign: TextAlign.center,),
-                                  shape: const RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.all(Radius.circular(32.0))),
-                                  actions: <Widget>[
-                                    TextButton(
-                                      onPressed: () { Navigator.pop(context, 'OK');},
-                                      child: const Text('OK'),
-                                    ),
-                                  ],
-                                ),
-                              );
-                              return;
-                            }
-                            int? taskId = await appViewModel.createTask(TaskData(id: 999, parentId: widget.parentAimId, text: text.text, description: description.text), widget.parentAimId);
-                            if(taskId!=null) {
-                              showDialog(context: context,
-                                builder: (BuildContext context) => AlertDialog(
-                                  title: const Text('сохранено'),
-                                  shape: const RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.all(Radius.circular(32.0))),
-                                  actions: <Widget>[
-                                    TextButton(
-                                      onPressed: () { Navigator.pop(context, 'OK');},
-                                      child: const Text('OK'),
-                                    ),
-                                  ],
-                                ),
-                              ).then((value) {
-                                BlocProvider.of<NavigationBloc>(context).removeLastFromBS();
-                                BlocProvider.of<NavigationBloc>(context)
-                                    .add(NavigateToTaskEditScreenEvent(taskId));
-                              });
-
-                            }else{
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Ошибка сохранения'),
-                                  duration: Duration(
-                                      seconds: 3), // Установите желаемую продолжительность отображения
-                                ),
-                              );
-                            }
+                            await onSaveClicked(appViewModel);
                           },
                           child: const Text("Сохранить задачу", style: TextStyle(color: AppColors.blueButtonTextColor),)
                       ),
@@ -150,5 +143,61 @@ class TaskScreenState extends State<TaskScreen>{
                     ,),
                 ),)]))
     );
+  }
+
+  Future<void> onSaveClicked(AppViewModel appViewModel) async {
+    if (text.text.isEmpty || description.text.isEmpty) {
+      showDialog(context: context,
+        builder: (BuildContext context) =>
+            AlertDialog(
+              title: const Text('Заполните поля', textAlign: TextAlign.center,),
+              shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(32.0))),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context, 'OK');
+                  },
+                  child: const Text('OK'),
+                ),
+              ],
+            ),
+      );
+      return;
+    }
+    int? taskId = await appViewModel.createTask(TaskData(id: 999,
+        parentId: widget.parentAimId,
+        text: text.text,
+        description: description.text), widget.parentAimId);
+    if (taskId != null) {
+      showDialog(context: context,
+        builder: (BuildContext c) =>
+            AlertDialog(
+              title: const Text('сохранено'),
+              shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(32.0))),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(c, 'OK');
+                  },
+                  child: const Text('OK'),
+                ),
+              ],
+            ),
+      ).then((value) {
+        BlocProvider.of<NavigationBloc>(context).removeLastFromBS();
+        BlocProvider.of<NavigationBloc>(context)
+            .add(NavigateToTaskEditScreenEvent(taskId));
+      });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Ошибка сохранения'),
+          duration: Duration(
+              seconds: 3), // Установите желаемую продолжительность отображения
+        ),
+      );
+    }
   }
 }

@@ -2,7 +2,6 @@ import 'package:capped_progress_indicator/capped_progress_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
-import 'package:wishmap/common/wishItem_widget.dart';
 import '../ViewModel.dart';
 import '../common/treeview_widget.dart';
 import '../data/models.dart';
@@ -48,6 +47,7 @@ class _WishesScreenState extends State<WishesScreen>{
                       icon: const Icon(Icons.keyboard_arrow_left),
                       iconSize: 30,
                       onPressed: () {
+                        print("nnnnnnnnnnnnnn${appVM.mainCircles[appVM.mainCircles.length-1].coords.value}");
                         BlocProvider.of<NavigationBloc>(context)
                             .add(NavigateToMainScreenEvent());
                       },
@@ -122,6 +122,7 @@ class _WishesScreenState extends State<WishesScreen>{
                                 .add(NavigateToMainSphereEditScreenEvent());
                           }else if(type=="w"){
                             BlocProvider.of<NavigationBloc>(context).clearHistory();
+                            appVM.wishScreenState = null;
                             appVM.startWishScreen(id, 0);
                             BlocProvider.of<NavigationBloc>(context)
                                 .add(NavigateToWishScreenEvent());

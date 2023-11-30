@@ -13,7 +13,6 @@ class CardsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print("start cardsscreen");
     final appViewModel = Provider.of<AppViewModel>(context);
     if(appViewModel.moonItems.isEmpty)appViewModel.getMoons();
 

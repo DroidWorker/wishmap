@@ -2,7 +2,6 @@ import 'dart:typed_data';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:wishmap/main.dart';
 import 'package:wishmap/repository/Repository.dart';
 import 'package:wishmap/repository/local_repository.dart';
 import 'package:dart_suncalc/suncalc.dart';
@@ -30,6 +29,8 @@ class AppViewModel with ChangeNotifier {
   MainScreenState? mainScreenState;
   List<MainCircle> mainCircles = [];
   List<Circle> currentCircles = [];
+  //mainSphereEdirtScreenn
+  CircleData? mainSphereEditCircle;
   //wishScreen
   WishScreenState? wishScreenState;
   //MyTasksScreen
@@ -64,6 +65,7 @@ class AppViewModel with ChangeNotifier {
   Future<void> init() async {
     authData = await localRep.getAuth();
     profileData = await localRep.getProfile();
+    getMoons();
     notifyListeners();
   }
 
@@ -119,7 +121,7 @@ class AppViewModel with ChangeNotifier {
     try {
       DateTime now = DateTime.now();
       final moonIllumination = SunCalc.getMoonIllumination(now);
-      moonItems = (await repository.getMoonList())??[];
+      if(moonItems.isEmpty){moonItems = (await repository.getMoonList())??[];}
       if(moonItems.isEmpty||isDateAfter(now, moonItems.last.date)) {
         int moonId = moonItems.isNotEmpty?moonItems.last.id + 1:0;
         moonItems.add(MoonItem(id: moonId,
@@ -351,7 +353,7 @@ class AppViewModel with ChangeNotifier {
       if(sphereInAllCircles==-1){
         mainScreenState!.allCircles.add(CircleData(id: wd.id, text: wd.text, color: wd.color, parenId: wd.parentId));
         mainScreenState!.allCircles.sort((a,b)=>a.id.compareTo(b.id));
-        wishItems.add(WishItem(id: wd.id, text: wd.text, isChecked: wd.isChecked));
+        if(wd.id > 899)wishItems.add(WishItem(id: wd.id, text: wd.text, isChecked: wd.isChecked));
       }
       else{
         mainScreenState!.allCircles[sphereInAllCircles]
