@@ -5,8 +5,9 @@ import '../data/models.dart';
 
 class MyTreeView extends StatefulWidget {
   final List<MyTreeNode> roots;
+  final bool applyColorChangibg;
   final Function(int id, String type) onTap;
-  const MyTreeView({super.key, required this.roots, required this.onTap});
+  const MyTreeView({super.key, required this.roots, required this.onTap, this.applyColorChangibg = true});
 
   @override
   State<MyTreeView> createState() => _MyTreeViewState();
@@ -54,6 +55,8 @@ class _MyTreeViewState extends State<MyTreeView> {
     // to incorporate your hierarchical data in sophisticated scrolling
     // experiences.
     return TreeView<MyTreeNode>(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
       // This controller is used by tree views to build a flat representation
       // of a tree structure so it can be lazy rendered by a SliverList.
       // It is also used to store and manipulate the different states of the
@@ -69,6 +72,7 @@ class _MyTreeViewState extends State<MyTreeView> {
         return MyTreeTile(
           // Add a key to your tiles to avoid syncing descendant animations.
           key: ValueKey(entry.node),
+          applyColorChanging: widget.applyColorChangibg,
           // Your tree nodes are wrapped in TreeEntry instances when traversing
           // the tree, these objects hold important details about its node
           // relative to the tree, like: expansion state, level, parent, etc.
@@ -88,10 +92,12 @@ class _MyTreeViewState extends State<MyTreeView> {
 class MyTreeTile extends StatelessWidget {
   const MyTreeTile({
     super.key,
+    required this.applyColorChanging,
     required this.entry,
     required this.onTap,
   });
 
+  final bool applyColorChanging;
   final TreeEntry<MyTreeNode> entry;
   final VoidCallback onTap;
 
@@ -99,49 +105,42 @@ class MyTreeTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      // Wrap your content in a TreeIndentation widget which will properly
-      // indent your nodes (and paint guides, if required).
-      //
-      // If you don't want to display indent guides, you could replace this
-      // TreeIndentation with a Padding widget, providing a padding of
-      // `EdgeInsetsDirectional.only(start: TreeEntry.level * indentAmount)`
-      child: TreeIndentation(
-        entry: entry,
-        // Provide an indent guide if desired. Indent guides can be used to
-        // add decorations to the indentation of tree nodes.
-        // This could also be provided through a DefaultTreeIndentGuide
-        // inherited widget placed above the tree view.
-        guide: const IndentGuide.connectingLines(indent: 25),
-        // The widget to render next to the indentation. TreeIndentation
-        // respects the text direction of `Directionality.maybeOf(context)`
-        // and defaults to left-to-right.
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(15, 8, 8, 8),
-          child: Row(
-            children: [
-              Expanded(
-                flex: 5,
-                child: Text(
-                  entry.node.title,
-                  maxLines: 5,
-                  style: entry.node.noClickable?const TextStyle():const TextStyle(decoration: TextDecoration.underline),
+      child: Ink(
+        child: TreeIndentation(
+          entry: entry,
+          guide: const IndentGuide.connectingLines(indent: 25),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(15, 8, 8, 8),
+            child: Row(
+              children: [
+                Expanded(
+                  flex: 5,
+                  child: Text(
+                    entry.node.title,
+                    maxLines: 5,
+                    style: entry.node.noClickable
+                        ? const TextStyle()
+                        : applyColorChanging
+                        ? const TextStyle(decoration: TextDecoration.underline, color: Colors.black12)
+                        : const TextStyle(decoration: TextDecoration.underline),
+                  ),
                 ),
-              ),
-              const Spacer(),
-              entry.node.type == "w"&&entry.node.id>8
-                  ? (entry.node.isChecked
-                  ? Image.asset('assets/icons/love5110868fill.png', width: 20, height: 20,)
-                  : Image.asset('assets/icons/love5110868.png', width: 20, height: 20))
-                  : (entry.node.type == "a"
-                  ? (entry.node.isChecked
-                  ? Image.asset('assets/icons/target1914412.png', width: 20, height: 30)
-                  : Image.asset('assets/icons/nountarget423422.png', width: 20, height: 30))
-                  : (entry.node.type == "t"
-                  ? (entry.node.isChecked
-                  ? const Icon(Icons.check_circle_outline, size: 20)
-                  : const Icon(Icons.circle_outlined, size: 20))
-                  : Container())),
-            ],
+                const Spacer(),
+                entry.node.type == "w" && entry.node.id > 8
+                    ? (entry.node.isChecked
+                    ? Image.asset('assets/icons/love5110868fill.png', width: 20, height: 20,)
+                    : Image.asset('assets/icons/love5110868.png', width: 20, height: 20))
+                    : (entry.node.type == "a"
+                    ? (entry.node.isChecked
+                    ? Image.asset('assets/icons/target1914412.png', width: 20, height: 30)
+                    : Image.asset('assets/icons/nountarget423422.png', width: 20, height: 30))
+                    : (entry.node.type == "t"
+                    ? (entry.node.isChecked
+                    ? const Icon(Icons.check_circle_outline, size: 20)
+                    : const Icon(Icons.circle_outlined, size: 20))
+                    : Container())),
+              ],
+            ),
           ),
         ),
       ),

@@ -17,29 +17,37 @@ class AimItemWidget extends StatefulWidget{
 class _AimItem extends State<AimItemWidget>{
   @override
   Widget build(BuildContext context) {
-    return Row(children: [
-      Expanded(child:
-      GestureDetector(
-        onTap: (){
-          widget.onItemSelect(widget.ai.id);
-        },
-        child: widget.ai.isChecked ? Text(widget.ai.text,style: const TextStyle(decoration: TextDecoration.lineThrough),) : Text(widget.ai.text),
-      )),
-      IconButton(
-        icon: widget.ai.isChecked?Image.asset('assets/icons/target1914412.png'):Image.asset('assets/icons/nountarget423422.png'),
-        iconSize: 30,
-        onPressed: () {
-          widget.onClick(widget.ai.id);
-        },
+    return InkWell(
+      onTap: () {
+        widget.onItemSelect(widget.ai.id);
+      },
+      child: Row(
+        children: [
+          Expanded(
+            child: GestureDetector(
+              onTap: () {
+                widget.onItemSelect(widget.ai.id);
+              },
+              child: widget.ai.isChecked
+                  ? Text(
+                widget.ai.text,
+                style: const TextStyle(decoration: TextDecoration.lineThrough),
+              )
+                  : Text(widget.ai.text),
+            ),
+          ),
+          IconButton(
+            icon: widget.ai.isChecked
+                ? Image.asset('assets/icons/target1914412.png')
+                : Image.asset('assets/icons/nountarget423422.png'),
+            iconSize: 30,
+            onPressed: () {
+              widget.onClick(widget.ai.id);
+            },
+          ),
+        ],
       ),
-      // IconButton(
-      //   icon: Image.asset('assets/icons/delete6161554.png'),
-      //   iconSize: 30,
-      //   onPressed: () {
-      //       widget.onDelete(widget.ai.id);
-      //     },
-      // )
-    ],);
+    );
   }
 
 }

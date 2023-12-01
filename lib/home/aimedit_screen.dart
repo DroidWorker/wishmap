@@ -293,8 +293,8 @@ class AimEditScreenState extends State<AimEditScreen>{
                     const SizedBox(height: 15,),
                     Align(
                         alignment: Alignment.centerLeft,
-                        child: SizedBox(
-                          height: constraints.maxHeight-350,
+                        child: Expanded(
+                          //height: constraints.maxHeight-350,
                           child: MyTreeView(key: UniqueKey(),roots: roots, onTap: (id, type){
                             if(type=="m"){
                               BlocProvider.of<NavigationBloc>(context).clearHistory();

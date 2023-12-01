@@ -298,8 +298,8 @@ var isChanged = false;
                     const SizedBox(height: 5),
                    Align(
                           alignment: Alignment.centerLeft,
-                          child: SizedBox(
-                            height: root.length*150,
+                          child: Expanded(
+                            //height: root.length*150,
                             child: MyTreeView(key: UniqueKey(),roots: root, onTap: (id, type){
                               if(type=="m"){
                                 BlocProvider.of<NavigationBloc>(context).clearHistory();

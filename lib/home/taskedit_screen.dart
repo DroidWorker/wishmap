@@ -20,6 +20,7 @@ class TaskEditScreen extends StatefulWidget {
 
 class TaskEditScreenState extends State<TaskEditScreen>{
   List<MyTreeNode> roots = [];
+  TaskData? ai;
 
   final text = TextEditingController();
   final description = TextEditingController();
@@ -27,21 +28,21 @@ class TaskEditScreenState extends State<TaskEditScreen>{
 
   @override
   Widget build(BuildContext context) {
-    text.addListener(() { isChanged = true;});
-    description.addListener(() { isChanged = true;});
+    text.addListener(() { if(ai?.text!=text.text)isChanged = true;});
+    description.addListener(() { if(ai?.text!=text.text)isChanged = true;});
     return Consumer<AppViewModel>(
         builder: (context, appVM, child) {
-          TaskData ai = appVM.currentTask??TaskData(id: -1, parentId: -1, text: 'объект не найден', description: "", isChecked: false);
+          ai = appVM.currentTask??TaskData(id: -1, parentId: -1, text: 'объект не найден', description: "", isChecked: false);
           if(appVM.currentAim!=null) {
             AimData ad = appVM.currentAim!;
             var childNodes = MyTreeNode(id: ad.id, type: 'a', title: ad.text, isChecked: ad.isChecked, children: []);
-            if(roots.isEmpty)appVM.convertToMyTreeNodeIncludedAimsTasks(childNodes, ai.id, ad.parentId);
+            if(roots.isEmpty)appVM.convertToMyTreeNodeIncludedAimsTasks(childNodes, ai!.id, ad.parentId);
           }else {
-            appVM.getAim(ai.parentId);
+            appVM.getAim(ai!.parentId);
           }
           roots=appVM.myNodes;
-          text.text = ai.text;
-          description.text = ai.description;
+          text.text = ai!.text;
+          description.text = ai!.description;
           return Scaffold(
             backgroundColor: AppColors.backgroundColor,
             body: SafeArea(
@@ -81,7 +82,7 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                                       actions: <Widget>[
                                         TextButton(
                                           onPressed: () async { Navigator.pop(context, 'OK');
-                                          onSaveClicked(appVM, ai);
+                                          onSaveClicked(appVM, ai!);
                                           BlocProvider.of<NavigationBloc>(context)
                                               .handleBackPress();
                                           },
@@ -105,16 +106,16 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                             const Spacer(),
                             TextButton(
                                 style: TextButton.styleFrom(
-                                  backgroundColor: ai.isChecked?AppColors.pinkButtonTextColor:AppColors.greyBackButton,
+                                  backgroundColor: ai!.isChecked?AppColors.pinkButtonTextColor:AppColors.greyBackButton,
                                   shape: const RoundedRectangleBorder(
                                     borderRadius: BorderRadius.all(Radius.circular(10)),
                                   ),
                                 ),
                                 onPressed: () async {
-                                  appVM.updateTaskStatus(ai.id, !ai.isChecked);
+                                  appVM.updateTaskStatus(ai!.id, !ai!.isChecked);
                                   showDialog(context: context,
                                     builder: (BuildContext context) => AlertDialog(
-                                      title: ai.isChecked? const Text('выполнена'):const Text(' не выполнена'),
+                                      title: ai!.isChecked? const Text('выполнена'):const Text(' не выполнена'),
                                       shape: const RoundedRectangleBorder(
                                           borderRadius: BorderRadius.all(Radius.circular(32.0))),
                                       actions: <Widget>[
@@ -137,7 +138,7 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                                   ),
                                 ),
                                 onPressed: () async {
-                                  appVM.deleteTask(ai.id);
+                                  appVM.deleteTask(ai!.id);
                                   showDialog(context: context,
                                     builder: (BuildContext c) => AlertDialog(
                                       title: const Text('удаленa'),
@@ -166,7 +167,7 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                                   ),
                                 ),
                                 onPressed: () async {
-                                  onSaveClicked(appVM, ai);
+                                  onSaveClicked(appVM, ai!);
                                 },
                                 child: const Text("Cохранить задачу",
                                   style: TextStyle(color: AppColors.blueTextColor, fontSize: 12),)
@@ -207,8 +208,8 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                     const SizedBox(height: 15,),
                     Align(
                         alignment: Alignment.centerLeft,
-                        child: SizedBox(
-                          height: constraints.maxHeight-250,
+                        child: Expanded(
+                          //height: constraints.maxHeight-250,
                           child: MyTreeView(key: UniqueKey(),roots: roots, onTap: (id,type){
                             if(type=="m"){
                               BlocProvider.of<NavigationBloc>(context).clearHistory();
@@ -228,7 +229,7 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                               BlocProvider.of<NavigationBloc>(context).removeLastFromBS();
                               BlocProvider.of<NavigationBloc>(context)
                                   .add(NavigateToAimEditScreenEvent(id));
-                            }else if(type=="t"&&ai.id!=id){
+                            }else if(type=="t"&&ai!.id!=id){
                               appVM.getTask(id);
                               BlocProvider.of<NavigationBloc>(context).removeLastFromBS();
                               BlocProvider.of<NavigationBloc>(context)

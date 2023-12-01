@@ -31,7 +31,7 @@ class _AimsScreenState extends State<AimsScreen>{
         builder: (context, appVM, child) {
           allAims = appVM.aimItems;
           page==1?filteredAimList = allAims.where((element) => element.isChecked).toList():
-          page==2?filteredAimList = allAims.where((element) => !element.isChecked).toList():filteredAimList = allAims;          filteredAimList = allAims;
+          page==2?filteredAimList = allAims.where((element) => !element.isChecked).toList():filteredAimList = allAims;
           isPBActive=appVM.isinLoading;
           return Scaffold(
             backgroundColor: AppColors.backgroundColor,
@@ -217,7 +217,8 @@ class _AimsScreenState extends State<AimsScreen>{
   filterAims(int type){
     setState(() {
       page==1?filteredAimList = allAims.where((element) => element.isChecked).toList():
-      page==2?filteredAimList = allAims.where((element) => !element.isChecked).toList():filteredAimList = allAims;
+      page==2?filteredAimList = allAims.where((element) => !element.isChecked).toList():
+      filteredAimList = allAims;
     });
   }
   onItemSelect(int id) async {

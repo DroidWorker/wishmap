@@ -47,7 +47,6 @@ class _WishesScreenState extends State<WishesScreen>{
                       icon: const Icon(Icons.keyboard_arrow_left),
                       iconSize: 30,
                       onPressed: () {
-                        print("nnnnnnnnnnnnnn${appVM.mainCircles[appVM.mainCircles.length-1].coords.value}");
                         BlocProvider.of<NavigationBloc>(context)
                             .add(NavigateToMainScreenEvent());
                       },
@@ -113,7 +112,7 @@ class _WishesScreenState extends State<WishesScreen>{
                       alignment: Alignment.centerLeft,
                       child: SizedBox(
                         height: constraints.maxHeight,
-                        child: MyTreeView(key: UniqueKey(),roots: roots, onTap: (id, type){
+                        child: MyTreeView(key: UniqueKey(), roots: roots, applyColorChangibg: false, onTap: (id, type){
                           if(type=="m"){
                             BlocProvider.of<NavigationBloc>(context).clearHistory();
                             appVM.cachedImages.clear();
@@ -121,7 +120,6 @@ class _WishesScreenState extends State<WishesScreen>{
                             BlocProvider.of<NavigationBloc>(context)
                                 .add(NavigateToMainSphereEditScreenEvent());
                           }else if(type=="w"){
-                            BlocProvider.of<NavigationBloc>(context).clearHistory();
                             appVM.wishScreenState = null;
                             appVM.startWishScreen(id, 0);
                             BlocProvider.of<NavigationBloc>(context)

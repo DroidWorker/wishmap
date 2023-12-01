@@ -58,6 +58,7 @@ class _WishScreenState extends State<WishScreen>{
             isChanged = false;
             isDataLoaded = true;
             appViewModel.getAimsForCircles(appVM.wishScreenState!.wish.id);
+            appVM.convertToMyTreeNodeFullBranch(curwish.id);
             if(appVM.wishScreenState!.wish.photoIds.isNotEmpty){
               final ids = appVM.wishScreenState!.wish.photoIds.split("|");
               if(ids.isNotEmpty) {
@@ -73,13 +74,22 @@ class _WishScreenState extends State<WishScreen>{
           }
           final aims = appVM.wishScreenState?.wishAims;
           final tasks = appVM.wishScreenState?.wishTasks;
-          if(aims!=null&&tasks!=null){
+          /*if(aims!=null&&tasks!=null){
             root.clear();
             for (var element in aims) {
               final childTasks = tasks.where((e) => e.parentId==element.id).toList();
               root.add(MyTreeNode(id: element.id, type: 'a', title: element.text, isChecked: element.isChecked, children: childTasks.map((item) => MyTreeNode(id: item.id, type: 't', title: item.text, isChecked: item.isChecked)).toList()));
             }
           }
+          final parenttree = appVM.getParentTree(curwish.id);
+          List<MyTreeNode> children = root;
+          for (var element in parenttree) {
+            children=[MyTreeNode(id: element.id, type: element.id==0?"m":"w", title: element.text, children: children, isChecked: element.isChecked)];
+          }
+          root.clear();
+          root.addAll(children);*/
+          root.clear();
+          root.addAll(appVM.myNodes);
 
           return Scaffold(
               backgroundColor: AppColors.backgroundColor,
@@ -117,7 +127,7 @@ class _WishScreenState extends State<WishScreen>{
                                       ..color = _color!;
                                     await appViewModel.createNewSphereWish(appVM.wishScreenState!.wish);
                                     BlocProvider.of<NavigationBloc>(context)
-                                        .add(NavigateToMainScreenEvent());
+                                        .handleBackPress();
                                     showDialog(context: context,
                                       builder: (BuildContext context) => AlertDialog(
                                         title: const Text('Сохранено'),
@@ -137,7 +147,7 @@ class _WishScreenState extends State<WishScreen>{
                                   TextButton(
                                     onPressed: () { Navigator.pop(context, 'Cancel');
                                     BlocProvider.of<NavigationBloc>(context)
-                                        .add(NavigateToMainScreenEvent());
+                                        .handleBackPress();
                                     },
                                     child: const Text('Нет'),
                                   ),
@@ -145,9 +155,8 @@ class _WishScreenState extends State<WishScreen>{
                               ),
                             );
                             }else{
-                              print("mmmmmmmmmmmmmm${appVM.mainCircles[appVM.mainCircles.length-1].coords.value}");
                               BlocProvider.of<NavigationBloc>(context)
-                                  .add(NavigateToMainScreenEvent());
+                                  .handleBackPress();
                             }}
                       ),
                       const Expanded(child: SizedBox(),),
@@ -454,7 +463,7 @@ class _WishScreenState extends State<WishScreen>{
                                     );
                                   },
                                 )),
-                            if(curwish.id > 800)
+                            if(curwish.id > 0)
                               Align(
                                 alignment: Alignment.center,
                                 child: Column(children: [
@@ -462,8 +471,8 @@ class _WishScreenState extends State<WishScreen>{
                                   const SizedBox(height: 5),
                                   Align(
                                       alignment: Alignment.centerLeft,
-                                      child: SizedBox(
-                                        height: root.length*150,
+                                      child: Expanded(
+                                        //height: root.length*150,
                                         child: MyTreeView(key: UniqueKey(),roots: root, onTap: (id, type){
                                           if(type=="m"){
                                             BlocProvider.of<NavigationBloc>(context).clearHistory();
@@ -472,10 +481,8 @@ class _WishScreenState extends State<WishScreen>{
                                             BlocProvider.of<NavigationBloc>(context)
                                                 .add(NavigateToMainSphereEditScreenEvent());
                                           }else if(type=="w"){
-                                            BlocProvider.of<NavigationBloc>(context).clearHistory();
+                                            curwish=WishData(id: -1, parentId: -1, text: "text", description: "description", affirmation: "affirmation", color: Colors.transparent);
                                             appVM.startWishScreen(id, 0);
-                                            BlocProvider.of<NavigationBloc>(context)
-                                                .add(NavigateToWishScreenEvent());
                                           }else if(type=="a"){
                                             appVM.getAim(id);
                                             BlocProvider.of<NavigationBloc>(context)

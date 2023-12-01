@@ -115,6 +115,8 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
   bool animationDirectionForward = true;
   //late Size screenSize;
 
+  bool allowClick = true;
+
   Size getScreenSize(BuildContext context) {
     final mediaQueryData = MediaQuery.of(context);
     return mediaQueryData.size;
@@ -393,6 +395,7 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
           centralCircles.removeLast();
         });
       }}
+      allowClick=true;
     }
   }
 
@@ -599,7 +602,7 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
                                         .reset();
                                     movingController
                                         .forward();
-
+                                    allowClick=false;
                                   })
                           );
                         },
@@ -656,55 +659,68 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
                                 )
                         ),
                         onTap: () {
-                          if (centralCircles.length - 1 != index) {
-                            animationDirectionForward = false;
-                            widget.circles = vm?.openSphere(value.id)??[];
-                            circleRotations.clear();
-                            circlePositions.clear();
-                            plusesPositions.clear();
-                            plusesRotations.clear();
-                            final angleBetween = 2 * pi / widget.circles.length;
-                            for (int i = 0; i < widget.circles.length; i++) {
-                              widget.circles[i].radius=(widget.size*0.2).toInt();
-                              final x = widget.center.key - 40 +
-                                  (widget.size - widget.circles[i].radius) / 2 *
-                                      cos(2 * pi * i / widget.circles.length);
-                              final y = widget.center.value - 40 +
-                                  (widget.size - widget.circles[i].radius) / 2 *
-                                      sin(2 * pi * i / widget.circles.length);
-                              circlePositions.add(Offset(x, y));
-                              circleRotations.add(
-                                  2 * pi * i / widget.circles.length);
-                              final px = widget.center.key - 40 +
-                                  (widget.size - widget.circles[i].radius) / 2 *
-                                      cos((2 * pi * i / widget.circles.length) +
-                                          angleBetween / 2);
-                              final py = widget.center.value - 40 +
-                                  (widget.size - widget.circles[i].radius) / 2 *
-                                      sin((2 * pi * i / widget.circles.length) +
-                                          angleBetween / 2);
-                              plusesPositions.add(Offset(px, py));
-                              plusesRotations.add(
-                                  (2 * pi * i / widget.circles.length) +
-                                      angleBetween / 2);
+                          if(allowClick) {
+                            if (centralCircles.length - 1 != index) {
+                              animationDirectionForward = false;
+                              widget.circles = vm?.openSphere(value.id) ?? [];
+                              circleRotations.clear();
+                              circlePositions.clear();
+                              plusesPositions.clear();
+                              plusesRotations.clear();
+                              final angleBetween = 2 * pi /
+                                  widget.circles.length;
+                              for (int i = 0; i < widget.circles.length; i++) {
+                                widget.circles[i].radius =
+                                    (widget.size * 0.2).toInt();
+                                final x = widget.center.key - 40 +
+                                    (widget.size - widget.circles[i].radius) /
+                                        2 *
+                                        cos(2 * pi * i / widget.circles.length);
+                                final y = widget.center.value - 40 +
+                                    (widget.size - widget.circles[i].radius) /
+                                        2 *
+                                        sin(2 * pi * i / widget.circles.length);
+                                circlePositions.add(Offset(x, y));
+                                circleRotations.add(
+                                    2 * pi * i / widget.circles.length);
+                                final px = widget.center.key - 40 +
+                                    (widget.size - widget.circles[i].radius) /
+                                        2 *
+                                        cos((2 * pi * i /
+                                            widget.circles.length) +
+                                            angleBetween / 2);
+                                final py = widget.center.value - 40 +
+                                    (widget.size - widget.circles[i].radius) /
+                                        2 *
+                                        sin((2 * pi * i /
+                                            widget.circles.length) +
+                                            angleBetween / 2);
+                                plusesPositions.add(Offset(px, py));
+                                plusesRotations.add(
+                                    (2 * pi * i / widget.circles.length) +
+                                        angleBetween / 2);
+                              }
+                              initAnim(centralCircles.last.id,
+                                  widget.circles.indexWhere((element) =>
+                                  element
+                                      .id == centralCircles.last.id));
+                              movingController.reset();
+                              movingController.forward();
+                              allowClick = false;
+                            } else if (centralCircles[index].id == 0) {
+                              appViewModel.cachedImages.clear();
+                              appViewModel.startMainsphereeditScreen();
+                              BlocProvider.of<NavigationBloc>(context)
+                                  .add(NavigateToMainSphereEditScreenEvent());
+                            } else {
+                              appViewModel.cachedImages.clear();
+                              appViewModel.wishScreenState = null;
+                              appViewModel.startWishScreen(
+                                  centralCircles[index].id, 0);
+                              appViewModel.mainCircles = centralCircles;
+                              BlocProvider.of<NavigationBloc>(context)
+                                  .add(NavigateToWishScreenEvent());
                             }
-                            initAnim(centralCircles.last.id,
-                                widget.circles.indexWhere((element) => element
-                                    .id == centralCircles.last.id));
-                            movingController.reset();
-                            movingController.forward();
-                          } else if (centralCircles[index].id == 0) {
-                            appViewModel.cachedImages.clear();
-                            appViewModel.startMainsphereeditScreen();
-                            BlocProvider.of<NavigationBloc>(context)
-                                .add(NavigateToMainSphereEditScreenEvent());
-                          } else {
-                            appViewModel.cachedImages.clear();
-                            appViewModel.wishScreenState=null;
-                            appViewModel.startWishScreen(centralCircles[index].id, 0);
-                            appViewModel.mainCircles = centralCircles;
-                            BlocProvider.of<NavigationBloc>(context)
-                                .add(NavigateToWishScreenEvent());
                           }
                         },
                       )

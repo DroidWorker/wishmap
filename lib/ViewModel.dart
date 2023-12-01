@@ -241,6 +241,7 @@ class AppViewModel with ChangeNotifier {
   Future<void> startWishScreen(int wishId, int parentId) async{
     try {
       cachedImages.clear();
+      myNodes.clear();
       WishData wdItem;
       var tmp = mainScreenState!.allCircles.where((element) => element.id==wishId);
       if(tmp.isNotEmpty){
@@ -251,7 +252,7 @@ class AppViewModel with ChangeNotifier {
       wishScreenState = WishScreenState(wish: wdItem);
       notifyListeners();
     }catch(ex){
-      addError("#436${ex.toString()}");;
+      addError("#436${ex.toString()}");
     }
   }
 
@@ -430,15 +431,30 @@ class AppViewModel with ChangeNotifier {
       addError("ошибка при удалении задач");
     }
   }
-  Future<void> updateWishStatus(int wishId, bool status) async{
+  Future<void> updateWishStatus(int wishId, bool status, {bool recursive = true}) async{
     try {
       if(status) {
-        final aims = await repository.getSpheresChildAims(wishId, mainScreenState!.moon.id);
-        if (aims != null && aims.isNotEmpty) {
-          for (var element in aims) {
-            updateAimStatus(element, status);
+        if(recursive) {
+          var wishes = getFullBranch(wishId);
+          for (var e in wishes) {
+            updateWishStatus(e.id, status, recursive: false);
+            if(mainScreenState!=null){
+              final i = mainScreenState!.allCircles.indexWhere((element) => element.id==e.id);
+              if(i>=0)mainScreenState!.allCircles[i].isChecked=status;
+            }
+            if(wishItems.isNotEmpty){
+              final i = wishItems.indexWhere((element) => element.id == e.id);
+              if(i>=0)wishItems[i].isChecked = status;
+            }
           }
         }
+          final aims = await repository.getSpheresChildAims(
+              wishId, mainScreenState!.moon.id);
+          if (aims != null && aims.isNotEmpty) {
+            for (var element in aims) {
+              updateAimStatus(element, status);
+            }
+          }
       }
       await repository.changeWishStatus(wishId, mainScreenState?.moon.id??0, status);
       if(mainScreenState!=null){
@@ -653,6 +669,31 @@ class AppViewModel with ChangeNotifier {
     notifyListeners();
     return children;
   }
+  Future<List<MyTreeNode>> convertToMyTreeNodeFullBranch(int wishId) async {
+    final fullBranch = getFullBranch(wishId);
+    taskItems = (await repository.getMyTasks(mainScreenState!.moon.id))??[];
+    aimItems = (await repository.getMyAims(mainScreenState!.moon.id))??[];
+    MyTreeNode? root;
+    for (var melement in fullBranch) {
+      final List<MyTreeNode> childNodes = [];
+      final chilldAims = aimItems.where((element) => element.parentId==melement.id);
+      for (var e in chilldAims) {
+        final childTasks = taskItems.where((item) => item.parentId==e.id);
+        childNodes.add(MyTreeNode(id: e.id, type: 'a', title: e.text, isChecked: e.isChecked, children: (childTasks.map((t) => MyTreeNode(id: t.id, type: 't', title: t.text, isChecked: t.isChecked))).toList()));
+      }
+      if(root != null)childNodes.add(root);
+      root = MyTreeNode(id: melement.id, type: melement.id==0?"m":"w", title: melement.text, isChecked: melement.isChecked,children: childNodes)..noClickable=melement.id==wishId?true:false;
+    }
+    if(root!=null) {
+      myNodes= [root];
+      notifyListeners();
+      return [root];
+    } else {
+      myNodes.clear();
+      notifyListeners();
+      return [];
+    }
+  }
 
   void toggleChecked(MyTreeNode e, String type, int targetId, bool value) {
     if (e.id == targetId&&e.type==type) {
@@ -682,5 +723,17 @@ class AppViewModel with ChangeNotifier {
       path.add(targetObject);
     }
     return path;
+  }
+
+  List<CircleData> getFullBranch(int wishId){
+    if(mainScreenState==null||wishId==-1)return List.empty();
+    int targetId = getDeepChild(wishId);
+    return getParentTree(targetId);
+  }
+
+  int getDeepChild(id){
+    final childId = mainScreenState!.allCircles.firstWhere((element) => element.parenId==id, orElse: () => CircleData(id: -1, text: "text", color: Colors.transparent, parenId: -1));
+    if(childId.id>0){return getDeepChild(childId.id);}
+    else {return id;}
   }
 }

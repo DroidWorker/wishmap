@@ -15,29 +15,40 @@ class TaskItemWidget extends StatefulWidget{
 }
 
 class _TaskItem extends State<TaskItemWidget>{
+  var c = Colors.black;
   @override
   Widget build(BuildContext context) {
-    return Row(children: [
-      Expanded(
-      child: GestureDetector(
-        onTap: (){widget.onSelect(widget.ti.id);},
-        child: widget.ti.isChecked ? Text(widget.ti.text,style: const TextStyle(decoration: TextDecoration.lineThrough),) : Text(widget.ti.text),
-      )),
-      IconButton(
-          icon: widget.ti.isChecked?const Icon(Icons.check_circle_outline):const Icon(Icons.circle_outlined),
-          iconSize: 30,
-          onPressed: () {
-            widget.onClick(widget.ti.id);
-          },
+    return InkWell(
+      onTap: () {
+        widget.onSelect(widget.ti.id);
+      },
+      child: Row(
+        children: [
+          Expanded(
+            child: GestureDetector(
+              onTap: () {
+                widget.onSelect(widget.ti.id);
+              },
+              child: widget.ti.isChecked
+                  ? Text(
+                widget.ti.text,
+                style: const TextStyle(decoration: TextDecoration.lineThrough),
+              )
+                  : Text(widget.ti.text),
+            ),
+          ),
+          IconButton(
+            icon: widget.ti.isChecked
+                ? const Icon(Icons.check_circle_outline)
+                : const Icon(Icons.circle_outlined),
+            iconSize: 30,
+            onPressed: () {
+              widget.onClick(widget.ti.id);
+            },
+          ),
+        ],
       ),
-      // IconButton(
-      //   icon: Image.asset('assets/icons/delete6161554.png'),
-      //   iconSize: 30,
-      //   onPressed: () {
-      //     widget.onDelete(widget.ti.id);
-      //   },
-      // )
-    ],);
+    );
   }
 
 }
