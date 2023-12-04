@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter/cupertino.dart';
@@ -13,6 +14,8 @@ class AppViewModel with ChangeNotifier {
   Repository repository = Repository();
 
   MessageError messageError = MessageError();
+
+  var isDataFetched = 4;
 
   //auth/regScreen
   ValueNotifier<AuthData?> authDataNotifier = ValueNotifier<AuthData?>(null);
@@ -54,12 +57,12 @@ class AppViewModel with ChangeNotifier {
 
   //diaryScreen
   List<CardData> diaryItems = [
-    CardData(id: 1, emoji: "😃", title: "Благодраность", description: "Чтобы разблокировать путь к желаниям, каждый день начинай с благодарности", text: "no text", color: const Color.fromARGB(255, 233, 255, 250)),
-    CardData(id: 2, emoji: "🌟", title: "Виденье на 5 лет", description: "Глабольное видиние своей жизни лежит в основе всех твоих желаний", text: "no text", color: const Color.fromARGB(255, 226, 246, 255)),
-    CardData(id: 3, emoji: "🎉", title: "Лучший день", description: "Опиши самый замечательный день или момент жизни за прошедший год", text: "no text", color: const Color.fromARGB(255, 255, 240, 233)),
-    CardData(id: 4, emoji: "❤️", title: "100 желаний", description: "Создай свой банк желаний, пусть даже самых невообразимых, и пусть они хранятся здесь", text: "no text", color: const Color.fromARGB(255, 235, 229, 229)),
-    CardData(id: 5, emoji: "🌺", title: "Мои сны", description: "Если записывыать свои сны каждый день, ты обретешь суперспособности", text: "no text",color: const Color.fromARGB(255, 244, 205, 221)),
-    CardData(id: 6, emoji: "🍔", title: "Мои страхи", description: "Выписывай все свои страхи и они начнут растворятся сами собой", text: "no text", color: const Color.fromARGB(255, 238, 255, 210)),
+    CardData(id: 0, emoji: "😃", title: "Благодраность", description: "Чтобы разблокировать путь к желаниям, каждый день начинай с благодарности", text: "no text", color: const Color.fromARGB(255, 233, 255, 250)),
+    CardData(id: 1, emoji: "🌟", title: "Виденье на 5 лет", description: "Глабольное видиние своей жизни лежит в основе всех твоих желаний", text: "no text", color: const Color.fromARGB(255, 226, 246, 255)),
+    CardData(id: 2, emoji: "🎉", title: "Лучший день", description: "Опиши самый замечательный день или момент жизни за прошедший год", text: "no text", color: const Color.fromARGB(255, 255, 240, 233)),
+    CardData(id: 3, emoji: "❤️", title: "100 желаний", description: "Создай свой банк желаний, пусть даже самых невообразимых, и пусть они хранятся здесь", text: "no text", color: const Color.fromARGB(255, 235, 229, 229)),
+    CardData(id: 4, emoji: "🌺", title: "Мои сны", description: "Если записывыать свои сны каждый день, ты обретешь суперспособности", text: "no text",color: const Color.fromARGB(255, 244, 205, 221)),
+    CardData(id: 5, emoji: "🍔", title: "Мои страхи", description: "Выписывай все свои страхи и они начнут растворятся сами собой", text: "no text", color: const Color.fromARGB(255, 238, 255, 210)),
    ];
 
   Future<void> init() async {
@@ -74,6 +77,10 @@ class AppViewModel with ChangeNotifier {
       messageError.text = text;
       notifyListeners();
     }
+  }
+
+  Future clearLocalDB() async {
+    await localRep.clearDatabase();
   }
 
   Future<void> signIn(String login, String password) async{
@@ -154,11 +161,52 @@ class AppViewModel with ChangeNotifier {
     cachedImages.clear();
     isinLoading = true;
     for (var element in ids) {
-      final photo = await repository.getImage(element);
+      final photo = await localRep.getImage(element);
+      //final photo = await repository.getImage(element);replaced by localrep
       if(photo!=null)cachedImages.add(photo);
     }
     isinLoading = false;
     notifyListeners();
+  }
+
+  Future fetchImages() async{
+    final lastId = await localRep.getImageLastId();
+    final images = await repository.fetchImages(lastId+1);
+    images.forEach((key, value) {
+      localRep.addImageStr(key, value);
+    });
+  }
+
+  Future fetchSpheres(int moonId) async{
+    final spheres = await repository.getWishes(moonId);
+    spheres?.forEach((element) {
+      localRep.addSphere(element);
+    });
+    isDataFetched--;
+  }
+
+  Future fetchAims(int moonId) async{
+    final aims = await repository.getMyAimsData(moonId);
+    aims?.forEach((element) {
+      localRep.addAim(element);
+    });
+    isDataFetched--;
+  }
+
+  Future fetchTasks(int moonId) async{
+    final aims = await repository.getMyTasksData(moonId);
+    aims?.forEach((element) {
+      localRep.addTask(element);
+    });
+    isDataFetched--;
+  }
+
+  Future fetchDiary(int moonId) async{
+    final diary = await repository.getDiaryList(moonId);
+    diary?.forEach((element) {
+      localRep.addDiary(element);
+    });
+    isDataFetched--;
   }
 
   bool isDateAfter(DateTime firstDate, String secondDate){
@@ -245,38 +293,44 @@ class AppViewModel with ChangeNotifier {
       WishData wdItem;
       var tmp = mainScreenState!.allCircles.where((element) => element.id==wishId);
       if(tmp.isNotEmpty){
-        wdItem = (await repository.getMyWish(wishId, mainScreenState!.moon.id)) ?? WishData(id: -100, parentId: 0, text: "не удалось загрузить данные", description: "", affirmation: "", color: Colors.transparent);
+        isDataFetched!=0?wdItem = (await repository.getMyWish(wishId, mainScreenState!.moon.id)) ?? WishData(id: -100, parentId: 0, text: "не удалось загрузить данные", description: "", affirmation: "", color: Colors.transparent):
+        wdItem = (await localRep.getSphere(wishId)) ?? WishData(id: -100, parentId: 0, text: "не удалось загрузить данные", description: "", affirmation: "", color: Colors.transparent);
       }else{
         wdItem = WishData(id: wishId, parentId: parentId, text: "", description: "", affirmation: "", color: Colors.green);
       }
       wishScreenState = WishScreenState(wish: wdItem);
       notifyListeners();
-    }catch(ex){
+    }catch(ex, s){
       addError("#436${ex.toString()}");
+      print("sssssssssssssssss $s");
     }
   }
 
   Future<void> startMyTasksScreen() async{
     try {
       isinLoading = true;
-      taskItems = (await repository.getMyTasks(mainScreenState?.moon.id??0)) ?? [];
+      taskItems = isDataFetched!=0?((await repository.getMyTasks(mainScreenState?.moon.id??0)) ?? []):
+      (await localRep.getAllTasks());
       isinLoading = false;
       notifyListeners();
-    }catch(ex){
+    }catch(ex, m){
       addError("#868${ex.toString()}");
+      print("fgfffffffffffffff$m");
     }
   }
   Future getTasksForAims(List<int> aimId) async {
     try {
       List<int> list = [];
       for (var element in aimId) {
-        list.addAll((await repository.getAimsChildTasks(element, mainScreenState?.moon.id ?? 0))??[]);
+        isDataFetched!=0?list.addAll((await repository.getAimsChildTasks(element, mainScreenState?.moon.id ?? 0))??[]):
+        list.addAll(await localRep.getAimsChildTasks(element));
       }
       if (list.isNotEmpty){
         if(taskItems.isNotEmpty){
           wishScreenState?.wishTasks = taskItems.where((element) => list.contains(element.id)).toList();
         }else{
-          taskItems = (await repository.getMyTasks(mainScreenState?.moon.id??0)) ?? [];
+          taskItems = isDataFetched!=0?((await repository.getMyTasks(mainScreenState?.moon.id??0)) ?? []):
+          await localRep.getAllTasks();
           wishScreenState?.wishTasks = taskItems.where((element) => list.contains(element.id)).toList();
         }
       }else {
@@ -290,8 +344,14 @@ class AppViewModel with ChangeNotifier {
   Future<void> startMainsphereeditScreen() async{
     try {
       isinLoading = true;
-      if(aimItems.isEmpty)aimItems = (await repository.getMyAims(mainScreenState?.moon.id??0)) ?? [];
-      if(taskItems.isEmpty)taskItems = (await repository.getMyTasks(mainScreenState?.moon.id??0)) ?? [];
+      if(aimItems.isEmpty) {
+        aimItems = isDataFetched!=0?((await repository.getMyAims(mainScreenState?.moon.id??0)) ?? []):
+        await localRep.getAllAims();
+      }
+      if(taskItems.isEmpty) {
+        taskItems = isDataFetched!=0?((await repository.getMyTasks(mainScreenState?.moon.id??0)) ?? []):
+      await localRep.getAllTasks();
+      }
       isinLoading = false;
       notifyListeners();
     }catch(ex){
@@ -302,7 +362,8 @@ class AppViewModel with ChangeNotifier {
   Future<void> startMyAimsScreen() async{
     try {
       isinLoading = true;
-      aimItems = (await repository.getMyAims(mainScreenState?.moon.id??0)) ?? [];
+      aimItems = isDataFetched!=0?((await repository.getMyAims(mainScreenState?.moon.id??0)) ?? []):
+      await localRep.getAllAims();
       isinLoading = false;
       notifyListeners();
     }catch(ex){
@@ -311,13 +372,14 @@ class AppViewModel with ChangeNotifier {
   }
   Future getAimsForCircles(int sphereId) async {
     try {
-      var list = (await repository.getSpheresChildAims(
-          sphereId, mainScreenState?.moon.id ?? 0)) ?? [];
+      var list = isDataFetched!=0?((await repository.getSpheresChildAims(sphereId, mainScreenState?.moon.id ?? 0)) ?? []):
+        await localRep.getSpheresChildAims(sphereId);
       if (list.isNotEmpty){
         if(aimItems.isNotEmpty){
           wishScreenState?.wishAims = aimItems.where((element) => list.contains(element.id)).toList();
         }else{
-          aimItems = (await repository.getMyAims(mainScreenState?.moon.id??0)) ?? [];
+          aimItems = isDataFetched!=0?((await repository.getMyAims(mainScreenState?.moon.id??0)) ?? []):
+          await localRep.getAllAims();
           wishScreenState?.wishAims = aimItems.where((element) => list.contains(element.id)).toList();
         }
         await getTasksForAims(list);
@@ -333,7 +395,8 @@ class AppViewModel with ChangeNotifier {
   Future<void> startMyWishesScreen() async{
     try {
       isinLoading = true;
-      wishItems = (await repository.getMyWishs(mainScreenState?.moon.id??0)) ?? [];
+      wishItems = isDataFetched!=0?((await repository.getMyWishs(mainScreenState?.moon.id??0)) ?? []):
+      await localRep.getAllSpheres();
       isinLoading = false;
       notifyListeners();
     }catch(ex){
@@ -347,9 +410,11 @@ class AppViewModel with ChangeNotifier {
       for (var element in cachedImages) {
         lastImageId++;
         photos[lastImageId]=element;
+        localRep.addImage(lastImageId, element);
       }
       wd.photos = photos;
       await repository.createSphereWish(wd, mainScreenState?.moon.id??0);
+      await localRep.insertORudateSphere(wd);
       var sphereInAllCircles= mainScreenState!.allCircles.indexWhere((element) => element.id==wd.id);
       if(sphereInAllCircles==-1){
         mainScreenState!.allCircles.add(CircleData(id: wd.id, text: wd.text, color: wd.color, parenId: wd.parentId));
@@ -380,9 +445,12 @@ class AppViewModel with ChangeNotifier {
         if(photosIds.isNotEmpty)photosIds+="|";
         photosIds+=lastImageId.toString();
         photos[lastImageId]=element;
+        localRep.addImage(lastImageId, element);
       }
+      localRep.updateSphereImages(wd.id, photosIds);
       wd.photos = photos;
       await repository.createSphereWish(wd, mainScreenState?.moon.id??0);
+      await localRep.insertORudateSphere(wd);
       mainScreenState!.allCircles[mainScreenState!.allCircles.indexWhere((element) => element.id==wd.id)] = CircleData(id: wd.id, text: wd.text, color: wd.color, parenId: wd.parentId, affirmation: wd.affirmation, subText: wd.description)..photosIds=photosIds;
     }catch(ex){
       addError("сфера не была сохранена: $ex");
@@ -399,17 +467,20 @@ class AppViewModel with ChangeNotifier {
       }
       await deleteallChildAims(id);
       await repository.deleteSphereWish(id, mainScreenState?.moon.id??0);
+      await localRep.deleteSphere(id);
     }catch(ex){
       addError("сфера не была удалена: $ex");
     }
   }
   Future<void> deleteallChildAims(int wishId)async{
     try{
-      final wish = await repository.getMyWish(wishId, mainScreenState!.moon.id);
+      final wish = isDataFetched!=0?await repository.getMyWish(wishId, mainScreenState!.moon.id):
+      await localRep.getSphere(wishId);
       if(wish!=null&&wish.childAims.isNotEmpty){
         wish.childAims.forEach((key, value) async {
           await deleteallChildTasks(value);
           repository.deleteAim(value, mainScreenState!.moon.id);
+          localRep.deleteAim(value);
         });
       }
     }catch(e){
@@ -418,10 +489,12 @@ class AppViewModel with ChangeNotifier {
   }
   Future<void> deleteallChildTasks(int aimId)async{
     try{
-      final aim = await repository.getMyAim(aimId, mainScreenState!.moon.id);
+      final aim = isDataFetched!=0?await repository.getMyAim(aimId, mainScreenState!.moon.id):
+      await localRep.getAim(aimId);
       if(aim!=null&&aim.childTasks.isNotEmpty){
         for (var element in aim.childTasks) {
           repository.deleteTask(element, mainScreenState!.moon.id);
+          localRep.deleteTask(element);
           taskItems.removeWhere((e) => e.id==element);
           wishScreenState?.wishTasks.removeWhere((e) => e.id==element);
         }
@@ -448,8 +521,8 @@ class AppViewModel with ChangeNotifier {
             }
           }
         }
-          final aims = await repository.getSpheresChildAims(
-              wishId, mainScreenState!.moon.id);
+          final aims = isDataFetched!=0? await repository.getSpheresChildAims(wishId, mainScreenState!.moon.id):
+          await localRep.getSpheresChildAims(wishId);
           if (aims != null && aims.isNotEmpty) {
             for (var element in aims) {
               updateAimStatus(element, status);
@@ -457,6 +530,8 @@ class AppViewModel with ChangeNotifier {
           }
       }
       await repository.changeWishStatus(wishId, mainScreenState?.moon.id??0, status);
+      await localRep.updateSphereStatus(wishId, status);
+      toggleChecked(myNodes.first, 'w', wishId, status);
       if(mainScreenState!=null){
         final i = mainScreenState!.allCircles.indexWhere((element) => element.id==wishId);
         if(i>=0)mainScreenState!.allCircles[i].isChecked=status;
@@ -474,6 +549,7 @@ class AppViewModel with ChangeNotifier {
   Future<int?> createAim(AimData ad, int parentCircleId) async{
     try {
       int? aimId = (await repository.createAim(ad, parentCircleId, mainScreenState?.moon.id??0))??-1;
+      localRep.addAim(AimData(id: aimId, parentId: parentCircleId, text: ad.text, description: ad.description));
       currentAim=(AimData(id: aimId, parentId: ad.parentId, text: ad.text, description: ad.description, isChecked: ad.isChecked));
       aimItems.add(AimItem(id: aimId,parentId: parentCircleId, text: ad.text, isChecked: ad.isChecked));
       return aimId;
@@ -484,7 +560,8 @@ class AppViewModel with ChangeNotifier {
   Future getAim(int id) async{
     try{
       if(mainScreenState!=null) {
-        currentAim = await repository.getMyAim(id, mainScreenState!.moon.id);
+        currentAim = isDataFetched!=0?await repository.getMyAim(id, mainScreenState!.moon.id):
+        await localRep.getAim(id);
         notifyListeners();
       } else {
         throw Exception("#2365 lost datas");
@@ -496,6 +573,7 @@ class AppViewModel with ChangeNotifier {
   Future<void> updateAim(AimData ad) async{
     try {
       await repository.updateAim(ad, mainScreenState?.moon.id??0);
+      await localRep.updateAim(ad);
       currentAim=(AimData(id: ad.id, parentId: ad.parentId, text: ad.text, description: ad.description, isChecked: ad.isChecked));
     }catch(ex){
       addError("#518${ex.toString()}");
@@ -505,6 +583,7 @@ class AppViewModel with ChangeNotifier {
     try {
       await deleteallChildTasks(aimId);
       await repository.deleteAim(aimId, mainScreenState?.moon.id??0);
+      localRep.deleteAim(aimId);
       aimItems.removeWhere((element) => element.id == aimId);
     }catch(ex){
       addError("#519${ex.toString()}");
@@ -513,7 +592,8 @@ class AppViewModel with ChangeNotifier {
   Future<void> updateAimStatus(int aimId, bool status) async{
     try {
       if(status) {
-        final tasks = await repository.getAimsChildTasks(aimId, mainScreenState!.moon.id);
+        final tasks = isDataFetched!=0? await repository.getAimsChildTasks(aimId, mainScreenState!.moon.id):
+        await localRep.getAimsChildTasks(aimId);
         if (tasks != null && tasks.isNotEmpty) {
           for (var element in tasks) {
             updateTaskStatus(element, status);
@@ -526,6 +606,7 @@ class AppViewModel with ChangeNotifier {
         if(i>=0)aimItems[i].isChecked = status;
       }
       await repository.changeAimStatus(aimId, mainScreenState?.moon.id??0, status);
+      await localRep.updateAimStatus(aimId, status);
       toggleChecked(myNodes.first, 'a', aimId, status);
       notifyListeners();
     }catch(ex){
@@ -536,6 +617,7 @@ class AppViewModel with ChangeNotifier {
   Future<int?> createTask(TaskData ad, int parentAimId) async{
     try {
       int taskId = (await repository.createTask(ad, parentAimId, mainScreenState?.moon.id??0))??-1;
+      localRep.addTask(TaskData(id: taskId, parentId: parentAimId, text: ad.text, description: ad.description));
       currentTask=(TaskData(id: taskId, parentId: ad.parentId, text: ad.text, description: ad.description, isChecked: ad.isChecked));
       taskItems.add(TaskItem(id: taskId, parentId: parentAimId, text: ad.text, isChecked: ad.isChecked));
       return taskId;
@@ -546,7 +628,8 @@ class AppViewModel with ChangeNotifier {
   Future getTask(int id) async{
     try{
       if(mainScreenState!=null) {
-        currentTask = await repository.getMyTask(id, mainScreenState!.moon.id);
+        currentTask = isDataFetched!=0?await repository.getMyTask(id, mainScreenState!.moon.id):
+        await localRep.getTask(id);
         notifyListeners();
       } else {
         throw Exception("#2366 lost datas");
@@ -558,6 +641,7 @@ class AppViewModel with ChangeNotifier {
   Future<void> updateTask(TaskData ad) async{
     try {
       await repository.updateTask(ad, mainScreenState?.moon.id??0);
+      await localRep.updateTask(ad);
       currentTask=(TaskData(id: ad.id, parentId: ad.parentId, text: ad.text, description: ad.description, isChecked: ad.isChecked));
     }catch(ex){
       addError("#524${ex.toString()}");
@@ -566,6 +650,7 @@ class AppViewModel with ChangeNotifier {
   Future<void> deleteTask(int taskId) async{
     try {
       await repository.deleteTask(taskId, mainScreenState?.moon.id??0);
+      await localRep.deleteTask(taskId);
       taskItems.removeWhere((element) => element.id == taskId);
     }catch(ex){
       addError("#526${ex.toString()}");
@@ -579,6 +664,7 @@ class AppViewModel with ChangeNotifier {
         if(i>=0)taskItems[i].isChecked = status;
       }
       await repository.changeTaskStatus(taskId, mainScreenState?.moon.id??0, status);
+      await localRep.updateTaskStatus(taskId, status);
       toggleChecked(myNodes.first, 't', taskId, status);
       notifyListeners();
     }catch(ex){
@@ -596,9 +682,11 @@ class AppViewModel with ChangeNotifier {
       CardData(id: 6, emoji: "🍔", title: "Мои страхи", description: "Выписывай все свои страхи и они начнут растворятся сами собой", text: "no text", color: Colors.cyanAccent),
       ];
     try {
-      diaryItems = (await repository.getDiaryList(mainScreenState!.moon.id))??[CardData(id: 0, emoji: "⚽", title: "ничего не найдено", description: "", text: "", color: Colors.transparent),];
+      diaryItems = isDataFetched!=0?(await repository.getDiaryList(mainScreenState!.moon.id))??[CardData(id: 0, emoji: "⚽", title: "ничего не найдено", description: "", text: "", color: Colors.transparent),]:
+      await localRep.getAllDiary();
       if(diaryItems.isEmpty) {
         repository.addDiary(cardData, mainScreenState!.moon.id);
+        localRep.addAllDiary(cardData);
         diaryItems = cardData;
       }
       notifyListeners();
@@ -610,6 +698,7 @@ class AppViewModel with ChangeNotifier {
     try{
       diaryItems.add(cd);
       await repository.addDiary([cd], mainScreenState!.moon.id);
+      localRep.addDiary(cd);
       notifyListeners();
     }catch(ex){
       addError("#534${ex.toString()}");
@@ -621,6 +710,7 @@ class AppViewModel with ChangeNotifier {
       if(index==-1)throw Exception("error#vm6794");
       diaryItems[index]=cd;
       await repository.updateDiary(cd, mainScreenState!.moon.id);
+      localRep.updateDiary(cd);
       notifyListeners();
     }catch(ex){
       addError("#536${ex.toString()}");
@@ -631,12 +721,14 @@ class AppViewModel with ChangeNotifier {
   Future<List<TaskItem>?> getTasksForAim(int aimId) async {
     try {
       List<int> list = [];
-      list.addAll((await repository.getAimsChildTasks(aimId, mainScreenState?.moon.id ?? 0))??[]);
+      list.addAll(isDataFetched!=0?((await repository.getAimsChildTasks(aimId, mainScreenState?.moon.id ?? 0))??[]):
+      await localRep.getAimsChildTasks(aimId));
       if (list.isNotEmpty){
         if(taskItems.isNotEmpty){
           return taskItems.where((element) => list.contains(element.id)).toList();
         }else{
-          taskItems = (await repository.getMyTasks(mainScreenState?.moon.id??0)) ?? [];
+          taskItems = isDataFetched!=0?((await repository.getMyTasks(mainScreenState?.moon.id??0)) ?? []):
+          await localRep.getAllTasks();
           return  taskItems.where((element) => list.contains(element.id)).toList();
         }
       }else {
@@ -671,8 +763,10 @@ class AppViewModel with ChangeNotifier {
   }
   Future<List<MyTreeNode>> convertToMyTreeNodeFullBranch(int wishId) async {
     final fullBranch = getFullBranch(wishId);
-    taskItems = (await repository.getMyTasks(mainScreenState!.moon.id))??[];
-    aimItems = (await repository.getMyAims(mainScreenState!.moon.id))??[];
+    taskItems = isDataFetched!=0?((await repository.getMyTasks(mainScreenState!.moon.id))??[]):
+    await localRep.getAllTasks();
+    aimItems = isDataFetched!=0?((await repository.getMyAims(mainScreenState!.moon.id))??[]):
+    await localRep.getAllAims();
     MyTreeNode? root;
     for (var melement in fullBranch) {
       final List<MyTreeNode> childNodes = [];

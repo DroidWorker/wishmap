@@ -106,6 +106,24 @@ class Repository{
     return null;
   }
 
+  Future<Map<int, String>> fetchImages(int id) async {
+    DatabaseReference reference = userRef.child(_auth.currentUser!.uid).child("images");
+
+    DataSnapshot snapshot = (await reference.orderByKey().startAt(id.toString()).once()).snapshot;
+
+    Map<int, String> photos = {};
+
+    // Iterate through the snapshot to get photo strings
+    if(snapshot.value!=null){
+      for (var element in snapshot.children) {
+        if(element.key!=null)photos[int.parse(element.key!)] = element.value.toString();
+      }
+      return photos;
+    }
+
+    return {};
+  }
+
   Future<Uint8List?> getImage(int id) async{
     if(_auth.currentUser!=null){
       DataSnapshot snapshot = (await userRef.child(_auth.currentUser!.uid).child("images").child(id.toString()).once()).snapshot;
@@ -204,6 +222,43 @@ class Repository{
     return null;
   }
 
+  Future<List<WishData>?> getWishes(int moonId) async{
+    List<WishData> circleDataList = [];
+
+    if(_auth.currentUser!=null) {
+      DataSnapshot dataSnapshot = (await userRef.child(_auth.currentUser!.uid)
+          .child("moonlist").child(moonId.toString()).child("spheres")
+          .once()).snapshot;
+      if (dataSnapshot.children.isNotEmpty) {
+        dataSnapshot.children.forEach((element) {
+          final Map<dynamic, dynamic> dataList = element.value as Map<dynamic,dynamic>;
+          WishData circleData = WishData(
+              id: int.parse(element.key.toString()),
+              text: dataList['text'],
+              description: dataList['subText'] ?? "",
+              color: Color(int.parse(dataList['color'].toString())),
+              parentId: int.parse(dataList['parentId'].toString()),
+              photoIds: dataList['photosIds']??"",
+              affirmation: dataList['affirmation']??""
+          )..isChecked = dataList['isChecked']??false;
+          if(dataList['childAims']!=null){
+            final Map<dynamic, dynamic> aimsData = dataList['childAims'] as Map<dynamic, dynamic>;
+            final Map<String, int> aims = {};
+            aimsData.forEach((key, value) {
+              if (value is int) {
+                aims[key]=value;
+              }
+            });
+            circleData.childAims = aims;
+          }
+          circleDataList.add(circleData);
+        });
+      }
+      return circleDataList;
+    }
+    return null;
+  }
+
   Future<List<int>?> getSpheresChildAims(int sphereId, int moonId) async{
       if(_auth.currentUser!=null) {
         List<int> numberList = [];
@@ -267,6 +322,29 @@ class Repository{
     return null;
   }
 
+  Future<List<TaskData>?> getMyTasksData(int moonId) async{
+    if(_auth.currentUser!=null) {
+      List<TaskData> tasksList = [];
+      DataSnapshot dataSnapshot = (await userRef.child(_auth.currentUser!.uid)
+          .child("moonlist").child(moonId.toString()).child("tasks")
+          .once()).snapshot;
+      if (dataSnapshot.children.isNotEmpty) {
+        dataSnapshot.children.forEach((element) {
+          final Map<dynamic, dynamic> dataList = element.value as Map<dynamic,dynamic>;
+          tasksList.add(TaskData(
+              id: int.parse(dataList['id'].toString()),
+              parentId: int.parse(dataList['parentId'].toString()),
+              text: dataList['text'],
+              description: dataList['subText'],
+              isChecked: dataList['isChecked']
+          ));
+        });
+      }
+      return tasksList;
+    }
+    return null;
+  }
+
   Future<List<AimItem>?> getMyAims(int moonId) async{
     if(_auth.currentUser!=null) {
       List<AimItem> aimsList = [];
@@ -282,6 +360,31 @@ class Repository{
               text: dataList['text'],
               isChecked: dataList['isChecked']
           ));
+        });
+      }
+      return aimsList;
+    }
+    return null;
+  }
+
+  Future<List<AimData>?> getMyAimsData(int moonId) async{
+    if(_auth.currentUser!=null) {
+      List<AimData> aimsList = [];
+      DataSnapshot dataSnapshot = (await userRef.child(_auth.currentUser!.uid)
+          .child("moonlist").child(moonId.toString()).child("aims")
+          .once()).snapshot;
+      if (dataSnapshot.children.isNotEmpty) {
+        dataSnapshot.children.forEach((element) {
+          final Map<dynamic, dynamic> dataList = element.value as Map<dynamic,dynamic>;
+          Map<dynamic, dynamic> childTasksMap = Map<dynamic, dynamic>.from(dataList['childTasks']);
+          List<int> childTasksList = childTasksMap.values.map((value) => int.parse(value.toString())).toList();
+          aimsList.add(AimData(
+              id: int.parse(dataList['id'].toString()),
+              parentId: int.parse(dataList['parentId'].toString()),
+              text: dataList['text'],
+              isChecked: dataList['isChecked'],
+              description: dataList['subText']
+          )..childTasks = childTasksList);
         });
       }
       return aimsList;

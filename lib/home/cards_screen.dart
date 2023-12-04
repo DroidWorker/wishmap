@@ -15,6 +15,7 @@ class CardsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final appViewModel = Provider.of<AppViewModel>(context);
     if(appViewModel.moonItems.isEmpty)appViewModel.getMoons();
+    else appViewModel.fetchImages();
 
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
@@ -34,10 +35,18 @@ class CardsScreen extends StatelessWidget {
                         Text(items[index].date)
                       ],
                     ),
-                    onTap: (){
-                      if(appViewModel.moonItems.isNotEmpty)appViewModel.startMainScreen(appVM.moonItems[index]);
-                      BlocProvider.of<NavigationBloc>(context)
-                          .add(NavigateToMainScreenEvent());
+                    onTap: () async {
+                      if(appViewModel.moonItems.isNotEmpty) {
+                        final moonId = appVM.moonItems[index];
+                        appViewModel.startMainScreen(moonId);
+                        await appViewModel.clearLocalDB();
+                        appViewModel.fetchSpheres(moonId.id);
+                        appViewModel.fetchAims(moonId.id);
+                        appViewModel.fetchTasks(moonId.id);
+                        appViewModel.fetchDiary(moonId.id);
+                        BlocProvider.of<NavigationBloc>(context)
+                            .add(NavigateToMainScreenEvent());
+                      }else{appViewModel.addError("Ошибка! нет соединения с сервером");}
                     },
                   )
               );
