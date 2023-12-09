@@ -1,11 +1,10 @@
-import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:connectivity/connectivity.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:wishmap/repository/Repository.dart';
 import 'package:wishmap/repository/local_repository.dart';
-import 'package:dart_suncalc/suncalc.dart';
 
 import 'data/models.dart';
 
@@ -16,6 +15,8 @@ class AppViewModel with ChangeNotifier {
   MessageError messageError = MessageError();
 
   var isDataFetched = 4;
+
+  var connectivity = 'No Internet Connection';
 
   //auth/regScreen
   ValueNotifier<AuthData?> authDataNotifier = ValueNotifier<AuthData?>(null);
@@ -80,7 +81,7 @@ class AppViewModel with ChangeNotifier {
   }
 
   Future clearLocalDB() async {
-    await localRep.clearDatabase();
+    await localRep.clearDatabase(mainScreenState?.moon.id??-1);
   }
 
   Future<void> signIn(String login, String password) async{
@@ -127,26 +128,53 @@ class AppViewModel with ChangeNotifier {
     ];
     try {
       DateTime now = DateTime.now();
-      final moonIllumination = SunCalc.getMoonIllumination(now);
-      if(moonItems.isEmpty){moonItems = (await repository.getMoonList())??[];}
+
+      var result = await Connectivity().checkConnectivity();
+      if(moonItems.isEmpty){
+        moonItems = (result!=ConnectivityResult.none)?
+        ((await repository.getMoonList())??[]):
+        (await localRep.getMoons());
+        if((result!=ConnectivityResult.none)){
+          await localRep.clearMoons();
+          moonItems.forEach((element) {
+            localRep.addMoon(element);
+          });
+        }
+      }
       if(moonItems.isEmpty||isDateAfter(now, moonItems.last.date)) {
         int moonId = moonItems.isNotEmpty?moonItems.last.id + 1:0;
         moonItems.add(MoonItem(id: moonId,
-            filling: moonIllumination.phase,
+            filling: 0.01,
             text: "Я",
             date: "${now.day.toString().padLeft(2, '0')}.${now.month.toString()
                 .padLeft(2, '0')}.${now.year}"));
-        if(moonItems.length==1) {
-          repository.addMoon(moonItems.last, defaultCircles);
-        }else{
-          List<CircleData> moonCircles = (await repository.getSpheres(moonId-1))??[];
-          if(moonCircles.isNotEmpty){
-            for (int i=0; i<moonCircles.length; i++){
-              moonCircles[i].isActive = false;
-            }
-            repository.addMoon(moonItems.last, moonCircles);
-          }else{
+        if(result!=ConnectivityResult.none){
+          if(moonItems.length==1) {
             repository.addMoon(moonItems.last, defaultCircles);
+          }else{
+            List<CircleData> moonCircles = (await repository.getSpheres(moonId-1))??[];
+            if(moonCircles.isNotEmpty){
+              for (int i=0; i<moonCircles.length; i++){
+                moonCircles[i].isActive = false;
+              }
+              repository.addMoon(moonItems.last, moonCircles);
+            }else{
+              repository.addMoon(moonItems.last, defaultCircles);
+            }
+          }
+        }else{
+          if(moonItems.length==1) {
+            localRep.addAllMoons(moonItems.last, defaultCircles);
+          }else{
+            List<CircleData> moonCircles = await localRep.getAllMoonSpheres(moonId-1);
+            if(moonCircles.isNotEmpty){
+              for (int i=0; i<moonCircles.length; i++){
+                moonCircles[i].isActive = false;
+              }
+              localRep.addAllMoons(moonItems.last, moonCircles);
+            }else{
+              localRep.addAllMoons(moonItems.last, defaultCircles);
+            }
           }
         }
       }
@@ -162,11 +190,18 @@ class AppViewModel with ChangeNotifier {
     isinLoading = true;
     for (var element in ids) {
       final photo = await localRep.getImage(element);
-      //final photo = await repository.getImage(element);replaced by localrep
+      //final photo = await repository.getImage(element);//replaced by localrep
       if(photo!=null)cachedImages.add(photo);
     }
     isinLoading = false;
     notifyListeners();
+  }
+
+  Future fetchMoons() async{
+    final moons = (await repository.getMoonList())??[];
+    moons.forEach((value) {
+      localRep.addMoon(value);
+    });
   }
 
   Future fetchImages() async{
@@ -180,7 +215,7 @@ class AppViewModel with ChangeNotifier {
   Future fetchSpheres(int moonId) async{
     final spheres = await repository.getWishes(moonId);
     spheres?.forEach((element) {
-      localRep.addSphere(element);
+      localRep.addSphere(element, moonId);
     });
     isDataFetched--;
   }
@@ -188,7 +223,7 @@ class AppViewModel with ChangeNotifier {
   Future fetchAims(int moonId) async{
     final aims = await repository.getMyAimsData(moonId);
     aims?.forEach((element) {
-      localRep.addAim(element);
+      localRep.addAim(element,mainScreenState?.moon.id??-1);
     });
     isDataFetched--;
   }
@@ -196,7 +231,7 @@ class AppViewModel with ChangeNotifier {
   Future fetchTasks(int moonId) async{
     final aims = await repository.getMyTasksData(moonId);
     aims?.forEach((element) {
-      localRep.addTask(element);
+      localRep.addTask(element,mainScreenState?.moon.id??-1);
     });
     isDataFetched--;
   }
@@ -204,9 +239,23 @@ class AppViewModel with ChangeNotifier {
   Future fetchDiary(int moonId) async{
     final diary = await repository.getDiaryList(moonId);
     diary?.forEach((element) {
-      localRep.addDiary(element);
+      localRep.addDiary(element,mainScreenState?.moon.id??-1);
     });
     isDataFetched--;
+  }
+
+  Future fetchDatas(int moonId) async{
+    if(connectivity!='No Internet Connection'){
+      final dDB = await repository.getLastMoonSyncData(moonId);
+      final dLoc = await localRep.getMoonLastSyncDate(moonId);
+      if(dDB!=null&&dDB>dLoc) {
+        await localRep.clearDatabase(moonId);
+        await fetchSpheres(moonId);
+        await fetchAims(moonId);
+        await fetchTasks(moonId);
+        await fetchDiary(moonId);
+      }
+    }
   }
 
   bool isDateAfter(DateTime firstDate, String secondDate){
@@ -234,7 +283,8 @@ class AppViewModel with ChangeNotifier {
       isinLoading = true;
       mainScreenState = MainScreenState(moon: mi, musicId: 0);
       try {
-        mainScreenState!.allCircles = (await repository.getSpheres(mi.id)) ?? [];
+        //mainScreenState!.allCircles = (await repository.getSpheres(mi.id)) ?? [];
+        mainScreenState!.allCircles = await localRep.getAllMoonSpheres(mi.id);
         if(mainScreenState!.allCircles.isEmpty) return;
         var ms = mainScreenState!.allCircles.first;
         mainCircles.add(MainCircle(id: ms.id, coords: Pair(key: 0.0, value: 0.0), text: ms.text, substring: ms.subText, color: ms.color, isActive: ms.isActive));
@@ -293,8 +343,8 @@ class AppViewModel with ChangeNotifier {
       WishData wdItem;
       var tmp = mainScreenState!.allCircles.where((element) => element.id==wishId);
       if(tmp.isNotEmpty){
-        isDataFetched!=0?wdItem = (await repository.getMyWish(wishId, mainScreenState!.moon.id)) ?? WishData(id: -100, parentId: 0, text: "не удалось загрузить данные", description: "", affirmation: "", color: Colors.transparent):
-        wdItem = (await localRep.getSphere(wishId)) ?? WishData(id: -100, parentId: 0, text: "не удалось загрузить данные", description: "", affirmation: "", color: Colors.transparent);
+        /*isDataFetched!=0?wdItem = (await repository.getMyWish(wishId, mainScreenState!.moon.id)) ?? WishData(id: -100, parentId: 0, text: "не удалось загрузить данные", description: "", affirmation: "", color: Colors.transparent):*/
+        wdItem = (await localRep.getSphere(wishId, mainScreenState!.moon.id)) ?? WishData(id: -100, parentId: 0, text: "не удалось загрузить данные", description: "", affirmation: "", color: Colors.transparent);
       }else{
         wdItem = WishData(id: wishId, parentId: parentId, text: "", description: "", affirmation: "", color: Colors.green);
       }
@@ -309,8 +359,8 @@ class AppViewModel with ChangeNotifier {
   Future<void> startMyTasksScreen() async{
     try {
       isinLoading = true;
-      taskItems = isDataFetched!=0?((await repository.getMyTasks(mainScreenState?.moon.id??0)) ?? []):
-      (await localRep.getAllTasks());
+      taskItems = /*isDataFetched!=0?((await repository.getMyTasks(mainScreenState?.moon.id??0)) ?? []):*/
+      (await localRep.getAllTasks(mainScreenState?.moon.id??0));
       isinLoading = false;
       notifyListeners();
     }catch(ex, m){
@@ -322,22 +372,22 @@ class AppViewModel with ChangeNotifier {
     try {
       List<int> list = [];
       for (var element in aimId) {
-        isDataFetched!=0?list.addAll((await repository.getAimsChildTasks(element, mainScreenState?.moon.id ?? 0))??[]):
-        list.addAll(await localRep.getAimsChildTasks(element));
+        /*isDataFetched!=0?list.addAll((await repository.getAimsChildTasks(element, mainScreenState?.moon.id ?? 0))??[]):*/
+        list.addAll(await localRep.getAimsChildTasks(element,mainScreenState?.moon.id??0));
       }
       if (list.isNotEmpty){
         if(taskItems.isNotEmpty){
           wishScreenState?.wishTasks = taskItems.where((element) => list.contains(element.id)).toList();
         }else{
-          taskItems = isDataFetched!=0?((await repository.getMyTasks(mainScreenState?.moon.id??0)) ?? []):
-          await localRep.getAllTasks();
+          taskItems = /*isDataFetched!=0?((await repository.getMyTasks(mainScreenState?.moon.id??0)) ?? []):*/
+          await localRep.getAllTasks(mainScreenState?.moon.id??0);
           wishScreenState?.wishTasks = taskItems.where((element) => list.contains(element.id)).toList();
         }
       }else {
         return null;
       }
     }catch(ex){
-      addError("Ошибка загрузки задач: $ex");
+      addError("#01 Ошибка загрузки задач: $ex");
     }
   }
 
@@ -345,12 +395,12 @@ class AppViewModel with ChangeNotifier {
     try {
       isinLoading = true;
       if(aimItems.isEmpty) {
-        aimItems = isDataFetched!=0?((await repository.getMyAims(mainScreenState?.moon.id??0)) ?? []):
-        await localRep.getAllAims();
+        /*aimItems = isDataFetched!=0?((await repository.getMyAims(mainScreenState?.moon.id??0)) ?? []):*/
+        await localRep.getAllAims(mainScreenState?.moon.id??0);
       }
       if(taskItems.isEmpty) {
-        taskItems = isDataFetched!=0?((await repository.getMyTasks(mainScreenState?.moon.id??0)) ?? []):
-      await localRep.getAllTasks();
+        /*taskItems = isDataFetched!=0?((await repository.getMyTasks(mainScreenState?.moon.id??0)) ?? []):*/
+      await localRep.getAllTasks(mainScreenState?.moon.id??0);
       }
       isinLoading = false;
       notifyListeners();
@@ -362,8 +412,8 @@ class AppViewModel with ChangeNotifier {
   Future<void> startMyAimsScreen() async{
     try {
       isinLoading = true;
-      aimItems = isDataFetched!=0?((await repository.getMyAims(mainScreenState?.moon.id??0)) ?? []):
-      await localRep.getAllAims();
+      /*aimItems = isDataFetched!=0?((await repository.getMyAims(mainScreenState?.moon.id??0)) ?? []):*/
+      await localRep.getAllAims(mainScreenState?.moon.id??0);
       isinLoading = false;
       notifyListeners();
     }catch(ex){
@@ -372,14 +422,14 @@ class AppViewModel with ChangeNotifier {
   }
   Future getAimsForCircles(int sphereId) async {
     try {
-      var list = isDataFetched!=0?((await repository.getSpheresChildAims(sphereId, mainScreenState?.moon.id ?? 0)) ?? []):
-        await localRep.getSpheresChildAims(sphereId);
+      var list = /*isDataFetched!=0?((await repository.getSpheresChildAims(sphereId, mainScreenState?.moon.id ?? 0)) ?? []):*/
+        await localRep.getSpheresChildAims(sphereId, mainScreenState?.moon.id??0);
       if (list.isNotEmpty){
         if(aimItems.isNotEmpty){
           wishScreenState?.wishAims = aimItems.where((element) => list.contains(element.id)).toList();
         }else{
-          aimItems = isDataFetched!=0?((await repository.getMyAims(mainScreenState?.moon.id??0)) ?? []):
-          await localRep.getAllAims();
+          aimItems = /*isDataFetched!=0?((await repository.getMyAims(mainScreenState?.moon.id??0)) ?? []):*/
+          await localRep.getAllAims(mainScreenState?.moon.id??0);
           wishScreenState?.wishAims = aimItems.where((element) => list.contains(element.id)).toList();
         }
         await getTasksForAims(list);
@@ -388,15 +438,15 @@ class AppViewModel with ChangeNotifier {
         return null;
       }
     }catch(ex){
-      addError("Ошибка загрузки задач: $ex");
+      addError("#02 Ошибка загрузки задач: $ex");
     }
   }
 
   Future<void> startMyWishesScreen() async{
     try {
       isinLoading = true;
-      wishItems = isDataFetched!=0?((await repository.getMyWishs(mainScreenState?.moon.id??0)) ?? []):
-      await localRep.getAllSpheres();
+      wishItems = /*isDataFetched!=0?((await repository.getMyWishs(mainScreenState?.moon.id??0)) ?? []):*/
+      await localRep.getAllSpheres(mainScreenState?.moon.id??0);
       isinLoading = false;
       notifyListeners();
     }catch(ex){
@@ -407,14 +457,18 @@ class AppViewModel with ChangeNotifier {
   Future<void> createNewSphereWish(WishData wd) async{
     try {
       Map<int, Uint8List> photos = {};
+      String photosIds = "";
       for (var element in cachedImages) {
         lastImageId++;
+        if(photosIds.isNotEmpty)photosIds+="|";
+        photosIds+=lastImageId.toString();
         photos[lastImageId]=element;
         localRep.addImage(lastImageId, element);
       }
+      localRep.updateSphereImages(wd.id, photosIds,mainScreenState?.moon.id??0);
       wd.photos = photos;
-      await repository.createSphereWish(wd, mainScreenState?.moon.id??0);
-      await localRep.insertORudateSphere(wd);
+      if(connectivity != 'No Internet Connection')await repository.createSphereWish(wd, mainScreenState?.moon.id??0);
+      await localRep.insertORudateSphere(wd, mainScreenState?.moon.id??0);
       var sphereInAllCircles= mainScreenState!.allCircles.indexWhere((element) => element.id==wd.id);
       if(sphereInAllCircles==-1){
         mainScreenState!.allCircles.add(CircleData(id: wd.id, text: wd.text, color: wd.color, parenId: wd.parentId));
@@ -447,10 +501,10 @@ class AppViewModel with ChangeNotifier {
         photos[lastImageId]=element;
         localRep.addImage(lastImageId, element);
       }
-      localRep.updateSphereImages(wd.id, photosIds);
+      localRep.updateSphereImages(wd.id, photosIds,mainScreenState?.moon.id??0);
       wd.photos = photos;
-      await repository.createSphereWish(wd, mainScreenState?.moon.id??0);
-      await localRep.insertORudateSphere(wd);
+      if(connectivity != 'No Internet Connection')await repository.createSphereWish(wd, mainScreenState?.moon.id??0);
+      await localRep.insertORudateSphere(wd, mainScreenState?.moon.id??0);
       mainScreenState!.allCircles[mainScreenState!.allCircles.indexWhere((element) => element.id==wd.id)] = CircleData(id: wd.id, text: wd.text, color: wd.color, parenId: wd.parentId, affirmation: wd.affirmation, subText: wd.description)..photosIds=photosIds;
     }catch(ex){
       addError("сфера не была сохранена: $ex");
@@ -466,21 +520,21 @@ class AppViewModel with ChangeNotifier {
         }
       }
       await deleteallChildAims(id);
-      await repository.deleteSphereWish(id, mainScreenState?.moon.id??0);
-      await localRep.deleteSphere(id);
+      if(connectivity != 'No Internet Connection')await repository.deleteSphereWish(id, mainScreenState?.moon.id??0);
+      await localRep.deleteSphere(id,mainScreenState?.moon.id??0);
     }catch(ex){
       addError("сфера не была удалена: $ex");
     }
   }
   Future<void> deleteallChildAims(int wishId)async{
     try{
-      final wish = isDataFetched!=0?await repository.getMyWish(wishId, mainScreenState!.moon.id):
-      await localRep.getSphere(wishId);
+      final wish = /*isDataFetched!=0?await repository.getMyWish(wishId, mainScreenState!.moon.id):*/
+      await localRep.getSphere(wishId, mainScreenState?.moon.id??0);
       if(wish!=null&&wish.childAims.isNotEmpty){
         wish.childAims.forEach((key, value) async {
           await deleteallChildTasks(value);
-          repository.deleteAim(value, mainScreenState!.moon.id);
-          localRep.deleteAim(value);
+          if(connectivity != 'No Internet Connection')repository.deleteAim(value, mainScreenState!.moon.id);
+          localRep.deleteAim(value,mainScreenState?.moon.id??0);
         });
       }
     }catch(e){
@@ -489,12 +543,12 @@ class AppViewModel with ChangeNotifier {
   }
   Future<void> deleteallChildTasks(int aimId)async{
     try{
-      final aim = isDataFetched!=0?await repository.getMyAim(aimId, mainScreenState!.moon.id):
-      await localRep.getAim(aimId);
+      final aim = /*isDataFetched!=0?await repository.getMyAim(aimId, mainScreenState!.moon.id):*/
+      await localRep.getAim(aimId,mainScreenState?.moon.id??0);
       if(aim!=null&&aim.childTasks.isNotEmpty){
         for (var element in aim.childTasks) {
-          repository.deleteTask(element, mainScreenState!.moon.id);
-          localRep.deleteTask(element);
+          if(connectivity != 'No Internet Connection')repository.deleteTask(element, mainScreenState!.moon.id);
+          localRep.deleteTask(element,mainScreenState?.moon.id??0);
           taskItems.removeWhere((e) => e.id==element);
           wishScreenState?.wishTasks.removeWhere((e) => e.id==element);
         }
@@ -521,16 +575,16 @@ class AppViewModel with ChangeNotifier {
             }
           }
         }
-          final aims = isDataFetched!=0? await repository.getSpheresChildAims(wishId, mainScreenState!.moon.id):
-          await localRep.getSpheresChildAims(wishId);
+          final aims = /*isDataFetched!=0? await repository.getSpheresChildAims(wishId, mainScreenState!.moon.id):*/
+          await localRep.getSpheresChildAims(wishId, mainScreenState?.moon.id??0);
           if (aims != null && aims.isNotEmpty) {
             for (var element in aims) {
               updateAimStatus(element, status);
             }
           }
       }
-      await repository.changeWishStatus(wishId, mainScreenState?.moon.id??0, status);
-      await localRep.updateSphereStatus(wishId, status);
+      if(connectivity != 'No Internet Connection')await repository.changeWishStatus(wishId, mainScreenState?.moon.id??0, status);
+      await localRep.updateSphereStatus(wishId, status,mainScreenState?.moon.id??0);
       toggleChecked(myNodes.first, 'w', wishId, status);
       if(mainScreenState!=null){
         final i = mainScreenState!.allCircles.indexWhere((element) => element.id==wishId);
@@ -548,8 +602,8 @@ class AppViewModel with ChangeNotifier {
 
   Future<int?> createAim(AimData ad, int parentCircleId) async{
     try {
-      int? aimId = (await repository.createAim(ad, parentCircleId, mainScreenState?.moon.id??0))??-1;
-      localRep.addAim(AimData(id: aimId, parentId: parentCircleId, text: ad.text, description: ad.description));
+      //int? aimId = (await repository.createAim(ad, parentCircleId, mainScreenState?.moon.id??0))??-1;
+      int aimId = await localRep.addAim(AimData(id: -1, parentId: parentCircleId, text: ad.text, description: ad.description), mainScreenState?.moon.id??-1);
       currentAim=(AimData(id: aimId, parentId: ad.parentId, text: ad.text, description: ad.description, isChecked: ad.isChecked));
       aimItems.add(AimItem(id: aimId,parentId: parentCircleId, text: ad.text, isChecked: ad.isChecked));
       return aimId;
@@ -560,8 +614,8 @@ class AppViewModel with ChangeNotifier {
   Future getAim(int id) async{
     try{
       if(mainScreenState!=null) {
-        currentAim = isDataFetched!=0?await repository.getMyAim(id, mainScreenState!.moon.id):
-        await localRep.getAim(id);
+        /*currentAim = isDataFetched!=0?await repository.getMyAim(id, mainScreenState!.moon.id):*/
+        await localRep.getAim(id,mainScreenState?.moon.id??0);
         notifyListeners();
       } else {
         throw Exception("#2365 lost datas");
@@ -572,8 +626,8 @@ class AppViewModel with ChangeNotifier {
   }
   Future<void> updateAim(AimData ad) async{
     try {
-      await repository.updateAim(ad, mainScreenState?.moon.id??0);
-      await localRep.updateAim(ad);
+      if(connectivity != 'No Internet Connection')await repository.updateAim(ad, mainScreenState?.moon.id??0);
+      await localRep.updateAim(ad,mainScreenState?.moon.id??0);
       currentAim=(AimData(id: ad.id, parentId: ad.parentId, text: ad.text, description: ad.description, isChecked: ad.isChecked));
     }catch(ex){
       addError("#518${ex.toString()}");
@@ -582,8 +636,8 @@ class AppViewModel with ChangeNotifier {
   Future<void> deleteAim(int aimId) async{
     try {
       await deleteallChildTasks(aimId);
-      await repository.deleteAim(aimId, mainScreenState?.moon.id??0);
-      localRep.deleteAim(aimId);
+      if(connectivity != 'No Internet Connection')await repository.deleteAim(aimId, mainScreenState?.moon.id??0);
+      localRep.deleteAim(aimId,mainScreenState?.moon.id??0);
       aimItems.removeWhere((element) => element.id == aimId);
     }catch(ex){
       addError("#519${ex.toString()}");
@@ -592,8 +646,8 @@ class AppViewModel with ChangeNotifier {
   Future<void> updateAimStatus(int aimId, bool status) async{
     try {
       if(status) {
-        final tasks = isDataFetched!=0? await repository.getAimsChildTasks(aimId, mainScreenState!.moon.id):
-        await localRep.getAimsChildTasks(aimId);
+        final tasks = /*isDataFetched!=0? await repository.getAimsChildTasks(aimId, mainScreenState!.moon.id):*/
+        await localRep.getAimsChildTasks(aimId,mainScreenState?.moon.id??0);
         if (tasks != null && tasks.isNotEmpty) {
           for (var element in tasks) {
             updateTaskStatus(element, status);
@@ -605,8 +659,8 @@ class AppViewModel with ChangeNotifier {
         final i = aimItems.indexWhere((element) => element.id == currentAim!.id);
         if(i>=0)aimItems[i].isChecked = status;
       }
-      await repository.changeAimStatus(aimId, mainScreenState?.moon.id??0, status);
-      await localRep.updateAimStatus(aimId, status);
+      if(connectivity != 'No Internet Connection')await repository.changeAimStatus(aimId, mainScreenState?.moon.id??0, status);
+      await localRep.updateAimStatus(aimId, status,mainScreenState?.moon.id??0);
       toggleChecked(myNodes.first, 'a', aimId, status);
       notifyListeners();
     }catch(ex){
@@ -616,8 +670,8 @@ class AppViewModel with ChangeNotifier {
 
   Future<int?> createTask(TaskData ad, int parentAimId) async{
     try {
-      int taskId = (await repository.createTask(ad, parentAimId, mainScreenState?.moon.id??0))??-1;
-      localRep.addTask(TaskData(id: taskId, parentId: parentAimId, text: ad.text, description: ad.description));
+      //int taskId = (await repository.createTask(ad, parentAimId, mainScreenState?.moon.id??0))??-1;
+      int taskId = await localRep.addTask(TaskData(id: -1, parentId: parentAimId, text: ad.text, description: ad.description), mainScreenState?.moon.id??-1);
       currentTask=(TaskData(id: taskId, parentId: ad.parentId, text: ad.text, description: ad.description, isChecked: ad.isChecked));
       taskItems.add(TaskItem(id: taskId, parentId: parentAimId, text: ad.text, isChecked: ad.isChecked));
       return taskId;
@@ -628,8 +682,8 @@ class AppViewModel with ChangeNotifier {
   Future getTask(int id) async{
     try{
       if(mainScreenState!=null) {
-        currentTask = isDataFetched!=0?await repository.getMyTask(id, mainScreenState!.moon.id):
-        await localRep.getTask(id);
+        /*currentTask = isDataFetched!=0?await repository.getMyTask(id, mainScreenState!.moon.id):*/
+        await localRep.getTask(id,mainScreenState?.moon.id??0);
         notifyListeners();
       } else {
         throw Exception("#2366 lost datas");
@@ -640,8 +694,8 @@ class AppViewModel with ChangeNotifier {
   }
   Future<void> updateTask(TaskData ad) async{
     try {
-      await repository.updateTask(ad, mainScreenState?.moon.id??0);
-      await localRep.updateTask(ad);
+      if(connectivity != 'No Internet Connection')await repository.updateTask(ad, mainScreenState?.moon.id??0);
+      await localRep.updateTask(ad,mainScreenState?.moon.id??0);
       currentTask=(TaskData(id: ad.id, parentId: ad.parentId, text: ad.text, description: ad.description, isChecked: ad.isChecked));
     }catch(ex){
       addError("#524${ex.toString()}");
@@ -649,8 +703,8 @@ class AppViewModel with ChangeNotifier {
   }
   Future<void> deleteTask(int taskId) async{
     try {
-      await repository.deleteTask(taskId, mainScreenState?.moon.id??0);
-      await localRep.deleteTask(taskId);
+      if(connectivity != 'No Internet Connection')await repository.deleteTask(taskId, mainScreenState?.moon.id??0);
+      await localRep.deleteTask(taskId,mainScreenState?.moon.id??0);
       taskItems.removeWhere((element) => element.id == taskId);
     }catch(ex){
       addError("#526${ex.toString()}");
@@ -663,8 +717,8 @@ class AppViewModel with ChangeNotifier {
         final i = taskItems.indexWhere((element) => element.id == currentTask!.id);
         if(i>=0)taskItems[i].isChecked = status;
       }
-      await repository.changeTaskStatus(taskId, mainScreenState?.moon.id??0, status);
-      await localRep.updateTaskStatus(taskId, status);
+      if(connectivity != 'No Internet Connection')await repository.changeTaskStatus(taskId, mainScreenState?.moon.id??0, status);
+      await localRep.updateTaskStatus(taskId, status,mainScreenState?.moon.id??0);
       toggleChecked(myNodes.first, 't', taskId, status);
       notifyListeners();
     }catch(ex){
@@ -682,11 +736,11 @@ class AppViewModel with ChangeNotifier {
       CardData(id: 6, emoji: "🍔", title: "Мои страхи", description: "Выписывай все свои страхи и они начнут растворятся сами собой", text: "no text", color: Colors.cyanAccent),
       ];
     try {
-      diaryItems = isDataFetched!=0?(await repository.getDiaryList(mainScreenState!.moon.id))??[CardData(id: 0, emoji: "⚽", title: "ничего не найдено", description: "", text: "", color: Colors.transparent),]:
-      await localRep.getAllDiary();
+      /*diaryItems = isDataFetched!=0?(await repository.getDiaryList(mainScreenState!.moon.id))??[CardData(id: 0, emoji: "⚽", title: "ничего не найдено", description: "", text: "", color: Colors.transparent),]:*/
+      await localRep.getAllDiary(mainScreenState?.moon.id??0);
       if(diaryItems.isEmpty) {
-        repository.addDiary(cardData, mainScreenState!.moon.id);
-        localRep.addAllDiary(cardData);
+        if(connectivity != 'No Internet Connection')repository.addDiary(cardData, mainScreenState!.moon.id);
+        localRep.addAllDiary(cardData, mainScreenState?.moon.id??-1);
         diaryItems = cardData;
       }
       notifyListeners();
@@ -697,8 +751,8 @@ class AppViewModel with ChangeNotifier {
   Future<void> addDiary(CardData cd)async {
     try{
       diaryItems.add(cd);
-      await repository.addDiary([cd], mainScreenState!.moon.id);
-      localRep.addDiary(cd);
+      if(connectivity != 'No Internet Connection')await repository.addDiary([cd], mainScreenState!.moon.id);
+      await localRep.addDiary(cd, mainScreenState?.moon.id??-1);
       notifyListeners();
     }catch(ex){
       addError("#534${ex.toString()}");
@@ -709,8 +763,8 @@ class AppViewModel with ChangeNotifier {
       final index = diaryItems.indexWhere((element) => element.id==cd.id);
       if(index==-1)throw Exception("error#vm6794");
       diaryItems[index]=cd;
-      await repository.updateDiary(cd, mainScreenState!.moon.id);
-      localRep.updateDiary(cd);
+      if(connectivity != 'No Internet Connection')await repository.updateDiary(cd, mainScreenState!.moon.id);
+      await localRep.updateDiary(cd,mainScreenState?.moon.id??0);
       notifyListeners();
     }catch(ex){
       addError("#536${ex.toString()}");
@@ -721,21 +775,22 @@ class AppViewModel with ChangeNotifier {
   Future<List<TaskItem>?> getTasksForAim(int aimId) async {
     try {
       List<int> list = [];
-      list.addAll(isDataFetched!=0?((await repository.getAimsChildTasks(aimId, mainScreenState?.moon.id ?? 0))??[]):
-      await localRep.getAimsChildTasks(aimId));
+      list.addAll(/*isDataFetched!=0?((await repository.getAimsChildTasks(aimId, mainScreenState?.moon.id ?? 0))??[]):*/
+      await localRep.getAimsChildTasks(aimId,mainScreenState?.moon.id??0));
       if (list.isNotEmpty){
         if(taskItems.isNotEmpty){
           return taskItems.where((element) => list.contains(element.id)).toList();
         }else{
-          taskItems = isDataFetched!=0?((await repository.getMyTasks(mainScreenState?.moon.id??0)) ?? []):
-          await localRep.getAllTasks();
+          taskItems = /*isDataFetched!=0?((await repository.getMyTasks(mainScreenState?.moon.id??0)) ?? []):*/
+          await localRep.getAllTasks(mainScreenState?.moon.id??0);
           return  taskItems.where((element) => list.contains(element.id)).toList();
         }
       }else {
         return null;
       }
-    }catch(ex){
-      addError("Ошибка загрузки задач: $ex");
+    }catch(ex, s){
+      addError("#03 Ошибка загрузки задач: $ex");
+      print("sssssssssssss$s");
     }
     return null;
   }
@@ -763,10 +818,10 @@ class AppViewModel with ChangeNotifier {
   }
   Future<List<MyTreeNode>> convertToMyTreeNodeFullBranch(int wishId) async {
     final fullBranch = getFullBranch(wishId);
-    taskItems = isDataFetched!=0?((await repository.getMyTasks(mainScreenState!.moon.id))??[]):
-    await localRep.getAllTasks();
-    aimItems = isDataFetched!=0?((await repository.getMyAims(mainScreenState!.moon.id))??[]):
-    await localRep.getAllAims();
+    taskItems = /*isDataFetched!=0?((await repository.getMyTasks(mainScreenState!.moon.id))??[]):*/
+    await localRep.getAllTasks(mainScreenState?.moon.id??0);
+    aimItems = /*isDataFetched!=0?((await repository.getMyAims(mainScreenState!.moon.id))??[]):*/
+    await localRep.getAllAims(mainScreenState?.moon.id??0);
     MyTreeNode? root;
     for (var melement in fullBranch) {
       final List<MyTreeNode> childNodes = [];

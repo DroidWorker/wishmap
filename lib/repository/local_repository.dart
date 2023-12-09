@@ -64,8 +64,8 @@ class LocalRepository{
     _prefs!.remove(key);
   }
 
-  Future clearDatabase() async {
-    await dbHelper.clearDatabase();
+  Future clearDatabase(int moonId) async {
+    await dbHelper.clearDatabase(moonId);
   }
 
   Future<int> getImageLastId() async {
@@ -82,98 +82,131 @@ class LocalRepository{
     dbHelper.insertImage(id, image);
   }
 
-  Future<WishData?> getSphere(int id) async {
-    final result = await dbHelper.getSphere(id);
+  Future addMoon(MoonItem mi) async{
+    dbHelper.insertMoon(mi);
+  }
+  Future clearMoons() async{
+    dbHelper.clearMoons();
+  }
+  Future addAllMoons(MoonItem mi, List<CircleData> childCircles) async{
+      dbHelper.insertMoon(mi);
+      childCircles.forEach((element) {
+        dbHelper.insertSphere(WishData(id: element.id, parentId: element.parenId, text: element.text, description: element.subText, affirmation: element.affirmation, color: element.color), mi.id);
+      });
+  }
+  Future<List<MoonItem>> getMoons() async{
+    final moons = (await dbHelper.getAllMoons());
+    return moons.map((e) => MoonItem(id: e["id"], filling: e["filling"], text: e["text"], date: e["date"])).toList();
+  }
+  Future<int> getMoonLastSyncDate(int moonId)async {
+    final moon = await dbHelper.getMoon(moonId);
+    try{return int.parse(moon.first["lastSyncDate"].toString());}
+    catch(ex){
+      return -1;
+    }
+  }
+
+  Future<WishData?> getSphere(int id, int moonId) async {
+    final result = await dbHelper.getSphere(id, moonId);
     Map<String, dynamic> tmp = jsonDecode(result['childAims']);
     Map<String, int> chAims = tmp.map((key, value) => MapEntry(key, int.parse(value.toString())));
     return (result.isNotEmpty?(WishData(id: result["id"], parentId: result["parentId"], text: result["text"], description: result["subtext"], affirmation: result["affirmation"], color: Color(int.parse(result["color"].toString())))..childAims=chAims..photoIds=result['photosIds']..isChecked=result['isChecked']=="1"?true:false):null);
   }
-  Future<List<WishItem>> getAllSpheres() async {
-    final result = await dbHelper.getAllSpheres();
+  Future<List<WishItem>> getAllSpheres(int moonId) async {
+    final result = await dbHelper.getAllSpheres(moonId);
     List<WishItem> list =  result.map((e) => WishItem(id: e['id'], parentId: e['parentId'], text: e['text'], isChecked: e['isChecked']=="1"?true:false)).toList();
     return list.where((element) => element.parentId>1).toList();
   }
-  Future<List<int>> getSpheresChildAims(int id) async {
-    final result = await dbHelper.getSphere(id);
+  Future<List<CircleData>> getAllMoonSpheres(int moonId) async {
+    final result = await dbHelper.getAllMoonSpheres(moonId);
+    List<CircleData> list =  result.map((e) => CircleData(id: e['id'], parenId: e['parentId'], text: e['text'], color: Color(e['color']))).toList();
+    return list;
+  }
+  Future<List<int>> getSpheresChildAims(int id, int moonId) async {
+    final result = await dbHelper.getSphere(id, moonId);
     Map<String, dynamic> tmp = jsonDecode(result['childAims']);
     Map<String, int> chAims = tmp.map((key, value) => MapEntry(key, int.parse(value.toString())));
     return chAims.values.toList();
   }
-  Future addSphere(WishData wd) async{
-    await dbHelper.insertSphere(wd);
+  Future addSphere(WishData wd, int moonId) async{
+    await dbHelper.insertSphere(wd, moonId);
   }
-  Future insertORudateSphere(WishData wd) async{
-    await dbHelper.insertOrUpdateSphere(wd);
+  Future insertORudateSphere(WishData wd, int moonId) async{
+    await dbHelper.insertOrUpdateSphere(wd, moonId);
   }
-  Future deleteSphere(int sphereId) async{
-    await dbHelper.deleteSphere(sphereId);
+  Future deleteSphere(int sphereId, int moonId) async{
+    await dbHelper.deleteSphere(sphereId, moonId);
   }
-  Future updateSphereStatus(int sphereId, bool status) async{
-    await dbHelper.updateSphereStatus(sphereId, status);
+  Future updateSphereStatus(int sphereId, bool status, int moonId) async{
+    await dbHelper.updateSphereStatus(sphereId, status, moonId);
   }
-  Future updateSphereImages(int sphereId, String imageIds) async{
-    await dbHelper.updateSphereImages(sphereId, imageIds);
+  Future updateSphereImages(int sphereId, String imageIds, int moonId) async{
+    final t = await dbHelper.updateSphereImages(sphereId, imageIds, moonId);
   }
 
-  Future<AimData> getAim(int id) async {
-    final result = await dbHelper.getAim(id);
+  Future<AimData> getAim(int id, int moonId) async {
+    final result = await dbHelper.getAim(id, moonId);
     return AimData(id: result['id'], parentId: result['parentId'], text: result['text'], description: result['subtext'])..isChecked=result['isChecked']=="1"?true:false..childTasks=result['childTasks'].toString().split("|").map((e) => int.parse(e)).toList();
   }
-  Future<List<AimItem>> getAllAims() async {
-    final result = await dbHelper.getAllAims();
+  Future<List<AimItem>> getAllAims(int moonId) async {
+    final result = await dbHelper.getAllAims(moonId);
     return result.map((e) => AimItem(id: e['id'], parentId: e['parentId'], text: e['text'], isChecked: e['isChecked']=="1"?true:false)).toList();
   }
-  Future<List<int>> getAimsChildTasks(int id) async {
-    final result = await dbHelper.getAim(id);
-    return result['childTasks'].toString().split("|").map((e) => int.parse(e)).toList();
+  Future<List<int>> getAimsChildTasks(int id, int moonId) async {
+    final result = await dbHelper.getAim(id, moonId);
+    return result['childTasks']!=null?result['childTasks'].toString().split("|").map((e) => int.parse(e)).toList():[];
   }
-  Future addAim(AimData ad) async{
-    await dbHelper.insertAim(ad);
+  Future<int> addAim(AimData ad, int moonId) async{
+    final aims = await getAllAims(moonId);
+    await dbHelper.insertAim(AimData(id: aims.lastOrNull?.id??0, parentId: ad.parentId, text: ad.text, description: ad.description), moonId);
+    return aims.lastOrNull?.id??0;
   }
-  Future deleteAim(int aimId) async{
-    await dbHelper.deleteAim(aimId);
+  Future deleteAim(int aimId, int moonId) async{
+    await dbHelper.deleteAim(aimId, moonId);
   }
-  Future updateAim(AimData ad) async{
-    await dbHelper.updateAim(ad);
+  Future updateAim(AimData ad, int moonId) async{
+    await dbHelper.updateAim(ad, moonId);
   }
-  Future updateAimStatus(int aimId, bool status) async{
-    await dbHelper.updateAimStatus(aimId, status);
+  Future updateAimStatus(int aimId, bool status, int moonId) async{
+    await dbHelper.updateAimStatus(aimId, status, moonId);
   }
 
-  Future<TaskData> getTask(int id) async {
-    final result = await dbHelper.getTask(id);
+  Future<TaskData> getTask(int id, int moonId) async {
+    final result = await dbHelper.getTask(id, moonId);
     return TaskData(id: result['id'], parentId: result['parentId'], text: result['text'], description: result['subtext'])..isChecked=result['isChecked']=="1"?true:false;
   }
-  Future<List<TaskItem>> getAllTasks() async {
-    final result = await dbHelper.getAllTasks();
+  Future<List<TaskItem>> getAllTasks(int moonId) async {
+    final result = await dbHelper.getAllTasks(moonId);
     return result.map((e) => TaskItem(id: e['id'], parentId: e['parentId'], text: e['text'], isChecked: e['isChecked']=='1'?true:false)).toList();
   }
-  Future addTask(TaskData td) async{
-    await dbHelper.insertTask(td);
+  Future addTask(TaskData td, int moonId) async{
+    final tasks = await getAllTasks(moonId);
+    await dbHelper.insertTask(TaskData(id: tasks.lastOrNull?.id??0, parentId: td.parentId, text: td.text, description: td.description), moonId);
+    return tasks.lastOrNull?.id??0;
   }
-  Future deleteTask(int taskId) async{
-    await dbHelper.deleteTask(taskId);
+  Future deleteTask(int taskId, int moonId) async{
+    await dbHelper.deleteTask(taskId, moonId);
   }
-  Future updateTask(TaskData td) async{
-    await dbHelper.updateTask(td);
+  Future updateTask(TaskData td, int moonId) async{
+    await dbHelper.updateTask(td, moonId);
   }
-  Future updateTaskStatus(int taskId, bool status) async{
-    await dbHelper.updateTaskStatus(taskId, status);
+  Future updateTaskStatus(int taskId, bool status, int moonId) async{
+    await dbHelper.updateTaskStatus(taskId, status, moonId);
   }
 
-  Future<List<CardData>> getAllDiary() async {
-    final result = await dbHelper.getAllDiary();
+  Future<List<CardData>> getAllDiary(int moonId) async {
+    final result = await dbHelper.getAllDiary(moonId);
     return result.map((e) => CardData(id: e['id'], emoji: e['emoji'], title: e['title'], description: e['description'], text: e['text'], color: Color(int.parse(e["color"].toString())))).toList();
   }
-  Future addDiary(CardData cd) async{
-    dbHelper.insertDiary(cd);
+  Future addDiary(CardData cd, int moonId) async{
+    dbHelper.insertDiary(cd, moonId);
   }
-  Future addAllDiary(List<CardData> cd) async{
+  Future addAllDiary(List<CardData> cd, int moonId) async{
     for (var element in cd) {
-      await dbHelper.insertDiary(element);
+      await dbHelper.insertDiary(element, moonId);
     }
   }
-  Future updateDiary(CardData cd) async{
-    await dbHelper.updateDiary(cd);
+  Future updateDiary(CardData cd, int moonId) async{
+    await dbHelper.updateDiary(cd, moonId);
   }
 }

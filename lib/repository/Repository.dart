@@ -124,6 +124,16 @@ class Repository{
     return {};
   }
 
+  Future<int?> getLastMoonSyncData(int moonId) async{
+    if(_auth.currentUser!=null){
+      DataSnapshot snapshot = (await userRef.child(_auth.currentUser!.uid).child("moonlist").child(moonId.toString()).child("lastMoonSync").once()).snapshot;
+      if(snapshot.value!=null){
+        return int.parse(snapshot.value.toString());
+      }
+    }
+    return null;
+  }
+
   Future<Uint8List?> getImage(int id) async{
     if(_auth.currentUser!=null){
       DataSnapshot snapshot = (await userRef.child(_auth.currentUser!.uid).child("images").child(id.toString()).once()).snapshot;
@@ -143,6 +153,13 @@ class Repository{
     }
   }
 
+  Future updateMoonSync(int moonId)async {
+    if (_auth.currentUser != null) {
+      (await userRef.child(_auth.currentUser!.uid).child("moonlist").child(moonId.toString()).child("lastSyncDate").set(
+        DateTime.timestamp().microsecondsSinceEpoch
+      ));
+    }
+  }
   Future<List<MoonItem>?> getMoonList() async {
     if (_auth.currentUser != null) {
       DataSnapshot snapshot = (await userRef.child(_auth.currentUser!.uid).child("moonlist").once()).snapshot;
@@ -168,7 +185,7 @@ class Repository{
   }
   Future addMoon(MoonItem moonItem, List<CircleData> defaultCircles) async {
     if(_auth.currentUser!=null){
-        userRef.child(_auth.currentUser!.uid).child("moonlist").child(moonItem.id.toString()).set({
+        await userRef.child(_auth.currentUser!.uid).child("moonlist").child(moonItem.id.toString()).set({
           'text': moonItem.text,
           'date': moonItem.date,
           'filling': moonItem.filling
@@ -188,9 +205,10 @@ class Repository{
             'isActive': circleData.isActive,
           };
         }
-        userRef.child(_auth.currentUser!.uid).child("moonlist").child(moonItem.id.toString()).child("spheres").set(
+        await userRef.child(_auth.currentUser!.uid).child("moonlist").child(moonItem.id.toString()).child("spheres").set(
           circleDataMap
         );
+        updateMoonSync(moonItem.id);
     }
   }
 
@@ -465,19 +483,22 @@ class Repository{
           'affirmation': wd.affirmation,
           'isActive': true
         };
-      userRef.child(_auth.currentUser!.uid).child("moonlist").child(currentMoonId.toString()).child("spheres").child(wd.id.toString()).set(
+      await userRef.child(_auth.currentUser!.uid).child("moonlist").child(currentMoonId.toString()).child("spheres").child(wd.id.toString()).set(
           dataMap
       );
+      updateMoonSync(currentMoonId);
     }
   }
   Future deleteSphereWish(int wdid, int currentMoonId) async {
     if(_auth.currentUser!=null){
       userRef.child(_auth.currentUser!.uid).child("moonlist").child(currentMoonId.toString()).child("spheres").child(wdid.toString()).remove();
+      updateMoonSync(currentMoonId);
     }
   }
   Future changeWishStatus(int id, int currentMoonId, bool status) async {
     if(_auth.currentUser!=null){
       userRef.child(_auth.currentUser!.uid).child("moonlist").child(currentMoonId.toString()).child("spheres").child(id.toString()).child("isChecked").set(status);
+      updateMoonSync(currentMoonId);
     }
   }
 
@@ -504,6 +525,7 @@ class Repository{
       userRef.child(_auth.currentUser!.uid).child("moonlist").child(currentMoonId.toString()).child("spheres").child(parentWishId.toString()).child("childAims").push().set(
           index
       );
+      updateMoonSync(currentMoonId);
       return index;
     }
     return null;
@@ -549,16 +571,19 @@ class Repository{
       userRef.child(_auth.currentUser!.uid).child("moonlist").child(currentMoonId.toString()).child("aims").child(ad.id.toString()).set(
           dataMap
       );
+      updateMoonSync(currentMoonId);
     }
   }
   Future deleteAim(int id, int currentMoonId) async {
     if(_auth.currentUser!=null){
       userRef.child(_auth.currentUser!.uid).child("moonlist").child(currentMoonId.toString()).child("aims").child(id.toString()).remove();
+      updateMoonSync(currentMoonId);
     }
   }
   Future changeAimStatus(int id, int currentMoonId, bool status) async {
     if(_auth.currentUser!=null){
       userRef.child(_auth.currentUser!.uid).child("moonlist").child(currentMoonId.toString()).child("aims").child(id.toString()).child("isChecked").set(status);
+      updateMoonSync(currentMoonId);
     }
   }
 
@@ -584,6 +609,7 @@ class Repository{
       userRef.child(_auth.currentUser!.uid).child("moonlist").child(currentMoonId.toString()).child("aims").child(parentAimId.toString()).child("childTasks").push().set(
           index
       );
+      updateMoonSync(currentMoonId);
       return index;
     }
     return null;
@@ -619,16 +645,19 @@ class Repository{
       userRef.child(_auth.currentUser!.uid).child("moonlist").child(currentMoonId.toString()).child("tasks").child(td.id.toString()).set(
           dataMap
       );
+      updateMoonSync(currentMoonId);
     }
   }
   Future deleteTask(int id,  int currentMoonId) async {
     if(_auth.currentUser!=null){
       userRef.child(_auth.currentUser!.uid).child("moonlist").child(currentMoonId.toString()).child("tasks").child(id.toString()).remove();
+      updateMoonSync(currentMoonId);
     }
   }
   Future changeTaskStatus(int id, int currentMoonId, bool status) async {
     if(_auth.currentUser!=null){
       userRef.child(_auth.currentUser!.uid).child("moonlist").child(currentMoonId.toString()).child("tasks").child(id.toString()).child("isChecked").set(status);
+      updateMoonSync(currentMoonId);
     }
   }
 
@@ -664,6 +693,7 @@ class Repository{
             dataMap
         );
       }
+      updateMoonSync(moonId);
     }
   }
   Future updateDiary(CardData data, int moonId) async {
@@ -679,6 +709,7 @@ class Repository{
         userRef.child(_auth.currentUser!.uid).child("moonlist").child(moonId.toString()).child("diary").child(data.id.toString()).set(
             dataMap
         );
+        updateMoonSync(moonId);
     }
   }
   Future<List<CardData>?> getDiaryList(int moonId) async{

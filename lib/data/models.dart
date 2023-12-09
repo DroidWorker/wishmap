@@ -227,6 +227,7 @@ class WishScreenState {
   WishData wish;
   List<AimItem> wishAims = [];
   List<TaskItem>wishTasks = [];
+  bool isDataloaded = false;
 
   WishScreenState({required this.wish});
 }

@@ -3,12 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:wishmap/navigation/navigation_block.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:wishmap/common/moon_widget.dart';
 import 'package:wishmap/common/solarsystem.dart';
 import 'package:wishmap/res/colors.dart';
 import 'package:wishmap/data/models.dart';
 
 import '../ViewModel.dart';
+import '../common/moon_widget.dart';
 
 class MainScreen extends StatefulWidget {
   MainScreen({super.key});
@@ -55,7 +55,7 @@ class _MainScreenState extends State<MainScreen>{
                           children: [
                             Expanded(
                                 flex: 4,
-                                child: GestureDetector(
+                                child: InkWell(
                                   onTap: (){
                                     appVM.mainScreenState = null;
                                     appVM.mainCircles.clear();
@@ -65,7 +65,16 @@ class _MainScreenState extends State<MainScreen>{
                                   },
                                   child: Column(
                                     children: [
-                                      MoonWidget(fillPercentage: appVM.mainScreenState?.moon.filling??0.01, moonSize: (MediaQuery.of(context).size.height-MediaQuery.of(context).size.width)*0.3,),
+                                      //MoonWidget(fillPercentage: appVM.mainScreenState?.moon.filling??0.01, moonSize: (MediaQuery.of(context).size.height-MediaQuery.of(context).size.width)*0.3,),
+                                      Container(
+                                        height: (MediaQuery.of(context).size.height-MediaQuery.of(context).size.width)*0.3,
+                                        width: (MediaQuery.of(context).size.height-MediaQuery.of(context).size.width)*0.3,
+                                        child: MoonWidget(
+                                          date: parseDateString(appVM.mainScreenState?.moon.date??"01.01.2020")??DateTime.now(),
+                                          size: (MediaQuery.of(context).size.height-MediaQuery.of(context).size.width)*0.3,
+                                          resolution: ((MediaQuery.of(context).size.height-MediaQuery.of(context).size.width)*0.3)*100,
+                                        ),
+                                      ),
                                       Text(appVM.mainScreenState?.moon.date??"")
                                     ],
                                   ),
@@ -216,5 +225,20 @@ class _MainScreenState extends State<MainScreen>{
           return w;
         }
     );
+  }
+  DateTime? parseDateString(String dateString) {
+    List<String> parts = dateString.split('.');
+    if (parts.length == 3) {
+      int? day = int.tryParse(parts[0]);
+      int? month = int.tryParse(parts[1]);
+      int? year = int.tryParse(parts[2]);
+
+      if (day != null && month != null && year != null) {
+        return DateTime(year, month, day);
+      }
+    }
+
+    // Вернуть null в случае некорректного формата строки
+    return null;
   }
 }

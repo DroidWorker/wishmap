@@ -296,34 +296,7 @@ var isChanged = false;
                   child: Column(children: [
                     const Text("Цели и задачи", style: TextStyle(color: Colors.black54/*, decoration: TextDecoration.underline*/),),
                     const SizedBox(height: 5),
-                   Align(
-                          alignment: Alignment.centerLeft,
-                          child: Expanded(
-                            //height: root.length*150,
-                            child: MyTreeView(key: UniqueKey(),roots: root, onTap: (id, type){
-                              if(type=="m"){
-                                BlocProvider.of<NavigationBloc>(context).clearHistory();
-                                appVM.cachedImages.clear();
-                                appVM.startMainsphereeditScreen();
-                                BlocProvider.of<NavigationBloc>(context)
-                                    .add(NavigateToMainSphereEditScreenEvent());
-                              }else if(type=="w"){
-                                BlocProvider.of<NavigationBloc>(context).clearHistory();
-                                appVM.startWishScreen(id, 0);
-                                BlocProvider.of<NavigationBloc>(context)
-                                    .add(NavigateToWishScreenEvent());
-                              }else if(type=="a"){
-                                appVM.getAim(id);
-                                BlocProvider.of<NavigationBloc>(context)
-                                    .add(NavigateToAimEditScreenEvent(id));
-                              }else if(type=="t"){
-                                appVM.getTask(id);
-                                BlocProvider.of<NavigationBloc>(context)
-                                    .add(NavigateToTaskEditScreenEvent(id));
-                              }
-                            },),
-                          )
-                    ),
+
                     /*...aims.asMap()
                         .entries
                         .map((entry) {
@@ -364,6 +337,31 @@ var isChanged = false;
                         ),
                       );
                     }).toList()??[],*/
+                    //Expanded(
+                      //height: root.length*150,
+                      MyTreeView(key: UniqueKey(),roots: root, onTap: (id, type){
+                        if(type=="m"){
+                          BlocProvider.of<NavigationBloc>(context).clearHistory();
+                          appVM.cachedImages.clear();
+                          appVM.startMainsphereeditScreen();
+                          BlocProvider.of<NavigationBloc>(context)
+                              .add(NavigateToMainSphereEditScreenEvent());
+                        }else if(type=="w"){
+                          BlocProvider.of<NavigationBloc>(context).clearHistory();
+                          appVM.startWishScreen(id, 0);
+                          BlocProvider.of<NavigationBloc>(context)
+                              .add(NavigateToWishScreenEvent());
+                        }else if(type=="a"){
+                          appVM.getAim(id);
+                          BlocProvider.of<NavigationBloc>(context)
+                              .add(NavigateToAimEditScreenEvent(id));
+                        }else if(type=="t"){
+                          appVM.getTask(id);
+                          BlocProvider.of<NavigationBloc>(context)
+                              .add(NavigateToTaskEditScreenEvent(id));
+                        }
+                      },),
+                    //),
                     const SizedBox(height: 5),
                     ElevatedButton(
                         style: ElevatedButton.styleFrom(

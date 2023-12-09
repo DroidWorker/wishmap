@@ -291,37 +291,31 @@ class AimEditScreenState extends State<AimEditScreen>{
                       ],
                     ),
                     const SizedBox(height: 15,),
-                    Align(
-                        alignment: Alignment.centerLeft,
-                        child: Expanded(
-                          //height: constraints.maxHeight-350,
-                          child: MyTreeView(key: UniqueKey(),roots: roots, onTap: (id, type){
-                            if(type=="m"){
-                              BlocProvider.of<NavigationBloc>(context).clearHistory();
-                              appVM.cachedImages.clear();
-                              appVM.startMainsphereeditScreen();
-                              BlocProvider.of<NavigationBloc>(context)
-                                  .add(NavigateToMainSphereEditScreenEvent());
-                            }else if(type=="w"){
-                              BlocProvider.of<NavigationBloc>(context).clearHistory();
-                              appVM.startWishScreen(id, 0);
-                              BlocProvider.of<NavigationBloc>(context)
-                                  .add(NavigateToWishScreenEvent());
-                            }else if(type=="a"&&widget.aimId!=id){
-                              appVM.getAim(id);
-                              BlocProvider.of<NavigationBloc>(context).removeLastFromBS();
-                              BlocProvider.of<NavigationBloc>(context)
-                                  .add(NavigateToAimEditScreenEvent(id));
-                            }else if(type=="t"){
-                              appVM.currentTask=null;
-                              appVM.getTask(id);
-                              BlocProvider.of<NavigationBloc>(context).removeLastFromBS();
-                              BlocProvider.of<NavigationBloc>(context)
-                                  .add(NavigateToTaskEditScreenEvent(id));
-                            }
-                          },),
-                        )
-                    ),
+                    MyTreeView(key: UniqueKey(),roots: roots, onTap: (id, type){
+                      if(type=="m"){
+                        BlocProvider.of<NavigationBloc>(context).clearHistory();
+                        appVM.cachedImages.clear();
+                        appVM.startMainsphereeditScreen();
+                        BlocProvider.of<NavigationBloc>(context)
+                            .add(NavigateToMainSphereEditScreenEvent());
+                      }else if(type=="w"){
+                        BlocProvider.of<NavigationBloc>(context).clearHistory();
+                        appVM.startWishScreen(id, 0);
+                        BlocProvider.of<NavigationBloc>(context)
+                            .add(NavigateToWishScreenEvent());
+                      }else if(type=="a"&&widget.aimId!=id){
+                        appVM.getAim(id);
+                        BlocProvider.of<NavigationBloc>(context).removeLastFromBS();
+                        BlocProvider.of<NavigationBloc>(context)
+                            .add(NavigateToAimEditScreenEvent(id));
+                      }else if(type=="t"){
+                        appVM.currentTask=null;
+                        appVM.getTask(id);
+                        BlocProvider.of<NavigationBloc>(context).removeLastFromBS();
+                        BlocProvider.of<NavigationBloc>(context)
+                            .add(NavigateToTaskEditScreenEvent(id));
+                      }
+                    },),
                   ]
               ),
             )),

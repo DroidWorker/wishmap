@@ -56,10 +56,11 @@ class _WishScreenState extends State<WishScreen>{
             _affirmation.text = appVM.wishScreenState!.wish.affirmation;
             _color = appVM.wishScreenState!.wish.color;
             isChanged = false;
-            isDataLoaded = true;
+            isDataLoaded = appVM.wishScreenState!.isDataloaded;
             appViewModel.getAimsForCircles(appVM.wishScreenState!.wish.id);
             appVM.convertToMyTreeNodeFullBranch(curwish.id);
-            if(appVM.wishScreenState!.wish.photoIds.isNotEmpty){
+            print("mmmmsssssssssssssss${curwish.photoIds} $isDataLoaded");
+            if(appVM.wishScreenState!.wish.photoIds.isNotEmpty&&!isDataLoaded){
               final ids = appVM.wishScreenState!.wish.photoIds.split("|");
               if(ids.isNotEmpty) {
                 List<int> intList = ids
@@ -71,9 +72,10 @@ class _WishScreenState extends State<WishScreen>{
                 if (intList.isNotEmpty) appViewModel.getImages(intList);
               }
             }
+            appViewModel.wishScreenState!.isDataloaded = true;
           }
-          final aims = appVM.wishScreenState?.wishAims;
-          final tasks = appVM.wishScreenState?.wishTasks;
+          //final aims = appVM.wishScreenState?.wishAims;
+          //final tasks = appVM.wishScreenState?.wishTasks;
           /*if(aims!=null&&tasks!=null){
             root.clear();
             for (var element in aims) {
@@ -469,32 +471,26 @@ class _WishScreenState extends State<WishScreen>{
                                 child: Column(children: [
                                   const Text("Цели и задачи", style: TextStyle(color: Colors.black54),),
                                   const SizedBox(height: 5),
-                                  Align(
-                                      alignment: Alignment.centerLeft,
-                                      child: Expanded(
-                                        //height: root.length*150,
-                                        child: MyTreeView(key: UniqueKey(),roots: root, onTap: (id, type){
-                                          if(type=="m"){
-                                            BlocProvider.of<NavigationBloc>(context).clearHistory();
-                                            appVM.cachedImages.clear();
-                                            appVM.startMainsphereeditScreen();
-                                            BlocProvider.of<NavigationBloc>(context)
-                                                .add(NavigateToMainSphereEditScreenEvent());
-                                          }else if(type=="w"){
-                                            curwish=WishData(id: -1, parentId: -1, text: "text", description: "description", affirmation: "affirmation", color: Colors.transparent);
-                                            appVM.startWishScreen(id, 0);
-                                          }else if(type=="a"){
-                                            appVM.getAim(id);
-                                            BlocProvider.of<NavigationBloc>(context)
-                                                .add(NavigateToAimEditScreenEvent(id));
-                                          }else if(type=="t"){
-                                            appVM.getTask(id);
-                                            BlocProvider.of<NavigationBloc>(context)
-                                                .add(NavigateToTaskEditScreenEvent(id));
-                                          }
-                                        },),
-                                      )
-                                  ),
+                                  MyTreeView(key: UniqueKey(),roots: root, onTap: (id, type){
+                                    if(type=="m"){
+                                      BlocProvider.of<NavigationBloc>(context).clearHistory();
+                                      appVM.cachedImages.clear();
+                                      appVM.startMainsphereeditScreen();
+                                      BlocProvider.of<NavigationBloc>(context)
+                                          .add(NavigateToMainSphereEditScreenEvent());
+                                    }else if(type=="w"){
+                                      curwish=WishData(id: -1, parentId: -1, text: "text", description: "description", affirmation: "affirmation", color: Colors.transparent);
+                                      appVM.startWishScreen(id, 0);
+                                    }else if(type=="a"){
+                                      appVM.getAim(id);
+                                      BlocProvider.of<NavigationBloc>(context)
+                                          .add(NavigateToAimEditScreenEvent(id));
+                                    }else if(type=="t"){
+                                      appVM.getTask(id);
+                                      BlocProvider.of<NavigationBloc>(context)
+                                          .add(NavigateToTaskEditScreenEvent(id));
+                                    }
+                                  },),
                                   /*...appVM.wishScreenState?.wishAims.asMap()
                           .entries
                           .map((entry) {
