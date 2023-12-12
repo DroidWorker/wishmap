@@ -36,9 +36,10 @@ class TaskEditScreenState extends State<TaskEditScreen>{
           if(appVM.currentAim!=null) {
             AimData ad = appVM.currentAim!;
             var childNodes = MyTreeNode(id: ad.id, type: 'a', title: ad.text, isChecked: ad.isChecked, children: []);
-            if(roots.isEmpty)appVM.convertToMyTreeNodeIncludedAimsTasks(childNodes, ai!.id, ad.parentId);
+            print('dddddddddddddddddddd${childNodes} ${ai!.id} ${ad.parentId}');
+            if(roots.isEmpty&&ai!=null)appVM.convertToMyTreeNodeIncludedAimsTasks(childNodes, ai!.id, ad.parentId);
           }else {
-            appVM.getAim(ai!.parentId);
+            if(ai!.parentId!=-1)appVM.getAim(ai!.parentId);
           }
           roots=appVM.myNodes;
           text.text = ai!.text;

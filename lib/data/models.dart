@@ -30,6 +30,11 @@ class CircleData{
 
   CircleData({required this.id, required this.text, this.subText = "", required this.color, required this.parenId, this.affirmation="", this.photosIds="", this.isChecked = false, this.isActive = true});
 
+  @override
+  String toString(){
+    return "circleData: $id $text";
+  }
+
   CircleData copy(){
     return CircleData(
     id: id,
@@ -175,6 +180,11 @@ class MyTreeNode {
   bool isChecked;
   bool noClickable = false;
   final List<MyTreeNode> children;
+
+  @override
+  String toString(){
+    return "treeNode $id $title";
+  }
 }
 
 List<MyTreeNode> convertListToMyTreeNodes(List<WishItem> dataList) {

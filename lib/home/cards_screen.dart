@@ -9,9 +9,15 @@ import 'package:wishmap/res/colors.dart';
 import '../ViewModel.dart';
 import '../common/moon_widget.dart';
 
-class CardsScreen extends StatelessWidget {
+class CardsScreen extends StatefulWidget {
   const CardsScreen({super.key});
 
+  @override
+  CardsScreenState createState() => CardsScreenState();
+}
+
+class CardsScreenState extends State<CardsScreen>{
+  bool isInSync = false;
   @override
   Widget build(BuildContext context) {
     final appViewModel = Provider.of<AppViewModel>(context);
@@ -24,7 +30,11 @@ class CardsScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
       persistentFooterButtons: [
-        ConnectionStatus(isShow: true,)
+        if(!isInSync)ConnectionStatus(isShow: true,),
+        if(isInSync)const Row(children: [
+          Text("синхронизация"),
+          CircularProgressIndicator()
+        ],)
       ],
       body: Consumer<AppViewModel>(
         builder: (context, appVM, child){
@@ -50,7 +60,10 @@ class CardsScreen extends StatelessWidget {
                     onTap: () async {
                       if(appViewModel.moonItems.isNotEmpty) {
                         final moonId = appVM.moonItems[index];
-                        appViewModel.fetchDatas(moonId.id);
+                        setState(() {
+                          isInSync = true;
+                        });
+                        await appViewModel.fetchDatas(moonId.id);
                         appViewModel.startMainScreen(moonId);
                         BlocProvider.of<NavigationBloc>(context)
                             .add(NavigateToMainScreenEvent());

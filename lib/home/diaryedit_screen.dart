@@ -26,11 +26,14 @@ class DiaryEditScreenState extends State<DiaryEditScreen>{
   final tectitle = TextEditingController();
   final tecsubtitle = TextEditingController();
   final tecdescription = TextEditingController();
+  var isDescripttionOver = false;
   @override
   Widget build(BuildContext context) {
     tec.addListener(() { currentEmoji = tec.text; });
     tectitle.addListener(() { currentTitle = tectitle.text; });
-    tecsubtitle.addListener(() { currentSubtitle = tecsubtitle.text; });
+    tecsubtitle.addListener(() {
+        currentSubtitle = tecsubtitle.text;
+    });
     tecdescription.addListener(() { currentdescription = tecdescription.text; });
      return Consumer<AppViewModel>(
         builder: (context, appVM, child){
@@ -115,6 +118,10 @@ class DiaryEditScreenState extends State<DiaryEditScreen>{
                     controller: tecsubtitle,
                     maxLines: 3,
                     minLines: 3,
+                    maxLength: 110,
+                    decoration: isDescripttionOver?const InputDecoration(
+                        errorText: 'максимальная длина текста 130 символов'
+                    ):const InputDecoration(),
                     style: const TextStyle(color:  AppColors.greytextColor, fontSize: 16),
                     /*decoration: InputDecoration(
                       hintText: currentTitle,
@@ -122,7 +129,8 @@ class DiaryEditScreenState extends State<DiaryEditScreen>{
                   ),
                   TextField(
                     controller: tecdescription,
-                    maxLines: 10,
+                    minLines: 10,
+                    maxLines: 100,
                     style: const TextStyle(color: Colors.grey, fontSize: 14),
                     /*decoration: InputDecoration(
                       hintText: currentTitle,

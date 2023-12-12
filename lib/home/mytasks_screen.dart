@@ -228,6 +228,8 @@ class _TaskScreenState extends State{
   }
 
   onItemSelect(int id) async {
+    appViewModel.myNodes.clear();
+    appViewModel.currentAim=null;
     await appViewModel.getTask(id);
     BlocProvider.of<NavigationBloc>(context)
         .add(NavigateToTaskEditScreenEvent(id));

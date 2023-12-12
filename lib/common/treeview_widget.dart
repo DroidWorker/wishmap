@@ -126,7 +126,7 @@ class MyTreeTile extends StatelessWidget {
                   ),
                 ),
                 const Spacer(),
-                entry.node.type == "w" && entry.node.id > 8
+                entry.node.type == "w" && entry.node.id > 899
                     ? (entry.node.isChecked
                     ? Image.asset('assets/icons/love5110868fill.png', width: 20, height: 20,)
                     : Image.asset('assets/icons/love5110868.png', width: 20, height: 20))

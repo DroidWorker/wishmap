@@ -94,6 +94,7 @@ class _AimsScreenState extends State<AimsScreen>{
                       },
                     )
                   ],),
+                  const SizedBox(height: 10,),
                   Expanded(child:
                   ListView.builder(
                       itemCount: filteredAimList.length,

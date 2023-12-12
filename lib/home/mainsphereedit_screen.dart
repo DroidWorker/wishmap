@@ -25,14 +25,18 @@ class MainSphereEditScreen extends StatefulWidget{
 class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
   Color circleColor = Colors.black12;
   CircleData curWd = CircleData(id: -1, text: "", color: Colors.black12, parenId: -1);
-var isChanged = false;
 
   @override
   Widget build(BuildContext context) {
     final appViewModel = Provider.of<AppViewModel>(context);
+    appViewModel.isChanged;
     if(curWd.id==-1){
-      appViewModel.mainSphereEditCircle = appViewModel.mainScreenState?.allCircles[0];
-      curWd = appViewModel.mainSphereEditCircle?.copy()??CircleData(id: 0, text: "", color: Colors.grey, parenId: -1);
+      if(appViewModel.mainSphereEditCircle==null){
+        appViewModel.mainSphereEditCircle = appViewModel.mainScreenState?.allCircles[0];
+        appViewModel.isChanged = false;
+      }
+      appViewModel.isChanged = appViewModel.isChanged;
+      curWd = appViewModel.mainSphereEditCircle??CircleData(id: 0, text: "", color: Colors.grey, parenId: -1);
       if(curWd.photosIds.isNotEmpty&&appViewModel.cachedImages.isEmpty){
         final ids = curWd.photosIds.split("|");
         List<int> intList = ids.map((str) => int.parse(str)).toList();
@@ -43,9 +47,9 @@ var isChanged = false;
     TextEditingController description = TextEditingController(text: curWd.subText);
     TextEditingController affirmation = TextEditingController(text: curWd.affirmation);
     circleColor = curWd.color;
-    text.addListener(() { curWd.text=text.text;isChanged = true;});
-    description.addListener(() { curWd.subText=description.text;isChanged = true;});
-    affirmation.addListener(() { curWd.affirmation=affirmation.text;isChanged = true;});
+    text.addListener(() { curWd.text=text.text;appViewModel.isChanged = true;});
+    description.addListener(() { curWd.subText=description.text;appViewModel.isChanged = true;});
+    affirmation.addListener(() { curWd.affirmation=affirmation.text;appViewModel.isChanged = true;});
     return Consumer<AppViewModel>(
         builder: (context, appVM, child){
           final aims = appVM.aimItems.where((element) => element.parentId==0).toList();
@@ -67,9 +71,9 @@ var isChanged = false;
                     icon: const Icon(Icons.keyboard_arrow_left),
                     iconSize: 30,
                     onPressed: () {
-                      if(isChanged){
+                      if(appViewModel.isChanged){
                       showDialog(context: context,
-                        builder: (BuildContext context) => AlertDialog(
+                        builder: (BuildContext c) => AlertDialog(
                           contentPadding: EdgeInsets.zero,
                           shape: const RoundedRectangleBorder(
                               borderRadius: BorderRadius.all(Radius.circular(32.0))),
@@ -86,20 +90,20 @@ var isChanged = false;
                           ),
                           actions: <Widget>[
                             TextButton(
-                              onPressed: () async { Navigator.pop(context, 'OK');
+                              onPressed: () async { Navigator.pop(c, 'OK');
                               await appViewModel.updateSphereWish(WishData(id: curWd.id, parentId: curWd.parenId, text: curWd.text, description: curWd.subText, affirmation: curWd.affirmation, color: curWd.color));
                               if(appViewModel.mainScreenState!=null)appViewModel.startMainScreen(appViewModel.mainScreenState!.moon);
-                              isChanged = false;
+                              appViewModel.isChanged = false;
                               BlocProvider.of<NavigationBloc>(context)
                                   .add(NavigateToMainScreenEvent());
                               showDialog(context: context,
-                                builder: (BuildContext context) => AlertDialog(
+                                builder: (BuildContext c) => AlertDialog(
                                   title: const Text('Сохранено'),
                                   shape: const RoundedRectangleBorder(
                                       borderRadius: BorderRadius.all(Radius.circular(32.0))),
                                   actions: <Widget>[
                                     TextButton(
-                                      onPressed: () { Navigator.pop(context, 'OK');},
+                                      onPressed: () { Navigator.pop(c, 'OK');},
                                       child: const Text('OK'),
                                     ),
                                   ],
@@ -133,6 +137,7 @@ var isChanged = false;
                       onPressed: () async {
                         await appViewModel.updateSphereWish(WishData(id: curWd.id, parentId: curWd.parenId, text: curWd.text, description: curWd.subText, affirmation: curWd.affirmation, color: curWd.color));
                         if(appViewModel.mainScreenState!=null)appViewModel.startMainScreen(appViewModel.mainScreenState!.moon);
+                        appViewModel.isChanged = false;
                         showDialog(context: context,
                         builder: (BuildContext context) => AlertDialog(
                           title: const Text('Сохранено'),
@@ -242,6 +247,7 @@ var isChanged = false;
                       ),
                     ),
                     onPressed: (){
+                      appViewModel.isChanged = true;
                       BlocProvider.of<NavigationBloc>(context)
                           .add(NavigateToGalleryScreenEvent());
                     },
@@ -286,7 +292,7 @@ var isChanged = false;
                         showDialog(
                           context: context,
                           builder: (context) {
-                            return ColorPickerWidget(initColor: circleColor ,onColorSelected: (Color c){setState(() {curWd.color=c; circleColor = c;});});
+                            return ColorPickerWidget(initColor: circleColor ,onColorSelected: (Color c){setState(() {curWd.color=c; circleColor = c;appViewModel.isChanged=true;});});
                           },
                         );
                       },

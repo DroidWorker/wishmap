@@ -39,7 +39,7 @@ class DatabaseHelper {
 
     await db.execute('''
       CREATE TABLE spheres(
-        rowId PRIMARY KEY,
+        rowId INTEGER PRIMARY KEY AUTOINCREMENT,
         id INTEGER,
         moonId INTEGER,
         text TEXT,
@@ -56,7 +56,7 @@ class DatabaseHelper {
 
     await db.execute('''
       CREATE TABLE aims(
-        rowId  PRIMARY KEY,
+        rowId INTEGER  PRIMARY KEY AUTOINCREMENT,
          id INTEGER,
          moonId INTEGER,
         text TEXT,
@@ -69,7 +69,7 @@ class DatabaseHelper {
 
     await db.execute('''
       CREATE TABLE tasks(
-        rowId  PRIMARY KEY,
+        rowId INTEGER  PRIMARY KEY AUTOINCREMENT,
         id INTEGER,
         moonId INTEGER,
         text TEXT,
@@ -81,7 +81,7 @@ class DatabaseHelper {
 
     await db.execute('''
       CREATE TABLE diary(
-        rowId  PRIMARY KEY,
+        rowId INTEGER  PRIMARY KEY AUTOINCREMENT,
         id INTEGER,
         moonId INTEGER,
         title TEXT,
@@ -115,7 +115,11 @@ class DatabaseHelper {
 
   Future<int> insertMoon(MoonItem mi) async {
     Database db = await database;
-    return await db.insert('moons', {'id': mi.id, 'lastSyncDate': DateTime.timestamp().microsecondsSinceEpoch, 'text': mi.text, 'filling': mi.filling, 'date': mi.date});
+    return await db.insert('moons', {'id': mi.id, 'lastSyncDate': -1, 'text': mi.text, 'filling': mi.filling, 'date': mi.date});
+  }
+  Future updateLastMoonSync(int moonId, int timestamp) async{
+    Database db = await database;
+    await db.update("moons", {'lastSyncDate': timestamp}, where: 'id = ?', whereArgs: [moonId]);
   }
 
   Future<List<Map<String, dynamic>>> getMoon(int id) async {
@@ -175,12 +179,16 @@ class DatabaseHelper {
 
   Future<int> insertTask(TaskData td, int moonid) async {
     Database db = await database;
-    return await db.insert('tasks', {'id': td.id, 'moonId':moonid, 'text': td.text, 'subtext': td.description, 'parentId': td.parentId, 'isChecked': td.isChecked});
+    final parentAim = await getAim(td.parentId, moonid);
+    String childTasks = parentAim["childTasks"].toString();
+    childTasks==""?childTasks=td.id.toString():childTasks+="|${td.id}";
+    await db.update("aims", {"childTasks": childTasks}, where: "id = ? AND moonId = ?", whereArgs: [td.parentId, moonid]);
+    return await db.insert('tasks', {'id': td.id, 'moonId':moonid, 'text': td.text, 'subtext': td.description, 'parentId': td.parentId, 'isChecked': td.isChecked?1:0});
   }
 
   Future<int> updateTask(TaskData td, int moonid) async {
     Database db = await database;
-    return await db.update("tasks", {'id': td.id, 'text': td.text, 'subtext': td.description, 'parentId': td.parentId, 'isChecked': td.isChecked}, where: "id = ? AND moonId = ?", whereArgs: [td.id, moonid]);
+    return await db.update("tasks", {'id': td.id, 'text': td.text, 'subtext': td.description, 'parentId': td.parentId, 'isChecked': td.isChecked?1:0}, where: "id = ? AND moonId = ?", whereArgs: [td.id, moonid]);
   }
 
   Future<int> updateTaskStatus(int aimId, bool status, int moonid) async {
@@ -206,13 +214,18 @@ class DatabaseHelper {
   Future<int> insertAim(AimData ad, int moonid) async {
     Database db = await database;
     String chTasks = ad.childTasks.join("|");
-    return await db.insert("aims", {'id': ad.id, 'moonId':moonid, 'text': ad.text, 'subtext': ad.description, 'parentId': ad.parentId, 'childTasks':chTasks, 'isChecked': ad.isChecked});
+    final sphere = await getSphere(ad.parentId, moonid);
+    Map<String, dynamic> tmp = jsonDecode(sphere['childAims']);
+    Map<String, int> chAims = tmp.map((key, value) => MapEntry(key, int.parse(value.toString())));
+    chAims["${ad.id}nvjvdjh"] = ad.id;
+    await db.update("spheres", {"childAims": jsonEncode(chAims)}, where: "id = ? AND moonId = ?", whereArgs: [ad.parentId, moonid]);
+    return await db.insert("aims", {'id': ad.id, 'moonId':moonid, 'text': ad.text, 'subtext': ad.description, 'parentId': ad.parentId, 'childTasks':chTasks, 'isChecked': ad.isChecked?1:0});
   }
 
   Future<int> updateAim(AimData ad, int moonid) async {
     Database db = await database;
     String chTasks = ad.childTasks.join("|");
-    return await db.update("aims", {'text': ad.text, 'subtext': ad.description, 'parentId': ad.parentId, 'childTasks':chTasks, 'isChecked': ad.isChecked}, where: "id = ? AND moonId = ?", whereArgs: [ad.id, moonid]);
+    return await db.update("aims", {'text': ad.text, 'subtext': ad.description, 'parentId': ad.parentId, 'childTasks':chTasks, 'isChecked': ad.isChecked?1:0}, where: "id = ? AND moonId = ?", whereArgs: [ad.id, moonid]);
   }
 
   Future<int> updateAimStatus(int aimId, bool status, int moonid) async {
@@ -244,7 +257,7 @@ class DatabaseHelper {
     Database db = await database;
     String chAims = jsonEncode(wd.childAims);
 
-    int result = await db.insert(
+    int result = await db.update(
       "spheres",
       {
         'id': wd.id,
@@ -252,15 +265,36 @@ class DatabaseHelper {
         'text': wd.text,
         'subtext': wd.description,
         'affirmation': wd.affirmation,
-        'isActive': wd.isActive,
-        'isChecked': wd.isChecked,
+        'isActive': wd.isActive?1:0,
+        'isChecked': wd.isChecked?1:0,
         'parentId': wd.parentId,
         'photosIds': wd.photoIds,
         'color': wd.color.value,
         'childAims': chAims,
       },
+      where: "id = ? AND moonId = ?",
+      whereArgs: [wd.id, moonId],
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
+    if(result==0){
+      result = await db.insert(
+        "spheres",
+        {
+          'id': wd.id,
+          'moonId': moonId,
+          'text': wd.text,
+          'subtext': wd.description,
+          'affirmation': wd.affirmation,
+          'isActive': wd.isActive?1:0,
+          'isChecked': wd.isChecked?1:0,
+          'parentId': wd.parentId,
+          'photosIds': wd.photoIds,
+          'color': wd.color.value,
+          'childAims': chAims,
+        },
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+    }
 
     return result;
   }
@@ -268,7 +302,7 @@ class DatabaseHelper {
   Future<int> updateSphere(WishData wd, int moonid) async {
     Database db = await database;
     String chAims = wd.childAims.values.join("|");
-    return await db.update("spheres", {'text': wd.text, 'subtext': wd.description, 'affirmation': wd.affirmation, 'isActive':wd.isActive, 'isChecked': wd.isChecked, 'parentId': wd.parentId, 'photosIds': wd.photoIds, 'color': wd.color.value, 'childAims': chAims}, where: "id = ? AND moonId = ?", whereArgs: [wd.id, moonid]);
+    return await db.update("spheres", {'text': wd.text, 'subtext': wd.description, 'affirmation': wd.affirmation, 'isActive':wd.isActive?1:0, 'isChecked': wd.isChecked?1:0, 'parentId': wd.parentId, 'photosIds': wd.photoIds, 'color': wd.color.value, 'childAims': chAims}, where: "id = ? AND moonId = ?", whereArgs: [wd.id, moonid]);
   }
   Future<int> updateSphereStatus(int sphereId, bool status, int moonid) async {
     Database db = await database;

@@ -35,6 +35,7 @@ class AppViewModel with ChangeNotifier {
   List<Circle> currentCircles = [];
   //mainSphereEdirtScreenn
   CircleData? mainSphereEditCircle;
+  bool isChanged = false;
   //wishScreen
   WishScreenState? wishScreenState;
   //MyTasksScreen
@@ -69,7 +70,7 @@ class AppViewModel with ChangeNotifier {
   Future<void> init() async {
     authData = await localRep.getAuth();
     profileData = await localRep.getProfile();
-    getMoons();
+    if(authData!=null)getMoons();
     notifyListeners();
   }
 
@@ -82,6 +83,11 @@ class AppViewModel with ChangeNotifier {
 
   Future clearLocalDB() async {
     await localRep.clearDatabase(mainScreenState?.moon.id??-1);
+  }
+  
+  Future updateMoonSync(int moonId)async{
+    await localRep.updateMoonSync(moonId, DateTime.timestamp().microsecondsSinceEpoch);
+    if(connectivity!='No Internet Connection')await repository.updateMoonSync(moonId, DateTime.timestamp().microsecondsSinceEpoch);
   }
 
   Future<void> signIn(String login, String password) async{
@@ -135,9 +141,10 @@ class AppViewModel with ChangeNotifier {
         ((await repository.getMoonList())??[]):
         (await localRep.getMoons());
         if((result!=ConnectivityResult.none)){
-          await localRep.clearMoons();
+          //await localRep.clearMoons();
+          final localMoons = await localRep.getMoons();
           moonItems.forEach((element) {
-            localRep.addMoon(element);
+            if(localMoons.where((e) => e.id==element.id).isEmpty)localRep.addMoon(element);
           });
         }
       }
@@ -218,6 +225,13 @@ class AppViewModel with ChangeNotifier {
       localRep.addSphere(element, moonId);
     });
     isDataFetched--;
+    updateMoonSync(moonId);
+  }
+  Future pushSpheres(int moonId) async{
+    final spheres = await localRep.getAllMoonSpheres(moonId);
+    repository.addAllCircles(spheres, moonId);
+    isDataFetched--;
+    updateMoonSync(moonId);
   }
 
   Future fetchAims(int moonId) async{
@@ -225,6 +239,11 @@ class AppViewModel with ChangeNotifier {
     aims?.forEach((element) {
       localRep.addAim(element,mainScreenState?.moon.id??-1);
     });
+    isDataFetched--;
+  }
+  Future pushAims(int moonId) async{
+    final aims = await localRep.getAllAimsData(moonId);
+    repository.addAllAims(aims, moonId);
     isDataFetched--;
   }
 
@@ -235,6 +254,11 @@ class AppViewModel with ChangeNotifier {
     });
     isDataFetched--;
   }
+  Future pushTasks(int moonId) async{
+    final tasks = await localRep.getAllTasksData(moonId);
+    repository.addAllTasks(tasks, moonId);
+    isDataFetched--;
+  }
 
   Future fetchDiary(int moonId) async{
     final diary = await repository.getDiaryList(moonId);
@@ -243,17 +267,29 @@ class AppViewModel with ChangeNotifier {
     });
     isDataFetched--;
   }
+  Future pushDiary(int moonId) async{
+    final diary = await localRep.getAllDiary(moonId);
+    repository.addDiary(diary, moonId);
+    isDataFetched--;
+  }
 
   Future fetchDatas(int moonId) async{
     if(connectivity!='No Internet Connection'){
       final dDB = await repository.getLastMoonSyncData(moonId);
       final dLoc = await localRep.getMoonLastSyncDate(moonId);
+      print("wwwwwwwwwwwwwwwwwwwwwww$dDB   $dLoc");
       if(dDB!=null&&dDB>dLoc) {
         await localRep.clearDatabase(moonId);
         await fetchSpheres(moonId);
-        await fetchAims(moonId);
-        await fetchTasks(moonId);
-        await fetchDiary(moonId);
+         fetchAims(moonId);
+         fetchTasks(moonId);
+         fetchDiary(moonId);
+      }
+      else if(dDB!=null&&dDB<dLoc){
+        await pushSpheres(moonId);
+        await pushAims(moonId);
+        await pushTasks(moonId);
+        await pushDiary(moonId);
       }
     }
   }
@@ -338,6 +374,8 @@ class AppViewModel with ChangeNotifier {
 
   Future<void> startWishScreen(int wishId, int parentId) async{
     try {
+      print("ggggggggggggggggggg11${isChanged}");
+      isChanged = false;
       cachedImages.clear();
       myNodes.clear();
       WishData wdItem;
@@ -386,21 +424,24 @@ class AppViewModel with ChangeNotifier {
       }else {
         return null;
       }
-    }catch(ex){
+    }catch(ex, s){
       addError("#01 Ошибка загрузки задач: $ex");
+      print("errrrrrrrrrrrrrrrrrrr$s");
     }
   }
 
   Future<void> startMainsphereeditScreen() async{
     try {
       isinLoading = true;
+      isChanged = false;
+      mainSphereEditCircle=null;
       if(aimItems.isEmpty) {
         /*aimItems = isDataFetched!=0?((await repository.getMyAims(mainScreenState?.moon.id??0)) ?? []):*/
-        await localRep.getAllAims(mainScreenState?.moon.id??0);
+        aimItems = await localRep.getAllAims(mainScreenState?.moon.id??0);
       }
       if(taskItems.isEmpty) {
         /*taskItems = isDataFetched!=0?((await repository.getMyTasks(mainScreenState?.moon.id??0)) ?? []):*/
-      await localRep.getAllTasks(mainScreenState?.moon.id??0);
+        taskItems = await localRep.getAllTasks(mainScreenState?.moon.id??0);
       }
       isinLoading = false;
       notifyListeners();
@@ -413,7 +454,7 @@ class AppViewModel with ChangeNotifier {
     try {
       isinLoading = true;
       /*aimItems = isDataFetched!=0?((await repository.getMyAims(mainScreenState?.moon.id??0)) ?? []):*/
-      await localRep.getAllAims(mainScreenState?.moon.id??0);
+      aimItems = await localRep.getAllAims(mainScreenState?.moon.id??0);
       isinLoading = false;
       notifyListeners();
     }catch(ex){
@@ -465,10 +506,10 @@ class AppViewModel with ChangeNotifier {
         photos[lastImageId]=element;
         localRep.addImage(lastImageId, element);
       }
-      localRep.updateSphereImages(wd.id, photosIds,mainScreenState?.moon.id??0);
       wd.photos = photos;
       if(connectivity != 'No Internet Connection')await repository.createSphereWish(wd, mainScreenState?.moon.id??0);
       await localRep.insertORudateSphere(wd, mainScreenState?.moon.id??0);
+      localRep.updateSphereImages(wd.id, photosIds,mainScreenState?.moon.id??0);
       var sphereInAllCircles= mainScreenState!.allCircles.indexWhere((element) => element.id==wd.id);
       if(sphereInAllCircles==-1){
         mainScreenState!.allCircles.add(CircleData(id: wd.id, text: wd.text, color: wd.color, parenId: wd.parentId));
@@ -486,6 +527,7 @@ class AppViewModel with ChangeNotifier {
       if(sphereInWishesList>=0){
         wishItems[sphereInWishesList]=WishItem(id: wd.id, text: wd.text, isChecked: wd.isChecked);
       }
+      updateMoonSync(mainScreenState?.moon.id??0);
     }catch(ex){
       addError("сфера не была сохранена: $ex");
     }
@@ -501,11 +543,12 @@ class AppViewModel with ChangeNotifier {
         photos[lastImageId]=element;
         localRep.addImage(lastImageId, element);
       }
-      localRep.updateSphereImages(wd.id, photosIds,mainScreenState?.moon.id??0);
       wd.photos = photos;
       if(connectivity != 'No Internet Connection')await repository.createSphereWish(wd, mainScreenState?.moon.id??0);
       await localRep.insertORudateSphere(wd, mainScreenState?.moon.id??0);
+      localRep.updateSphereImages(wd.id, photosIds,mainScreenState?.moon.id??0);
       mainScreenState!.allCircles[mainScreenState!.allCircles.indexWhere((element) => element.id==wd.id)] = CircleData(id: wd.id, text: wd.text, color: wd.color, parenId: wd.parentId, affirmation: wd.affirmation, subText: wd.description)..photosIds=photosIds;
+      updateMoonSync(mainScreenState?.moon.id??0);
     }catch(ex){
       addError("сфера не была сохранена: $ex");
     }
@@ -522,6 +565,7 @@ class AppViewModel with ChangeNotifier {
       await deleteallChildAims(id);
       if(connectivity != 'No Internet Connection')await repository.deleteSphereWish(id, mainScreenState?.moon.id??0);
       await localRep.deleteSphere(id,mainScreenState?.moon.id??0);
+      updateMoonSync(mainScreenState?.moon.id??0);
     }catch(ex){
       addError("сфера не была удалена: $ex");
     }
@@ -562,7 +606,20 @@ class AppViewModel with ChangeNotifier {
     try {
       if(status) {
         if(recursive) {
-          var wishes = getFullBranch(wishId);
+          var allwishes = getFullBranch(wishId);
+          List<CircleData> wishes = [];
+          Set<int> uniqueIds = {};
+
+          // Итерируем по внешнему списку
+          for (List<CircleData> innerList in allwishes) {
+            // Итерируем по внутреннему списку
+            for (CircleData obj in innerList) {
+              // Если id объекта уникально, добавляем его в результат
+              if (uniqueIds.add(obj.id)&&obj.id>=wishId) {
+                wishes.add(obj);
+              }
+            }
+          }
           for (var e in wishes) {
             updateWishStatus(e.id, status, recursive: false);
             if(mainScreenState!=null){
@@ -594,6 +651,7 @@ class AppViewModel with ChangeNotifier {
         final i = wishItems.indexWhere((element) => element.id == wishId);
         if(i>=0)wishItems[i].isChecked = status;
       }
+      updateMoonSync(mainScreenState?.moon.id??0);
       notifyListeners();
     }catch(ex){
       addError("#566${ex.toString()}");
@@ -602,10 +660,12 @@ class AppViewModel with ChangeNotifier {
 
   Future<int?> createAim(AimData ad, int parentCircleId) async{
     try {
-      //int? aimId = (await repository.createAim(ad, parentCircleId, mainScreenState?.moon.id??0))??-1;
-      int aimId = await localRep.addAim(AimData(id: -1, parentId: parentCircleId, text: ad.text, description: ad.description), mainScreenState?.moon.id??-1);
+      int? aimId;
+      if(connectivity != 'No Internet Connection')aimId = (await repository.createAim(ad, parentCircleId, mainScreenState?.moon.id??0))??-1;
+      aimId = await localRep.addAim(AimData(id: aimId??-1, parentId: parentCircleId, text: ad.text, description: ad.description), mainScreenState?.moon.id??-1);
       currentAim=(AimData(id: aimId, parentId: ad.parentId, text: ad.text, description: ad.description, isChecked: ad.isChecked));
       aimItems.add(AimItem(id: aimId,parentId: parentCircleId, text: ad.text, isChecked: ad.isChecked));
+      updateMoonSync(mainScreenState?.moon.id??0);
       return aimId;
     }catch(ex){
       addError("#5711${ex.toString()}");
@@ -615,7 +675,7 @@ class AppViewModel with ChangeNotifier {
     try{
       if(mainScreenState!=null) {
         /*currentAim = isDataFetched!=0?await repository.getMyAim(id, mainScreenState!.moon.id):*/
-        await localRep.getAim(id,mainScreenState?.moon.id??0);
+        currentAim = await localRep.getAim(id,mainScreenState?.moon.id??0);
         notifyListeners();
       } else {
         throw Exception("#2365 lost datas");
@@ -629,6 +689,7 @@ class AppViewModel with ChangeNotifier {
       if(connectivity != 'No Internet Connection')await repository.updateAim(ad, mainScreenState?.moon.id??0);
       await localRep.updateAim(ad,mainScreenState?.moon.id??0);
       currentAim=(AimData(id: ad.id, parentId: ad.parentId, text: ad.text, description: ad.description, isChecked: ad.isChecked));
+      updateMoonSync(mainScreenState?.moon.id??0);
     }catch(ex){
       addError("#518${ex.toString()}");
     }
@@ -639,6 +700,7 @@ class AppViewModel with ChangeNotifier {
       if(connectivity != 'No Internet Connection')await repository.deleteAim(aimId, mainScreenState?.moon.id??0);
       localRep.deleteAim(aimId,mainScreenState?.moon.id??0);
       aimItems.removeWhere((element) => element.id == aimId);
+      updateMoonSync(mainScreenState?.moon.id??0);
     }catch(ex){
       addError("#519${ex.toString()}");
     }
@@ -662,6 +724,7 @@ class AppViewModel with ChangeNotifier {
       if(connectivity != 'No Internet Connection')await repository.changeAimStatus(aimId, mainScreenState?.moon.id??0, status);
       await localRep.updateAimStatus(aimId, status,mainScreenState?.moon.id??0);
       toggleChecked(myNodes.first, 'a', aimId, status);
+      updateMoonSync(mainScreenState?.moon.id??0);
       notifyListeners();
     }catch(ex){
       addError("#520${ex.toString()}");
@@ -670,10 +733,12 @@ class AppViewModel with ChangeNotifier {
 
   Future<int?> createTask(TaskData ad, int parentAimId) async{
     try {
-      //int taskId = (await repository.createTask(ad, parentAimId, mainScreenState?.moon.id??0))??-1;
-      int taskId = await localRep.addTask(TaskData(id: -1, parentId: parentAimId, text: ad.text, description: ad.description), mainScreenState?.moon.id??-1);
+      int taskId = -1;
+      if(connectivity != 'No Internet Connection')taskId = (await repository.createTask(ad, parentAimId, mainScreenState?.moon.id??0))??-1;
+      taskId = await localRep.addTask(TaskData(id: taskId, parentId: parentAimId, text: ad.text, description: ad.description), mainScreenState?.moon.id??-1);
       currentTask=(TaskData(id: taskId, parentId: ad.parentId, text: ad.text, description: ad.description, isChecked: ad.isChecked));
       taskItems.add(TaskItem(id: taskId, parentId: parentAimId, text: ad.text, isChecked: ad.isChecked));
+      updateMoonSync(mainScreenState?.moon.id??0);
       return taskId;
     }catch(ex){
       addError("#522${ex.toString()}");
@@ -683,7 +748,7 @@ class AppViewModel with ChangeNotifier {
     try{
       if(mainScreenState!=null) {
         /*currentTask = isDataFetched!=0?await repository.getMyTask(id, mainScreenState!.moon.id):*/
-        await localRep.getTask(id,mainScreenState?.moon.id??0);
+        currentTask = await localRep.getTask(id,mainScreenState?.moon.id??0);
         notifyListeners();
       } else {
         throw Exception("#2366 lost datas");
@@ -697,6 +762,7 @@ class AppViewModel with ChangeNotifier {
       if(connectivity != 'No Internet Connection')await repository.updateTask(ad, mainScreenState?.moon.id??0);
       await localRep.updateTask(ad,mainScreenState?.moon.id??0);
       currentTask=(TaskData(id: ad.id, parentId: ad.parentId, text: ad.text, description: ad.description, isChecked: ad.isChecked));
+      updateMoonSync(mainScreenState?.moon.id??0);
     }catch(ex){
       addError("#524${ex.toString()}");
     }
@@ -706,6 +772,7 @@ class AppViewModel with ChangeNotifier {
       if(connectivity != 'No Internet Connection')await repository.deleteTask(taskId, mainScreenState?.moon.id??0);
       await localRep.deleteTask(taskId,mainScreenState?.moon.id??0);
       taskItems.removeWhere((element) => element.id == taskId);
+      updateMoonSync(mainScreenState?.moon.id??0);
     }catch(ex){
       addError("#526${ex.toString()}");
     }
@@ -720,6 +787,7 @@ class AppViewModel with ChangeNotifier {
       if(connectivity != 'No Internet Connection')await repository.changeTaskStatus(taskId, mainScreenState?.moon.id??0, status);
       await localRep.updateTaskStatus(taskId, status,mainScreenState?.moon.id??0);
       toggleChecked(myNodes.first, 't', taskId, status);
+      updateMoonSync(mainScreenState?.moon.id??0);
       notifyListeners();
     }catch(ex){
       addError("#528${ex.toString()}");
@@ -743,6 +811,7 @@ class AppViewModel with ChangeNotifier {
         localRep.addAllDiary(cardData, mainScreenState?.moon.id??-1);
         diaryItems = cardData;
       }
+      updateMoonSync(mainScreenState?.moon.id??0);
       notifyListeners();
     }catch(ex){
       addError("#532${ex.toString()}");
@@ -753,6 +822,7 @@ class AppViewModel with ChangeNotifier {
       diaryItems.add(cd);
       if(connectivity != 'No Internet Connection')await repository.addDiary([cd], mainScreenState!.moon.id);
       await localRep.addDiary(cd, mainScreenState?.moon.id??-1);
+      updateMoonSync(mainScreenState?.moon.id??0);
       notifyListeners();
     }catch(ex){
       addError("#534${ex.toString()}");
@@ -765,6 +835,7 @@ class AppViewModel with ChangeNotifier {
       diaryItems[index]=cd;
       if(connectivity != 'No Internet Connection')await repository.updateDiary(cd, mainScreenState!.moon.id);
       await localRep.updateDiary(cd,mainScreenState?.moon.id??0);
+      updateMoonSync(mainScreenState?.moon.id??0);
       notifyListeners();
     }catch(ex){
       addError("#536${ex.toString()}");
@@ -816,7 +887,8 @@ class AppViewModel with ChangeNotifier {
     notifyListeners();
     return children;
   }
-  Future<List<MyTreeNode>> convertToMyTreeNodeFullBranch(int wishId) async {
+  /*Future<List<MyTreeNode>> convertToMyTreeNodeFullBranch(int wishId) async {
+    var addChildTasksAims = true;
     final fullBranch = getFullBranch(wishId);
     taskItems = /*isDataFetched!=0?((await repository.getMyTasks(mainScreenState!.moon.id))??[]):*/
     await localRep.getAllTasks(mainScreenState?.moon.id??0);
@@ -825,18 +897,133 @@ class AppViewModel with ChangeNotifier {
     MyTreeNode? root;
     for (var melement in fullBranch) {
       final List<MyTreeNode> childNodes = [];
-      final chilldAims = aimItems.where((element) => element.parentId==melement.id);
-      for (var e in chilldAims) {
-        final childTasks = taskItems.where((item) => item.parentId==e.id);
-        childNodes.add(MyTreeNode(id: e.id, type: 'a', title: e.text, isChecked: e.isChecked, children: (childTasks.map((t) => MyTreeNode(id: t.id, type: 't', title: t.text, isChecked: t.isChecked))).toList()));
+      if(addChildTasksAims){
+        final chilldAims = aimItems.where((element) => element.parentId==melement.id);
+        for (var e in chilldAims) {
+          final childTasks = taskItems.where((item) => item.parentId==e.id);
+          childNodes.add(MyTreeNode(id: e.id, type: 'a', title: e.text, isChecked: e.isChecked, children: (childTasks.map((t) => MyTreeNode(id: t.id, type: 't', title: t.text, isChecked: t.isChecked))).toList()));
+        }
       }
       if(root != null)childNodes.add(root);
       root = MyTreeNode(id: melement.id, type: melement.id==0?"m":"w", title: melement.text, isChecked: melement.isChecked,children: childNodes)..noClickable=melement.id==wishId?true:false;
+      if(melement.id==wishId) addChildTasksAims=false;
     }
     if(root!=null) {
       myNodes= [root];
       notifyListeners();
       return [root];
+    } else {
+      myNodes.clear();
+      notifyListeners();
+      return [];
+    }
+  }*/
+  Future<List<MyTreeNode>> convertToMyTreeNodeFullBranch(int wishId) async {
+    var addChildTasksAims = true;
+    final fullBranch = getFullBranch(wishId);
+    taskItems = /*isDataFetched!=0?((await repository.getMyTasks(mainScreenState!.moon.id))??[]):*/
+    await localRep.getAllTasks(mainScreenState?.moon.id??0);
+    aimItems = /*isDataFetched!=0?((await repository.getMyAims(mainScreenState!.moon.id))??[]):*/
+    await localRep.getAllAims(mainScreenState?.moon.id??0);
+    MyTreeNode? root;
+    Set<CircleData> commonPart = {};
+    // Создаем множество для отслеживания уникальных id
+    Set<int> uniqueIds = {};
+    // Итерируем по внешнему списку
+    List<CircleData> objectsToRemove = [];
+    for (List<CircleData> innerList in fullBranch) {
+      // Итерируем по внутреннему списку
+      for (CircleData obj in innerList) {
+        // Если id объекта не уникально, добавляем его в результат
+        if (!uniqueIds.add(obj.id)) {
+          commonPart.add(obj);
+          objectsToRemove.add(obj);
+        }
+      }
+    }
+    for (List<CircleData> innerList in fullBranch) {
+        innerList.removeWhere((obj) => objectsToRemove.contains(obj));
+    }
+    final Map<int, int> mchildNodesIds = {};
+    final List<MyTreeNode> mchildNodes = [];
+    fullBranch.forEach((e) {
+      MyTreeNode? loclRoot;
+      addChildTasksAims=true;
+      for (var melement in e) {
+        final List<MyTreeNode> childNodes = [];
+        if(addChildTasksAims){
+          final chilldAims = aimItems.where((element) => element.parentId==melement.id);
+          for (var e in chilldAims) {
+            final childTasks = taskItems.where((item) => item.parentId==e.id);
+            childNodes.add(MyTreeNode(id: e.id, type: 'a', title: e.text, isChecked: e.isChecked, children: (childTasks.map((t) => MyTreeNode(id: t.id, type: 't', title: t.text, isChecked: t.isChecked))).toList()));
+          }
+        }
+        if(loclRoot != null)childNodes.add(loclRoot);
+        loclRoot = MyTreeNode(id: melement.id, type: melement.id==0?"m":"w", title: melement.text, isChecked: melement.isChecked,children: childNodes)..noClickable=melement.id==wishId?true:false;
+        if(melement.id==wishId) addChildTasksAims=false;
+      }
+      if(loclRoot!=null){
+        mchildNodes.add(loclRoot);
+        mchildNodesIds[mchildNodes.indexOf(mchildNodes.last)]=(e.last.parenId);
+      }
+    });
+    print("fuuuuuuull${fullBranch}");
+    print("seeeeeeeeeeeeeeek${mchildNodes}");
+    print("keeeeeeeeeeeeeeeeeevvvvvvvvvv${mchildNodesIds}");
+    print("cooooooooooommmmmmm${commonPart}");
+    if(commonPart.isEmpty){
+      root = mchildNodes.first;
+    }else {
+      commonPart.forEach((melement) {
+        final List<MyTreeNode> childNodes = [];
+        if (addChildTasksAims) {
+          final chilldAims = aimItems.where((element) =>
+          element.parentId == melement.id);
+          for (var e in chilldAims) {
+            final childTasks = taskItems.where((item) => item.parentId == e.id);
+            childNodes.add(MyTreeNode(id: e.id,
+                type: 'a',
+                title: e.text,
+                isChecked: e.isChecked,
+                children: (childTasks.map((t) => MyTreeNode(id: t.id,
+                    type: 't',
+                    title: t.text,
+                    isChecked: t.isChecked))).toList()));
+          }
+        }
+        if (root != null) childNodes.add(root!);
+        if (mchildNodesIds.values.contains(melement.id)) {
+          mchildNodesIds.forEach((k, v) {
+            if(v==melement.id)childNodes.add(mchildNodes[k]);
+          });
+        }
+        root = MyTreeNode(id: melement.id,
+            type: melement.id == 0 ? "m" : "w",
+            title: melement.text,
+            isChecked: melement.isChecked,
+            children: childNodes)
+          ..noClickable = melement.id == wishId ? true : false;
+        if (melement.id == wishId) addChildTasksAims = false;
+      });
+    }
+
+    /*for (var melement in fullBranch) {
+      final List<MyTreeNode> childNodes = [];
+      if(addChildTasksAims){
+        final chilldAims = aimItems.where((element) => element.parentId==melement.id);
+        for (var e in chilldAims) {
+          final childTasks = taskItems.where((item) => item.parentId==e.id);
+          childNodes.add(MyTreeNode(id: e.id, type: 'a', title: e.text, isChecked: e.isChecked, children: (childTasks.map((t) => MyTreeNode(id: t.id, type: 't', title: t.text, isChecked: t.isChecked))).toList()));
+        }
+      }
+      if(root != null)childNodes.add(root);
+      root = MyTreeNode(id: melement.id, type: melement.id==0?"m":"w", title: melement.text, isChecked: melement.isChecked,children: childNodes)..noClickable=melement.id==wishId?true:false;
+      if(melement.id==wishId) addChildTasksAims=false;
+    }*/
+    if(root!=null) {
+      myNodes= [root!];
+      notifyListeners();
+      return [root!];
     } else {
       myNodes.clear();
       notifyListeners();
@@ -874,15 +1061,26 @@ class AppViewModel with ChangeNotifier {
     return path;
   }
 
-  List<CircleData> getFullBranch(int wishId){
+  List<List<CircleData>> getFullBranch(int wishId){
     if(mainScreenState==null||wishId==-1)return List.empty();
-    int targetId = getDeepChild(wishId);
-    return getParentTree(targetId);
+    List<int> targetIds = getDeepChild(wishId);
+    List<List<CircleData>> result = [];
+    targetIds.forEach((element) {
+      result.add(getParentTree(element));
+    });
+    return result;
   }
 
-  int getDeepChild(id){
-    final childId = mainScreenState!.allCircles.firstWhere((element) => element.parenId==id, orElse: () => CircleData(id: -1, text: "text", color: Colors.transparent, parenId: -1));
-    if(childId.id>0){return getDeepChild(childId.id);}
-    else {return id;}
+  List<int> getDeepChild(id){
+    List<int> result = [];
+    final childId = mainScreenState!.allCircles.where((element) => element.parenId==id).toList();
+    if(childId.isNotEmpty){
+      childId.forEach((element) {
+        result.addAll(getDeepChild(element.id));
+    });
+    }else {
+      result.add(id);
+    }
+    return result;
   }
 }

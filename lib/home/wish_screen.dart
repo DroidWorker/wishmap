@@ -35,31 +35,28 @@ class _WishScreenState extends State<WishScreen>{
 
   WishData curwish = WishData(id: -1, parentId: -1, text: "", description: "", affirmation: "", color: Colors.grey);
 
-  var isChanged = false;
-
   @override
   Widget build(BuildContext context) {
     final appViewModel = Provider.of<AppViewModel>(context);
     TextEditingController _title = TextEditingController(text: curwish.text);
     TextEditingController _description = TextEditingController(text: curwish.description);
     TextEditingController _affirmation = TextEditingController(text: curwish.affirmation);
-    _title.addListener(() { curwish.text=_title.text;isChanged = true;});
-    _description.addListener(() { curwish.description=_description.text; isChanged = true;});
-    _affirmation.addListener(() { curwish.affirmation=_affirmation.text; isChanged = true;});
+    _title.addListener(() { curwish.text=_title.text;if(curwish.text!=appViewModel.wishScreenState!.wish.text)appViewModel.isChanged = true;});
+    _description.addListener(() { curwish.description=_description.text;if(curwish.text!=appViewModel.wishScreenState!.wish.text)appViewModel.isChanged = true;});
+    _affirmation.addListener(() { curwish.affirmation=_affirmation.text;if(curwish.text!=appViewModel.wishScreenState!.wish.text)appViewModel.isChanged = true;});
 
     return  Consumer<AppViewModel>(
         builder: (context, appVM, child){
+          print("ggggggggggggggg${appVM.isChanged}");
           if(appVM.wishScreenState!=null&&curwish.id==-1) {
             curwish = appVM.wishScreenState!.wish;
             _title.text = appVM.wishScreenState!.wish.text;
             _description.text = appVM.wishScreenState!.wish.description;
             _affirmation.text = appVM.wishScreenState!.wish.affirmation;
             _color = appVM.wishScreenState!.wish.color;
-            isChanged = false;
             isDataLoaded = appVM.wishScreenState!.isDataloaded;
-            appViewModel.getAimsForCircles(appVM.wishScreenState!.wish.id);
+            //appViewModel.getAimsForCircles(appVM.wishScreenState!.wish.id);
             appVM.convertToMyTreeNodeFullBranch(curwish.id);
-            print("mmmmsssssssssssssss${curwish.photoIds} $isDataLoaded");
             if(appVM.wishScreenState!.wish.photoIds.isNotEmpty&&!isDataLoaded){
               final ids = appVM.wishScreenState!.wish.photoIds.split("|");
               if(ids.isNotEmpty) {
@@ -74,22 +71,6 @@ class _WishScreenState extends State<WishScreen>{
             }
             appViewModel.wishScreenState!.isDataloaded = true;
           }
-          //final aims = appVM.wishScreenState?.wishAims;
-          //final tasks = appVM.wishScreenState?.wishTasks;
-          /*if(aims!=null&&tasks!=null){
-            root.clear();
-            for (var element in aims) {
-              final childTasks = tasks.where((e) => e.parentId==element.id).toList();
-              root.add(MyTreeNode(id: element.id, type: 'a', title: element.text, isChecked: element.isChecked, children: childTasks.map((item) => MyTreeNode(id: item.id, type: 't', title: item.text, isChecked: item.isChecked)).toList()));
-            }
-          }
-          final parenttree = appVM.getParentTree(curwish.id);
-          List<MyTreeNode> children = root;
-          for (var element in parenttree) {
-            children=[MyTreeNode(id: element.id, type: element.id==0?"m":"w", title: element.text, children: children, isChecked: element.isChecked)];
-          }
-          root.clear();
-          root.addAll(children);*/
           root.clear();
           root.addAll(appVM.myNodes);
 
@@ -103,8 +84,8 @@ class _WishScreenState extends State<WishScreen>{
                           icon: const Icon(Icons.keyboard_arrow_left),
                           iconSize: 30,
                           onPressed: () {
-                            if(isChanged){showDialog(context: context,
-                              builder: (BuildContext context) => AlertDialog(
+                            if(appViewModel.isChanged){showDialog(context: context,
+                              builder: (BuildContext c) => AlertDialog(
                                 contentPadding: EdgeInsets.zero,
                                 shape: const RoundedRectangleBorder(
                                     borderRadius: BorderRadius.all(Radius.circular(32.0))),
@@ -137,7 +118,9 @@ class _WishScreenState extends State<WishScreen>{
                                             borderRadius: BorderRadius.all(Radius.circular(32.0))),
                                         actions: <Widget>[
                                           TextButton(
-                                            onPressed: () { Navigator.pop(context, 'OK');},
+                                            onPressed: () {
+                                              Navigator.pop(context, 'OK');
+                                              },
                                             child: const Text('OK'),
                                           ),
                                         ],
@@ -162,7 +145,7 @@ class _WishScreenState extends State<WishScreen>{
                             }}
                       ),
                       const Expanded(child: SizedBox(),),
-                      if(curwish.id > 800)
+                      if(curwish.id > 899)
                         TextButton(
                             style: TextButton.styleFrom(
                               backgroundColor: curwish.isChecked?AppColors.pinkButtonTextColor:AppColors.greyBackButton,
@@ -238,7 +221,7 @@ class _WishScreenState extends State<WishScreen>{
                                 content: Column(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    (curwish.id > 800)?const Text("Если в данном желании создавались желания, цели и задачи, то они также будут удалены", maxLines: 4, textAlign: TextAlign.center,):
+                                    (curwish.id > 899)?const Text("Если в данном желании создавались желания, цели и задачи, то они также будут удалены", maxLines: 4, textAlign: TextAlign.center,):
                                     const Text("Если в данной сфере\n создавались желания,\n цели и задачи, то они\n также будут удалены", maxLines: 4, textAlign: TextAlign.center,),
                                     const SizedBox(height: 4,),
                                     const Divider(color: AppColors.dividerGreyColor,),
@@ -301,7 +284,7 @@ class _WishScreenState extends State<WishScreen>{
                               ..affirmation=_affirmation.text
                               ..color = _color!;
                             await appViewModel.createNewSphereWish(appVM.wishScreenState!.wish);
-                            isChanged = false;
+                            appViewModel.isChanged = false;
                             showDialog(
                               context: context,
                               builder: (BuildContext context) {
@@ -309,7 +292,10 @@ class _WishScreenState extends State<WishScreen>{
                                   title: const Text('сохранено'),
                                   actions: <Widget>[
                                     TextButton(
-                                      onPressed: () => Navigator.pop(context, 'OK'),
+                                      onPressed: () {
+                                        Navigator.pop(context, 'OK');
+                                setState(() {appVM.convertToMyTreeNodeFullBranch(curwish.id);});
+                                },
                                       child: const Text('OK'),
                                     ),
                                   ],
@@ -353,7 +339,7 @@ class _WishScreenState extends State<WishScreen>{
                               ),
                             ),
                             const SizedBox(height: 10),
-                            if(curwish.id > 800)
+                            if(curwish.id > 899)
                               LayoutBuilder(
                                 builder: (context, constraints) {
                                   double fullWidth = constraints.maxWidth-4;
@@ -407,7 +393,7 @@ class _WishScreenState extends State<WishScreen>{
                                 },
                               ),
                             const SizedBox(height: 5),
-                            if(curwish.id > 800)
+                            if(curwish.id > 899)
                               ElevatedButton(
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: AppColors.fieldFillColor,
@@ -416,6 +402,7 @@ class _WishScreenState extends State<WishScreen>{
                                     ),
                                   ),
                                   onPressed: (){
+                                    appViewModel.isChanged = true;
                                     BlocProvider.of<NavigationBloc>(context)
                                         .add(NavigateToGalleryScreenEvent());
                                   },
@@ -460,7 +447,7 @@ class _WishScreenState extends State<WishScreen>{
                                     showDialog(
                                       context: context,
                                       builder: (context) {
-                                        return ColorPickerWidget(initColor: _color, onColorSelected: (Color c){setState(() {_color=c;curwish.color=c;});});
+                                        return ColorPickerWidget(initColor: _color, onColorSelected: (Color c){setState(() {_color=c;curwish.color=c;appViewModel.isChanged=true;});});
                                       },
                                     );
                                   },
@@ -532,7 +519,7 @@ class _WishScreenState extends State<WishScreen>{
                         );
                       }).toList()??[],*/
                                   const SizedBox(height: 5),
-                                  if(curwish.id > 800)
+                                  if(curwish.id > 899)
                                     ElevatedButton(
                                         style: ElevatedButton.styleFrom(
                                           backgroundColor: AppColors.fieldFillColor,

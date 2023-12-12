@@ -184,6 +184,8 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
         if(plusId>=0){
           if(widget.circles.length>plusId+1&&widget.circles[plusId].id<vm!.mainScreenState!.allCircles.last.id){
             circleid = (widget.circles[plusId+1].id-widget.circles[plusId].id)~/2+widget.circles[plusId].id;
+          }else if(widget.circles.length==plusId+1){
+            circleid = ((((widget.circles[plusId].id+100)~/100)*100)-widget.circles[plusId].id)~/2+widget.circles[plusId].id;
           }else{
             circleid = vm!.mainScreenState!.allCircles.isNotEmpty?((vm!.mainScreenState!.allCircles.last.id) ~/ 100) * 100 + 100:-101;
           }
@@ -240,7 +242,7 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
       FrictionSimulation(
         0.03, // Коэффициент трения
         ctrl.value,
-        velocity / 80, // Скорость инерции
+        velocity / 70, // Скорость инерции
       ),
     );
   }
