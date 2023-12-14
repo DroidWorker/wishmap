@@ -124,14 +124,14 @@ class Repository{
     return {};
   }
 
-  Future<int?> getLastMoonSyncData(int moonId) async{
+  Future<int> getLastMoonSyncData(int moonId) async{
     if(_auth.currentUser!=null){
       DataSnapshot snapshot = (await userRef.child(_auth.currentUser!.uid).child("moonlist").child(moonId.toString()).child("lastSyncDate").once()).snapshot;
       if(snapshot.value!=null){
         return int.parse(snapshot.value.toString());
       }
     }
-    return null;
+    return -1;
   }
 
   Future<Uint8List?> getImage(int id) async{
@@ -156,7 +156,7 @@ class Repository{
   Future updateMoonSync(int moonId, int timestamp)async {
     if (_auth.currentUser != null) {
       (await userRef.child(_auth.currentUser!.uid).child("moonlist").child(moonId.toString()).child("lastSyncDate").set(
-        DateTime.timestamp().microsecondsSinceEpoch
+        timestamp
       ));
     }
   }
@@ -463,7 +463,7 @@ class Repository{
       if (dataSnapshot.children.isNotEmpty) {
         dataSnapshot.children.forEach((element) {
           final Map<dynamic, dynamic> dataList = element.value as Map<dynamic,dynamic>;
-          Map<dynamic, dynamic> childTasksMap = Map<dynamic, dynamic>.from(dataList['childTasks']);
+          Map<dynamic, dynamic> childTasksMap = dataList['childTasks']!=null?Map<dynamic, dynamic>.from(dataList['childTasks']):{};
           List<int> childTasksList = childTasksMap.values.map((value) => int.parse(value.toString())).toList();
           aimsList.add(AimData(
               id: int.parse(dataList['id'].toString()),

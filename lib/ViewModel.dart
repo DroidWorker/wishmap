@@ -57,6 +57,17 @@ class AppViewModel with ChangeNotifier {
   //appcfg
   var isinLoading = false;
 
+  List<CircleData> defaultCircles = [
+    CircleData(id: 0, text: 'Я', subText: "состояние", color: const Color(0xFF000000), parenId: -1),
+    CircleData(id: 100, text: 'Икигай', color: const Color(0xFFFF0000), parenId: 0),
+    CircleData(id: 200, text: 'Любовь', color: const Color(0xFFFF006B), parenId: 0),
+    CircleData(id: 300, text: 'Дети', color: const Color(0xFFD9D9D9), parenId: 0),
+    CircleData(id: 400, text: 'Путешествия', color: const Color(0xFFFFE600), parenId: 0),
+    CircleData(id: 500, text: 'Карьера', color: const Color(0xFF0029FF), parenId: 0),
+    CircleData(id: 600, text: 'Образование', color: const Color(0xFF46C8FF), parenId: 0),
+    CircleData(id: 700, text: 'Семья', color: const Color(0xFF3FA600), parenId: 0),
+    CircleData(id: 800, text: 'Богатство', color: const Color(0xFFB4EB5A), parenId: 0),
+  ];
   //diaryScreen
   List<CardData> diaryItems = [
     CardData(id: 0, emoji: "😃", title: "Благодраность", description: "Чтобы разблокировать путь к желаниям, каждый день начинай с благодарности", text: "no text", color: const Color.fromARGB(255, 233, 255, 250)),
@@ -86,8 +97,9 @@ class AppViewModel with ChangeNotifier {
   }
   
   Future updateMoonSync(int moonId)async{
-    await localRep.updateMoonSync(moonId, DateTime.timestamp().microsecondsSinceEpoch);
-    if(connectivity!='No Internet Connection')await repository.updateMoonSync(moonId, DateTime.timestamp().microsecondsSinceEpoch);
+    final time= DateTime.timestamp().microsecondsSinceEpoch;
+    localRep.updateMoonSync(moonId, time);
+    if(connectivity!='No Internet Connection')repository.updateMoonSync(moonId, time);
   }
 
   Future<void> signIn(String login, String password) async{
@@ -121,17 +133,6 @@ class AppViewModel with ChangeNotifier {
   }
 
   Future<void> getMoons() async{
-    List<CircleData> defaultCircles = [
-      CircleData(id: 0, text: 'Я', subText: "состояние", color: const Color(0xFF000000), parenId: -1),
-      CircleData(id: 100, text: 'Икигай', color: const Color(0xFFFF0000), parenId: 0),
-      CircleData(id: 200, text: 'Любовь', color: const Color(0xFFFF006B), parenId: 0),
-      CircleData(id: 300, text: 'Дети', color: const Color(0xFFD9D9D9), parenId: 0),
-      CircleData(id: 400, text: 'Путешествия', color: const Color(0xFFFFE600), parenId: 0),
-      CircleData(id: 500, text: 'Карьера', color: const Color(0xFF0029FF), parenId: 0),
-      CircleData(id: 600, text: 'Образование', color: const Color(0xFF46C8FF), parenId: 0),
-      CircleData(id: 700, text: 'Семья', color: const Color(0xFF3FA600), parenId: 0),
-      CircleData(id: 800, text: 'Богатство', color: const Color(0xFFB4EB5A), parenId: 0),
-    ];
     try {
       DateTime now = DateTime.now();
 
@@ -148,7 +149,7 @@ class AppViewModel with ChangeNotifier {
           });
         }
       }
-      if(moonItems.isEmpty||isDateAfter(now, moonItems.last.date)) {
+      if(moonItems.isEmpty/*||isDateAfter(now, moonItems.last.date)*/) {
         int moonId = moonItems.isNotEmpty?moonItems.last.id + 1:0;
         moonItems.add(MoonItem(id: moonId,
             filling: 0.01,
@@ -157,6 +158,7 @@ class AppViewModel with ChangeNotifier {
                 .padLeft(2, '0')}.${now.year}"));
         if(result!=ConnectivityResult.none){
           if(moonItems.length==1) {
+            localRep.addAllMoons(moonItems.last, defaultCircles);
             repository.addMoon(moonItems.last, defaultCircles);
           }else{
             List<CircleData> moonCircles = (await repository.getSpheres(moonId-1))??[];
@@ -164,8 +166,10 @@ class AppViewModel with ChangeNotifier {
               for (int i=0; i<moonCircles.length; i++){
                 moonCircles[i].isActive = false;
               }
+              localRep.addAllMoons(moonItems.last, moonCircles);
               repository.addMoon(moonItems.last, moonCircles);
             }else{
+              localRep.addAllMoons(moonItems.last, defaultCircles);
               repository.addMoon(moonItems.last, defaultCircles);
             }
           }
@@ -190,6 +194,79 @@ class AppViewModel with ChangeNotifier {
     }catch(ex){
       addError(ex.toString());
     }
+  }
+  Future createNewMoon(String date) async{
+    var result = await Connectivity().checkConnectivity();
+    int moonId = moonItems.isNotEmpty?moonItems.last.id + 1:0;
+    moonItems.add(MoonItem(id: moonId,
+        filling: 0.01,
+        text: "Я",
+        date: date));
+    if(result!=ConnectivityResult.none){
+      await repository.addMoon(moonItems.last, defaultCircles);
+      await localRep.addAllMoons(moonItems.last, defaultCircles);
+    }else{
+      await localRep.addAllMoons(moonItems.last, defaultCircles);
+    }
+    notifyListeners();
+  }
+  Future duplicateLastMoon() async{
+    DateTime now = DateTime.now();
+    var result = await Connectivity().checkConnectivity();
+    int moonId = moonItems.isNotEmpty?moonItems.last.id + 1:0;
+    moonItems.add(MoonItem(id: moonId,
+        filling: 0.01,
+        text: "Я",
+        date: "${now.day.toString().padLeft(2, '0')}.${now.month.toString().padLeft(2, '0')}.${now.year}"));
+    if(result!=ConnectivityResult.none){
+      if(moonItems.length==1) {
+        await repository.addMoon(moonItems.last, defaultCircles);
+        await localRep.addAllMoons(moonItems.last, defaultCircles);
+      }else{
+        List<CircleData> moonCircles = (await repository.getSpheres(moonId-1))??[];
+        if(moonCircles.isNotEmpty){
+          for (int i=0; i<moonCircles.length; i++){
+            moonCircles[i].isActive = false;
+          }
+          await repository.addMoon(moonItems.last, moonCircles);
+          await localRep.addAllMoons(moonItems.last, moonCircles);
+        }else{
+          await repository.addMoon(moonItems.last, defaultCircles);
+          await localRep.addAllMoons(moonItems.last, defaultCircles);
+        }
+      }
+    }else{
+      if(moonItems.length==1) {
+        await localRep.addAllMoons(moonItems.last, defaultCircles);
+      }else{
+        List<CircleData> moonCircles = await localRep.getAllMoonSpheres(moonId-1);
+        if(moonCircles.isNotEmpty){
+          for (int i=0; i<moonCircles.length; i++){
+            moonCircles[i].isActive = false;
+          }
+          await localRep.addAllMoons(moonItems.last, moonCircles);
+        }else{
+          addError("Ошибка! нет соединения!");
+          //await localRep.addAllMoons(moonItems.last, defaultCircles);
+        }
+      }
+    }
+    final aims = await repository.getMyAimsData(moonId-1);
+    aims?.forEach((element) async {
+      await localRep.addAim(element,moonId);
+    });
+    final tasks = await repository.getMyTasksData(moonId-1);
+    tasks?.forEach((element) async {
+      await localRep.addTask(element,moonId);
+    });
+    final diary = await repository.getDiaryList(moonId-1);
+    diary?.forEach((element) async {
+      await localRep.addDiary(element,moonId);
+    });
+    if(aims!=null)repository.addAllAims(aims, moonId);
+    if(tasks!=null)repository.addAllTasks(tasks, moonId);
+    if(diary!=null)repository.addDiary(diary, moonId);
+    notifyListeners();
   }
 
   Future getImages(List<int> ids) async {
@@ -222,7 +299,7 @@ class AppViewModel with ChangeNotifier {
   Future fetchSpheres(int moonId) async{
     final spheres = await repository.getWishes(moonId);
     spheres?.forEach((element) {
-      localRep.addSphere(element, moonId);
+      localRep.addSphere(element,moonId);
     });
     isDataFetched--;
     updateMoonSync(moonId);
@@ -277,8 +354,9 @@ class AppViewModel with ChangeNotifier {
     if(connectivity!='No Internet Connection'){
       final dDB = await repository.getLastMoonSyncData(moonId);
       final dLoc = await localRep.getMoonLastSyncDate(moonId);
-      print("wwwwwwwwwwwwwwwwwwwwwww$dDB   $dLoc");
+      debugPrint("datas update $dDB  $dLoc");
       if(dDB!=null&&dDB>dLoc) {
+        debugPrint("fetchDatas");
         await localRep.clearDatabase(moonId);
         await fetchSpheres(moonId);
          fetchAims(moonId);
@@ -286,6 +364,7 @@ class AppViewModel with ChangeNotifier {
          fetchDiary(moonId);
       }
       else if(dDB!=null&&dDB<dLoc){
+        debugPrint("pushDatas");
         await pushSpheres(moonId);
         await pushAims(moonId);
         await pushTasks(moonId);
@@ -374,7 +453,8 @@ class AppViewModel with ChangeNotifier {
 
   Future<void> startWishScreen(int wishId, int parentId) async{
     try {
-      print("ggggggggggggggggggg11${isChanged}");
+      var result = await Connectivity().checkConnectivity();
+      if(result == ConnectivityResult.none)  connectivity = 'No Internet Connection';
       isChanged = false;
       cachedImages.clear();
       myNodes.clear();
@@ -673,6 +753,8 @@ class AppViewModel with ChangeNotifier {
   }
   Future getAim(int id) async{
     try{
+      var result = await Connectivity().checkConnectivity();
+      if(result == ConnectivityResult.none)  connectivity = 'No Internet Connection';
       if(mainScreenState!=null) {
         /*currentAim = isDataFetched!=0?await repository.getMyAim(id, mainScreenState!.moon.id):*/
         currentAim = await localRep.getAim(id,mainScreenState?.moon.id??0);
@@ -746,6 +828,8 @@ class AppViewModel with ChangeNotifier {
   }
   Future getTask(int id) async{
     try{
+      var result = await Connectivity().checkConnectivity();
+      if(result == ConnectivityResult.none)  connectivity = 'No Internet Connection';
       if(mainScreenState!=null) {
         /*currentTask = isDataFetched!=0?await repository.getMyTask(id, mainScreenState!.moon.id):*/
         currentTask = await localRep.getTask(id,mainScreenState?.moon.id??0);

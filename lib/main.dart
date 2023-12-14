@@ -10,6 +10,7 @@ import 'package:wishmap/home/diaryedit_screen.dart';
 import 'package:wishmap/home/gaery_screen.dart';
 import 'package:wishmap/home/mainsphereedit_screen.dart';
 import 'package:wishmap/home/mytasks_screen.dart';
+import 'package:wishmap/home/qrCheck_screen.dart';
 import 'package:wishmap/home/taskcreate_screen.dart';
 import 'package:wishmap/home/wish_screen.dart';
 import 'ViewModel.dart';
@@ -117,6 +118,8 @@ class MyApp extends StatelessWidget {
       return DiaryEditScreen(diaryId: state.id);
     } else if (state is NavigationGalleryScreenState) {
       return const GalleryScreen();
+    } else if (state is NavigationQRScreenState) {
+      return QRCheckScreen();
     } else {
       return Container(); // По умолчанию или для других состояний.
     }

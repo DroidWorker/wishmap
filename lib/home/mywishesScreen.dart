@@ -35,7 +35,7 @@ class _WishesScreenState extends State<WishesScreen>{
           isPBActive=appVM.isinLoading;
           if(filteredWishList.isNotEmpty){
             roots = convertListToMyTreeNodes(filteredWishList);
-          }
+          }else{roots.clear();}
           return Scaffold(
             backgroundColor: AppColors.backgroundColor,
             body: SafeArea(child: Padding(

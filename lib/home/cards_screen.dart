@@ -1,8 +1,10 @@
+import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:wishmap/common/connectivity.dart';
 import 'package:wishmap/data/models.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:wishmap/dialog/actualizeMoonDialog.dart';
 import 'package:wishmap/navigation/navigation_block.dart';
 import 'package:wishmap/res/colors.dart';
 
@@ -20,6 +22,7 @@ class CardsScreenState extends State<CardsScreen>{
   bool isInSync = false;
   @override
   Widget build(BuildContext context) {
+    final now  = DateTime.now();
     final appViewModel = Provider.of<AppViewModel>(context);
     if(appViewModel.moonItems.isEmpty) {
       appViewModel.getMoons();
@@ -38,7 +41,11 @@ class CardsScreenState extends State<CardsScreen>{
       ],
       body: Consumer<AppViewModel>(
         builder: (context, appVM, child){
-          List<MoonItem> items = appVM.moonItems;
+          List<MoonItem> items = List<MoonItem>.from(appVM.moonItems);
+          items = items.reversed.toList();
+          if(items.isNotEmpty&&items.first.date!="${now.day.toString().padLeft(2, '0')}.${now.month.toString().padLeft(2, '0')}.${now.year}"){
+            items.insert(0, MoonItem(id: -1, filling: 0, text: "", date: "${now.day.toString().padLeft(2, '0')}.${now.month.toString().padLeft(2, '0')}.${now.year}"));
+          }
           return SafeArea(child:ListView.builder(
             itemCount: items.length,
             itemBuilder: (context, index) {
@@ -48,18 +55,39 @@ class CardsScreenState extends State<CardsScreen>{
                   child: InkWell(
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        MoonWidget(
+                        if(items[index].id!=-1)MoonWidget(
                           date: date,
                           size: 90,
                           resolution: 900,
-                        ),
+                        )else IconButton(onPressed: (){
+                          showDialog(context: context, builder: (contest){
+                            return ActualizeMoonDialog(onActualizeClick: (){
+                              Navigator.pop(contest);
+                              BlocProvider.of<NavigationBloc>(context)
+                                  .add(NavigateToQRScreenEvent());
+                            }, onCloseDialogClick: (){Navigator.pop(contest);}, onCreateNew: () async {
+                              await appViewModel.createNewMoon("${now.day.toString().padLeft(2, '0')}.${now.month.toString().padLeft(2, '0')}.${now.year}");
+                              final moonId = appVM.moonItems.last;
+                              setState(() {
+                                isInSync = true;
+                              });
+                              appViewModel.startMainScreen(moonId);
+                              Navigator.pop(contest);
+                              BlocProvider.of<NavigationBloc>(context)
+                                  .add(NavigateToMainScreenEvent());
+                            });
+                          });
+                        }, iconSize:70, icon: const Icon(Icons.add, color: AppColors.moonColor,size: 70,)),
                         Text(items[index].date)
                       ],
                     ),
                     onTap: () async {
-                      if(appViewModel.moonItems.isNotEmpty) {
-                        final moonId = appVM.moonItems[index];
+                      var result = await Connectivity().checkConnectivity();
+                      if(result==ConnectivityResult.none)appViewModel.connectivity='No Internet Connection';
+                      if(items[index].id!=-1&&appViewModel.moonItems.isNotEmpty) {
+                        final moonId = appVM.moonItems.where((e) => e.id==items[index].id).first;
                         setState(() {
                           isInSync = true;
                         });

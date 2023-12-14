@@ -93,9 +93,9 @@ class LocalRepository{
     dbHelper.clearMoons();
   }
   Future addAllMoons(MoonItem mi, List<CircleData> childCircles) async{
-      dbHelper.insertMoon(mi);
-      childCircles.forEach((element) {
-        dbHelper.insertSphere(WishData(id: element.id, parentId: element.parenId, text: element.text, description: element.subText, affirmation: element.affirmation, color: element.color), mi.id);
+      await dbHelper.insertMoon(mi);
+      childCircles.forEach((element) async {
+        await dbHelper.insertSphere(WishData(id: element.id, parentId: element.parenId, text: element.text, description: element.subText, affirmation: element.affirmation, color: element.color), mi.id);
       });
   }
   Future<List<MoonItem>> getMoons() async{

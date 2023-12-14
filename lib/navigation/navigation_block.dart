@@ -55,6 +55,8 @@ class NavigateToDiaryEditScreenEvent extends NavigationEvent {
 
 class NavigateToGalleryScreenEvent extends NavigationEvent {}
 
+class NavigateToQRScreenEvent extends NavigationEvent {}
+
 
 abstract class NavigationState {}
 
@@ -106,6 +108,8 @@ class NavigationDiaryEditScreenState extends NavigationState {
 }
 
 class NavigationGalleryScreenState extends NavigationState {}
+
+class NavigationQRScreenState extends NavigationState {}
 
 
 class NavigationBloc extends Bloc<NavigationEvent, NavigationState> {
@@ -191,7 +195,10 @@ class NavigationBloc extends Bloc<NavigationEvent, NavigationState> {
     } else if (event is NavigateToDiaryEditScreenEvent) {
       _navigationHistory.add(NavigationDiaryEditScreenState(event.id));
     } else if (event is NavigateToGalleryScreenEvent) {
-      _navigationHistory.add(NavigationGalleryScreenState()); }
+      _navigationHistory.add(NavigationGalleryScreenState());
+    } else if (event is NavigateToQRScreenEvent) {
+      _navigationHistory.add(NavigationQRScreenState());
+    }
     else if(event is NavigateBackEvent) {
       yield _navigationHistory.last;
     }

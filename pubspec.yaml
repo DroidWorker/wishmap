@@ -55,6 +55,7 @@ dependencies:
   capped_progress_indicator: ^0.0.2
   sqflite: ^2.3.0
   connectivity: ^3.0.6
+  mobile_scanner: ^3.5.5
 
 
 dev_dependencies:
