@@ -25,6 +25,7 @@ class TaskEditScreenState extends State<TaskEditScreen>{
   final text = TextEditingController();
   final description = TextEditingController();
   var isChanged = false;
+  var isParentChecked = false;
 
   @override
   Widget build(BuildContext context) {
@@ -35,6 +36,7 @@ class TaskEditScreenState extends State<TaskEditScreen>{
           ai = appVM.currentTask??TaskData(id: -1, parentId: -1, text: 'объект не найден', description: "", isChecked: false);
           if(appVM.currentAim!=null) {
             AimData ad = appVM.currentAim!;
+            isParentChecked = ad.isChecked;
             var childNodes = MyTreeNode(id: ad.id, type: 'a', title: ad.text, isChecked: ad.isChecked, children: []);
             print('dddddddddddddddddddd${childNodes} ${ai!.id} ${ad.parentId}');
             if(roots.isEmpty&&ai!=null)appVM.convertToMyTreeNodeIncludedAimsTasks(childNodes, ai!.id, ad.parentId);
@@ -63,7 +65,7 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                               icon: const Icon(Icons.keyboard_arrow_left),
                               iconSize: 30,
                               onPressed: () {
-                                if(text.text.isNotEmpty&&description.text.isNotEmpty&&isChanged){
+                                if(ai!=null&&!ai!.isChecked&&text.text.isNotEmpty&&description.text.isNotEmpty&&isChanged){
                                   showDialog(context: context,
                                     builder: (BuildContext context) => AlertDialog(
                                       contentPadding: EdgeInsets.zero,
@@ -113,20 +115,31 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                                   ),
                                 ),
                                 onPressed: () async {
-                                  appVM.updateTaskStatus(ai!.id, !ai!.isChecked);
-                                  showDialog(context: context,
-                                    builder: (BuildContext context) => AlertDialog(
-                                      title: ai!.isChecked? const Text('выполнена'):const Text(' не выполнена'),
-                                      shape: const RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.all(Radius.circular(32.0))),
-                                      actions: <Widget>[
-                                        TextButton(
-                                          onPressed: () { Navigator.pop(context, 'OK');},
-                                          child: const Text('OK'),
-                                        ),
-                                      ],
-                                    ),
-                                  );
+                                  if(isParentChecked) {
+                                    showCantChangeStatus();
+                                  } else {
+                                    appVM.updateTaskStatus(
+                                        ai!.id, !ai!.isChecked);
+                                    showDialog(context: context,
+                                      builder: (BuildContext context) =>
+                                          AlertDialog(
+                                            title: ai!.isChecked ? const Text(
+                                                'выполнена') : const Text(
+                                                ' не выполнена'),
+                                            shape: const RoundedRectangleBorder(
+                                                borderRadius: BorderRadius.all(
+                                                    Radius.circular(32.0))),
+                                            actions: <Widget>[
+                                              TextButton(
+                                                onPressed: () {
+                                                  Navigator.pop(context, 'OK');
+                                                },
+                                                child: const Text('OK'),
+                                              ),
+                                            ],
+                                          ),
+                                    );
+                                  }
                                 },
                                 child: const Text("Выполнена",style: TextStyle(color: Colors.black, fontSize: 12))
                             ),
@@ -168,7 +181,7 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                                   ),
                                 ),
                                 onPressed: () async {
-                                  onSaveClicked(appVM, ai!);
+                                  (!ai!.isChecked)?onSaveClicked(appVM, ai!):showUnavailable();
                                 },
                                 child: const Text("Cохранить задачу",
                                   style: TextStyle(color: AppColors.blueTextColor, fontSize: 12),)
@@ -184,11 +197,14 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                       ],
                     ),
                     TextField(
+                      onTap: (){if(ai!.isChecked)showUnavailable();},
                       controller: text,
+                      showCursor: true,
+                      readOnly: ai!=null?(ai!.isChecked?true:false):false,
                       style: const TextStyle(color: Colors.black), // Черный текст ввода
                       decoration: InputDecoration(
                           filled: true,
-                          fillColor: AppColors.fieldFillColor,
+                          fillColor: ai!=null?(ai!.isChecked?AppColors.fieldLockColor:AppColors.fieldFillColor):AppColors.fieldFillColor,
                           hintText: 'Название',
                           hintStyle: TextStyle(color: Colors.black.withOpacity(0.3)),
                           border: InputBorder.none
@@ -196,11 +212,14 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                     ),
                     const SizedBox(height: 15,),
                     TextField(
+                      onTap: (){if(ai!.isChecked)showUnavailable();},
                       controller: description,
+                      showCursor: true,
+                      readOnly: ai!=null?(ai!.isChecked?true:false):false,
                       style: const TextStyle(color: Colors.black), // Черный текст ввода
                       decoration: InputDecoration(
                           filled: true,
-                          fillColor: AppColors.fieldFillColor,
+                          fillColor: ai!=null?(ai!.isChecked?AppColors.fieldLockColor:AppColors.fieldFillColor):AppColors.fieldFillColor,
                           hintText: 'Описание',
                           hintStyle: TextStyle(color: Colors.black.withOpacity(0.3)),
                           border: InputBorder.none
@@ -280,6 +299,55 @@ class TaskEditScreenState extends State<TaskEditScreen>{
           TextButton(
             onPressed: () => Navigator.pop(context, 'OK'),
             child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void showUnavailable(){
+    showDialog(context: context,
+      builder: (BuildContext context) => AlertDialog(
+        contentPadding: EdgeInsets.zero,
+        shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(32.0))),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text("Чтобы редактировать задачу необходимо сменить статус \nна 'не выполнена'", maxLines: 5, textAlign: TextAlign.center,),
+            SizedBox(height: 4,),
+            Divider(color: AppColors.dividerGreyColor,),
+          ],
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () async { Navigator.pop(context, 'OK'); },
+            child: const Text('Ok'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void showCantChangeStatus(){
+    showDialog(context: context,
+      builder: (BuildContext context) => AlertDialog(
+        contentPadding: EdgeInsets.zero,
+        shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(32.0))),
+        title: const Text("Внимание", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text("Статус задачи не может быть изменен на 'не выполнена' пока вышестоящая цель не будет переведена в статус 'не достигнута'", maxLines: 5, textAlign: TextAlign.center,),
+            SizedBox(height: 4,),
+            Divider(color: AppColors.dividerGreyColor,),
+          ],
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () async { Navigator.pop(context, 'OK'); },
+            child: const Text('Ok'),
           ),
         ],
       ),

@@ -23,6 +23,7 @@ class AimEditScreenState extends State<AimEditScreen>{
   final description = TextEditingController();
   AimData? ai;
   var isChanged = false;
+  var isParentChecked = false;
 
   @override
   Widget build(BuildContext context) {
@@ -33,6 +34,7 @@ class AimEditScreenState extends State<AimEditScreen>{
           ai ??= appVM.currentAim??AimData(id: -1, parentId: -1, text: 'объект не найден', description: "", isChecked: false);
           if(roots.isEmpty&&ai!=null)appVM.convertToMyTreeNode(CircleData(id: ai!.id, text: ai!.text, color: Colors.transparent, parenId: ai!.parentId, isChecked: ai!.isChecked));
           roots = appVM.myNodes;
+          isParentChecked = appVM.mainScreenState!.allCircles.where((element) => element.id ==ai!.parentId).first.isChecked;
           text.text = ai?.text??"Загрузка...";
           description.text = ai?.description??"";
           return Scaffold(
@@ -55,7 +57,7 @@ class AimEditScreenState extends State<AimEditScreen>{
                               icon: const Icon(Icons.keyboard_arrow_left),
                               iconSize: 30,
                               onPressed: () {
-                                if(text.text.isNotEmpty&&description.text.isNotEmpty&&isChanged){
+                                if(ai!=null&&!ai!.isChecked&&text.text.isNotEmpty&&description.text.isNotEmpty&&isChanged){
                                 showDialog(context: context,
                                   builder: (BuildContext context) => AlertDialog(
                                     contentPadding: EdgeInsets.zero,
@@ -107,52 +109,99 @@ class AimEditScreenState extends State<AimEditScreen>{
                                 ),
                                 onPressed: () async {
                                   if(ai!=null){
-                                    showDialog(context: context,
-                                      builder: (BuildContext context) => AlertDialog(
-                                        contentPadding: EdgeInsets.zero,
-                                        shape: const RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.all(Radius.circular(32.0))),
-                                        title: const Text('Внимание', textAlign: TextAlign.center,),
-                                        content: Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            (!ai!.isChecked)?const Text("Если в данной цели создавались задачи, то они также получат статус 'выполнена'", maxLines: 6, textAlign: TextAlign.center,):
-                                            const Text("Если в данной цели создавались другие задачи, то они останутся в статусе 'выполнена'", maxLines: 6, textAlign: TextAlign.center,),
-                                            const SizedBox(height: 4,),
-                                            const Divider(color: AppColors.dividerGreyColor,),
-                                            const SizedBox(height: 4,),
-                                            (ai!.isChecked)?const Text("Не Достигнута?", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),):
-                                            const Text("Достигнута?", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),)
-                                          ],
-                                        ),
-                                        actions: <Widget>[
-                                          TextButton(
-                                            onPressed: () { Navigator.pop(context, 'OK');
-                                            ai!.isChecked=!ai!.isChecked;
-                                            appVM.updateAimStatus(ai!.id, ai!.isChecked);
-                                            showDialog(context: context,
-                                              builder: (BuildContext context) => AlertDialog(
-                                                title: ai!.isChecked?const Text('Достигнута'):const Text('не Достигнута'),
-                                                shape: const RoundedRectangleBorder(
-                                                    borderRadius: BorderRadius.all(Radius.circular(32.0))),
-                                                actions: <Widget>[
-                                                  TextButton(
-                                                    onPressed: () { Navigator.pop(context, 'OK');},
-                                                    child: const Text('OK'),
-                                                  ),
+                                    if(isParentChecked) {
+                                      showCantChangeStatus();
+                                    } else {
+                                      showDialog(context: context,
+                                        builder: (BuildContext context) =>
+                                            AlertDialog(
+                                              contentPadding: EdgeInsets.zero,
+                                              shape: const RoundedRectangleBorder(
+                                                  borderRadius: BorderRadius
+                                                      .all(
+                                                      Radius.circular(32.0))),
+                                              title: const Text('Внимание',
+                                                textAlign: TextAlign.center,),
+                                              content: Column(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  (!ai!.isChecked) ? const Text(
+                                                    "Если в данной цели создавались задачи, то они также получат статус 'выполнена'",
+                                                    maxLines: 6,
+                                                    textAlign: TextAlign
+                                                        .center,) :
+                                                  const Text(
+                                                    "Если в данной цели создавались другие задачи, то они останутся в статусе 'выполнена'",
+                                                    maxLines: 6,
+                                                    textAlign: TextAlign
+                                                        .center,),
+                                                  const SizedBox(height: 4,),
+                                                  const Divider(color: AppColors
+                                                      .dividerGreyColor,),
+                                                  const SizedBox(height: 4,),
+                                                  (ai!.isChecked) ? const Text(
+                                                    "Не Достигнута?",
+                                                    style: TextStyle(
+                                                        fontWeight: FontWeight
+                                                            .bold,
+                                                        fontSize: 18),) :
+                                                  const Text("Достигнута?",
+                                                    style: TextStyle(
+                                                        fontWeight: FontWeight
+                                                            .bold,
+                                                        fontSize: 18),)
                                                 ],
                                               ),
-                                            );
-                                            },
-                                            child: const Text('Да'),
-                                          ),
-                                          TextButton(
-                                            onPressed: () { Navigator.pop(context, 'Cancel');},
-                                            child: const Text('Нет'),
-                                          ),
-                                        ],
-                                      ),
-                                    );
+                                              actions: <Widget>[
+                                                TextButton(
+                                                  onPressed: () {
+                                                    Navigator.pop(
+                                                        context, 'OK');
+                                                    ai!.isChecked = !ai!
+                                                        .isChecked;
+                                                    appVM.updateAimStatus(
+                                                        ai!.id, ai!.isChecked);
+                                                    showDialog(context: context,
+                                                      builder: (
+                                                          BuildContext context) =>
+                                                          AlertDialog(
+                                                            title: ai!.isChecked
+                                                                ? const Text(
+                                                                'Достигнута')
+                                                                : const Text(
+                                                                'не Достигнута'),
+                                                            shape: const RoundedRectangleBorder(
+                                                                borderRadius: BorderRadius
+                                                                    .all(Radius
+                                                                    .circular(
+                                                                    32.0))),
+                                                            actions: <Widget>[
+                                                              TextButton(
+                                                                onPressed: () {
+                                                                  Navigator.pop(
+                                                                      context,
+                                                                      'OK');
+                                                                },
+                                                                child: const Text(
+                                                                    'OK'),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                    );
+                                                  },
+                                                  child: const Text('Да'),
+                                                ),
+                                                TextButton(
+                                                  onPressed: () {
+                                                    Navigator.pop(
+                                                        context, 'Cancel');
+                                                  },
+                                                  child: const Text('Нет'),
+                                                ),
+                                              ],
+                                            ),
+                                      );
+                                    }
                                   }
                                 },
                                 child: const Text("Достигнута",style: TextStyle(color: Colors.black, fontSize: 12),)
@@ -240,7 +289,10 @@ class AimEditScreenState extends State<AimEditScreen>{
                     ),
                     const SizedBox(height: 15,),
                     TextField(
+                      onTap: (){if(ai!.isChecked)showUnavailable();},
                       controller: text,
+                      showCursor: true,
+                      readOnly: ai!=null?(ai!.isChecked?true:false):false,
                       style: const TextStyle(color: Colors.black), // Черный текст ввода
                       decoration: InputDecoration(
                           filled: true,
@@ -252,7 +304,10 @@ class AimEditScreenState extends State<AimEditScreen>{
                     ),
                     const SizedBox(height: 15,),
                     TextField(
+                      onTap: (){if(ai!.isChecked)showUnavailable();},
                       controller: description,
+                      showCursor: true,
+                      readOnly: ai!=null?(ai!.isChecked?true:false):false,
                       style: const TextStyle(color: Colors.black), // Черный текст ввода
                       decoration: InputDecoration(
                           filled: true,
@@ -369,5 +424,52 @@ class AimEditScreenState extends State<AimEditScreen>{
         ),
       );
     }
+  }
+  void showUnavailable(){
+    showDialog(context: context,
+      builder: (BuildContext context) => AlertDialog(
+        contentPadding: EdgeInsets.zero,
+        shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(32.0))),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text("Чтобы редактировать цель необходимо сменить статус \nна 'не выполнена'", maxLines: 5, textAlign: TextAlign.center,),
+            SizedBox(height: 4,),
+            Divider(color: AppColors.dividerGreyColor,),
+          ],
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () async { Navigator.pop(context, 'OK'); },
+            child: const Text('Ok'),
+          ),
+        ],
+      ),
+    );
+  }
+  void showCantChangeStatus(){
+    showDialog(context: context,
+      builder: (BuildContext context) => AlertDialog(
+        contentPadding: EdgeInsets.zero,
+        shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(32.0))),
+        title: const Text("Внимание", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text("Статус цели не может быть изменен на 'не достигнута' пока вышестоящее желание не будет переведено в статус 'не исполнено'", maxLines: 5, textAlign: TextAlign.center,),
+            SizedBox(height: 4,),
+            Divider(color: AppColors.dividerGreyColor,),
+          ],
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () async { Navigator.pop(context, 'OK'); },
+            child: const Text('Ok'),
+          ),
+        ],
+      ),
+    );
   }
 }

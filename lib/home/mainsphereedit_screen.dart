@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:keyboard_attachable/keyboard_attachable.dart';
 import 'package:provider/provider.dart';
+import 'package:wishmap/common/affirmationOverlay.dart';
 
 import '../ViewModel.dart';
 import '../common/collage.dart';
@@ -44,11 +45,9 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
       }
     }
     TextEditingController text = TextEditingController(text: curWd.text);
-    TextEditingController description = TextEditingController(text: curWd.subText);
     TextEditingController affirmation = TextEditingController(text: curWd.affirmation);
     circleColor = curWd.color;
     text.addListener(() { curWd.text=text.text;appViewModel.isChanged = true;});
-    description.addListener(() { curWd.subText=description.text;appViewModel.isChanged = true;});
     affirmation.addListener(() { curWd.affirmation=affirmation.text;appViewModel.isChanged = true;});
     return Consumer<AppViewModel>(
         builder: (context, appVM, child){
@@ -127,7 +126,7 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
                     },
                   ),
                   const Spacer(),
-                  TextButton(
+                  curWd.isActive?TextButton(
                       style: TextButton.styleFrom(
                         backgroundColor: AppColors.greyBackButton,
                         shape: const RoundedRectangleBorder(
@@ -154,6 +153,21 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
                       },
                       child: const Text("Cохранить",
                         style: TextStyle(color: AppColors.blueTextColor),)
+                  ):
+                  TextButton(
+                      style: TextButton.styleFrom(
+                        backgroundColor: AppColors.greyBackButton,
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(10)),
+                        ),
+                      ),
+                      onPressed: () async {
+                        setState(() {
+                          appViewModel.activateSphereWish(curWd.id, true);
+                        });
+                      },
+                      child: const Text("Осознать",
+                        style: TextStyle(color: AppColors.redTextColor),)
                   ),
                 ],),
                 const SizedBox(height: 5),
@@ -163,28 +177,33 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
                 TextField(
                   controller: text,
                   style: const TextStyle(color: Colors.black), // Черный текст ввода
+                  onTap: (){if(!curWd.isActive)showUneditable();},
+                  showCursor: true,
+                  readOnly: curWd.isActive?false:true,
                   decoration: InputDecoration(
                     border: InputBorder.none,
                     filled: true, // Заливка фона
-                    fillColor: AppColors.fieldFillColor, // Серый фон с полупрозрачностью
+                    fillColor: curWd.isActive?AppColors.fieldFillColor:AppColors.fieldInactive, // Серый фон с полупрозрачностью
                     hintText: 'Запиши желание', // Базовый текст
+                    helperText: "Твое имя или то, с чем ты себя ассоциируешь",
                     hintStyle: TextStyle(color: Colors.black.withOpacity(0.3)), // Полупрозрачный черный базовый текст
                   ),
                 ),
-                const SizedBox(height: 10),
-                TextField(
-                  controller: description,
-                  minLines: 4,
-                  maxLines: 15,
-                  style: const TextStyle(color: Colors.black), // Черный текст ввода
-                  decoration: InputDecoration(
-                    border: InputBorder.none,
-                    filled: true, // Заливка фона
-                    fillColor: AppColors.fieldFillColor, // Серый фон с полупрозрачностью
-                    hintText: 'Опиши подробно свое желание', // Базовый текст
-                    hintStyle: TextStyle(color: Colors.black.withOpacity(0.3)), // Полупрозрачный черный базовый текст
+                  const SizedBox(height: 10),
+                  TextField(
+                    controller: affirmation,
+                    readOnly: true,
+                    onTap: (){showOverlayedAffirmations(context, ["Я счастлив и спокоен", "Я радостный и свободный", "Я смотрю на мир с любовью", "Я полон любви и благодати"]);},
+                    style: const TextStyle(color: Colors.black), // Черный текст ввода
+                    decoration: InputDecoration(
+                      border: InputBorder.none,
+                      filled: true, // Заливка фона
+                      fillColor: AppColors.fieldFillColor, // Серый фон с полупрозрачностью
+                      hintText: 'Напиши аффирмацию', // Базовый текст
+                      helperText: "Выберите аффирмацию или напишите свою",
+                      hintStyle: TextStyle(color: Colors.black.withOpacity(0.3)), // Полупрозрачный черный базовый текст
+                    ),
                   ),
-                ),
                 const SizedBox(height: 10),
                 LayoutBuilder(
                   builder: (context, constraints) {
@@ -205,7 +224,7 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
                                     backgroundColor: Colors.black26,
                                     color: Colors.black,
                                     cornerRadius: 0,
-                                  ),): appViewModel.cachedImages.isNotEmpty?Image.memory(appViewModel.cachedImages.first, fit: BoxFit.cover):Container(),
+                                  ),): appViewModel.cachedImages.isNotEmpty?Image.memory(appViewModel.cachedImages.first, fit: BoxFit.cover, color: curWd.isActive?null:Colors.redAccent,):Container(),
                               ),
                               const SizedBox(width: 2),
                               Column(children: [
@@ -215,7 +234,7 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
                                       backgroundColor: Colors.black26,
                                       color: Colors.black,
                                       cornerRadius: 0,
-                                    ),): appViewModel.cachedImages.length>1?Image.memory(appViewModel.cachedImages[1], fit: BoxFit.cover):Container(),
+                                    ),): appViewModel.cachedImages.length>1?Image.memory(appViewModel.cachedImages[1], fit: BoxFit.cover, color: curWd.isActive?null:Colors.redAccent):Container(),
                                 ),
                                 const SizedBox(height: 2),
                                 Container(width: rightWidth, height: leftWidth/2-1, color: AppColors.fieldFillColor,
@@ -224,16 +243,16 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
                                       backgroundColor: Colors.black26,
                                       color: Colors.black,
                                       cornerRadius: 0,
-                                    ),): appViewModel.cachedImages.length>2?Image.memory(appViewModel.cachedImages[2], fit: BoxFit.cover):Container(),
+                                    ),): appViewModel.cachedImages.length>2?Image.memory(appViewModel.cachedImages[2], fit: BoxFit.cover, color: curWd.isActive?null:Colors.redAccent):Container(),
                                 ),
                               ],)
                             ],
                           ),
                           ...imagesSet.map((e) {
-                            if(e.length==1) return buildSingle(fullWidth, e.first, appVM.isinLoading);
-                            else if(e.length==2) return buildTwin(leftWidth, rightWidth, e, appVM.isinLoading);
-                            else if(imagesSet.indexOf(e)%2!=0) return buildTriple(leftWidth, rightWidth, e, appVM.isinLoading);
-                            else return buildTripleReverce(leftWidth, rightWidth, e, appVM.isinLoading);
+                            if(e.length==1) return buildSingle(fullWidth, e.first, appVM.isinLoading,!curWd.isActive);
+                            else if(e.length==2) return buildTwin(leftWidth, rightWidth, e, appVM.isinLoading,!curWd.isActive);
+                            else if(imagesSet.indexOf(e)%2!=0) return buildTriple(leftWidth, rightWidth, e, appVM.isinLoading,!curWd.isActive);
+                            else return buildTripleReverce(leftWidth, rightWidth, e, appVM.isinLoading,!curWd.isActive);
                           }).toList()
                         ]);
                   },
@@ -247,29 +266,15 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
                       ),
                     ),
                     onPressed: (){
-                      appViewModel.isChanged = true;
-                      BlocProvider.of<NavigationBloc>(context)
-                          .add(NavigateToGalleryScreenEvent());
+                      if(curWd.isActive) {
+                        appViewModel.isChanged = true;
+                        BlocProvider.of<NavigationBloc>(context)
+                            .add(NavigateToGalleryScreenEvent());
+                      }else{
+                        showUneditable();
+                      }
                     },
                     child: const Text("Добавить", style: TextStyle(color: AppColors.greytextColor),)
-                ),
-                const SizedBox(height: 10),
-                TextField(
-                  controller: affirmation,
-                  style: const TextStyle(color: Colors.black), // Черный текст ввода
-                  decoration: InputDecoration(
-                    border: InputBorder.none,
-                    filled: true, // Заливка фона
-                    fillColor: AppColors.fieldFillColor, // Серый фон с полупрозрачностью
-                    hintText: 'Напиши аффирмацию', // Базовый текст
-                    hintStyle: TextStyle(color: Colors.black.withOpacity(0.3)), // Полупрозрачный черный базовый текст
-                  ),
-                ),
-                const SizedBox(height: 10),
-                const Align(
-                  alignment: Alignment.centerLeft,
-                  child:
-                  Text("Выберите аффирмацию или напишите свою", style: TextStyle(fontSize: 10, color: Colors.black54),),
                 ),
                 const SizedBox(height: 10),
                 Align(
@@ -289,12 +294,14 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
                       )
                     ],),
                       onTap: () {
-                        showDialog(
+                        if(curWd.isActive){showDialog(
                           context: context,
                           builder: (context) {
                             return ColorPickerWidget(initColor: circleColor ,onColorSelected: (Color c){setState(() {curWd.color=c; circleColor = c;appViewModel.isChanged=true;});});
                           },
-                        );
+                        );}else{
+                          showUneditable();
+                        }
                       },
                     )),
                 Align(
@@ -302,49 +309,6 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
                   child: Column(children: [
                     const Text("Цели и задачи", style: TextStyle(color: Colors.black54/*, decoration: TextDecoration.underline*/),),
                     const SizedBox(height: 5),
-
-                    /*...aims.asMap()
-                        .entries
-                        .map((entry) {
-                      return GestureDetector(
-                        onTap: () async {
-                          await appViewModel.getAim(entry.value.id);
-                          BlocProvider.of<NavigationBloc>(context)
-                              .add(NavigateToAimEditScreenEvent(entry.value.id));
-                        },
-                        child: Row(
-                          children: [
-                            Expanded(child:Text(entry.value.text, maxLines: 3,),flex: 7,),
-                            const Expanded(child: SizedBox()),
-                            Padding(padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 0),
-                              child: entry.value.isChecked?Image.asset('assets/icons/target1914412.png', width: 25, height: 25,):Image.asset('assets/icons/nountarget423422.png', width: 25, height: 25),
-                            )
-                          ],
-                        ),
-                      );
-                    }).toList(),
-                    ...tasks.asMap()
-                        .entries
-                        .map((entry) {
-                      return GestureDetector(
-                        onTap: () async {
-                          await appViewModel.getTask(entry.value.id);
-                          BlocProvider.of<NavigationBloc>(context)
-                              .add(NavigateToTaskEditScreenEvent(entry.value.id));
-                        },
-                        child: Row(
-                          children: [
-                            Expanded(child:Text(entry.value.text, maxLines: 3,),flex: 7),
-                            const Expanded(child: SizedBox()),
-                            Padding(padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 0),
-                              child: entry.value.isChecked?const Icon(Icons.check_circle_outline, size: 19,):const Icon(Icons.circle_outlined, size: 19,),
-                            )
-                          ],
-                        ),
-                      );
-                    }).toList()??[],*/
-                    //Expanded(
-                      //height: root.length*150,
                       MyTreeView(key: UniqueKey(),roots: root, onTap: (id, type){
                         if(type=="m"){
                           BlocProvider.of<NavigationBloc>(context).clearHistory();
@@ -377,8 +341,10 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
                           ),
                         ),
                         onPressed: (){
-                          BlocProvider.of<NavigationBloc>(context)
-                              .add(NavigateToAimCreateScreenEvent(0));
+                          if(curWd.isActive){BlocProvider.of<NavigationBloc>(context)
+                              .add(NavigateToAimCreateScreenEvent(0));}else{
+                            showUneditable();
+                          }
                         },
                         child: const Text("Добавить", style: TextStyle(color: AppColors.greytextColor))
                     )
@@ -397,4 +363,28 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
             ),
     ));});
   }
+  void showUneditable(){
+    showDialog(context: context,
+      builder: (BuildContext context) => AlertDialog(
+        contentPadding: EdgeInsets.zero,
+        shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(32.0))),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text("Чтобы редактировать 'Я' необходимо изменить статус на 'актуальное' нажав кнопку 'осознать'", maxLines: 5, textAlign: TextAlign.center,),
+            SizedBox(height: 4,),
+            Divider(color: AppColors.dividerGreyColor,),
+          ],
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () async { Navigator.pop(context, 'OK'); },
+            child: const Text('Ok'),
+          ),
+        ],
+      ),
+    );
+  }
+
 }

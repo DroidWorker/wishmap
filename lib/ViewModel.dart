@@ -594,7 +594,7 @@ class AppViewModel with ChangeNotifier {
       if(sphereInAllCircles==-1){
         mainScreenState!.allCircles.add(CircleData(id: wd.id, text: wd.text, color: wd.color, parenId: wd.parentId));
         mainScreenState!.allCircles.sort((a,b)=>a.id.compareTo(b.id));
-        if(wd.id > 899)wishItems.add(WishItem(id: wd.id, text: wd.text, isChecked: wd.isChecked));
+        if(wd.id > 899)wishItems.add(WishItem(id: wd.id, text: wd.text, isChecked: wd.isChecked, isActive: wd.isActive));
       }
       else{
         mainScreenState!.allCircles[sphereInAllCircles]
@@ -605,7 +605,7 @@ class AppViewModel with ChangeNotifier {
       }
       var sphereInWishesList = wishItems.indexWhere((element) => element.id==wd.id);
       if(sphereInWishesList>=0){
-        wishItems[sphereInWishesList]=WishItem(id: wd.id, text: wd.text, isChecked: wd.isChecked);
+        wishItems[sphereInWishesList]=WishItem(id: wd.id, text: wd.text, isChecked: wd.isChecked,isActive: wd.isActive);
       }
       updateMoonSync(mainScreenState?.moon.id??0);
     }catch(ex){
@@ -631,6 +631,16 @@ class AppViewModel with ChangeNotifier {
       updateMoonSync(mainScreenState?.moon.id??0);
     }catch(ex){
       addError("сфера не была сохранена: $ex");
+    }
+  }
+  Future<void> activateSphereWish(int id, bool status) async{
+    try {
+      if(connectivity != 'No Internet Connection')await repository.activateWish(id, mainScreenState!.moon.id, status);
+      await localRep.activateSphere(id, status, mainScreenState!.moon.id);
+      mainScreenState!.allCircles[mainScreenState!.allCircles.indexWhere((element) => element.id==id)].isActive=true;
+      updateMoonSync(mainScreenState?.moon.id??0);
+    }catch(ex){
+      addError("сфера не была актуализирована: $ex");
     }
   }
   Future<void> deleteSphereWish(int id) async{
@@ -743,8 +753,8 @@ class AppViewModel with ChangeNotifier {
       int? aimId;
       if(connectivity != 'No Internet Connection')aimId = (await repository.createAim(ad, parentCircleId, mainScreenState?.moon.id??0))??-1;
       aimId = await localRep.addAim(AimData(id: aimId??-1, parentId: parentCircleId, text: ad.text, description: ad.description), mainScreenState?.moon.id??-1);
-      currentAim=(AimData(id: aimId, parentId: ad.parentId, text: ad.text, description: ad.description, isChecked: ad.isChecked));
-      aimItems.add(AimItem(id: aimId,parentId: parentCircleId, text: ad.text, isChecked: ad.isChecked));
+      currentAim=(AimData(id: aimId, parentId: ad.parentId, text: ad.text, description: ad.description, isChecked: ad.isChecked, isActive: ad.isActive));
+      aimItems.add(AimItem(id: aimId,parentId: parentCircleId, text: ad.text, isChecked: ad.isChecked, isActive: ad.isActive));
       updateMoonSync(mainScreenState?.moon.id??0);
       return aimId;
     }catch(ex){
@@ -770,7 +780,7 @@ class AppViewModel with ChangeNotifier {
     try {
       if(connectivity != 'No Internet Connection')await repository.updateAim(ad, mainScreenState?.moon.id??0);
       await localRep.updateAim(ad,mainScreenState?.moon.id??0);
-      currentAim=(AimData(id: ad.id, parentId: ad.parentId, text: ad.text, description: ad.description, isChecked: ad.isChecked));
+      currentAim=(AimData(id: ad.id, parentId: ad.parentId, text: ad.text, description: ad.description, isChecked: ad.isChecked, isActive: ad.isActive));
       updateMoonSync(mainScreenState?.moon.id??0);
     }catch(ex){
       addError("#518${ex.toString()}");
@@ -818,8 +828,8 @@ class AppViewModel with ChangeNotifier {
       int taskId = -1;
       if(connectivity != 'No Internet Connection')taskId = (await repository.createTask(ad, parentAimId, mainScreenState?.moon.id??0))??-1;
       taskId = await localRep.addTask(TaskData(id: taskId, parentId: parentAimId, text: ad.text, description: ad.description), mainScreenState?.moon.id??-1);
-      currentTask=(TaskData(id: taskId, parentId: ad.parentId, text: ad.text, description: ad.description, isChecked: ad.isChecked));
-      taskItems.add(TaskItem(id: taskId, parentId: parentAimId, text: ad.text, isChecked: ad.isChecked));
+      currentTask=(TaskData(id: taskId, parentId: ad.parentId, text: ad.text, description: ad.description, isChecked: ad.isChecked, isActive: ad.isActive));
+      taskItems.add(TaskItem(id: taskId, parentId: parentAimId, text: ad.text, isChecked: ad.isChecked, isActive: ad.isActive));
       updateMoonSync(mainScreenState?.moon.id??0);
       return taskId;
     }catch(ex){
@@ -845,7 +855,7 @@ class AppViewModel with ChangeNotifier {
     try {
       if(connectivity != 'No Internet Connection')await repository.updateTask(ad, mainScreenState?.moon.id??0);
       await localRep.updateTask(ad,mainScreenState?.moon.id??0);
-      currentTask=(TaskData(id: ad.id, parentId: ad.parentId, text: ad.text, description: ad.description, isChecked: ad.isChecked));
+      currentTask=(TaskData(id: ad.id, parentId: ad.parentId, text: ad.text, description: ad.description, isChecked: ad.isChecked, isActive: ad.isActive));
       updateMoonSync(mainScreenState?.moon.id??0);
     }catch(ex){
       addError("#524${ex.toString()}");

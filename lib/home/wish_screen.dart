@@ -33,6 +33,8 @@ class _WishScreenState extends State<WishScreen>{
 
   final List<MyTreeNode> root = [];
 
+  bool isParentChecked = false;
+
   WishData curwish = WishData(id: -1, parentId: -1, text: "", description: "", affirmation: "", color: Colors.grey);
 
   @override
@@ -57,6 +59,7 @@ class _WishScreenState extends State<WishScreen>{
             isDataLoaded = appVM.wishScreenState!.isDataloaded;
             //appViewModel.getAimsForCircles(appVM.wishScreenState!.wish.id);
             appVM.convertToMyTreeNodeFullBranch(curwish.id);
+            isParentChecked = appVM.mainScreenState!.allCircles.where((element) => element.id==curwish.parentId).first.isChecked;
             if(appVM.wishScreenState!.wish.photoIds.isNotEmpty&&!isDataLoaded){
               final ids = appVM.wishScreenState!.wish.photoIds.split("|");
               if(ids.isNotEmpty) {
@@ -84,7 +87,7 @@ class _WishScreenState extends State<WishScreen>{
                           icon: const Icon(Icons.keyboard_arrow_left),
                           iconSize: 30,
                           onPressed: () {
-                            if(appViewModel.isChanged){showDialog(context: context,
+                            if(!curwish.isChecked&&appViewModel.isChanged){showDialog(context: context,
                               builder: (BuildContext c) => AlertDialog(
                                 contentPadding: EdgeInsets.zero,
                                 shape: const RoundedRectangleBorder(
@@ -120,7 +123,7 @@ class _WishScreenState extends State<WishScreen>{
                                           TextButton(
                                             onPressed: () {
                                               Navigator.pop(context, 'OK');
-                                              },
+                                            },
                                             child: const Text('OK'),
                                           ),
                                         ],
@@ -154,52 +157,56 @@ class _WishScreenState extends State<WishScreen>{
                               ),
                             ),
                             onPressed: () async {
-                              showDialog(context: context,
-                                builder: (BuildContext context) => AlertDialog(
-                                  contentPadding: EdgeInsets.zero,
-                                  shape: const RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.all(Radius.circular(32.0))),
-                                  title: const Text('Внимание', textAlign: TextAlign.center,),
-                                  content: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      (!curwish.isChecked)?const Text("Если в данном желании создавались другие желания, цели и задачи, то они также получат статус 'исполнена' / 'достигнута' / 'выполнена'", maxLines: 6, textAlign: TextAlign.center,):
-                                      const Text("Если в данном желании создавались другие желания, цели и задачи, то они останутся в статусе 'исполнена' / 'достигнута' / 'выполнена'", maxLines: 6, textAlign: TextAlign.center,),
-                                      const SizedBox(height: 4,),
-                                      const Divider(color: AppColors.dividerGreyColor,),
-                                      const SizedBox(height: 4,),
-                                      (curwish.isChecked)?const Text("Не исполнено?", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),):
-                                      const Text("Исполнено?", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),)
+                              if(isParentChecked) {
+                                showCantChangeStatus();
+                              } else {
+                                showDialog(context: context,
+                                  builder: (BuildContext context) => AlertDialog(
+                                    contentPadding: EdgeInsets.zero,
+                                    shape: const RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.all(Radius.circular(32.0))),
+                                    title: const Text('Внимание', textAlign: TextAlign.center,),
+                                    content: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        (!curwish.isChecked)?const Text("Если в данном желании создавались другие желания, цели и задачи, то они также получат статус 'исполнена' / 'достигнута' / 'выполнена'", maxLines: 6, textAlign: TextAlign.center,):
+                                        const Text("Если в данном желании создавались другие желания, цели и задачи, то они останутся в статусе 'исполнена' / 'достигнута' / 'выполнена'", maxLines: 6, textAlign: TextAlign.center,),
+                                        const SizedBox(height: 4,),
+                                        const Divider(color: AppColors.dividerGreyColor,),
+                                        const SizedBox(height: 4,),
+                                        (curwish.isChecked)?const Text("Не исполнено?", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),):
+                                        const Text("Исполнено?", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),)
+                                      ],
+                                    ),
+                                    actions: <Widget>[
+                                      TextButton(
+                                        onPressed: () { Navigator.pop(context, 'OK');
+                                        curwish.isChecked=!curwish.isChecked;
+                                        appViewModel.updateWishStatus(appVM.wishScreenState!.wish.id, curwish.isChecked);
+                                        showDialog(context: context,
+                                          builder: (BuildContext context) => AlertDialog(
+                                            title: curwish.isChecked?const Text('исполнено'):const Text('не исполнено'),
+                                            shape: const RoundedRectangleBorder(
+                                                borderRadius: BorderRadius.all(Radius.circular(32.0))),
+                                            actions: <Widget>[
+                                              TextButton(
+                                                onPressed: () { Navigator.pop(context, 'OK');},
+                                                child: const Text('OK'),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                        },
+                                        child: const Text('Да'),
+                                      ),
+                                      TextButton(
+                                        onPressed: () { Navigator.pop(context, 'Cancel');},
+                                        child: const Text('Нет'),
+                                      ),
                                     ],
                                   ),
-                                  actions: <Widget>[
-                                    TextButton(
-                                      onPressed: () { Navigator.pop(context, 'OK');
-                                      curwish.isChecked=!curwish.isChecked;
-                                      appViewModel.updateWishStatus(appVM.wishScreenState!.wish.id, curwish.isChecked);
-                                      showDialog(context: context,
-                                        builder: (BuildContext context) => AlertDialog(
-                                          title: curwish.isChecked?const Text('исполнено'):const Text('не исполнено'),
-                                          shape: const RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.all(Radius.circular(32.0))),
-                                          actions: <Widget>[
-                                            TextButton(
-                                              onPressed: () { Navigator.pop(context, 'OK');},
-                                              child: const Text('OK'),
-                                            ),
-                                          ],
-                                        ),
-                                      );
-                                      },
-                                      child: const Text('Да'),
-                                    ),
-                                    TextButton(
-                                      onPressed: () { Navigator.pop(context, 'Cancel');},
-                                      child: const Text('Нет'),
-                                    ),
-                                  ],
-                                ),
-                              );
+                                );
+                              }
                             },
                             child: const Text("Исполнено",style: TextStyle(color: Colors.black, fontSize: 12))
                         ),
@@ -294,8 +301,8 @@ class _WishScreenState extends State<WishScreen>{
                                     TextButton(
                                       onPressed: () {
                                         Navigator.pop(context, 'OK');
-                                setState(() {appVM.convertToMyTreeNodeFullBranch(curwish.id);});
-                                },
+                                        setState(() {appVM.convertToMyTreeNodeFullBranch(curwish.id);});
+                                      },
                                       child: const Text('OK'),
                                     ),
                                   ],
@@ -315,6 +322,9 @@ class _WishScreenState extends State<WishScreen>{
                             const SizedBox(height: 5),
                             TextField(
                               controller: _title,
+                              onTap: (){if(curwish.isChecked)showUnavailable();},
+                              showCursor: true,
+                              readOnly: curwish.isChecked?true:false,
                               style: const TextStyle(color: Colors.black), // Черный текст ввода
                               decoration: InputDecoration(
                                 border: InputBorder.none,
@@ -329,6 +339,9 @@ class _WishScreenState extends State<WishScreen>{
                               minLines: 4,
                               maxLines: 15,
                               controller: _description,
+                              onTap: (){if(curwish.isChecked)showUnavailable();},
+                              showCursor: true,
+                              readOnly: curwish.isChecked?true:false,
                               style: const TextStyle(color: Colors.black), // Черный текст ввода
                               decoration: InputDecoration(
                                 border: InputBorder.none,
@@ -384,10 +397,10 @@ class _WishScreenState extends State<WishScreen>{
                                           ],
                                         ),
                                         ...imagesSet.map((e) {
-                                          if(e.length==1) return buildSingle(fullWidth, e.first, appVM.isinLoading);
-                                          else if(e.length==2) return buildTwin(leftWidth, rightWidth, e, appVM.isinLoading);
-                                          else if(imagesSet.indexOf(e)%2!=0) return buildTriple(leftWidth, rightWidth, e, appVM.isinLoading);
-                                          else return buildTripleReverce(leftWidth, rightWidth, e, appVM.isinLoading);
+                                          if(e.length==1) return buildSingle(fullWidth, e.first, appVM.isinLoading, !curwish.isActive);
+                                          else if(e.length==2) return buildTwin(leftWidth, rightWidth, e, appVM.isinLoading, !curwish.isActive);
+                                          else if(imagesSet.indexOf(e)%2!=0) return buildTriple(leftWidth, rightWidth, e, appVM.isinLoading, !curwish.isActive);
+                                          else return buildTripleReverce(leftWidth, rightWidth, e, appVM.isinLoading, !curwish.isActive);
                                         }).toList()
                                       ]);
                                 },
@@ -403,7 +416,7 @@ class _WishScreenState extends State<WishScreen>{
                                   ),
                                   onPressed: (){
                                     appViewModel.isChanged = true;
-                                    BlocProvider.of<NavigationBloc>(context)
+                                    curwish.isChecked?showUnavailable():BlocProvider.of<NavigationBloc>(context)
                                         .add(NavigateToGalleryScreenEvent());
                                   },
                                   child: const Text("Добавить", style: TextStyle(color: AppColors.greytextColor),)
@@ -411,6 +424,9 @@ class _WishScreenState extends State<WishScreen>{
                             const SizedBox(height: 10),
                             TextField(
                               controller: _affirmation,
+                              onTap: (){if(curwish.isChecked)showUnavailable();},
+                              showCursor: true,
+                              readOnly: curwish.isChecked?true:false,
                               style: const TextStyle(color: Colors.black), // Черный текст ввода
                               decoration: InputDecoration(
                                 border: InputBorder.none,
@@ -444,7 +460,7 @@ class _WishScreenState extends State<WishScreen>{
                                   )
                                 ],),
                                   onTap: () {
-                                    showDialog(
+                                    curwish.isChecked?showUnavailable():showDialog(
                                       context: context,
                                       builder: (context) {
                                         return ColorPickerWidget(initColor: _color, onColorSelected: (Color c){setState(() {_color=c;curwish.color=c;appViewModel.isChanged=true;});});
@@ -559,5 +575,52 @@ class _WishScreenState extends State<WishScreen>{
                       ),)
                   ]))
           );});
+  }
+  void showUnavailable(){
+    showDialog(context: context,
+      builder: (BuildContext context) => AlertDialog(
+        contentPadding: EdgeInsets.zero,
+        shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(32.0))),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text("Чтобы редактировать желание необходимо сменить статус \nна 'не выполнено'", maxLines: 5, textAlign: TextAlign.center,),
+            SizedBox(height: 4,),
+            Divider(color: AppColors.dividerGreyColor,),
+          ],
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () async { Navigator.pop(context, 'OK'); },
+            child: const Text('Ok'),
+          ),
+        ],
+      ),
+    );
+  }
+  void showCantChangeStatus(){
+    showDialog(context: context,
+      builder: (BuildContext context) => AlertDialog(
+        contentPadding: EdgeInsets.zero,
+        shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(32.0))),
+        title: const Text("Внимание", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text("Статус желания не может быть изменен на 'не исполнено' пока вышестоящее желание не будет переведено в статус 'не исполнено'", maxLines: 5, textAlign: TextAlign.center,),
+            SizedBox(height: 4,),
+            Divider(color: AppColors.dividerGreyColor,),
+          ],
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () async { Navigator.pop(context, 'OK'); },
+            child: const Text('Ok'),
+          ),
+        ],
+      ),
+    );
   }
 }

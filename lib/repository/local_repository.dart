@@ -114,11 +114,11 @@ class LocalRepository{
     final result = await dbHelper.getSphere(id, moonId);
     Map<String, dynamic> tmp = jsonDecode(result['childAims']);
     Map<String, int> chAims = tmp.map((key, value) => MapEntry(key, int.parse(value.toString())));
-    return (result.isNotEmpty?(WishData(id: result["id"], parentId: result["parentId"], text: result["text"], description: result["subtext"], affirmation: result["affirmation"], color: Color(int.parse(result["color"].toString())))..childAims=chAims..photoIds=result['photosIds']..isChecked=result['isChecked']=="1"?true:false):null);
+    return (result.isNotEmpty?(WishData(id: result["id"], parentId: result["parentId"], text: result["text"], description: result["subtext"], affirmation: result["affirmation"], color: Color(int.parse(result["color"].toString())))..childAims=chAims..photoIds=result['photosIds']..isChecked=result['isChecked']=="1"?true:false..isActive=result["isActive"]=="1"?true:false):null);
   }
   Future<List<WishItem>> getAllSpheres(int moonId) async {
     final result = await dbHelper.getAllSpheres(moonId);
-    List<WishItem> list =  result.map((e) => WishItem(id: e['id'], parentId: e['parentId'], text: e['text'], isChecked: e['isChecked']=="1"?true:false)).toList();
+    List<WishItem> list =  result.map((e) => WishItem(id: e['id'], parentId: e['parentId'], text: e['text'], isChecked: e['isChecked']=="1"?true:false, isActive: e['isActive']=='1'?true:false)).toList();
     return list.where((element) => element.parentId>1).toList();
   }
   Future<List<CircleData>> getAllMoonSpheres(int moonId) async {
@@ -144,21 +144,24 @@ class LocalRepository{
   Future updateSphereStatus(int sphereId, bool status, int moonId) async{
     await dbHelper.updateSphereStatus(sphereId, status, moonId);
   }
+  Future activateSphere(int sphereId, bool status, int moonId) async{
+    await dbHelper.activateSphere(sphereId, status, moonId);
+  }
   Future updateSphereImages(int sphereId, String imageIds, int moonId) async{
     final t = await dbHelper.updateSphereImages(sphereId, imageIds, moonId);
   }
 
   Future<AimData> getAim(int id, int moonId) async {
     final result = await dbHelper.getAim(id, moonId);
-    return AimData(id: result['id'], parentId: result['parentId'], text: result['text'], description: result['subtext'])..isChecked=result['isChecked']=="1"?true:false..childTasks=(result['childTasks']!=null&&result['childTasks'].toString()!="")?result['childTasks'].toString().split("|").map((e) => int.parse(e)).toList():[];
+    return AimData(id: result['id'], parentId: result['parentId'], text: result['text'], description: result['subtext'])..isChecked=result['isChecked']=="1"?true:false..isActive=result["isActive"]=="1"?true:false..childTasks=(result['childTasks']!=null&&result['childTasks'].toString()!="")?result['childTasks'].toString().split("|").map((e) => int.parse(e)).toList():[];
   }
   Future<List<AimItem>> getAllAims(int moonId) async {
     final result = await dbHelper.getAllAims(moonId);
-    return result.map((e) => AimItem(id: e['id'], parentId: e['parentId'], text: e['text'], isChecked: e['isChecked']=="1"?true:false)).toList();
+    return result.map((e) => AimItem(id: e['id'], parentId: e['parentId'], text: e['text'], isChecked: e['isChecked']=="1"?true:false, isActive: e['isActive']=='1'?true:false)).toList();
   }
   Future<List<AimData>> getAllAimsData(int moonId) async {
     final result = await dbHelper.getAllAims(moonId);
-    return result.map((e) => AimData(id: e['id'], parentId: e['parentId'], text: e['text'], isChecked: e['isChecked']=="1"?true:false, description: e['subtext'])..childTasks=(e['childTasks']!=null&&e['childTasks'].toString()!="")?e['childTasks'].toString().split("|").map((e) => int.parse(e)).toList():[]).toList();
+    return result.map((e) => AimData(id: e['id'], parentId: e['parentId'], text: e['text'], isChecked: e['isChecked']=="1"?true:false, isActive: e["isActive"]=="1"?true:false, description: e['subtext'])..childTasks=(e['childTasks']!=null&&e['childTasks'].toString()!="")?e['childTasks'].toString().split("|").map((e) => int.parse(e)).toList():[]).toList();
   }
   Future<List<int>> getAimsChildTasks(int id, int moonId) async {
     final result = await dbHelper.getAim(id, moonId);
@@ -181,15 +184,15 @@ class LocalRepository{
 
   Future<TaskData> getTask(int id, int moonId) async {
     final result = await dbHelper.getTask(id, moonId);
-    return TaskData(id: result['id'], parentId: result['parentId'], text: result['text'], description: result['subtext'])..isChecked=result['isChecked']=="1"?true:false;
+    return TaskData(id: result['id'], parentId: result['parentId'], text: result['text'], description: result['subtext'], isActive: result["isActive"]=="1"?true:false)..isChecked=result['isChecked']=="1"?true:false;
   }
   Future<List<TaskItem>> getAllTasks(int moonId) async {
     final result = await dbHelper.getAllTasks(moonId);
-    return result.map((e) => TaskItem(id: e['id'], parentId: e['parentId'], text: e['text'], isChecked: e['isChecked']=='1'?true:false)).toList();
+    return result.map((e) => TaskItem(id: e['id'], parentId: e['parentId'], text: e['text'], isChecked: e['isChecked']=='1'?true:false, isActive: e['isActive']=='1'?true:false)).toList();
   }
   Future<List<TaskData>> getAllTasksData(int moonId) async {
     final result = await dbHelper.getAllTasks(moonId);
-    return result.map((e) => TaskData(id: e['id'], parentId: e['parentId'], text: e['text'], isChecked: e['isChecked']=='1'?true:false, description: e['subtext'])).toList();
+    return result.map((e) => TaskData(id: e['id'], parentId: e['parentId'], text: e['text'], isChecked: e['isChecked']=='1'?true:false, isActive: e["isActive"]=="1"?true:false, description: e['subtext'])).toList();
   }
   Future addTask(TaskData td, int moonId) async{
     final tasks = await getAllTasks(moonId);

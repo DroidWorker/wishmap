@@ -95,8 +95,9 @@ class TaskItem {
   final int parentId;
   final String text;
   bool isChecked;
+  bool isActive;
 
-  TaskItem({required this.id, required this.parentId, required this.text, required this.isChecked});
+  TaskItem({required this.id, required this.parentId, required this.text, required this.isChecked, required this.isActive});
 }
 
 class TaskData {
@@ -105,17 +106,19 @@ class TaskData {
   String text;
   String description;
   bool isChecked = false;
+  bool isActive = true;
 
-  TaskData({required this.id, required this.parentId, required this.text, required this.description, this.isChecked=false});
+  TaskData({required this.id, required this.parentId, required this.text, required this.description, this.isChecked=false, this.isActive=true});
 }
 
 class WishItem {
   final int id;
   final String text;
   bool isChecked;
+  bool isActive;
   int parentId;
 
-  WishItem({required this.id, required this.text, required this.isChecked, this.parentId=-1});
+  WishItem({required this.id, required this.text, required this.isChecked, required this.isActive, this.parentId=-1});
 }
 
 class WishData {
@@ -140,8 +143,9 @@ class AimItem {
   final parentId;
   final String text;
   bool isChecked;
+  bool isActive;
 
-  AimItem({required this.id, required this.parentId, required this.text, required this.isChecked});
+  AimItem({required this.id, required this.parentId, required this.text, required this.isChecked, required this.isActive});
 }
 
 class AimData {
@@ -151,8 +155,9 @@ class AimData {
   String description;
   List<int> childTasks = [];
   bool isChecked = false;
+  bool isActive = true;
 
-  AimData({required this.id, required this.parentId, required this.text, required this.description, this.isChecked=false});
+  AimData({required this.id, required this.parentId, required this.text, required this.description, this.isChecked=false, this.isActive=true});
 }
 
 class ProfileItem {

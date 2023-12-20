@@ -161,7 +161,6 @@ class Repository{
     }
   }
   Future<List<MoonItem>?> getMoonList() async {
-    print("gxgxgxgxgxgxg");
     if (_auth.currentUser != null) {
       DataSnapshot snapshot = (await userRef.child(_auth.currentUser!.uid).child("moonlist").once()).snapshot;
       if (snapshot.children.isNotEmpty) {
@@ -250,6 +249,7 @@ class Repository{
           'subText': aimData.description,
           'parentId': aimData.parentId,
           "isChecked": aimData.isChecked,
+          "isActive": aimData.isActive,
           'childTask': aimData.childTasks.asMap()
         };
       }
@@ -272,6 +272,7 @@ class Repository{
           'subText': taskData.description,
           'parentId': taskData.parentId,
           "isChecked": taskData.isChecked,
+          "isactive": taskData.isActive
         };
       }
       await userRef.child(_auth.currentUser!.uid).child("moonlist").child(moonId.toString()).child("tasks").set(
@@ -327,7 +328,8 @@ class Repository{
               parentId: int.parse(dataList['parentId'].toString()),
               photoIds: dataList['photosIds']??"",
               affirmation: dataList['affirmation']??""
-          )..isChecked = dataList['isChecked']??false;
+          )..isChecked = dataList['isChecked']??false
+          ..isActive = dataList['isactive']??true;
           if(dataList['childAims']!=null){
             final Map<dynamic, dynamic> aimsData = dataList['childAims'] as Map<dynamic, dynamic>;
             final Map<String, int> aims = {};
@@ -400,7 +402,8 @@ class Repository{
               id: int.parse(dataList['id'].toString()),
               parentId: int.parse(dataList['parentId'].toString()),
               text: dataList['text'],
-              isChecked: dataList['isChecked']
+              isChecked: dataList['isChecked'],
+            isActive: dataList['isActive']
           ));
         });
       }
@@ -423,7 +426,8 @@ class Repository{
               parentId: int.parse(dataList['parentId'].toString()),
               text: dataList['text'],
               description: dataList['subText'],
-              isChecked: dataList['isChecked']
+              isChecked: dataList['isChecked'],
+            isActive: dataList['isActive']
           ));
         });
       }
@@ -445,7 +449,8 @@ class Repository{
               id: int.parse(dataList['id'].toString()),
               parentId: int.parse(dataList['parentId'].toString()),
               text: dataList['text'],
-              isChecked: dataList['isChecked']
+              isChecked: dataList['isChecked'],
+            isActive: dataList['isActive']
           ));
         });
       }
@@ -470,7 +475,8 @@ class Repository{
               parentId: int.parse(dataList['parentId'].toString()),
               text: dataList['text'],
               isChecked: dataList['isChecked'],
-              description: dataList['subText']
+              description: dataList['subText'],
+            isActive: dataList['isActive']
           )..childTasks = childTasksList);
         });
       }
@@ -492,7 +498,8 @@ class Repository{
               id: int.parse(dataList['id'].toString()),
               text: dataList['text'],
               isChecked: dataList['isChecked']??false,
-              parentId: dataList['parentId']
+              parentId: dataList['parentId'],
+            isActive: dataList['isActive']??true
           ));
         });
       }
@@ -524,6 +531,7 @@ class Repository{
             photoIds: dataList['photosIds'].toString()??"",
             affirmation: dataList['affirmation'] ?? '',
           );
+          wd.isActive = dataList['isActive']??true;
           wd.childAims = childAims;
           wd.isChecked = dataList['isChecked']??false;
           return wd;
@@ -570,6 +578,12 @@ class Repository{
       //updateMoonSync(currentMoonId);
     }
   }
+  Future activateWish(int id, int currentMoonId, bool status) async {
+    if(_auth.currentUser!=null){
+      userRef.child(_auth.currentUser!.uid).child("moonlist").child(currentMoonId.toString()).child("spheres").child(id.toString()).child("isActive").set(status);
+      //updateMoonSync(currentMoonId);
+    }
+  }
 
   Future<int?> createAim(AimData ad, int parentWishId, int currentMoonId) async {
     if(_auth.currentUser!=null){
@@ -586,7 +600,8 @@ class Repository{
         'text': ad.text,
         'subText': ad.description,
         'childTasks': ad.childTasks,
-        'isChecked': false
+        'isChecked': false,
+        'isActive': ad.isActive
       };
       userRef.child(_auth.currentUser!.uid).child("moonlist").child(currentMoonId.toString()).child("aims").child(index.toString()).set(
           dataMap
@@ -618,7 +633,8 @@ class Repository{
           text: dataList['text'],
           description: dataList['subText'] ?? "",
           parentId: int.parse(dataList['parentId'].toString()),
-          isChecked: dataList['isChecked']
+          isChecked: dataList['isChecked'],
+            isActive: dataList['isActive']
         );
         ad.childTasks = childTasks;
         return ad;
@@ -635,7 +651,8 @@ class Repository{
         'subText': ad.description,
         'parentId': ad.parentId,
         'childTasks': ad.childTasks,
-        'isChecked': false
+        'isChecked': false,
+        'isActive': ad.isActive
       };
       userRef.child(_auth.currentUser!.uid).child("moonlist").child(currentMoonId.toString()).child("aims").child(ad.id.toString()).set(
           dataMap
@@ -670,7 +687,8 @@ class Repository{
         'text': td.text,
         'parentId': parentAimId,
         'subText': td.description,
-        'isChecked': false
+        'isChecked': false,
+        'isActive': td.isActive
       };
       userRef.child(_auth.currentUser!.uid).child("moonlist").child(currentMoonId.toString()).child("tasks").child(index.toString()).set(
           dataMap
@@ -695,7 +713,8 @@ class Repository{
             text: dataList['text'],
             description: dataList['subText'] ?? "",
             parentId: int.parse(dataList['parentId'].toString()),
-            isChecked: dataList['isChecked']
+            isChecked: dataList['isChecked'],
+          isActive: dataList['isActive']
         );
       }
     }
@@ -709,7 +728,8 @@ class Repository{
         'parentId': td.parentId,
         'text': td.text,
         'subText': td.description,
-        'isChecked': false
+        'isChecked': false,
+        'isActive': td.isActive
       };
       userRef.child(_auth.currentUser!.uid).child("moonlist").child(currentMoonId.toString()).child("tasks").child(td.id.toString()).set(
           dataMap

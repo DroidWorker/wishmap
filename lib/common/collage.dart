@@ -6,17 +6,17 @@ import 'package:flutter/material.dart';
 
 import '../res/colors.dart';
 
-Widget buildSingle(double width, Uint8List image, bool isinLoading){
+Widget buildSingle(double width, Uint8List image, bool isinLoading, bool filtered){
   return Container(width: width, height: width/2, color: AppColors.fieldFillColor,
     child: isinLoading? const Align(alignment: Alignment.bottomCenter,
       child: LinearCappedProgressIndicator(
         backgroundColor: Colors.black26,
         color: Colors.black,
         cornerRadius: 0,
-      ),): Image.memory(image, fit: BoxFit.cover),
+      ),): Image.memory(image, fit: BoxFit.cover, color: !filtered?null:Colors.redAccent),
   );
 }
-Widget buildTwin(double leftwidth, double rightwidth, List<Uint8List> images, bool isinLoading){
+Widget buildTwin(double leftwidth, double rightwidth, List<Uint8List> images, bool isinLoading, bool filtered){
   return Row(
     children: [
       Container(width: leftwidth, height: leftwidth, color: AppColors.fieldFillColor,
@@ -25,7 +25,7 @@ Widget buildTwin(double leftwidth, double rightwidth, List<Uint8List> images, bo
             backgroundColor: Colors.black26,
             color: Colors.black,
             cornerRadius: 0,
-          ),): Image.memory(images[0], fit: BoxFit.cover),
+          ),): Image.memory(images[0], fit: BoxFit.cover, color: !filtered?null:Colors.redAccent),
       ),
       Container(width: rightwidth, height: leftwidth, color: AppColors.fieldFillColor,
         child: isinLoading? const Align(alignment: Alignment.bottomCenter,
@@ -33,13 +33,13 @@ Widget buildTwin(double leftwidth, double rightwidth, List<Uint8List> images, bo
             backgroundColor: Colors.black26,
             color: Colors.black,
             cornerRadius: 0,
-          ),): Image.memory(images[1], fit: BoxFit.cover),
+          ),): Image.memory(images[1], fit: BoxFit.cover, color: !filtered?null:Colors.redAccent),
       )
     ],
   );
 }
 
-Widget buildTriple(double leftwidth, double rightwidth, List<Uint8List> images, bool isinLoading){
+Widget buildTriple(double leftwidth, double rightwidth, List<Uint8List> images, bool isinLoading, bool filtered){
   return Row(
     children: [
       Container(width: leftwidth, height: leftwidth, color: AppColors.fieldFillColor,
@@ -48,7 +48,7 @@ Widget buildTriple(double leftwidth, double rightwidth, List<Uint8List> images, 
             backgroundColor: Colors.black26,
             color: Colors.black,
             cornerRadius: 0,
-          ),): Image.memory(images[0], fit: BoxFit.cover),
+          ),): Image.memory(images[0], fit: BoxFit.cover, color: !filtered?null:Colors.redAccent),
       ),
       const SizedBox(width: 2),
       Column(children: [
@@ -58,7 +58,7 @@ Widget buildTriple(double leftwidth, double rightwidth, List<Uint8List> images, 
               backgroundColor: Colors.black26,
               color: Colors.black,
               cornerRadius: 0,
-            ),): Image.memory(images[1], fit: BoxFit.cover),
+            ),): Image.memory(images[1], fit: BoxFit.cover, color: !filtered?null:Colors.redAccent),
         ),
         const SizedBox(height: 2),
         Container(width: rightwidth, height: leftwidth/2-1, color: AppColors.fieldFillColor,
@@ -67,14 +67,14 @@ Widget buildTriple(double leftwidth, double rightwidth, List<Uint8List> images, 
               backgroundColor: Colors.black26,
               color: Colors.black,
               cornerRadius: 0,
-            ),): Image.memory(images[2], fit: BoxFit.cover),
+            ),): Image.memory(images[2], fit: BoxFit.cover, color: !filtered?null:Colors.redAccent),
         ),
       ],)
     ],
   );
 }
 
-Widget buildTripleReverce(double leftwidth, double rightwidth, List<Uint8List> images, bool isinLoading){
+Widget buildTripleReverce(double leftwidth, double rightwidth, List<Uint8List> images, bool isinLoading, bool filtered){
   return Row(
     children: [
       Column(children: [
@@ -84,7 +84,7 @@ Widget buildTripleReverce(double leftwidth, double rightwidth, List<Uint8List> i
               backgroundColor: Colors.black26,
               color: Colors.black,
               cornerRadius: 0,
-            ),): Image.memory(images[1], fit: BoxFit.cover),
+            ),): Image.memory(images[1], fit: BoxFit.cover, color: !filtered?null:Colors.redAccent),
         ),
         const SizedBox(height: 2),
         Container(width: rightwidth, height: leftwidth/2-1, color: AppColors.fieldFillColor,
@@ -93,7 +93,7 @@ Widget buildTripleReverce(double leftwidth, double rightwidth, List<Uint8List> i
               backgroundColor: Colors.black26,
               color: Colors.black,
               cornerRadius: 0,
-            ),): Image.memory(images[2], fit: BoxFit.cover),
+            ),): Image.memory(images[2], fit: BoxFit.cover, color: !filtered?null:Colors.redAccent),
         ),
       ],),
       const SizedBox(width: 2),
@@ -103,7 +103,7 @@ Widget buildTripleReverce(double leftwidth, double rightwidth, List<Uint8List> i
             backgroundColor: Colors.black26,
             color: Colors.black,
             cornerRadius: 0,
-          ),): Image.memory(images[0], fit: BoxFit.cover),
+          ),): Image.memory(images[0], fit: BoxFit.cover, color: !filtered?null:Colors.redAccent),
       )
     ],
   );
