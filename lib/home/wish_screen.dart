@@ -8,6 +8,8 @@ import 'package:provider/provider.dart';
 import 'package:wishmap/data/models.dart';
 
 import '../ViewModel.dart';
+import '../common/EditTextOverlay.dart';
+import '../common/affirmationOverlay.dart';
 import '../common/collage.dart';
 import '../common/colorpicker_widget.dart';
 import '../common/treeview_widget.dart';
@@ -159,6 +161,8 @@ class _WishScreenState extends State<WishScreen>{
                             onPressed: () async {
                               if(isParentChecked) {
                                 showCantChangeStatus();
+                              } else if(curwish.isHidden){
+                                showUnavailable("Чтобы изменить статус 'исполнено' необходимо отменить статус 'скрыто'");
                               } else {
                                 showDialog(context: context,
                                   builder: (BuildContext context) => AlertDialog(
@@ -277,7 +281,7 @@ class _WishScreenState extends State<WishScreen>{
                           child: const Text("Удалить",style: TextStyle(color: Colors.black, fontSize: 12))
                       ),
                       const SizedBox(width: 3,),
-                      TextButton(
+                      if(curwish.isActive&&!curwish.isChecked)TextButton(
                           style: TextButton.styleFrom(
                             backgroundColor: AppColors.greyBackButton,
                             shape: const RoundedRectangleBorder(
@@ -312,7 +316,42 @@ class _WishScreenState extends State<WishScreen>{
                           },
                           child: const Text("Cохранить",
                             style: TextStyle(color: AppColors.blueTextColor, fontSize: 12),)
-                      ),
+                      )else if(!curwish.isActive)
+                      TextButton(
+                          style: TextButton.styleFrom(
+                            backgroundColor: AppColors.greyBackButton,
+                            shape: const RoundedRectangleBorder(
+                              borderRadius: BorderRadius.all(Radius.circular(10)),
+                            ),
+                          ),
+                          onPressed: () async {
+                            setState(() {
+                              appViewModel.activateSphereWish(curwish.id, true);
+                              appViewModel.mainCircles.where((element) => element.id==curwish.id).first.isActive=true;
+                              curwish.isActive=true;
+                            });
+                          },
+                          child: const Text("Представить",
+                            style: TextStyle(color: AppColors.redTextColor),)
+                      )
+                      else if(curwish.isChecked&&curwish.id > 899)
+                          TextButton(
+                              style: TextButton.styleFrom(
+                                backgroundColor: curwish.isHidden?AppColors.pinkButtonTextColor:AppColors.greyBackButton,
+                                shape: const RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.all(Radius.circular(10)),
+                                ),
+                              ),
+                              onPressed: () async {
+                                setState(() {
+                                  curwish.isHidden = !curwish.isHidden;
+                                  appViewModel.hideSphereWish(curwish.id, curwish.isHidden);
+                                });
+                              },
+                              child: const Text("Скрыть",
+                                style: TextStyle(color: AppColors.redTextColor),)
+                          ),
+                      const SizedBox(width: 15,)
                     ],),
                     Expanded(child:SingleChildScrollView(
                       child: Padding(
@@ -322,14 +361,20 @@ class _WishScreenState extends State<WishScreen>{
                             const SizedBox(height: 5),
                             TextField(
                               controller: _title,
-                              onTap: (){if(curwish.isChecked)showUnavailable();},
+                              onTap: (){if(curwish.isChecked)showUnavailable("Чтобы редактировать желание необходимо перевести в статус \nна 'не исполнено'");else if(!curwish.isActive)showUneditable();},
                               showCursor: true,
-                              readOnly: curwish.isChecked?true:false,
+                              readOnly: curwish.isChecked||!curwish.isActive?true:false,
                               style: const TextStyle(color: Colors.black), // Черный текст ввода
                               decoration: InputDecoration(
-                                border: InputBorder.none,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10.0),
+                                  borderSide: const BorderSide(
+                                    width: 0,
+                                    style: BorderStyle.none,
+                                  ),
+                                ),
                                 filled: true, // Заливка фона
-                                fillColor: AppColors.fieldFillColor, // Серый фон с полупрозрачностью
+                                fillColor: curwish.isActive?AppColors.fieldFillColor:AppColors.fieldInactive, // Серый фон с полупрозрачностью
                                 hintText: 'Запиши желание', // Базовый текст
                                 hintStyle: TextStyle(color: Colors.black.withOpacity(0.3)), // Полупрозрачный черный базовый текст
                               ),
@@ -337,16 +382,29 @@ class _WishScreenState extends State<WishScreen>{
                             const SizedBox(height: 10),
                             TextField(
                               minLines: 4,
-                              maxLines: 15,
+                              maxLines: 7,
                               controller: _description,
-                              onTap: (){if(curwish.isChecked)showUnavailable();},
-                              showCursor: true,
-                              readOnly: curwish.isChecked?true:false,
+                              onTap: () async {
+                                if(curwish.isChecked){showUnavailable("Чтобы редактировать желание необходимо сменить статус \nна 'не выполнено'");}
+                                else if(!curwish.isActive){showUneditable();}
+                                else {
+                                  _description.text = await showOverlayedEdittext(context, _description.text, (curwish.isActive&&!curwish.isChecked))??"";
+                                  appViewModel.isChanged= true;
+                                }
+                                },
+                              showCursor: false,
+                              readOnly: true,
                               style: const TextStyle(color: Colors.black), // Черный текст ввода
                               decoration: InputDecoration(
-                                border: InputBorder.none,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10.0),
+                                  borderSide: const BorderSide(
+                                    width: 0,
+                                    style: BorderStyle.none,
+                                  ),
+                                ),
                                 filled: true, // Заливка фона
-                                fillColor: AppColors.fieldFillColor, // Серый фон с полупрозрачностью
+                                fillColor: curwish.isActive?AppColors.fieldFillColor:AppColors.fieldInactive, // Серый фон с полупрозрачностью
                                 hintText: 'Опиши подробно свое желание', // Базовый текст
                                 hintStyle: TextStyle(color: Colors.black.withOpacity(0.3)), // Полупрозрачный черный базовый текст
                               ),
@@ -366,7 +424,7 @@ class _WishScreenState extends State<WishScreen>{
                                       children:[
                                         Row(
                                           children: [
-                                            Container(width: leftWidth, height: leftWidth, color: AppColors.fieldFillColor,
+                                            Container(width: leftWidth, height: leftWidth, color: curwish.isActive?AppColors.fieldFillColor:AppColors.fieldInactive,
                                               child: appViewModel.isinLoading? const Align(alignment: Alignment.bottomCenter,
                                                 child: LinearCappedProgressIndicator(
                                                   backgroundColor: Colors.black26,
@@ -376,7 +434,7 @@ class _WishScreenState extends State<WishScreen>{
                                             ),
                                             const SizedBox(width: 2),
                                             Column(children: [
-                                              Container(width: rightWidth, height: leftWidth/2-2, color: AppColors.fieldFillColor,
+                                              Container(width: rightWidth, height: leftWidth/2-2, color: curwish.isActive?AppColors.fieldFillColor:AppColors.fieldInactive,
                                                 child: appViewModel.isinLoading? const Align(alignment: Alignment.bottomCenter,
                                                   child: LinearCappedProgressIndicator(
                                                     backgroundColor: Colors.black26,
@@ -385,7 +443,7 @@ class _WishScreenState extends State<WishScreen>{
                                                   ),): appViewModel.cachedImages.length>1?Image.memory(appViewModel.cachedImages[1], fit: BoxFit.cover):Container(),
                                               ),
                                               const SizedBox(height: 2),
-                                              Container(width: rightWidth, height: leftWidth/2-1, color: AppColors.fieldFillColor,
+                                              Container(width: rightWidth, height: leftWidth/2-1, color: curwish.isActive?AppColors.fieldFillColor:AppColors.fieldInactive,
                                                 child: appViewModel.isinLoading? const Align(alignment: Alignment.bottomCenter,
                                                   child: LinearCappedProgressIndicator(
                                                     backgroundColor: Colors.black26,
@@ -416,7 +474,7 @@ class _WishScreenState extends State<WishScreen>{
                                   ),
                                   onPressed: (){
                                     appViewModel.isChanged = true;
-                                    curwish.isChecked?showUnavailable():BlocProvider.of<NavigationBloc>(context)
+                                    curwish.isChecked?showUnavailable("Чтобы редактировать желание необходимо сменить статус \nна 'не выполнено'"):!curwish.isActive?showUneditable():BlocProvider.of<NavigationBloc>(context)
                                         .add(NavigateToGalleryScreenEvent());
                                   },
                                   child: const Text("Добавить", style: TextStyle(color: AppColors.greytextColor),)
@@ -424,23 +482,39 @@ class _WishScreenState extends State<WishScreen>{
                             const SizedBox(height: 10),
                             TextField(
                               controller: _affirmation,
-                              onTap: (){if(curwish.isChecked)showUnavailable();},
-                              showCursor: true,
-                              readOnly: curwish.isChecked?true:false,
+                              readOnly: true,
+                              onTap: () async {
+                                if(curwish.isChecked){
+                                  showUnavailable("Чтобы редактировать желание необходимо сменить статус \nна 'не выполнено'");
+                                  return;
+                                }else if(!curwish.isActive){
+                                  showUneditable();
+                                }else{
+                                final affirmationsStr = curwish.affirmation==""?
+                                await showOverlayedAffirmations(context, ["Я счастлив и спокоен", "Я благословенный и умиротворенный", "Я радостный и свободный", "Я смотрю на мир с любовью", "Я успешный и счастливый", "Я безмятежный и радостный", "Я полон любви и благодати", "Я достигший своих заветных целей", "Я Люблю свое тело и люблю свою душу", "Я в изобилии и наслаждении", "Я энергичный и эйфоричный", "Я умиротворенный и благодарный", "Я ликующий и сверкающий", "Я востроженный и наслаждающийся жизнью", "Я бееззаботный и радужный", "Я вдохновенный и преисполненный", "Я озаренный и благодарный", "Я принимааю и ценю себя таким какой я есть", "Я умиротворенный и свободный от тревоги", "Я ликующий и счастливый до глубины души", "Я благодарный и удовлетворенный", "Я влюбленный и исполненный милости", "Я гармоничный и исполненный радости", "Я радостный и восорженный в каждом мгновении"], false):
+                                await showOverlayedAffirmations(context, curwish.affirmation.split("|"), true);
+
+                                _affirmation.text=affirmationsStr?.split("|")[0]??"";
+                                curwish.affirmation=affirmationsStr??"";
+                                appViewModel.isChanged =true;
+                                }
+                              },
                               style: const TextStyle(color: Colors.black), // Черный текст ввода
                               decoration: InputDecoration(
-                                border: InputBorder.none,
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10.0),
+                                  borderSide: const BorderSide(
+                                    width: 0,
+                                    style: BorderStyle.none,
+                                  ),
+                                ),
+                                suffixIcon: const Icon(Icons.keyboard_arrow_down_sharp, color: Colors.black),
                                 filled: true, // Заливка фона
-                                fillColor: AppColors.fieldFillColor, // Серый фон с полупрозрачностью
-                                hintText: 'Напиши аффирмацию', // Базовый текст
+                                fillColor: curwish.isActive?AppColors.fieldFillColor:AppColors.fieldInactive, // Серый фон с полупрозрачностью
+                                hintText: 'Выбери аффирмацию', // Базовый текст
+                                helperText: "Выберите аффирмацию или напишите свою",
                                 hintStyle: TextStyle(color: Colors.black.withOpacity(0.3)), // Полупрозрачный черный базовый текст
                               ),
-                            ),
-                            const SizedBox(height: 10),
-                            const Align(
-                              alignment: Alignment.centerLeft,
-                              child:
-                              Text("Выберите аффирмацию или напишите свою", style: TextStyle(fontSize: 10, color: Colors.black54),),
                             ),
                             const SizedBox(height: 10),
                             Align(
@@ -460,7 +534,7 @@ class _WishScreenState extends State<WishScreen>{
                                   )
                                 ],),
                                   onTap: () {
-                                    curwish.isChecked?showUnavailable():showDialog(
+                                    curwish.isChecked?showUnavailable("Чтобы редактировать желание необходимо сменить статус \nна 'не выполнено'"):!curwish.isActive?showUneditable():showDialog(
                                       context: context,
                                       builder: (context) {
                                         return ColorPickerWidget(initColor: _color, onColorSelected: (Color c){setState(() {_color=c;curwish.color=c;appViewModel.isChanged=true;});});
@@ -494,46 +568,6 @@ class _WishScreenState extends State<WishScreen>{
                                           .add(NavigateToTaskEditScreenEvent(id));
                                     }
                                   },),
-                                  /*...appVM.wishScreenState?.wishAims.asMap()
-                          .entries
-                          .map((entry) {
-                        return GestureDetector(
-                          onTap: () async {
-                            await appViewModel.getAim(entry.value.id);
-                            BlocProvider.of<NavigationBloc>(context)
-                                .add(NavigateToAimEditScreenEvent(entry.value.id));
-                          },
-                          child: Row(
-                            children: [
-                              Expanded(child:Text(entry.value.text, maxLines: 3,),flex: 7,),
-                              const Expanded(child: SizedBox()),
-                              Padding(padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 0),
-                                child: entry.value.isChecked?Image.asset('assets/icons/target1914412.png', width: 25, height: 25,):Image.asset('assets/icons/nountarget423422.png', width: 25, height: 25),
-                              )
-                            ],
-                          ),
-                        );
-                      }).toList()??[],
-                      ...appVM.wishScreenState?.wishTasks.asMap()
-                          .entries
-                          .map((entry) {
-                        return GestureDetector(
-                          onTap: () async {
-                            await appViewModel.getTask(entry.value.id);
-                            BlocProvider.of<NavigationBloc>(context)
-                                .add(NavigateToTaskEditScreenEvent(entry.value.id));
-                          },
-                          child: Row(
-                            children: [
-                              Expanded(child:Text(entry.value.text, maxLines: 3,),flex: 7),
-                              const Expanded(child: SizedBox()),
-                              Padding(padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 0),
-                                child: entry.value.isChecked?const Icon(Icons.check_circle_outline, size: 19,):const Icon(Icons.circle_outlined, size: 19,),
-                              )
-                            ],
-                          ),
-                        );
-                      }).toList()??[],*/
                                   const SizedBox(height: 5),
                                   if(curwish.id > 899)
                                     ElevatedButton(
@@ -544,6 +578,7 @@ class _WishScreenState extends State<WishScreen>{
                                           ),
                                         ),
                                         onPressed: (){
+                                          if(curwish.isChecked) showUnavailable("Чтобы редактировать желание необходимо сменить статус \nна 'не выполнено'"); else if(!curwish.isActive)showUneditable(); else{
                                           if(appVM.mainScreenState!.allCircles.where((element) => element.id==appVM.wishScreenState!.wish.id).isNotEmpty) {
                                             BlocProvider.of<NavigationBloc>(context)
                                                 .add(NavigateToAimCreateScreenEvent(
@@ -556,7 +591,7 @@ class _WishScreenState extends State<WishScreen>{
                                                     seconds: 3), // Установите желаемую продолжительность отображения
                                               ),
                                             );
-                                          }
+                                          }}
                                         },
                                         child: const Text("Добавить", style: TextStyle(color: AppColors.greytextColor))
                                     ),
@@ -576,18 +611,18 @@ class _WishScreenState extends State<WishScreen>{
                   ]))
           );});
   }
-  void showUnavailable(){
+  void showUnavailable(String text){
     showDialog(context: context,
       builder: (BuildContext context) => AlertDialog(
-        contentPadding: EdgeInsets.zero,
+        contentPadding: const EdgeInsets.all(10),
         shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.all(Radius.circular(32.0))),
-        content: const Column(
+        content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text("Чтобы редактировать желание необходимо сменить статус \nна 'не выполнено'", maxLines: 5, textAlign: TextAlign.center,),
-            SizedBox(height: 4,),
-            Divider(color: AppColors.dividerGreyColor,),
+            Text(text, maxLines: 5, textAlign: TextAlign.center,),
+            const SizedBox(height: 4,),
+            const Divider(color: AppColors.dividerGreyColor,),
           ],
         ),
         actions: <Widget>[
@@ -599,10 +634,38 @@ class _WishScreenState extends State<WishScreen>{
       ),
     );
   }
+  void showUneditable() {
+    showDialog(context: context,
+      builder: (BuildContext context) =>
+          AlertDialog(
+            contentPadding: const EdgeInsets.all(10),
+            shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(32.0))),
+            content: const Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  "Чтобы редактировать необходимо изменить статус на 'актуальное' нажав кнопку 'осознать'",
+                  maxLines: 5, textAlign: TextAlign.center,),
+                SizedBox(height: 4,),
+                Divider(color: AppColors.dividerGreyColor,),
+              ],
+            ),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () async {
+                  Navigator.pop(context, 'OK');
+                },
+                child: const Text('Ok'),
+              ),
+            ],
+          ),
+    );
+  }
   void showCantChangeStatus(){
     showDialog(context: context,
       builder: (BuildContext context) => AlertDialog(
-        contentPadding: EdgeInsets.zero,
+        contentPadding: const EdgeInsets.all(10),
         shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.all(Radius.circular(32.0))),
         title: const Text("Внимание", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),),

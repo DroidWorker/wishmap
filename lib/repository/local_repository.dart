@@ -36,6 +36,26 @@ class LocalRepository{
     String? password = _prefs!.getString("password");
     return (login!=null&&password!=null)?AuthData(login: login, password: password):null;
   }
+  //actualizing
+  Future<void> saveActSetting(ActualizingSettingData settings) async {
+    if (_prefs == null) {
+      await init(); // Дождитесь завершения инициализации
+    }
+    _prefs!.setInt("taskActualizingMode", settings.taskActualizingMode);
+    _prefs!.setInt("wishActualizingMode", settings.wishActualizingMode);
+    _prefs!.setInt("sphereActualizingMode", settings.sphereActualizingMode);
+  }
+
+  Future<ActualizingSettingData> getActSetting() async {
+    if (_prefs == null) {
+      await init(); // Дождитесь завершения инициализации
+    }
+    ActualizingSettingData settings = ActualizingSettingData();
+    settings.sphereActualizingMode = _prefs!.getInt("sphereActualizingMode")??0;
+    settings.wishActualizingMode = _prefs!.getInt("wishActualizingMode")??0;
+    settings.taskActualizingMode = _prefs!.getInt("taskActualizingMode")??0;
+    return settings;
+  }
 
   Future<void> saveProfile(ProfileData pd) async {
     if (_prefs == null) {
@@ -95,7 +115,7 @@ class LocalRepository{
   Future addAllMoons(MoonItem mi, List<CircleData> childCircles) async{
       await dbHelper.insertMoon(mi);
       childCircles.forEach((element) async {
-        await dbHelper.insertSphere(WishData(id: element.id, parentId: element.parenId, text: element.text, description: element.subText, affirmation: element.affirmation, color: element.color), mi.id);
+        await dbHelper.insertSphere(WishData(id: element.id, parentId: element.parenId, text: element.text, description: element.subText, affirmation: element.affirmation, color: element.color)..isActive=element.isActive, mi.id);
       });
   }
   Future<List<MoonItem>> getMoons() async{
@@ -114,16 +134,16 @@ class LocalRepository{
     final result = await dbHelper.getSphere(id, moonId);
     Map<String, dynamic> tmp = jsonDecode(result['childAims']);
     Map<String, int> chAims = tmp.map((key, value) => MapEntry(key, int.parse(value.toString())));
-    return (result.isNotEmpty?(WishData(id: result["id"], parentId: result["parentId"], text: result["text"], description: result["subtext"], affirmation: result["affirmation"], color: Color(int.parse(result["color"].toString())))..childAims=chAims..photoIds=result['photosIds']..isChecked=result['isChecked']=="1"?true:false..isActive=result["isActive"]=="1"?true:false):null);
+    return (result.isNotEmpty?(WishData(id: result["id"], parentId: result["parentId"], text: result["text"], description: result["subtext"], affirmation: result["affirmation"].toString().split('|')[0], color: Color(int.parse(result["color"].toString())))..childAims=chAims..photoIds=result['photosIds']..isChecked=result['isChecked']=="1"?true:false..isActive=result["isActive"]=="1"?true:false..isHidden=result['isHidden']=="1"):null);
   }
   Future<List<WishItem>> getAllSpheres(int moonId) async {
     final result = await dbHelper.getAllSpheres(moonId);
-    List<WishItem> list =  result.map((e) => WishItem(id: e['id'], parentId: e['parentId'], text: e['text'], isChecked: e['isChecked']=="1"?true:false, isActive: e['isActive']=='1'?true:false)).toList();
+    List<WishItem> list =  result.map((e) => WishItem(id: e['id'], parentId: e['parentId'], text: e['text'], isChecked: e['isChecked']=="1"?true:false, isActive: e['isActive']=='1'?true:false, isHidden: e['isHidden']=='1')).toList();
     return list.where((element) => element.parentId>1).toList();
   }
   Future<List<CircleData>> getAllMoonSpheres(int moonId) async {
     final result = await dbHelper.getAllMoonSpheres(moonId);
-    List<CircleData> list =  result.map((e) => CircleData(id: e['id'], parenId: e['parentId'], text: e['text'], color: Color(e['color']), subText: e['subtext'], photosIds: e['photosIds'])).toList();
+    List<CircleData> list =  result.map((e) => CircleData(id: e['id'], parenId: e['parentId'], text: e['text'],affirmation: e['affirmation'], color: Color(e['color']), subText: e['subtext'], photosIds: e['photosIds'], isHidden: e['isHidden']=="1"?true:false, isActive: e['isActive']=="1"?true:false)).toList();
     return list;
   }
   Future<List<int>> getSpheresChildAims(int id, int moonId) async {
@@ -146,6 +166,9 @@ class LocalRepository{
   }
   Future activateSphere(int sphereId, bool status, int moonId) async{
     await dbHelper.activateSphere(sphereId, status, moonId);
+  }
+  Future hideSphere(int sphereId, bool isHide, int moonId) async{
+    await dbHelper.hideSphere(sphereId, isHide, moonId);
   }
   Future updateSphereImages(int sphereId, String imageIds, int moonId) async{
     final t = await dbHelper.updateSphereImages(sphereId, imageIds, moonId);
@@ -181,6 +204,9 @@ class LocalRepository{
   Future updateAimStatus(int aimId, bool status, int moonId) async{
     await dbHelper.updateAimStatus(aimId, status, moonId);
   }
+  Future activateAim(int aimId, bool status, int moonId) async{
+    await dbHelper.activateAim(aimId, moonId);
+  }
 
   Future<TaskData> getTask(int id, int moonId) async {
     final result = await dbHelper.getTask(id, moonId);
@@ -207,6 +233,9 @@ class LocalRepository{
   }
   Future updateTaskStatus(int taskId, bool status, int moonId) async{
     await dbHelper.updateTaskStatus(taskId, status, moonId);
+  }
+  Future activateTask(int taskId, bool status, int moonId) async{
+    await dbHelper.activateTask(taskId, moonId);
   }
 
   Future<List<CardData>> getAllDiary(int moonId) async {

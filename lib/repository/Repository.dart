@@ -300,7 +300,8 @@ class Repository{
             parenId: int.parse(dataList['parentId'].toString()),
             photosIds: dataList['photosIds']??"",
             isChecked: dataList['isChecked']??false,
-            isActive: dataList["isActive"]??true
+            isActive: dataList["isActive"]??true,
+            isHidden: dataList['isHidden']??false
           );
           circleDataList.add(circleData);
         });
@@ -329,7 +330,8 @@ class Repository{
               photoIds: dataList['photosIds']??"",
               affirmation: dataList['affirmation']??""
           )..isChecked = dataList['isChecked']??false
-          ..isActive = dataList['isactive']??true;
+          ..isActive = dataList['isActive']??true
+          ..isHidden = dataList['isHidden']??false;
           if(dataList['childAims']!=null){
             final Map<dynamic, dynamic> aimsData = dataList['childAims'] as Map<dynamic, dynamic>;
             final Map<String, int> aims = {};
@@ -427,7 +429,7 @@ class Repository{
               text: dataList['text'],
               description: dataList['subText'],
               isChecked: dataList['isChecked'],
-            isActive: dataList['isActive']
+            isActive: dataList['isActive']??false
           ));
         });
       }
@@ -476,7 +478,7 @@ class Repository{
               text: dataList['text'],
               isChecked: dataList['isChecked'],
               description: dataList['subText'],
-            isActive: dataList['isActive']
+            isActive: dataList['isActive']??false
           )..childTasks = childTasksList);
         });
       }
@@ -499,7 +501,8 @@ class Repository{
               text: dataList['text'],
               isChecked: dataList['isChecked']??false,
               parentId: dataList['parentId'],
-            isActive: dataList['isActive']??true
+            isActive: dataList['isActive']??true,
+            isHidden: dataList['isHidden']??false
           ));
         });
       }
@@ -534,6 +537,7 @@ class Repository{
           wd.isActive = dataList['isActive']??true;
           wd.childAims = childAims;
           wd.isChecked = dataList['isChecked']??false;
+          wd.isHidden = dataList['isHidden']??false;
           return wd;
       }
     }
@@ -558,7 +562,8 @@ class Repository{
           'parentId': wd.parentId,
           'photosIds': photosId,
           'affirmation': wd.affirmation,
-          'isActive': true
+          'isActive': true,
+          'isHidden': false
         };
       await userRef.child(_auth.currentUser!.uid).child("moonlist").child(currentMoonId.toString()).child("spheres").child(wd.id.toString()).set(
           dataMap
@@ -581,6 +586,12 @@ class Repository{
   Future activateWish(int id, int currentMoonId, bool status) async {
     if(_auth.currentUser!=null){
       userRef.child(_auth.currentUser!.uid).child("moonlist").child(currentMoonId.toString()).child("spheres").child(id.toString()).child("isActive").set(status);
+      //updateMoonSync(currentMoonId);
+    }
+  }
+  Future hideWish(int id, int currentMoonId, bool isHide) async {
+    if(_auth.currentUser!=null){
+      userRef.child(_auth.currentUser!.uid).child("moonlist").child(currentMoonId.toString()).child("spheres").child(id.toString()).child("isHidden").set(isHide);
       //updateMoonSync(currentMoonId);
     }
   }
@@ -672,6 +683,12 @@ class Repository{
       //updateMoonSync(currentMoonId);
     }
   }
+  Future activateAim(int id, int currentMoonId, bool status) async {
+    if(_auth.currentUser!=null){
+      userRef.child(_auth.currentUser!.uid).child("moonlist").child(currentMoonId.toString()).child("aims").child(id.toString()).child("isActive").set(status);
+      //updateMoonSync(currentMoonId);
+    }
+  }
 
   Future<int?> createTask(TaskData td, int parentAimId, int currentMoonId) async {
     if(_auth.currentUser!=null){
@@ -746,6 +763,12 @@ class Repository{
   Future changeTaskStatus(int id, int currentMoonId, bool status) async {
     if(_auth.currentUser!=null){
       userRef.child(_auth.currentUser!.uid).child("moonlist").child(currentMoonId.toString()).child("tasks").child(id.toString()).child("isChecked").set(status);
+      //updateMoonSync(currentMoonId);
+    }
+  }
+  Future activateTask(int id, int currentMoonId, bool status) async {
+    if(_auth.currentUser!=null){
+      userRef.child(_auth.currentUser!.uid).child("moonlist").child(currentMoonId.toString()).child("tasks").child(id.toString()).child("isActive").set(status);
       //updateMoonSync(currentMoonId);
     }
   }

@@ -251,21 +251,21 @@ class AppViewModel with ChangeNotifier {
         }
       }
     }
-    final aims = await repository.getMyAimsData(moonId-1);
-    aims?.forEach((element) async {
+    final aims = await localRep.getAllAimsData(moonId-1);
+    aims.forEach((element) async {
       await localRep.addAim(element,moonId);
     });
-    final tasks = await repository.getMyTasksData(moonId-1);
-    tasks?.forEach((element) async {
+    final tasks = await localRep.getAllTasksData(moonId-1);
+    tasks.forEach((element) async {
       await localRep.addTask(element,moonId);
     });
-    final diary = await repository.getDiaryList(moonId-1);
-    diary?.forEach((element) async {
+    final diary = await localRep.getAllDiary(moonId-1);
+    diary.forEach((element) async {
       await localRep.addDiary(element,moonId);
     });
-    if(aims!=null)repository.addAllAims(aims, moonId);
-    if(tasks!=null)repository.addAllTasks(tasks, moonId);
-    if(diary!=null)repository.addDiary(diary, moonId);
+    repository.addAllAims(aims, moonId);
+    repository.addAllTasks(tasks, moonId);
+    repository.addDiary(diary, moonId);
     notifyListeners();
   }
 
@@ -594,7 +594,7 @@ class AppViewModel with ChangeNotifier {
       if(sphereInAllCircles==-1){
         mainScreenState!.allCircles.add(CircleData(id: wd.id, text: wd.text, color: wd.color, parenId: wd.parentId));
         mainScreenState!.allCircles.sort((a,b)=>a.id.compareTo(b.id));
-        if(wd.id > 899)wishItems.add(WishItem(id: wd.id, text: wd.text, isChecked: wd.isChecked, isActive: wd.isActive));
+        if(wd.id > 899)wishItems.add(WishItem(id: wd.id, text: wd.text, isChecked: wd.isChecked, isActive: wd.isActive, isHidden: wd.isHidden));
       }
       else{
         mainScreenState!.allCircles[sphereInAllCircles]
@@ -605,7 +605,7 @@ class AppViewModel with ChangeNotifier {
       }
       var sphereInWishesList = wishItems.indexWhere((element) => element.id==wd.id);
       if(sphereInWishesList>=0){
-        wishItems[sphereInWishesList]=WishItem(id: wd.id, text: wd.text, isChecked: wd.isChecked,isActive: wd.isActive);
+        wishItems[sphereInWishesList]=WishItem(id: wd.id, text: wd.text, isChecked: wd.isChecked,isActive: wd.isActive, isHidden: wd.isHidden);
       }
       updateMoonSync(mainScreenState?.moon.id??0);
     }catch(ex){
@@ -637,6 +637,16 @@ class AppViewModel with ChangeNotifier {
     try {
       if(connectivity != 'No Internet Connection')await repository.activateWish(id, mainScreenState!.moon.id, status);
       await localRep.activateSphere(id, status, mainScreenState!.moon.id);
+      mainScreenState!.allCircles[mainScreenState!.allCircles.indexWhere((element) => element.id==id)].isActive=true;
+      updateMoonSync(mainScreenState?.moon.id??0);
+    }catch(ex){
+      addError("сфера не была актуализирована: $ex");
+    }
+  }
+  Future<void> hideSphereWish(int id, bool isHide) async{
+    try {
+      if(connectivity != 'No Internet Connection')await repository.hideWish(id, mainScreenState!.moon.id, isHide);
+      await localRep.hideSphere(id, isHide, mainScreenState!.moon.id);
       mainScreenState!.allCircles[mainScreenState!.allCircles.indexWhere((element) => element.id==id)].isActive=true;
       updateMoonSync(mainScreenState?.moon.id??0);
     }catch(ex){
@@ -776,6 +786,16 @@ class AppViewModel with ChangeNotifier {
       addError("#764$ex");
     }
   }
+  Future<void> activateAim(int id, bool status) async{
+    try {
+      if(connectivity != 'No Internet Connection')await repository.activateAim(id, mainScreenState!.moon.id, status);
+      await localRep.activateAim(id, status, mainScreenState!.moon.id);
+      aimItems.where((element) => element.id==id).first.isActive=true;
+      updateMoonSync(mainScreenState?.moon.id??0);
+    }catch(ex){
+      addError("сфера не была актуализирована: $ex");
+    }
+  }
   Future<void> updateAim(AimData ad) async{
     try {
       if(connectivity != 'No Internet Connection')await repository.updateAim(ad, mainScreenState?.moon.id??0);
@@ -885,6 +905,16 @@ class AppViewModel with ChangeNotifier {
       notifyListeners();
     }catch(ex){
       addError("#528${ex.toString()}");
+    }
+  }
+  Future<void> activateTask(int id, bool status) async{
+    try {
+      if(connectivity != 'No Internet Connection')await repository.activateTask(id, mainScreenState!.moon.id, status);
+      await localRep.activateTask(id, status, mainScreenState!.moon.id);
+      aimItems.where((element) => element.id==id).first.isActive=true;
+      updateMoonSync(mainScreenState?.moon.id??0);
+    }catch(ex){
+      addError("сфера не была актуализирована: $ex");
     }
   }
 

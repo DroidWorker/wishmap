@@ -17,6 +17,19 @@ class ProfileData {
   ProfileData({this.id = "", required this.name, required this.surname});
 }
 
+class ActualizingSettingData{
+  int sphereActualizingMode = 0;
+  //0-Автоматическая актуализация всех сфер при актуализации "я"
+  //1-автоматическая актуализация конкретной сферы при актуализации нижестоящего желания (верхнего уровня)
+  int wishActualizingMode = 0;
+  //0-режим автоматическая актуализация желания сверху вниз каскадом
+  //1-автоматическая актуализация снизу вверх по ветке
+  int taskActualizingMode = 0;
+  //0-taskAutoActualizingOff
+  //1-"автоматически актуализировать невыполненные задачи  при актуализации новой карты, то задач, которые потребуют ручной актуализации не будет, они все автоматом будут актуализированы при актуализации вышестоящей цели, а значит и желания.
+  ActualizingSettingData({this.sphereActualizingMode = 0, this.wishActualizingMode = 0, this.taskActualizingMode = 0});
+}
+
 class CircleData{
   final int id;
   String text;
@@ -27,8 +40,9 @@ class CircleData{
   String photosIds = "";
   bool isChecked;
   bool isActive;
+  bool isHidden;
 
-  CircleData({required this.id, required this.text, this.subText = "", required this.color, required this.parenId, this.affirmation="", this.photosIds="", this.isChecked = false, this.isActive = true});
+  CircleData({required this.id, required this.text, this.subText = "", required this.color, required this.parenId, this.affirmation="", this.photosIds="", this.isChecked = false, this.isActive = true, this.isHidden = false});
 
   @override
   String toString(){
@@ -116,9 +130,10 @@ class WishItem {
   final String text;
   bool isChecked;
   bool isActive;
+  bool isHidden;
   int parentId;
 
-  WishItem({required this.id, required this.text, required this.isChecked, required this.isActive, this.parentId=-1});
+  WishItem({required this.id, required this.text, required this.isChecked, required this.isActive, required this.isHidden, this.parentId=-1});
 }
 
 class WishData {
@@ -134,6 +149,7 @@ class WishData {
   Map<int, Uint8List> photos = {};
   bool isChecked = false;
   bool isActive = true;
+  bool isHidden = false;
 
   WishData({required this.id, required this.parentId, required this.text, required this.description, this.photoIds = "", required this.affirmation, required this.color});
 }

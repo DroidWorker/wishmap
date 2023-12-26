@@ -11,6 +11,8 @@ import 'package:wishmap/home/gaery_screen.dart';
 import 'package:wishmap/home/mainsphereedit_screen.dart';
 import 'package:wishmap/home/mytasks_screen.dart';
 import 'package:wishmap/home/qrCheck_screen.dart';
+import 'package:wishmap/home/settings/main_settings.dart';
+import 'package:wishmap/home/settings/personal_settings.dart';
 import 'package:wishmap/home/taskcreate_screen.dart';
 import 'package:wishmap/home/wish_screen.dart';
 import 'ViewModel.dart';
@@ -120,6 +122,10 @@ class MyApp extends StatelessWidget {
       return const GalleryScreen();
     } else if (state is NavigationQRScreenState) {
       return QRCheckScreen();
+    } else if (state is NavigationMainSettingsScreenState) {
+      return MainSettings();
+    } else if (state is NavigationPersonalSettingsScreenState) {
+      return PersonalSettings();
     } else {
       return Container(); // По умолчанию или для других состояний.
     }

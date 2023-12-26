@@ -4,6 +4,7 @@ import 'package:keyboard_attachable/keyboard_attachable.dart';
 import 'package:provider/provider.dart';
 import 'package:wishmap/common/treeview_widget.dart';
 import '../ViewModel.dart';
+import '../common/EditTextOverlay.dart';
 import '../data/models.dart';
 import '../navigation/navigation_block.dart';
 import '../res/colors.dart';
@@ -173,7 +174,23 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                                 child: const Text("Удалить",style: TextStyle(color: Colors.black, fontSize: 12))
                             ),
                             const SizedBox(width: 3,),
+                            ai!=null&&!ai!.isActive?
                             TextButton(
+                                style: TextButton.styleFrom(
+                                  backgroundColor: AppColors.greyBackButton,
+                                  shape: const RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.all(Radius.circular(10)),
+                                  ),
+                                ),
+                                onPressed: () async {
+                                  setState(() {
+                                    appVM.activateTask(ai!.id, true);
+                                    ai!.isActive = true;
+                                  });
+                                },
+                                child: const Text("Актуализировать",
+                                    style: TextStyle(color: AppColors.blueTextColor, fontSize: 12))
+                            ):TextButton(
                                 style: TextButton.styleFrom(
                                   backgroundColor: AppColors.greyBackButton,
                                   shape: const RoundedRectangleBorder(
@@ -200,29 +217,50 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                       onTap: (){if(ai!.isChecked)showUnavailable();},
                       controller: text,
                       showCursor: true,
-                      readOnly: ai!=null?(ai!.isChecked?true:false):false,
+                      readOnly: ai!=null?(ai!.isChecked||!ai!.isActive?true:false):false,
                       style: const TextStyle(color: Colors.black), // Черный текст ввода
                       decoration: InputDecoration(
                           filled: true,
-                          fillColor: ai!=null?(ai!.isChecked?AppColors.fieldLockColor:AppColors.fieldFillColor):AppColors.fieldFillColor,
+                          fillColor: ai!=null?(ai!.isChecked?AppColors.fieldLockColor:!ai!.isActive?AppColors.fieldInactive:AppColors.fieldFillColor):AppColors.fieldFillColor,
                           hintText: 'Название',
                           hintStyle: TextStyle(color: Colors.black.withOpacity(0.3)),
-                          border: InputBorder.none
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10.0),
+                          borderSide: const BorderSide(
+                            width: 0,
+                            style: BorderStyle.none,
+                          ),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 15,),
                     TextField(
-                      onTap: (){if(ai!.isChecked)showUnavailable();},
+                      minLines: 4,
+                      maxLines: 7,
                       controller: description,
-                      showCursor: true,
-                      readOnly: ai!=null?(ai!.isChecked?true:false):false,
+                      onTap: () async {
+                        if(ai!.isChecked){showUnavailable();}
+                        else if(!ai!.isActive){showUneditable();}
+                        else {
+                          description.text = await showOverlayedEdittext(context, description.text, (ai!.isActive&&!ai!.isChecked))??"";
+                          appVM.isChanged= true;
+                        }
+                      },
+                      showCursor: false,
+                      readOnly: true,
                       style: const TextStyle(color: Colors.black), // Черный текст ввода
                       decoration: InputDecoration(
-                          filled: true,
-                          fillColor: ai!=null?(ai!.isChecked?AppColors.fieldLockColor:AppColors.fieldFillColor):AppColors.fieldFillColor,
-                          hintText: 'Описание',
-                          hintStyle: TextStyle(color: Colors.black.withOpacity(0.3)),
-                          border: InputBorder.none
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10.0),
+                          borderSide: const BorderSide(
+                            width: 0,
+                            style: BorderStyle.none,
+                          ),
+                        ),
+                        filled: true, // Заливка фона
+                        fillColor: ai!=null?(ai!.isChecked?AppColors.fieldLockColor:!ai!.isActive?AppColors.fieldInactive:AppColors.fieldFillColor):AppColors.fieldFillColor,
+                        hintText: 'Описание', // Базовый текст
+                        hintStyle: TextStyle(color: Colors.black.withOpacity(0.3)), // Полупрозрачный черный базовый текст
                       ),
                     ),
                     const SizedBox(height: 15,),
@@ -302,6 +340,35 @@ class TaskEditScreenState extends State<TaskEditScreen>{
           ),
         ],
       ),
+    );
+  }
+
+  void showUneditable() {
+    showDialog(context: context,
+      builder: (BuildContext context) =>
+          AlertDialog(
+            contentPadding: EdgeInsets.zero,
+            shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(32.0))),
+            content: const Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  "Чтобы редактировать необходимо изменить статус на 'актуальное' нажав кнопку 'осознать'",
+                  maxLines: 5, textAlign: TextAlign.center,),
+                SizedBox(height: 4,),
+                Divider(color: AppColors.dividerGreyColor,),
+              ],
+            ),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () async {
+                  Navigator.pop(context, 'OK');
+                },
+                child: const Text('Ok'),
+              ),
+            ],
+          ),
     );
   }
 

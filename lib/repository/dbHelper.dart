@@ -47,6 +47,7 @@ class DatabaseHelper {
         affirmation TEXT,
         isActive TEXT,
         isChecked Text,
+        isHidden INTEGER,
         parentId INTEGER,
         photosIds TEXT,
         color INTEGER,
@@ -263,7 +264,7 @@ class DatabaseHelper {
   Future<int> insertSphere(WishData wd, int moonId) async {
     Database db = await database;
     String chAims = jsonEncode(wd.childAims);
-    return await db.insert("spheres", {'id': wd.id, 'moonId':moonId, 'text': wd.text, 'subtext': wd.description, 'affirmation': wd.affirmation, 'isActive':wd.isActive?1:0, 'isChecked': wd.isChecked?1:0, 'parentId': wd.parentId, 'photosIds': wd.photoIds, 'color': wd.color.value, 'childAims': chAims});
+    return await db.insert("spheres", {'id': wd.id, 'moonId':moonId, 'text': wd.text, 'subtext': wd.description, 'affirmation': wd.affirmation, 'isActive':wd.isActive?1:0, 'isChecked': wd.isChecked?1:0, 'isHidden': wd.isHidden?1:0, 'parentId': wd.parentId, 'photosIds': wd.photoIds, 'color': wd.color.value, 'childAims': chAims});
   }
   Future<int> insertOrUpdateSphere(WishData wd, int moonId) async {
     Database db = await database;
@@ -279,6 +280,7 @@ class DatabaseHelper {
         'affirmation': wd.affirmation,
         'isActive': wd.isActive?1:0,
         'isChecked': wd.isChecked?1:0,
+        'isHidden': wd.isHidden?1:0,
         'parentId': wd.parentId,
         'photosIds': wd.photoIds,
         'color': wd.color.value,
@@ -299,6 +301,7 @@ class DatabaseHelper {
           'affirmation': wd.affirmation,
           'isActive': wd.isActive?1:0,
           'isChecked': wd.isChecked?1:0,
+          'isHidden': wd.isHidden?1:0,
           'parentId': wd.parentId,
           'photosIds': wd.photoIds,
           'color': wd.color.value,
@@ -314,11 +317,15 @@ class DatabaseHelper {
   Future<int> updateSphere(WishData wd, int moonid) async {
     Database db = await database;
     String chAims = wd.childAims.values.join("|");
-    return await db.update("spheres", {'text': wd.text, 'subtext': wd.description, 'affirmation': wd.affirmation, 'isActive':wd.isActive?1:0, 'isChecked': wd.isChecked?1:0, 'parentId': wd.parentId, 'photosIds': wd.photoIds, 'color': wd.color.value, 'childAims': chAims}, where: "id = ? AND moonId = ?", whereArgs: [wd.id, moonid]);
+    return await db.update("spheres", {'text': wd.text, 'subtext': wd.description, 'affirmation': wd.affirmation, 'isActive':wd.isActive?1:0, 'isChecked': wd.isChecked?1:0, 'isHidden': wd.isHidden?1:0, 'parentId': wd.parentId, 'photosIds': wd.photoIds, 'color': wd.color.value, 'childAims': chAims}, where: "id = ? AND moonId = ?", whereArgs: [wd.id, moonid]);
   }
   Future<int>activateSphere(int sphereId, bool status, int moonid) async {
     Database db = await database;
     return await db.update("spheres", {'isActive': 1,}, where: "id = ? AND moonId = ?", whereArgs: [sphereId, moonid]);
+  }
+  Future<int>hideSphere(int sphereId, bool isHide, int moonid) async {
+    Database db = await database;
+    return await db.update("spheres", {'isHidden': isHide?1:0,}, where: "id = ? AND moonId = ?", whereArgs: [sphereId, moonid]);
   }
   Future<int> updateSphereStatus(int sphereId, bool status, int moonid) async {
     Database db = await database;

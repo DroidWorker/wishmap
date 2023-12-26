@@ -4,11 +4,11 @@ import 'package:flutter/material.dart';
 
 import '../res/colors.dart';
 
-Future<String?> showOverlayedAffirmations(BuildContext context, List<String> affirmations)async {
+Future<String?> showOverlayedAffirmations(BuildContext context, List<String> affirmations, bool isChecked)async {
   Completer<String?> completer = Completer<String?>();
   OverlayEntry? overlayEntry;
 
-    var myOverlay = MyAffirmationOverlay(affirmations: affirmations, onClose: (value) {
+    var myOverlay = MyAffirmationOverlay(affirmations: affirmations, isChecked: isChecked,  onClose: (value) {
       overlayEntry?.remove();
       completer.complete(value);
     });
@@ -25,8 +25,9 @@ class MyAffirmationOverlay extends StatefulWidget {
   Function(String value) onClose;
 
   List<String> affirmations;
+  bool isChecked;
 
-  MyAffirmationOverlay({super.key, required this.affirmations, required this.onClose});
+  MyAffirmationOverlay({super.key, required this.affirmations, required this.isChecked, required this.onClose});
 
   @override
   _MyOverlayState createState() => _MyOverlayState();
@@ -38,19 +39,25 @@ class _MyOverlayState extends State<MyAffirmationOverlay> {
   int currentIndex = -1;
   @override
   Widget build(BuildContext context) {
+    if(widget.isChecked&&currentAffirmation=="")currentAffirmation=widget.affirmations.first;
     return Positioned.fill(
       child: Material(
           color: AppColors.backgroundColor,
           child: Column(
             children: [
+              const SizedBox(height: 30,),
               Row(
                 children: [
                   IconButton(
                     icon: const Icon(Icons.keyboard_arrow_left),
                     onPressed: () {
+                      for (var element in widget.affirmations) {
+                        if(element!=currentAffirmation) currentAffirmation+="|$element";
+                      }
                       widget.onClose(currentAffirmation);
                     },
                   ),
+                  const Spacer(),
                   TextButton(
                       style: TextButton.styleFrom(
                         backgroundColor: AppColors.greyBackButton,
@@ -61,6 +68,7 @@ class _MyOverlayState extends State<MyAffirmationOverlay> {
                       onPressed: (){},
                       child: const Text("Shuffle", style: TextStyle(color: AppColors.blueTextColor),)
                   ),
+                  const SizedBox(width: 20,),
                   TextButton(
                       style: TextButton.styleFrom(
                         backgroundColor: AppColors.greyBackButton,
@@ -68,13 +76,20 @@ class _MyOverlayState extends State<MyAffirmationOverlay> {
                           borderRadius: BorderRadius.all(Radius.circular(10)),
                         ),
                       ),
-                      onPressed: (){},
-                      child: Text("Удалить", style: TextStyle(color: AppColors.blueTextColor))
-                  )
+                      onPressed: (){
+                        setState(() {
+                          widget.affirmations.removeWhere((element) => element==currentAffirmation);
+                          currentAffirmation="";
+                        });
+                      },
+                      child: const Text("Удалить", style: TextStyle(color: AppColors.blueTextColor))
+                  ),
+                  const SizedBox(width: 19,),
                 ],
               ),
-              const SizedBox(height: 15),
-              ListView.builder(
+              const SizedBox(height: 10),
+              Expanded(child: ListView.builder(
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
                 itemCount: widget.affirmations.length,
                 itemBuilder: (context, index) {
                   return InkWell(
@@ -86,7 +101,7 @@ class _MyOverlayState extends State<MyAffirmationOverlay> {
                     },
                     child: Container(
                       padding: const EdgeInsets.all(8),
-                      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                       decoration: BoxDecoration(
                         color: AppColors.greyBackButton,
                         borderRadius: BorderRadius.circular(10),
@@ -94,15 +109,15 @@ class _MyOverlayState extends State<MyAffirmationOverlay> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(widget.affirmations[index], style: const TextStyle(fontSize: 18)),
-                          if(currentIndex==index)const Icon(Icons.arrow_forward, color: Colors.black),
+                          Text(widget.affirmations[index], style: const TextStyle(fontSize: 16)),
+                          if(currentIndex==index)const Icon(Icons.check_circle_outline, color: Colors.black),
                         ],
                       ),
                     ),
                   );
                 },
-              ),
-              const SizedBox(height: 10,),
+              ),),
+              const SizedBox(height: 5,),
               TextField(
                 controller: controller,
                 decoration: InputDecoration(

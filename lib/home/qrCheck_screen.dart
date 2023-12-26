@@ -37,12 +37,12 @@ bool isFound = false;
               debugPrint('Barcode found! ${barcode.rawValue}');
             }
             if(barcodes.last.rawValue.toString()=="promocode"&&!isFound){
+              isFound=true;
               await appViewModel.duplicateLastMoon();
               final moonId = appViewModel.moonItems.last;
               appViewModel.startMainScreen(moonId);
               BlocProvider.of<NavigationBloc>(context)
                   .add(NavigateToMainScreenEvent());
-              isFound=true;
             }
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(

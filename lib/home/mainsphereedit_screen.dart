@@ -45,10 +45,9 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
       }
     }
     TextEditingController text = TextEditingController(text: curWd.text);
-    TextEditingController affirmation = TextEditingController(text: curWd.affirmation);
+    TextEditingController affirmation = TextEditingController(text: curWd.affirmation.split("|")[0]);
     circleColor = curWd.color;
     text.addListener(() { curWd.text=text.text;appViewModel.isChanged = true;});
-    affirmation.addListener(() { curWd.affirmation=affirmation.text;appViewModel.isChanged = true;});
     return Consumer<AppViewModel>(
         builder: (context, appVM, child){
           final aims = appVM.aimItems.where((element) => element.parentId==0).toList();
@@ -161,14 +160,16 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
                           borderRadius: BorderRadius.all(Radius.circular(10)),
                         ),
                       ),
-                      onPressed: () async {
+                      onPressed: () {
                         setState(() {
                           appViewModel.activateSphereWish(curWd.id, true);
+                          curWd.isActive = true;
                         });
                       },
                       child: const Text("Осознать",
                         style: TextStyle(color: AppColors.redTextColor),)
                   ),
+                  const SizedBox(width: 15,)
                 ],),
                 const SizedBox(height: 5),
                 Expanded(child: SingleChildScrollView(child:Padding(
@@ -181,7 +182,13 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
                   showCursor: true,
                   readOnly: curWd.isActive?false:true,
                   decoration: InputDecoration(
-                    border: InputBorder.none,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10.0),
+                      borderSide: const BorderSide(
+                        width: 0,
+                        style: BorderStyle.none,
+                      ),
+                    ),
                     filled: true, // Заливка фона
                     fillColor: curWd.isActive?AppColors.fieldFillColor:AppColors.fieldInactive, // Серый фон с полупрозрачностью
                     hintText: 'Запиши желание', // Базовый текст
@@ -189,22 +196,36 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
                     hintStyle: TextStyle(color: Colors.black.withOpacity(0.3)), // Полупрозрачный черный базовый текст
                   ),
                 ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 15),
                   TextField(
                     controller: affirmation,
                     readOnly: true,
-                    onTap: (){showOverlayedAffirmations(context, ["Я счастлив и спокоен", "Я радостный и свободный", "Я смотрю на мир с любовью", "Я полон любви и благодати"]);},
+                    onTap: () async {
+                      final affirmationsStr = curWd.affirmation==""?
+                        await showOverlayedAffirmations(context, ["Я счастлив и спокоен", "Я благословенный и умиротворенный", "Я радостный и свободный", "Я смотрю на мир с любовью", "Я успешный и счастливый", "Я безмятежный и радостный", "Я полон любви и благодати", "Я достигший своих заветных целей", "Я Люблю свое тело и люблю свою душу", "Я в изобилии и наслаждении", "Я энергичный и эйфоричный", "Я умиротворенный и благодарный", "Я ликующий и сверкающий", "Я востроженный и наслаждающийся жизнью", "Я бееззаботный и радужный", "Я вдохновенный и преисполненный", "Я озаренный и благодарный", "Я принимааю и ценю себя таким какой я есть", "Я умиротворенный и свободный от тревоги", "Я ликующий и счастливый до глубины души", "Я благодарный и удовлетворенный", "Я влюбленный и исполненный милости", "Я гармоничный и исполненный радости", "Я радостный и восорженный в каждом мгновении"], false):
+                        await showOverlayedAffirmations(context, curWd.affirmation.split("|"), true);
+
+                      affirmation.text=affirmationsStr?.split("|")[0]??"";
+                      curWd.affirmation=affirmationsStr??"";
+                      appViewModel.isChanged =true;
+                      },
                     style: const TextStyle(color: Colors.black), // Черный текст ввода
                     decoration: InputDecoration(
-                      border: InputBorder.none,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10.0),
+                        borderSide: const BorderSide(
+                          width: 0,
+                          style: BorderStyle.none,
+                        ),
+                      ),
                       filled: true, // Заливка фона
-                      fillColor: AppColors.fieldFillColor, // Серый фон с полупрозрачностью
-                      hintText: 'Напиши аффирмацию', // Базовый текст
+                      fillColor: curWd.isActive?AppColors.fieldFillColor:AppColors.fieldInactive, // Серый фон с полупрозрачностью
+                      hintText: 'Выбери аффирмацию', // Базовый текст
                       helperText: "Выберите аффирмацию или напишите свою",
                       hintStyle: TextStyle(color: Colors.black.withOpacity(0.3)), // Полупрозрачный черный базовый текст
                     ),
                   ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 15),
                 LayoutBuilder(
                   builder: (context, constraints) {
                     double fullWidth = constraints.maxWidth-4;
@@ -218,7 +239,7 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
                         children:[
                           Row(
                             children: [
-                              Container(width: leftWidth, height: leftWidth, color: AppColors.fieldFillColor,
+                              Container(width: leftWidth, height: leftWidth, color: curWd.isActive?AppColors.fieldFillColor:AppColors.fieldInactive,
                                 child: appViewModel.isinLoading? const Align(alignment: Alignment.bottomCenter,
                                   child: LinearCappedProgressIndicator(
                                     backgroundColor: Colors.black26,
@@ -228,7 +249,7 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
                               ),
                               const SizedBox(width: 2),
                               Column(children: [
-                                Container(width: rightWidth, height: leftWidth/2-2, color: AppColors.fieldFillColor,
+                                Container(width: rightWidth, height: leftWidth/2-2, color: curWd.isActive?AppColors.fieldFillColor:AppColors.fieldInactive,
                                   child: appViewModel.isinLoading? const Align(alignment: Alignment.bottomCenter,
                                     child: LinearCappedProgressIndicator(
                                       backgroundColor: Colors.black26,
@@ -237,7 +258,7 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
                                     ),): appViewModel.cachedImages.length>1?Image.memory(appViewModel.cachedImages[1], fit: BoxFit.cover, color: curWd.isActive?null:Colors.redAccent):Container(),
                                 ),
                                 const SizedBox(height: 2),
-                                Container(width: rightWidth, height: leftWidth/2-1, color: AppColors.fieldFillColor,
+                                Container(width: rightWidth, height: leftWidth/2-1, color: curWd.isActive?AppColors.fieldFillColor:AppColors.fieldInactive,
                                   child: appViewModel.isinLoading? const Align(alignment: Alignment.bottomCenter,
                                     child: LinearCappedProgressIndicator(
                                       backgroundColor: Colors.black26,

@@ -47,14 +47,11 @@ class _ProfileScreenState extends State<ProfileScreen>{
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              GestureDetector(
-                child: const Text("<Назад", style: TextStyle(color: AppColors.greytextColor),),
-                onTap: (){
-                  if(appViewModel.mainScreenState!=null)appViewModel.startMainScreen(appViewModel.mainScreenState!.moon);
-                  BlocProvider.of<NavigationBloc>(context)
-                      .add(NavigateToMainScreenEvent());
-                },
-              ),
+              IconButton(onPressed: (){
+                if(appViewModel.mainScreenState!=null)appViewModel.startMainScreen(appViewModel.mainScreenState!.moon);
+                BlocProvider.of<NavigationBloc>(context)
+                    .add(NavigateToMainScreenEvent());
+              }, icon: const Icon(Icons.arrow_back_ios)),
               Padding(
                 padding: const EdgeInsets.fromLTRB(5, 15, 5, 15),
                 child: Row(children: [
@@ -93,6 +90,9 @@ class _ProfileScreenState extends State<ProfileScreen>{
                   ],)
                 ],),
               ),
+              const SizedBox(height: 5),
+              const Text("Настройки", style: TextStyle(fontSize: 10, color: AppColors.greytextColor)),
+              const SizedBox(height: 5),
               const Divider(
                 height: 3,
                 color: AppColors.dividerGreyColor,
@@ -100,26 +100,120 @@ class _ProfileScreenState extends State<ProfileScreen>{
                 endIndent: 5,
               ),
               const SizedBox(height: 5),
-              const Text("Еще", style: TextStyle(fontSize: 10, color: AppColors.greytextColor)),
+             InkWell(
+               onTap: (){
+                 BlocProvider.of<NavigationBloc>(context)
+                     .add(NavigateToMainSettingsScreenEvent());
+               },
+               child: const Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                 children: [
+                 Text("Основные"),
+                 Icon(Icons.arrow_forward_ios)
+               ],),
+             ),
+              InkWell(
+                onTap: (){},
+                child: const Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                  Text("Напоминания"),
+                  Icon(Icons.arrow_forward_ios)
+                ],),
+              ),
+              InkWell(
+                onTap: (){},
+                child: const Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                  Text("Пин-код"),
+                  Icon(Icons.arrow_forward_ios)
+                ],),
+              ),
+              InkWell(
+                onTap: (){},
+                child: const Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                  Text("Звуки"),
+                  Icon(Icons.arrow_forward_ios)
+                ],),
+              ),
+              const SizedBox(height: 10,),
+              const Text("Обо мне", style: TextStyle(fontSize: 10, color: AppColors.greytextColor)),
               const SizedBox(height: 5),
-              GestureDetector(
-                child: const Text("Ваш уровень(баллы)"),
-                onTap: (){},
+              const Divider(
+                height: 3,
+                color: AppColors.dividerGreyColor,
+                indent: 5,
+                endIndent: 5,
               ),
-              GestureDetector(
-                child: const Text("Пройти тест"),
-                onTap: (){},
+              const SizedBox(height: 5),
+              InkWell(
+                onTap: (){
+                  BlocProvider.of<NavigationBloc>(context)
+                      .add(NavigateToPersonalSettingsScreenEvent());
+                },
+                child: const Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                  Text("Личные данные"),
+                  Icon(Icons.arrow_forward_ios)
+                ],),
               ),
-              GestureDetector(
-                child: const Text("Колесо жизни"),
+              InkWell(
                 onTap: (){},
+                child: const Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                  Text("Тестирование"),
+                  Icon(Icons.arrow_forward_ios)
+                ],),
               ),
-              GestureDetector(
-                child: const Text("Статистика"),
+              InkWell(
                 onTap: (){},
+                child: const Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                  Text("Уровень"),
+                  Icon(Icons.arrow_forward_ios)
+                ],),
               ),
-              const SizedBox(height: 10),
-              const Text("Настройки", style: TextStyle(fontSize: 10, color: AppColors.greytextColor))
+              const SizedBox(height: 10,),
+              const Text("Помощь", style: TextStyle(fontSize: 10, color: AppColors.greytextColor)),
+              const SizedBox(height: 5),
+              const Divider(
+                height: 3,
+                color: AppColors.dividerGreyColor,
+                indent: 5,
+                endIndent: 5,
+              ),
+              const SizedBox(height: 5),
+              InkWell(
+                onTap: (){},
+                child: const Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                  Text("Обращения"),
+                  Icon(Icons.arrow_forward_ios)
+                ],),
+              ),
+              InkWell(
+                onTap: (){},
+                child: const Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                  Text("Частые вопросы"),
+                  Icon(Icons.arrow_forward_ios)
+                ],),
+              ),
+              InkWell(
+                onTap: (){},
+                child: const Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                  Text("Связаться с нами"),
+                  Icon(Icons.arrow_forward_ios)
+                ],),
+              ),
+              InkWell(
+                onTap: (){},
+                child: const Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                  Text("Пожелания"),
+                  Icon(Icons.arrow_forward_ios)
+                ],),
+              ),
             ],
           ),
         ))
