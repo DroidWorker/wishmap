@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:capped_progress_indicator/capped_progress_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -5,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:wishmap/common/aimitem_widget.dart';
 import '../ViewModel.dart';
 import '../data/models.dart';
+import '../data/static.dart';
 import '../navigation/navigation_block.dart';
 import '../res/colors.dart';
 
@@ -116,6 +119,7 @@ class _AimsScreenState extends State<AimsScreen>{
                       onPressed: () {
                         if(appViewModel.mainScreenState!=null)appViewModel.startMainScreen(appViewModel.mainScreenState!.moon);
                         BlocProvider.of<NavigationBloc>(context).removeLastFromBS();
+                        appViewModel.mainScreenState!.hint="Добавление ЦЕЛЕЙ происходит  из желания, а желания из сферы. Определяй сферу, создавай желания, ставь цели и выполняй задачи. Твои желания обязательно сбудутся";
                         BlocProvider.of<NavigationBloc>(context)
                             .add(NavigateToMainScreenEvent());
                       },
@@ -170,6 +174,17 @@ class _AimsScreenState extends State<AimsScreen>{
                                 appVM.mainCircles.clear();
                                 appVM.startMainScreen(appVM.mainScreenState!.moon);
                               }
+                              final pressNum = appVM.getHintStates()["wheelClickNum"]??0;
+                              if(pressNum>5){
+                                appVM.backPressedCount++;
+                                if(appVM.backPressedCount==appVM.settings.quoteupdateFreq){
+                                  appVM.backPressedCount=0;
+                                  appVM.mainScreenState!.hint=quoteBack[Random().nextInt(367)];
+                                }
+                              }else{
+                                appVM.mainScreenState!.hint = "Кнопка “карта” возвращает вас на верхний уровень карты “желаний”. Сейчас вы уже здесь!";
+                              }
+                              appVM.setHintState("wheelClickNum", (pressNum+1));
                               BlocProvider.of<NavigationBloc>(context)
                                   .add(NavigateToMainScreenEvent());
                             },

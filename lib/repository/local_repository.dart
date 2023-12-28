@@ -41,9 +41,13 @@ class LocalRepository{
     if (_prefs == null) {
       await init(); // Дождитесь завершения инициализации
     }
+    _prefs!.setBool("fastActMainSphere", settings.fastActMainSphere);
     _prefs!.setInt("taskActualizingMode", settings.taskActualizingMode);
     _prefs!.setInt("wishActualizingMode", settings.wishActualizingMode);
+    _prefs!.setBool("fastActualizingWish", settings.fastActWish);
     _prefs!.setInt("sphereActualizingMode", settings.sphereActualizingMode);
+    _prefs!.setBool("fastActualizingSphere", settings.fastActSphere);
+    _prefs!.setInt("quoteUpdateFreq", settings.quoteupdateFreq);
   }
 
   Future<ActualizingSettingData> getActSetting() async {
@@ -51,9 +55,29 @@ class LocalRepository{
       await init(); // Дождитесь завершения инициализации
     }
     ActualizingSettingData settings = ActualizingSettingData();
+    settings.fastActMainSphere = _prefs!.getBool("fastActMainSphere")??false;
     settings.sphereActualizingMode = _prefs!.getInt("sphereActualizingMode")??0;
+    settings.fastActSphere = _prefs!.getBool("fastActualizingSphere")??false;
     settings.wishActualizingMode = _prefs!.getInt("wishActualizingMode")??0;
+    settings.fastActWish = _prefs!.getBool("fastActualizingWish")??false;
     settings.taskActualizingMode = _prefs!.getInt("taskActualizingMode")??0;
+    settings.quoteupdateFreq = _prefs!.getInt("quoteUpdateFreq")??10;
+    return settings;
+  }
+
+  //hints
+  Future<void> saveHintState(String key, int value) async {
+    if (_prefs == null) {
+      await init(); // Дождитесь завершения инициализации
+    }
+    _prefs!.setInt(key, value);
+  }
+
+  Map<String, int> getHintStates() {
+    Map<String, int> settings = {};
+    settings["firstOpenSphere"] = _prefs!.getInt("firstOpenSphere")??0;
+    settings["wheelClickNum"] = _prefs!.getInt("wheelClickNum")??0;
+    //settings[] = _prefs!.getBool("taskActualizingMode")??false;
     return settings;
   }
 
@@ -172,6 +196,9 @@ class LocalRepository{
   }
   Future updateSphereImages(int sphereId, String imageIds, int moonId) async{
     final t = await dbHelper.updateSphereImages(sphereId, imageIds, moonId);
+  }
+  Future updateSphereShuffle(int sphereId, bool shuffle, String lastShuffle, int moonId) async{
+    final t = await dbHelper.updateSphereShuffle(sphereId, shuffle, lastShuffle, moonId);
   }
 
   Future<AimData> getAim(int id, int moonId) async {

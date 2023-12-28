@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:capped_progress_indicator/capped_progress_indicator.dart';
@@ -12,6 +13,7 @@ import '../common/collage.dart';
 import '../common/colorpicker_widget.dart';
 import '../common/treeview_widget.dart';
 import '../data/models.dart';
+import '../data/static.dart';
 import '../navigation/navigation_block.dart';
 import '../res/colors.dart';
 
@@ -91,6 +93,7 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
                               onPressed: () async { Navigator.pop(c, 'OK');
                               await appViewModel.updateSphereWish(WishData(id: curWd.id, parentId: curWd.parenId, text: curWd.text, description: curWd.subText, affirmation: curWd.affirmation, color: curWd.color));
                               if(appViewModel.mainScreenState!=null)appViewModel.startMainScreen(appViewModel.mainScreenState!.moon);
+                              appViewModel.mainScreenState?.hint="Отлично! Теперь пришло время заполнить все сферы жизни. Ты можешь настроить состав и название сфер так, как считаешь нужным. И помни, что максимальное количество сфер ограничено и равно 13.";
                               appViewModel.isChanged = false;
                               BlocProvider.of<NavigationBloc>(context)
                                   .add(NavigateToMainScreenEvent());
@@ -122,6 +125,11 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
                         BlocProvider.of<NavigationBloc>(context)
                             .add(NavigateToMainScreenEvent());
                       }
+                      appViewModel.backPressedCount++;
+                      if(appViewModel.backPressedCount==appViewModel.settings.quoteupdateFreq){
+                        appViewModel.backPressedCount=0;
+                        appViewModel.mainScreenState!.hint=quoteBack[Random().nextInt(367)];
+                      }
                     },
                   ),
                   const Spacer(),
@@ -134,7 +142,8 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
                       ),
                       onPressed: () async {
                         await appViewModel.updateSphereWish(WishData(id: curWd.id, parentId: curWd.parenId, text: curWd.text, description: curWd.subText, affirmation: curWd.affirmation, color: curWd.color));
-                        if(appViewModel.mainScreenState!=null)appViewModel.startMainScreen(appViewModel.mainScreenState!.moon);
+                        if(appViewModel.mainScreenState!=null) await appViewModel.startMainScreen(appViewModel.mainScreenState!.moon);
+                        appViewModel.mainScreenState?.hint="Отлично! Теперь пришло время заполнить все сферы жизни. Ты можешь настроить состав и название сфер так, как считаешь нужным. И помни, что максимальное количество сфер ограничено и равно 13.";
                         appViewModel.isChanged = false;
                         showDialog(context: context,
                         builder: (BuildContext context) => AlertDialog(

@@ -57,6 +57,10 @@ class AppViewModel with ChangeNotifier {
   //appcfg
   var isinLoading = false;
 
+  //settings
+  ActualizingSettingData settings = ActualizingSettingData();
+  int backPressedCount = 0;
+
   List<CircleData> defaultCircles = [
     CircleData(id: 0, text: 'Я', subText: "состояние", color: const Color(0xFF000000), parenId: -1),
     CircleData(id: 100, text: 'Икигай', color: const Color(0xFFFF0000), parenId: 0),
@@ -82,6 +86,7 @@ class AppViewModel with ChangeNotifier {
     authData = await localRep.getAuth();
     profileData = await localRep.getProfile();
     if(authData!=null)getMoons();
+    settings = await localRep.getActSetting();
     notifyListeners();
   }
 
@@ -94,6 +99,19 @@ class AppViewModel with ChangeNotifier {
 
   Future clearLocalDB() async {
     await localRep.clearDatabase(mainScreenState?.moon.id??-1);
+  }
+
+  Map<String, int> getHintStates() {
+    return localRep.getHintStates();
+  }
+  setHintState(String k, int v) {
+    return localRep.saveHintState(k, v);
+  }
+  Future saveShuffle( int sphereId, bool shuffle, String lastShuffle) async {
+    localRep.updateSphereShuffle(sphereId, shuffle, lastShuffle, mainScreenState!.moon.id);
+  }
+  saveSettings(){
+    localRep.saveActSetting(settings);
   }
   
   Future updateMoonSync(int moonId)async{
@@ -153,7 +171,7 @@ class AppViewModel with ChangeNotifier {
         int moonId = moonItems.isNotEmpty?moonItems.last.id + 1:0;
         moonItems.add(MoonItem(id: moonId,
             filling: 0.01,
-            text: "Я",
+            text: 'Я',
             date: "${now.day.toString().padLeft(2, '0')}.${now.month.toString()
                 .padLeft(2, '0')}.${now.year}"));
         if(result!=ConnectivityResult.none){
@@ -200,7 +218,7 @@ class AppViewModel with ChangeNotifier {
     int moonId = moonItems.isNotEmpty?moonItems.last.id + 1:0;
     moonItems.add(MoonItem(id: moonId,
         filling: 0.01,
-        text: "Я",
+        text: 'Я',
         date: date));
     if(result!=ConnectivityResult.none){
       await repository.addMoon(moonItems.last, defaultCircles);
@@ -216,7 +234,7 @@ class AppViewModel with ChangeNotifier {
     int moonId = moonItems.isNotEmpty?moonItems.last.id + 1:0;
     moonItems.add(MoonItem(id: moonId,
         filling: 0.01,
-        text: "Я",
+        text: 'Я',
         date: "${now.day.toString().padLeft(2, '0')}.${now.month.toString().padLeft(2, '0')}.${now.year}"));
     if(result!=ConnectivityResult.none){
       if(moonItems.length==1) {

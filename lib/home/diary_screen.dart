@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:page_view_dot_indicator/page_view_dot_indicator.dart';
@@ -6,6 +8,7 @@ import 'package:provider/provider.dart';
 import '../ViewModel.dart';
 import '../common/cardWidget.dart';
 import '../data/models.dart';
+import '../data/static.dart';
 import '../navigation/navigation_block.dart';
 import '../res/colors.dart';
 
@@ -40,6 +43,12 @@ class DiaryScreen extends StatefulWidget {
                                         icon: const Icon(Icons.keyboard_arrow_left),
                                         iconSize: 30,
                                         onPressed: () {
+                                          appVM.backPressedCount++;
+                                          if(appVM.backPressedCount==appVM.settings.quoteupdateFreq){
+                                            appVM.backPressedCount=0;
+                                            appVM.mainScreenState!.hint=quoteBack[Random().nextInt(367)];
+                                          }
+                                          BlocProvider.of<NavigationBloc>(context).clearHistory();
                                           BlocProvider.of<NavigationBloc>(context)
                                               .add(NavigateToMainScreenEvent());
                                         },

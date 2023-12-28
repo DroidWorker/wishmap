@@ -51,7 +51,9 @@ class DatabaseHelper {
         parentId INTEGER,
         photosIds TEXT,
         color INTEGER,
-        childAims TEXT
+        childAims TEXT,
+        lastShuffle TEXT,
+        lastShuffle INTEGER
       )
     ''');
 
@@ -264,7 +266,7 @@ class DatabaseHelper {
   Future<int> insertSphere(WishData wd, int moonId) async {
     Database db = await database;
     String chAims = jsonEncode(wd.childAims);
-    return await db.insert("spheres", {'id': wd.id, 'moonId':moonId, 'text': wd.text, 'subtext': wd.description, 'affirmation': wd.affirmation, 'isActive':wd.isActive?1:0, 'isChecked': wd.isChecked?1:0, 'isHidden': wd.isHidden?1:0, 'parentId': wd.parentId, 'photosIds': wd.photoIds, 'color': wd.color.value, 'childAims': chAims});
+    return await db.insert("spheres", {'id': wd.id, 'moonId':moonId, 'text': wd.text, 'subtext': wd.description, 'affirmation': wd.affirmation, 'isActive':wd.isActive?1:0, 'isChecked': wd.isChecked?1:0, 'isHidden': wd.isHidden?1:0, 'parentId': wd.parentId, 'photosIds': wd.photoIds, 'color': wd.color.value, 'childAims': chAims, 'shuffle': 1, 'lastShuffle': ""});
   }
   Future<int> insertOrUpdateSphere(WishData wd, int moonId) async {
     Database db = await database;
@@ -306,6 +308,8 @@ class DatabaseHelper {
           'photosIds': wd.photoIds,
           'color': wd.color.value,
           'childAims': chAims,
+          'shuffle': 1,
+          'lastShuffle': ""
         },
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
@@ -334,6 +338,11 @@ class DatabaseHelper {
   Future<int> updateSphereImages(int sphereId, String imageIds, int moonid) async {
     Database db = await database;
     final res = db.update("spheres", {'photosIds': imageIds,}, where: "id = ? AND moonId = ?", whereArgs: [sphereId, moonid]);
+    return res;
+  }
+  Future<int> updateSphereShuffle(int sphereId, bool shuffle, String lastShuffle, int moonid) async {
+    Database db = await database;
+    final res = db.update("spheres", {'shuffle': shuffle?"1":"0", 'lastShuffle': lastShuffle}, where: "id = ? AND moonId = ?", whereArgs: [sphereId, moonid]);
     return res;
   }
   Future<int> deleteSphere(int id, int moonid) async {

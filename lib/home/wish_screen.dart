@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:capped_progress_indicator/capped_progress_indicator.dart';
@@ -13,6 +14,7 @@ import '../common/affirmationOverlay.dart';
 import '../common/collage.dart';
 import '../common/colorpicker_widget.dart';
 import '../common/treeview_widget.dart';
+import '../data/static.dart';
 import '../navigation/navigation_block.dart';
 import '../res/colors.dart';
 
@@ -147,7 +149,13 @@ class _WishScreenState extends State<WishScreen>{
                             }else{
                               BlocProvider.of<NavigationBloc>(context)
                                   .handleBackPress();
-                            }}
+                            }
+                            appViewModel.backPressedCount++;
+                            if(appViewModel.backPressedCount==appViewModel.settings.quoteupdateFreq){
+                              appViewModel.backPressedCount=0;
+                              appViewModel.mainScreenState!.hint=quoteBack[Random().nextInt(367)];
+                            }
+                          }
                       ),
                       const Expanded(child: SizedBox(),),
                       if(curwish.id > 899)

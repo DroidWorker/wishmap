@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:capped_progress_indicator/capped_progress_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -5,6 +7,7 @@ import 'package:provider/provider.dart';
 import '../ViewModel.dart';
 import '../common/treeview_widget.dart';
 import '../data/models.dart';
+import '../data/static.dart';
 import '../navigation/navigation_block.dart';
 import '../res/colors.dart';
 
@@ -156,6 +159,7 @@ class _WishesScreenState extends State<WishesScreen>{
                       ),
                       onPressed: () {
                         if(appVM.mainScreenState!=null)appVM.startMainScreen(appVM.mainScreenState!.moon);
+                        appVM.mainScreenState!.hint="Добавление ЖЕЛАНИЙ происходит из карты сферы. Определи нужную сферу и создай желание, поставь цели и выполняй задачи. Твои желания обязательно сбудутся";
                         BlocProvider.of<NavigationBloc>(context)
                             .add(NavigateToMainScreenEvent());
                       },
@@ -212,6 +216,17 @@ class _WishesScreenState extends State<WishesScreen>{
                                 appVM.mainCircles.clear();
                                 appVM.startMainScreen(appVM.mainScreenState!.moon);
                               }
+                              final pressNum = appVM.getHintStates()["wheelClickNum"]??0;
+                              if(pressNum>5){
+                                appVM.backPressedCount++;
+                                if(appVM.backPressedCount==appVM.settings.quoteupdateFreq){
+                                  appVM.backPressedCount=0;
+                                  appVM.mainScreenState!.hint=quoteBack[Random().nextInt(367)];
+                                }
+                              }else{
+                                appVM.mainScreenState!.hint = "Кнопка “карта” возвращает вас на верхний уровень карты “желаний”. Сейчас вы уже здесь!";
+                              }
+                              appVM.setHintState("wheelClickNum", (pressNum+1));
                               BlocProvider.of<NavigationBloc>(context)
                                   .add(NavigateToMainScreenEvent());
                             },

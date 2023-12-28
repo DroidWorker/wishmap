@@ -39,7 +39,7 @@ class MainSettingsState extends State<MainSettings>{
               const SizedBox(height: 8,),
               const Center(child: Text("нажатие кнопки 'Осознать' при входе в экран редакции центрального элемента при актуализации карты (последняя из ранее актуальных)", style: TextStyle(fontSize: 14, color: AppColors.greytextColor),),),
               const SizedBox(height: 10,),
-              buildSettingItem("Быстрая", "при двойном быстром нажатии лейбла 'Я'", false, (changed) => null),
+              buildSettingItem("Быстрая", "при двойном быстром нажатии лейбла 'Я'", appViewModel.settings.fastActMainSphere, (changed){appViewModel.settings.fastActMainSphere=changed;appViewModel.saveSettings();}),
               const SizedBox(height: 5,),
               const Divider(
                 height: 3,
@@ -52,11 +52,17 @@ class MainSettingsState extends State<MainSettings>{
               const SizedBox(height: 8,),
               const Center(child: Text("при нажатии кнопки 'Представить' при входе в экран редакции сферы при актуализации наследованных задач из последней ранее актуальной карты", style: TextStyle(fontSize: 14, color: AppColors.greytextColor),),),
               const SizedBox(height: 10,),
-              buildSettingItem("Автоматическая", "при актуализации вышестоящего 'Я'", false, (changed) => null),
+              buildSettingItem("Автоматическая", "при актуализации вышестоящего 'Я'", appViewModel.settings.sphereActualizingMode==0, (changed){setState(() {
+                appViewModel.settings.sphereActualizingMode=0;
+                appViewModel.saveSettings();
+              });}),
               const Center(child: Text("или")),
-              buildSettingItem("Автоматическая", "при актуализации нижестоящего желания", false, (changed) => null),
+              buildSettingItem("Автоматическая", "при актуализации нижестоящего желания", appViewModel.settings.sphereActualizingMode==1, (changed){setState(() {
+                appViewModel.settings.sphereActualizingMode=1;
+                appViewModel.saveSettings();
+              });}),
               const SizedBox(height: 10),
-              buildSettingItem("Быстая", "двойным нажатием по лейблу сферы", false, (changed) => null),
+              buildSettingItem("Быстая", "двойным нажатием по лейблу сферы", appViewModel.settings.fastActSphere, (changed){appViewModel.settings.fastActSphere=changed;appViewModel.saveSettings();}),
               const SizedBox(height: 5,),
               const Divider(
                 height: 3,
@@ -69,11 +75,17 @@ class MainSettingsState extends State<MainSettings>{
               const SizedBox(height: 8,),
               const Center(child: Text("нажатие кнопки 'Воплотить' при входе в экран редакции желания при актуализации наследованных желаний из последней ранее актуальной карты", style: TextStyle(fontSize: 14, color: AppColors.greytextColor),),),
               const SizedBox(height: 10,),
-              buildSettingItem("Автоматическая", "при актуализации вышестоящего 'над-желания'", false, (changed) => null),
+              buildSettingItem("Автоматическая", "при актуализации вышестоящего 'над-желания'", appViewModel.settings.wishActualizingMode==0, (changed){setState(() {
+                appViewModel.settings.wishActualizingMode=0;
+                appViewModel.saveSettings();
+              });}),
               const Center(child: Text("или")),
-              buildSettingItem("Автоматическая", "при актуализации нижестоящего 'под-желания'", false, (changed) => null),
+              buildSettingItem("Автоматическая", "при актуализации нижестоящего 'под-желания'", appViewModel.settings.wishActualizingMode==1, (changed){setState(() {
+                appViewModel.settings.wishActualizingMode=1;
+                appViewModel.saveSettings();
+              });}),
               const SizedBox(height: 10),
-              buildSettingItem("Быстая", "двойным нажатием по лейблу сферы", false, (changed) => null),
+              buildSettingItem("Быстая", "двойным нажатием по лейблу сферы", appViewModel.settings.fastActWish, (changed){appViewModel.settings.fastActWish=changed;appViewModel.saveSettings();}),
               const SizedBox(height: 5,),
               const Divider(
                 height: 3,
@@ -86,9 +98,15 @@ class MainSettingsState extends State<MainSettings>{
               const SizedBox(height: 8,),
               const Center(child: Text("нажатие кнопки 'Актуализировать' при входе в экран редакции задачи при актуализации наследованных желаний из последней ранее актуальной карты", style: TextStyle(fontSize: 14, color: AppColors.greytextColor),),),
               const SizedBox(height: 10,),
-              buildSettingItem("Автоматическая", "при актуализации вышестоящего желания", false, (changed) => null),
+              buildSettingItem("Автоматическая", "при актуализации вышестоящего желания", appViewModel.settings.taskActualizingMode==0, (changed){setState(() {
+                appViewModel.settings.taskActualizingMode=0;
+                appViewModel.saveSettings();
+              });}),
               const Center(child: Text("или")),
-              buildSettingItem("Ручная", "при актуализации вышестоящего 'желания'", false, (changed) => null),
+              buildSettingItem("Ручная", "при актуализации вышестоящего 'желания'", appViewModel.settings.taskActualizingMode==1, (changed){setState(() {
+                appViewModel.settings.taskActualizingMode=1;
+                appViewModel.saveSettings();
+              });}),
               const SizedBox(height: 10),
               const Divider(
                 height: 3,
@@ -101,11 +119,20 @@ class MainSettingsState extends State<MainSettings>{
               const SizedBox(height: 8,),
               const Center(child: Text("сообщение в поле подсказок, выпадающее при возвращении в карту", style: TextStyle(fontSize: 14, color: AppColors.greytextColor),),),
               const SizedBox(height: 10,),
-              buildSettingItem("Редко", "с  каждым 20-м возвращением", false, (changed) => null),
+              buildSettingItem("Редко", "с  каждым 20-м возвращением", appViewModel.settings.quoteupdateFreq==20, (changed){setState(() {
+                appViewModel.settings.quoteupdateFreq=20;
+                appViewModel.saveSettings();
+              });}),
               const Center(child: Text("или")),
-              buildSettingItem("Средне", "с  каждым 10-м возвращением", false, (changed) => null),
+              buildSettingItem("Средне", "с  каждым 10-м возвращением", appViewModel.settings.quoteupdateFreq==10, (changed){setState(() {
+                appViewModel.settings.quoteupdateFreq=10;
+                appViewModel.saveSettings();
+              });}),
               const Center(child: Text("или")),
-              buildSettingItem("Часто", "с  каждым 5-м возвращением",false,  (changed) => null),
+              buildSettingItem("Часто", "с  каждым 5-м возвращением", appViewModel.settings.quoteupdateFreq==5, (changed){setState(() {
+                appViewModel.settings.quoteupdateFreq=5;
+                appViewModel.saveSettings();
+              });}),
               const SizedBox(height: 5,),
             ],
           ),

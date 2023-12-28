@@ -18,16 +18,23 @@ class ProfileData {
 }
 
 class ActualizingSettingData{
+  bool fastActMainSphere = false;
+
   int sphereActualizingMode = 0;
-  //0-Автоматическая актуализация всех сфер при актуализации "я"
+  bool fastActSphere = false;
+  //0-Автоматическая актуализация всех сфер при актуализации 'Я'
   //1-автоматическая актуализация конкретной сферы при актуализации нижестоящего желания (верхнего уровня)
   int wishActualizingMode = 0;
+  bool fastActWish = false;
   //0-режим автоматическая актуализация желания сверху вниз каскадом
   //1-автоматическая актуализация снизу вверх по ветке
   int taskActualizingMode = 0;
+  bool fastActtask = false;
   //0-taskAutoActualizingOff
   //1-"автоматически актуализировать невыполненные задачи  при актуализации новой карты, то задач, которые потребуют ручной актуализации не будет, они все автоматом будут актуализированы при актуализации вышестоящей цели, а значит и желания.
   ActualizingSettingData({this.sphereActualizingMode = 0, this.wishActualizingMode = 0, this.taskActualizingMode = 0});
+
+  int quoteupdateFreq=10;
 }
 
 class CircleData{
@@ -41,6 +48,9 @@ class CircleData{
   bool isChecked;
   bool isActive;
   bool isHidden;
+
+  bool shuffle=false;
+  String lastShuffle="|";
 
   CircleData({required this.id, required this.text, this.subText = "", required this.color, required this.parenId, this.affirmation="", this.photosIds="", this.isChecked = false, this.isActive = true, this.isHidden = false});
 
@@ -250,6 +260,7 @@ class MainScreenState {
   final MoonItem moon;
   List<CircleData> allCircles = [];
   final int musicId;
+  String hint = "";
 
   MainScreenState({required this.moon, required this.musicId});
 }

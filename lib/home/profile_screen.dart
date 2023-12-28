@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
+import 'package:wishmap/data/static.dart';
 import '../ViewModel.dart';
 import '../data/models.dart';
 import '../navigation/navigation_block.dart';
@@ -48,7 +49,12 @@ class _ProfileScreenState extends State<ProfileScreen>{
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               IconButton(onPressed: (){
+                appViewModel.backPressedCount++;
                 if(appViewModel.mainScreenState!=null)appViewModel.startMainScreen(appViewModel.mainScreenState!.moon);
+                if(appViewModel.backPressedCount==appViewModel.settings.quoteupdateFreq){
+                  appViewModel.backPressedCount=0;
+                  appViewModel.mainScreenState!.hint=quoteBack[Random().nextInt(367)];
+                }
                 BlocProvider.of<NavigationBloc>(context)
                     .add(NavigateToMainScreenEvent());
               }, icon: const Icon(Icons.arrow_back_ios)),

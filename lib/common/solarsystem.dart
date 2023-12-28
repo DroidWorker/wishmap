@@ -7,6 +7,7 @@ import 'package:wishmap/data/models.dart';
 import 'dart:math';
 import 'package:flutter/physics.dart';
 
+import '../data/static.dart';
 import '../navigation/navigation_block.dart';
 
 class CircleWidget extends StatefulWidget {
@@ -96,6 +97,8 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
   List<double> plusesRotations = [];
 
   int circlesHash = 0;
+
+  int rotationCounter = 0;
 
   double lastRotation = 0.0;
   double lastdirection = 0.0;
@@ -547,6 +550,11 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
                           ),
                         ),
                         onTap: () {
+                          if(centralCircles.last.id==0){
+                            appViewModel.mainScreenState!.hint = textNewI[Random().nextInt(18)];
+                          }else if(centralCircles.last.id<900){
+                            appViewModel.mainScreenState!.hint = textNewSphere[Random().nextInt(18)];
+                          }
                           if(widget.circles.length<=12) {
                             plusId= e.key;
                             showHideController.reset();
@@ -584,6 +592,14 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
                                   size: widget.size,
                                   center: widget.center,
                                   onRotate: (angle) {
+                                    rotationCounter++;
+                                    if(rotationCounter==5){
+                                      rotationCounter=0;
+                                      if(centralCircles.last.id==0) {
+                                        appViewModel.mainScreenState!.hint = "Это анимация, которая призвана показать, как сферы вашей жизни словно вращаются по внешней орбите, в центре которой ваше 'Я'";
+                                      } else if(centralCircles.last.id < 900)appViewModel.mainScreenState!.hint = "Это анимация, которая призвана показать, как желания вашей жизни словно вращаются по внешней орбите, в центре которой определенная сфера жизни";
+                                      else appViewModel.mainScreenState!.hint = "Это анимация, которая призвана показать, как желания вашей жизни словно вращаются по внешней орбите, в центре которой желание побольше";
+                                    }
                                     lastdirection = angle;
                                     _updateCircleRotation(
                                         angle, widget.size, widget.center,
@@ -599,6 +615,12 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
                                   startMoving: (id, itemId) {
                                     animationDirectionForward = true;
                                     initAnim(id, itemId);
+                                    if(!widget.circles[itemId].isActive){
+                                      itemId<900?appViewModel.mainScreenState!.hint=textSphereActualize[Random().nextInt(5)]:
+                                      appViewModel.mainScreenState!.hint=textWishActualize[Random().nextInt(15)];
+                                    }else{
+                                      appViewModel.mainScreenState!.hint="Ты в карте сферы. Сфера — это целая область жизни. Если ты хочешь развить данную сферу, задай себе вопрос: “что я хочу изменить в этой сфере, каковы мои желания?”. Отвечая на этот вопрос, создавай желания, исполнение которых качественно изменит данную сферу. Создавай, выбирай аффирмации и управляй своим будущим. Чтобы создать желание, просто нажми «+» на орбите, что вокруг сферы.";
+                                    }
                                     // Запускаем анимацию
                                     movingController
                                         .reset();

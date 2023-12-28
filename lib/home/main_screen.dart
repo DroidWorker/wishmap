@@ -1,6 +1,9 @@
+import 'dart:math';
+
 import 'package:capped_progress_indicator/capped_progress_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:wishmap/data/static.dart';
 import 'package:wishmap/navigation/navigation_block.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:wishmap/common/solarsystem.dart';
@@ -22,6 +25,10 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen>{
   bool isPauseIcon = true;
   bool clearData = true;
+  int hintId = 0;
+
+  int ppPressCount = 0;
+  int pnPressCount = 0;
 
   final GlobalKey<CircularDraggableCirclesState> _CDWidgetKey = GlobalKey();
 
@@ -29,6 +36,43 @@ class _MainScreenState extends State<MainScreen>{
   Widget build(BuildContext context) {
     return Consumer<AppViewModel>(
         builder: (context, appVM, child){
+          final hintStates = appVM.getHintStates();
+          if(hintStates["firstOpenSphere"]==1&&appVM.mainScreenState!.allCircles.first.isActive){
+            appVM.mainScreenState?.hint="Создай свою карту желаний. Сначала заполни область своего “Я”. Потом последовательно заполни все сферы, и лишь потом приступай к синтезу желаний.";
+            appVM.setHintState("firstOpenSphere", 0);
+          }else if(appVM.mainScreenState!=null&&appVM.mainScreenState!.allCircles.where((e) => e.isActive).isEmpty){
+            appVM.mainScreenState?.hint = textIActualize[Random().nextInt(35)];
+          }
+          else {
+            final sphereid = appVM.mainCircles.last.id;
+            final sphere = appVM.mainScreenState!.allCircles.where((element) => element.id==sphereid).first;
+            if(appVM!=null&&appVM.mainScreenState!.hint=="") {
+              if (sphere.shuffle && hintId != sphereid) {
+                final affirmations = sphere.affirmation.split("|");
+                if (sphere.lastShuffle.split("|")[1] != DateTime
+                    .now()
+                    .weekday
+                    .toString()) {
+                  sphere.lastShuffle = "${affirmations[Random().nextInt(
+                      affirmations.length)]}|${DateTime
+                      .now()
+                      .weekday
+                      .toString()}";
+                  appVM.mainScreenState?.hint =
+                  sphere.lastShuffle.split("|")[0];
+                  appVM.saveShuffle(sphere.id, true, sphere.lastShuffle);
+                }
+              } else {
+                if(sphere.lastShuffle=="|")
+                {
+                  appVM.saveShuffle(sphere.id, false, sphere.affirmation.split("|")[0]);
+                  sphere.lastShuffle="${sphere.affirmation.split("|")[0]}|";
+                }
+                appVM.mainScreenState?.hint = sphere.lastShuffle.split("|")[0];
+              }
+              hintId = sphereid;
+            }
+          }
           Widget w = Scaffold(
               backgroundColor: AppColors.backgroundColor,
               body: SafeArea(child:Stack(
@@ -80,10 +124,9 @@ class _MainScreenState extends State<MainScreen>{
                                   ),
                                 )
                             ),
-                            const Expanded(
+                            Expanded(
                                 flex: 6,
-                                child:
-                                Text("подсказка")
+                                child: Text("${appVM.mainScreenState?.hint}")
                             )
                           ],
                         ),
@@ -102,7 +145,21 @@ class _MainScreenState extends State<MainScreen>{
                             IconButton(
                               icon: Image.asset('assets/icons/prev.png'),
                               iconSize: 35,
-                              onPressed: () {},
+                              onPressed: () {
+                                pnPressCount++;
+                                if(pnPressCount==5){
+                                  pnPressCount=0;
+                                  if(isPauseIcon){
+                                    setState(() {
+                                      appVM.mainScreenState!.hint = quotesQuite[Random().nextInt(55)];
+                                    });
+                                  }else{
+                                    setState(() {
+                                      appVM.mainScreenState!.hint = quoteMusic[Random().nextInt(100)];
+                                    });
+                                  }
+                                }
+                              },
                             ),
                             const SizedBox(width: 20),
                             IconButton(
@@ -110,6 +167,19 @@ class _MainScreenState extends State<MainScreen>{
                               iconSize: 35,
                               onPressed: () {
                                 setState((){
+                                  ppPressCount++;
+                                  if(ppPressCount==5){
+                                    ppPressCount=0;
+                                    if(isPauseIcon){
+                                      setState(() {
+                                        appVM.mainScreenState!.hint = quotesQuite[Random().nextInt(55)];
+                                      });
+                                    }else{
+                                      setState(() {
+                                        appVM.mainScreenState!.hint = quoteMusic[Random().nextInt(100)];
+                                      });
+                                    }
+                                  }
                                   isPauseIcon=!isPauseIcon;
                                   clearData=false;
                                 });
@@ -120,7 +190,21 @@ class _MainScreenState extends State<MainScreen>{
                             IconButton(
                               icon: Image.asset('assets/icons/next.png'),
                               iconSize: 35,
-                              onPressed: () {},
+                              onPressed: () {
+                                pnPressCount++;
+                                if(pnPressCount==5){
+                                  pnPressCount=0;
+                                  if(isPauseIcon){
+                                    setState(() {
+                                      appVM.mainScreenState!.hint = quotesQuite[Random().nextInt(55)];
+                                    });
+                                  }else{
+                                    setState(() {
+                                      appVM.mainScreenState!.hint = quoteMusic[Random().nextInt(100)];
+                                    });
+                                  }
+                                }
+                              },
                             )
                           ],),
                         const SizedBox(height: 10),
@@ -175,6 +259,17 @@ class _MainScreenState extends State<MainScreen>{
                                       appVM.mainCircles.clear();
                                       appVM.startMainScreen(appVM.mainScreenState!.moon);
                                     }
+                                    final pressNum = appVM.getHintStates()["wheelClickNum"]??0;
+                                    if(pressNum>5){
+                                      appVM.backPressedCount++;
+                                      if(appVM.backPressedCount==appVM.settings.quoteupdateFreq){
+                                        appVM.backPressedCount=0;
+                                        appVM.mainScreenState!.hint=quoteBack[Random().nextInt(367)];
+                                      }
+                                    }else{
+                                      appVM.mainScreenState!.hint = "Кнопка “карта” возвращает вас на верхний уровень карты “желаний”. Сейчас вы уже здесь!";
+                                    }
+                                    appVM.setHintState("wheelClickNum", (pressNum+1));
                                     BlocProvider.of<NavigationBloc>(context)
                                         .add(NavigateToMainScreenEvent());
                                   },
