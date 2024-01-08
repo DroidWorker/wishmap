@@ -56,6 +56,10 @@ dependencies:
   sqflite: ^2.3.0
   connectivity: ^3.0.6
   mobile_scanner: ^3.5.5
+  http: ^1.1.0
+  advanced_search: ^2.2.3
+  cached_network_image: ^3.3.1
+  animated_text_kit: ^4.2.2
 
 
 dev_dependencies:

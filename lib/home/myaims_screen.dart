@@ -59,13 +59,26 @@ class _AimsScreenState extends State<AimsScreen>{
                   const SizedBox(height: 20),
                   Row(children: [
                     GestureDetector(
-                      child: page==0
-                          ? const Text("Все цели",
+                      child: page==3
+                          ? const Text("Актуальные",
                           style: TextStyle(decoration: TextDecoration.underline))
-                          : const Text("Все цели"),
+                          : const Text("Актуальные"),
                       onTap: () {
                         setState(() {
-                          page = 0;
+                          page = 3;
+                          filterAims(page);
+                        });
+                      },
+                    ),
+                    const SizedBox(width: 5),
+                    GestureDetector(
+                      child: page==2
+                          ? const Text("Не достигнуты",
+                          style: TextStyle(decoration: TextDecoration.underline))
+                          : const Text("Не достигнуты"),
+                      onTap: () {
+                        setState(() {
+                          page = 2;
                           filterAims(page);
                         });
                       },
@@ -85,17 +98,17 @@ class _AimsScreenState extends State<AimsScreen>{
                     ),
                     const SizedBox(width: 5),
                     GestureDetector(
-                      child: page==2
-                          ? const Text("Не достигнуты",
+                      child: page==0
+                          ? const Text("Все цели",
                           style: TextStyle(decoration: TextDecoration.underline))
-                          : const Text("Не достигнуты"),
+                          : const Text("Все цели"),
                       onTap: () {
                         setState(() {
-                          page = 2;
+                          page = 0;
                           filterAims(page);
                         });
                       },
-                    )
+                    ),
                   ],),
                   const SizedBox(height: 10,),
                   Expanded(child:
@@ -119,7 +132,7 @@ class _AimsScreenState extends State<AimsScreen>{
                       onPressed: () {
                         if(appViewModel.mainScreenState!=null)appViewModel.startMainScreen(appViewModel.mainScreenState!.moon);
                         BlocProvider.of<NavigationBloc>(context).removeLastFromBS();
-                        appViewModel.mainScreenState!.hint="Добавление ЦЕЛЕЙ происходит  из желания, а желания из сферы. Определяй сферу, создавай желания, ставь цели и выполняй задачи. Твои желания обязательно сбудутся";
+                        appViewModel.hint="Добавление ЦЕЛЕЙ происходит  из желания, а желания из сферы. Определяй сферу, создавай желания, ставь цели и выполняй задачи. Твои желания обязательно сбудутся";
                         BlocProvider.of<NavigationBloc>(context)
                             .add(NavigateToMainScreenEvent());
                       },
@@ -179,10 +192,10 @@ class _AimsScreenState extends State<AimsScreen>{
                                 appVM.backPressedCount++;
                                 if(appVM.backPressedCount==appVM.settings.quoteupdateFreq){
                                   appVM.backPressedCount=0;
-                                  appVM.mainScreenState!.hint=quoteBack[Random().nextInt(367)];
+                                  appVM.hint=quoteBack[Random().nextInt(367)];
                                 }
                               }else{
-                                appVM.mainScreenState!.hint = "Кнопка “карта” возвращает вас на верхний уровень карты “желаний”. Сейчас вы уже здесь!";
+                                appVM.hint = "Кнопка “карта” возвращает вас на верхний уровень карты “желаний”. Сейчас вы уже здесь!";
                               }
                               appVM.setHintState("wheelClickNum", (pressNum+1));
                               BlocProvider.of<NavigationBloc>(context)
@@ -234,6 +247,7 @@ class _AimsScreenState extends State<AimsScreen>{
     setState(() {
       page==1?filteredAimList = allAims.where((element) => element.isChecked).toList():
       page==2?filteredAimList = allAims.where((element) => !element.isChecked).toList():
+      page==3?filteredAimList = allAims.where((element) => element.isActive).toList():
       filteredAimList = allAims;
     });
   }

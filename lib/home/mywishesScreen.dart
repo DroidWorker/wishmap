@@ -63,31 +63,15 @@ class _WishesScreenState extends State<WishesScreen>{
                   Row(children: [
                     GestureDetector(
                       child: Container(
-                    height: 30,
-                    child: page==0
-                        ? const Text("Все желания",
-                        style: TextStyle(decoration: TextDecoration.underline))
-                        : const Text("Все желания"),
-                  ),
-                      onTap: () {
-                        setState(() {
-                          page = 0;
-                          filterAims(page);
-                        });
-                      },
-                    ),
-                    const SizedBox(width: 5),
-                    GestureDetector(
-                      child: Container(
-                      height: 30,
-                        child: page==1
-                            ? const Text("Исполнено",
+                        height: 30,
+                        child: page==3
+                            ? const Text("Актуальные",
                             style: TextStyle(decoration: TextDecoration.underline))
-                            : const Text("Исполнено"),
+                            : const Text("Актуальные"),
                       ),
                       onTap: () {
                         setState(() {
-                          page = 1;
+                          page = 3;
                           filterAims(page);
                         });
                       },
@@ -107,7 +91,40 @@ class _WishesScreenState extends State<WishesScreen>{
                           filterAims(page);
                         });
                       },
-                    )
+                    ),
+                    const SizedBox(width: 5),
+                    GestureDetector(
+                      child: Container(
+                        height: 30,
+                        child: page==1
+                            ? const Text("Исполнено",
+                            style: TextStyle(decoration: TextDecoration.underline))
+                            : const Text("Исполнено"),
+                      ),
+                      onTap: () {
+                        setState(() {
+                          page = 1;
+                          filterAims(page);
+                        });
+                      },
+                    ),
+                    const SizedBox(width: 5),
+                    GestureDetector(
+                      child: Container(
+                        height: 30,
+                        child: page==0
+                            ? const Text("Все желания",
+                            style: TextStyle(decoration: TextDecoration.underline))
+                            : const Text("Все желания"),
+                      ),
+                      onTap: () {
+                        setState(() {
+                          page = 0;
+                          filterAims(page);
+                        });
+                      },
+                    ),
+
                   ],),
                   Expanded(child: LayoutBuilder(
                       builder: (context, constraints) {
@@ -159,7 +176,7 @@ class _WishesScreenState extends State<WishesScreen>{
                       ),
                       onPressed: () {
                         if(appVM.mainScreenState!=null)appVM.startMainScreen(appVM.mainScreenState!.moon);
-                        appVM.mainScreenState!.hint="Добавление ЖЕЛАНИЙ происходит из карты сферы. Определи нужную сферу и создай желание, поставь цели и выполняй задачи. Твои желания обязательно сбудутся";
+                        appVM.hint="Добавление ЖЕЛАНИЙ происходит из карты сферы. Определи нужную сферу и создай желание, поставь цели и выполняй задачи. Твои желания обязательно сбудутся";
                         BlocProvider.of<NavigationBloc>(context)
                             .add(NavigateToMainScreenEvent());
                       },
@@ -221,10 +238,10 @@ class _WishesScreenState extends State<WishesScreen>{
                                 appVM.backPressedCount++;
                                 if(appVM.backPressedCount==appVM.settings.quoteupdateFreq){
                                   appVM.backPressedCount=0;
-                                  appVM.mainScreenState!.hint=quoteBack[Random().nextInt(367)];
+                                  appVM.hint=quoteBack[Random().nextInt(367)];
                                 }
                               }else{
-                                appVM.mainScreenState!.hint = "Кнопка “карта” возвращает вас на верхний уровень карты “желаний”. Сейчас вы уже здесь!";
+                                appVM.hint = "Кнопка “карта” возвращает вас на верхний уровень карты “желаний”. Сейчас вы уже здесь!";
                               }
                               appVM.setHintState("wheelClickNum", (pressNum+1));
                               BlocProvider.of<NavigationBloc>(context)
@@ -274,7 +291,8 @@ class _WishesScreenState extends State<WishesScreen>{
   filterAims(int type){
     setState(() {
       page==1?filteredWishList = allWishList.where((element) => element.isChecked).toList():
-      page==2?filteredWishList = allWishList.where((element) => !element.isChecked).toList():filteredWishList = allWishList;
+      page==2?filteredWishList = allWishList.where((element) => !element.isChecked).toList():
+      page==3?filteredWishList = allWishList.where((element) => element.isActive).toList():filteredWishList = allWishList;
     });
   }
 

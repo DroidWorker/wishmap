@@ -7,6 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:keyboard_attachable/keyboard_attachable.dart';
 import 'package:provider/provider.dart';
 import 'package:wishmap/common/affirmationOverlay.dart';
+import 'package:wishmap/data/static_affirmations_women.dart';
 
 import '../ViewModel.dart';
 import '../common/collage.dart';
@@ -93,7 +94,7 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
                               onPressed: () async { Navigator.pop(c, 'OK');
                               await appViewModel.updateSphereWish(WishData(id: curWd.id, parentId: curWd.parenId, text: curWd.text, description: curWd.subText, affirmation: curWd.affirmation, color: curWd.color));
                               if(appViewModel.mainScreenState!=null)appViewModel.startMainScreen(appViewModel.mainScreenState!.moon);
-                              appViewModel.mainScreenState?.hint="Отлично! Теперь пришло время заполнить все сферы жизни. Ты можешь настроить состав и название сфер так, как считаешь нужным. И помни, что максимальное количество сфер ограничено и равно 13.";
+                              appViewModel.hint="Отлично! Теперь пришло время заполнить все сферы жизни. Ты можешь настроить состав и название сфер так, как считаешь нужным. И помни, что максимальное количество сфер ограничено и равно 13.";
                               appViewModel.isChanged = false;
                               BlocProvider.of<NavigationBloc>(context)
                                   .add(NavigateToMainScreenEvent());
@@ -128,7 +129,7 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
                       appViewModel.backPressedCount++;
                       if(appViewModel.backPressedCount==appViewModel.settings.quoteupdateFreq){
                         appViewModel.backPressedCount=0;
-                        appViewModel.mainScreenState!.hint=quoteBack[Random().nextInt(367)];
+                        appViewModel.hint=quoteBack[Random().nextInt(367)];
                       }
                     },
                   ),
@@ -143,7 +144,7 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
                       onPressed: () async {
                         await appViewModel.updateSphereWish(WishData(id: curWd.id, parentId: curWd.parenId, text: curWd.text, description: curWd.subText, affirmation: curWd.affirmation, color: curWd.color));
                         if(appViewModel.mainScreenState!=null) await appViewModel.startMainScreen(appViewModel.mainScreenState!.moon);
-                        appViewModel.mainScreenState?.hint="Отлично! Теперь пришло время заполнить все сферы жизни. Ты можешь настроить состав и название сфер так, как считаешь нужным. И помни, что максимальное количество сфер ограничено и равно 13.";
+                        appViewModel.hint="Отлично! Теперь пришло время заполнить все сферы жизни. Ты можешь настроить состав и название сфер так, как считаешь нужным. И помни, что максимальное количество сфер ограничено и равно 13.";
                         appViewModel.isChanged = false;
                         showDialog(context: context,
                         builder: (BuildContext context) => AlertDialog(
@@ -172,6 +173,7 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
                       onPressed: () {
                         setState(() {
                           appViewModel.activateSphereWish(curWd.id, true);
+                          if(appVM.mainScreenState!=null)appViewModel.startMainScreen(appVM.mainScreenState!.moon);
                           curWd.isActive = true;
                         });
                       },
@@ -211,9 +213,9 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
                     readOnly: true,
                     onTap: () async {
                       final affirmationsStr = curWd.affirmation==""?
-                        await showOverlayedAffirmations(context, ["Я счастлив и спокоен", "Я благословенный и умиротворенный", "Я радостный и свободный", "Я смотрю на мир с любовью", "Я успешный и счастливый", "Я безмятежный и радостный", "Я полон любви и благодати", "Я достигший своих заветных целей", "Я Люблю свое тело и люблю свою душу", "Я в изобилии и наслаждении", "Я энергичный и эйфоричный", "Я умиротворенный и благодарный", "Я ликующий и сверкающий", "Я востроженный и наслаждающийся жизнью", "Я бееззаботный и радужный", "Я вдохновенный и преисполненный", "Я озаренный и благодарный", "Я принимааю и ценю себя таким какой я есть", "Я умиротворенный и свободный от тревоги", "Я ликующий и счастливый до глубины души", "Я благодарный и удовлетворенный", "Я влюбленный и исполненный милости", "Я гармоничный и исполненный радости", "Я радостный и восорженный в каждом мгновении"], false):
-                        await showOverlayedAffirmations(context, curWd.affirmation.split("|"), true);
-
+                        await showOverlayedAffirmations(context, defaultAffirmations, false, curWd.shuffle, onShuffleClick: (value){curWd.shuffle=value;}):
+                        await showOverlayedAffirmations(context, curWd.affirmation.split("|"), true, curWd.shuffle, onShuffleClick: (value){curWd.shuffle=value;});
+                      if(curWd.shuffle) curWd.lastShuffle = "|${DateTime.now().weekday.toString()}";
                       affirmation.text=affirmationsStr?.split("|")[0]??"";
                       curWd.affirmation=affirmationsStr??"";
                       appViewModel.isChanged =true;
@@ -279,10 +281,11 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
                             ],
                           ),
                           ...imagesSet.map((e) {
+                            Map<Uint8List, int?> em = Map.fromIterable(e, key: (v)=>v, value: null);
                             if(e.length==1) return buildSingle(fullWidth, e.first, appVM.isinLoading,!curWd.isActive);
-                            else if(e.length==2) return buildTwin(leftWidth, rightWidth, e, appVM.isinLoading,!curWd.isActive);
-                            else if(imagesSet.indexOf(e)%2!=0) return buildTriple(leftWidth, rightWidth, e, appVM.isinLoading,!curWd.isActive);
-                            else return buildTripleReverce(leftWidth, rightWidth, e, appVM.isinLoading,!curWd.isActive);
+                            else if(e.length==2) return buildTwin(leftWidth, rightWidth, em, appVM.isinLoading,!curWd.isActive);
+                            else if(imagesSet.indexOf(e)%2!=0) return buildTriple(leftWidth, rightWidth, em, appVM.isinLoading,!curWd.isActive);
+                            else return buildTripleReverce(leftWidth, rightWidth, em, appVM.isinLoading,!curWd.isActive);
                           }).toList()
                         ]);
                   },
@@ -298,6 +301,7 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
                     onPressed: (){
                       if(curWd.isActive) {
                         appViewModel.isChanged = true;
+                        appViewModel.photoUrls.clear();
                         BlocProvider.of<NavigationBloc>(context)
                             .add(NavigateToGalleryScreenEvent());
                       }else{

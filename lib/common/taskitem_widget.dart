@@ -38,9 +38,7 @@ class _TaskItem extends State<TaskItemWidget>{
             ),
           ),
           IconButton(
-            icon: widget.ti.isChecked
-                ? const Icon(Icons.check_circle_outline)
-                : const Icon(Icons.circle_outlined),
+            icon: widget.ti.isChecked ? Image.asset('assets/icons/task_done.png') : widget.ti.isActive?Image.asset('assets/icons/task_active.png') : Image.asset('assets/icons/task_unactive.png'),
             iconSize: 30,
             onPressed: () {
               widget.onClick(widget.ti.id);

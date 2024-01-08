@@ -15,6 +15,7 @@ import '../common/collage.dart';
 import '../common/colorpicker_widget.dart';
 import '../common/treeview_widget.dart';
 import '../data/static.dart';
+import '../data/static_affirmations_women.dart';
 import '../navigation/navigation_block.dart';
 import '../res/colors.dart';
 
@@ -53,7 +54,6 @@ class _WishScreenState extends State<WishScreen>{
 
     return  Consumer<AppViewModel>(
         builder: (context, appVM, child){
-          print("ggggggggggggggg${appVM.isChanged}");
           if(appVM.wishScreenState!=null&&curwish.id==-1) {
             curwish = appVM.wishScreenState!.wish;
             _title.text = appVM.wishScreenState!.wish.text;
@@ -153,7 +153,7 @@ class _WishScreenState extends State<WishScreen>{
                             appViewModel.backPressedCount++;
                             if(appViewModel.backPressedCount==appViewModel.settings.quoteupdateFreq){
                               appViewModel.backPressedCount=0;
-                              appViewModel.mainScreenState!.hint=quoteBack[Random().nextInt(367)];
+                              appViewModel.hint=quoteBack[Random().nextInt(367)];
                             }
                           }
                       ),
@@ -463,10 +463,11 @@ class _WishScreenState extends State<WishScreen>{
                                           ],
                                         ),
                                         ...imagesSet.map((e) {
+                                          Map<Uint8List, int?> em = Map.fromIterable(e, key: (v)=>v, value: null);
                                           if(e.length==1) return buildSingle(fullWidth, e.first, appVM.isinLoading, !curwish.isActive);
-                                          else if(e.length==2) return buildTwin(leftWidth, rightWidth, e, appVM.isinLoading, !curwish.isActive);
-                                          else if(imagesSet.indexOf(e)%2!=0) return buildTriple(leftWidth, rightWidth, e, appVM.isinLoading, !curwish.isActive);
-                                          else return buildTripleReverce(leftWidth, rightWidth, e, appVM.isinLoading, !curwish.isActive);
+                                          else if(e.length==2) return buildTwin(leftWidth, rightWidth, em, appVM.isinLoading, !curwish.isActive);
+                                          else if(imagesSet.indexOf(e)%2!=0) return buildTriple(leftWidth, rightWidth, em, appVM.isinLoading, !curwish.isActive);
+                                          else return buildTripleReverce(leftWidth, rightWidth, em, appVM.isinLoading, !curwish.isActive);
                                         }).toList()
                                       ]);
                                 },
@@ -482,6 +483,7 @@ class _WishScreenState extends State<WishScreen>{
                                   ),
                                   onPressed: (){
                                     appViewModel.isChanged = true;
+                                    appViewModel.photoUrls.clear();
                                     curwish.isChecked?showUnavailable("Чтобы редактировать желание необходимо сменить статус \nна 'не выполнено'"):!curwish.isActive?showUneditable():BlocProvider.of<NavigationBloc>(context)
                                         .add(NavigateToGalleryScreenEvent());
                                   },
@@ -499,9 +501,13 @@ class _WishScreenState extends State<WishScreen>{
                                   showUneditable();
                                 }else{
                                 final affirmationsStr = curwish.affirmation==""?
-                                await showOverlayedAffirmations(context, ["Я счастлив и спокоен", "Я благословенный и умиротворенный", "Я радостный и свободный", "Я смотрю на мир с любовью", "Я успешный и счастливый", "Я безмятежный и радостный", "Я полон любви и благодати", "Я достигший своих заветных целей", "Я Люблю свое тело и люблю свою душу", "Я в изобилии и наслаждении", "Я энергичный и эйфоричный", "Я умиротворенный и благодарный", "Я ликующий и сверкающий", "Я востроженный и наслаждающийся жизнью", "Я бееззаботный и радужный", "Я вдохновенный и преисполненный", "Я озаренный и благодарный", "Я принимааю и ценю себя таким какой я есть", "Я умиротворенный и свободный от тревоги", "Я ликующий и счастливый до глубины души", "Я благодарный и удовлетворенный", "Я влюбленный и исполненный милости", "Я гармоничный и исполненный радости", "Я радостный и восорженный в каждом мгновении"], false):
-                                await showOverlayedAffirmations(context, curwish.affirmation.split("|"), true);
-
+                                await showOverlayedAffirmations(context, defaultAffirmations, false, curwish.shuffle, onShuffleClick: (value){
+                                  curwish.shuffle=value;
+                                }):
+                                await showOverlayedAffirmations(context, curwish.affirmation.split("|"), true, curwish.shuffle, onShuffleClick: (value){
+                                  curwish.shuffle=value;
+                                });
+                                if(curwish.shuffle) curwish.lastShuffle = "|${DateTime.now().weekday.toString()}";
                                 _affirmation.text=affirmationsStr?.split("|")[0]??"";
                                 curwish.affirmation=affirmationsStr??"";
                                 appViewModel.isChanged =true;

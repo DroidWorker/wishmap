@@ -53,7 +53,7 @@ class DatabaseHelper {
         color INTEGER,
         childAims TEXT,
         lastShuffle TEXT,
-        lastShuffle INTEGER
+        shuffle INTEGER
       )
     ''');
 
@@ -66,7 +66,7 @@ class DatabaseHelper {
         subtext TEXT,
         parentId INTEGER,
         childTasks TEXT,
-        isChecked TEXT
+        isChecked TEXT,
         isActive TEXT
       )
     ''');
@@ -287,6 +287,8 @@ class DatabaseHelper {
         'photosIds': wd.photoIds,
         'color': wd.color.value,
         'childAims': chAims,
+        'shuffle': wd.shuffle,
+        'lastShuffle': wd.lastShuffle
       },
       where: "id = ? AND moonId = ?",
       whereArgs: [wd.id, moonId],

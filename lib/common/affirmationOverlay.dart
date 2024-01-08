@@ -4,13 +4,37 @@ import 'package:flutter/material.dart';
 
 import '../res/colors.dart';
 
-Future<String?> showOverlayedAffirmations(BuildContext context, List<String> affirmations, bool isChecked)async {
+Future<String?> showOverlayedAffirmations(BuildContext context, List<String> affirmations, bool isChecked, bool isShuffle, {Function(bool value)? onShuffleClick})async {
   Completer<String?> completer = Completer<String?>();
   OverlayEntry? overlayEntry;
 
-    var myOverlay = MyAffirmationOverlay(affirmations: affirmations, isChecked: isChecked,  onClose: (value) {
+    var myOverlay = MyAffirmationOverlay(affirmations: affirmations, isChecked: isChecked, isShuffle: isShuffle, onClose: (value) {
       overlayEntry?.remove();
       completer.complete(value);
+    }, onShuffleClick: (value){
+      onShuffleClick!(value);
+      showDialog(context: context,
+        builder: (BuildContext context) => AlertDialog(
+          contentPadding: const EdgeInsets.all(10),
+          shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(32.0))),
+          title: const Text("Внимание", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),),
+          content: const Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text("Режим Shuffle активирован. теперь аффирмации будут появляться в окне подсказок рандомно", maxLines: 5, textAlign: TextAlign.center,),
+              SizedBox(height: 4,),
+              Divider(color: AppColors.dividerGreyColor,),
+            ],
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () async { Navigator.pop(context, 'OK'); },
+              child: const Text('Ok'),
+            ),
+          ],
+        ),
+      );
     });
 
     overlayEntry = OverlayEntry(
@@ -23,11 +47,13 @@ Future<String?> showOverlayedAffirmations(BuildContext context, List<String> aff
 
 class MyAffirmationOverlay extends StatefulWidget {
   Function(String value) onClose;
+  Function(bool value) onShuffleClick;
 
   List<String> affirmations;
   bool isChecked;
+  bool isShuffle;
 
-  MyAffirmationOverlay({super.key, required this.affirmations, required this.isChecked, required this.onClose});
+  MyAffirmationOverlay({super.key, required this.affirmations, required this.isChecked, required this.isShuffle, required this.onClose, required this.onShuffleClick});
 
   @override
   _MyOverlayState createState() => _MyOverlayState();
@@ -65,8 +91,11 @@ class _MyOverlayState extends State<MyAffirmationOverlay> {
                           borderRadius: BorderRadius.all(Radius.circular(10)),
                         ),
                       ),
-                      onPressed: (){},
-                      child: const Text("Shuffle", style: TextStyle(color: AppColors.blueTextColor),)
+                      onPressed: (){setState(() {
+                        widget.isShuffle = !widget.isShuffle;
+                        widget.onShuffleClick(widget.isShuffle);
+                      });},
+                      child: Text("Shuffle", style: TextStyle(color: widget.isShuffle?AppColors.blueTextColor:AppColors.pinkButtonTextColor),)
                   ),
                   const SizedBox(width: 20,),
                   TextButton(

@@ -46,7 +46,7 @@ class DiaryScreen extends StatefulWidget {
                                           appVM.backPressedCount++;
                                           if(appVM.backPressedCount==appVM.settings.quoteupdateFreq){
                                             appVM.backPressedCount=0;
-                                            appVM.mainScreenState!.hint=quoteBack[Random().nextInt(367)];
+                                            appVM.hint=quoteBack[Random().nextInt(367)];
                                           }
                                           BlocProvider.of<NavigationBloc>(context).clearHistory();
                                           BlocProvider.of<NavigationBloc>(context)

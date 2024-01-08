@@ -93,7 +93,7 @@ class CardsScreenState extends State<CardsScreen>{
                         });
                         await appViewModel.fetchDatas(moonId.id);
                         appViewModel.startMainScreen(moonId);
-                        appViewModel.mainScreenState?.hint="Отлично! Теперь пришло время заполнить все сферы жизни. Ты можешь настроить состав и название сфер так, как считаешь нужным. И помни, что максимальное количество сфер ограничено и равно 13.";
+                        appViewModel.hint="Отлично! Теперь пришло время заполнить все сферы жизни. Ты можешь настроить состав и название сфер так, как считаешь нужным. И помни, что максимальное количество сфер ограничено и равно 13.";
                         BlocProvider.of<NavigationBloc>(context)
                             .add(NavigateToMainScreenEvent());
                       }else{appViewModel.addError("Ошибка! нет соединения с сервером");}

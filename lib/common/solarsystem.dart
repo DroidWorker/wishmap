@@ -18,8 +18,9 @@ class CircleWidget extends StatefulWidget {
   final Function(double) onRotate;
   final Function(DragEndDetails) onEndRotate;
   final Function(int id, int itemId) startMoving;
+  final Function(int id) doubleTap;
 
-  CircleWidget({Key? key,required this.itemId, required this.circle, required this.size, required this.center, required this.onRotate, required this.onEndRotate, required this.startMoving}) : super(key: key);
+  CircleWidget({Key? key,required this.itemId, required this.circle, required this.size, required this.center, required this.onRotate, required this.onEndRotate, required this.startMoving, required this.doubleTap}) : super(key: key);
 
   @override
   _CircleWidgetState createState() => _CircleWidgetState();
@@ -33,6 +34,9 @@ class _CircleWidgetState extends State<CircleWidget>{
     return GestureDetector(
       onTap: (){
         widget.startMoving(widget.circle.id, widget.itemId);
+      },
+      onDoubleTap: (){
+        widget.doubleTap(widget.circle.id);
       },
       onPanStart: (details) {
         final centerX = widget.center.key;
@@ -243,7 +247,7 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
   void startInertia(double velocity) {
     ctrl.animateWith(
       FrictionSimulation(
-        0.03, // Коэффициент трения
+        0.1, // Коэффициент трения
         ctrl.value,
         velocity / 70, // Скорость инерции
       ),
@@ -551,9 +555,9 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
                         ),
                         onTap: () {
                           if(centralCircles.last.id==0){
-                            appViewModel.mainScreenState!.hint = textNewI[Random().nextInt(18)];
+                            appViewModel.hint = textNewI[Random().nextInt(18)];
                           }else if(centralCircles.last.id<900){
-                            appViewModel.mainScreenState!.hint = textNewSphere[Random().nextInt(18)];
+                            appViewModel.hint = textNewSphere[Random().nextInt(18)];
                           }
                           if(widget.circles.length<=12) {
                             plusId= e.key;
@@ -596,9 +600,9 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
                                     if(rotationCounter==5){
                                       rotationCounter=0;
                                       if(centralCircles.last.id==0) {
-                                        appViewModel.mainScreenState!.hint = "Это анимация, которая призвана показать, как сферы вашей жизни словно вращаются по внешней орбите, в центре которой ваше 'Я'";
-                                      } else if(centralCircles.last.id < 900)appViewModel.mainScreenState!.hint = "Это анимация, которая призвана показать, как желания вашей жизни словно вращаются по внешней орбите, в центре которой определенная сфера жизни";
-                                      else appViewModel.mainScreenState!.hint = "Это анимация, которая призвана показать, как желания вашей жизни словно вращаются по внешней орбите, в центре которой желание побольше";
+                                        appViewModel.hint = "Это анимация, которая призвана показать, как сферы вашей жизни словно вращаются по внешней орбите, в центре которой ваше 'Я'";
+                                      } else if(centralCircles.last.id < 900)appViewModel.hint = "Это анимация, которая призвана показать, как желания вашей жизни словно вращаются по внешней орбите, в центре которой определенная сфера жизни";
+                                      else appViewModel.hint = "Это анимация, которая призвана показать, как желания вашей жизни словно вращаются по внешней орбите, в центре которой желание побольше";
                                     }
                                     lastdirection = angle;
                                     _updateCircleRotation(
@@ -616,10 +620,10 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
                                     animationDirectionForward = true;
                                     initAnim(id, itemId);
                                     if(!widget.circles[itemId].isActive){
-                                      itemId<900?appViewModel.mainScreenState!.hint=textSphereActualize[Random().nextInt(5)]:
-                                      appViewModel.mainScreenState!.hint=textWishActualize[Random().nextInt(15)];
+                                      itemId<900?appViewModel.hint=textSphereActualize[Random().nextInt(5)]:
+                                      appViewModel.hint=textWishActualize[Random().nextInt(15)];
                                     }else{
-                                      appViewModel.mainScreenState!.hint="Ты в карте сферы. Сфера — это целая область жизни. Если ты хочешь развить данную сферу, задай себе вопрос: “что я хочу изменить в этой сфере, каковы мои желания?”. Отвечая на этот вопрос, создавай желания, исполнение которых качественно изменит данную сферу. Создавай, выбирай аффирмации и управляй своим будущим. Чтобы создать желание, просто нажми «+» на орбите, что вокруг сферы.";
+                                      appViewModel.hint="Ты в карте сферы. Сфера — это целая область жизни. Если ты хочешь развить данную сферу, задай себе вопрос: “что я хочу изменить в этой сфере, каковы мои желания?”. Отвечая на этот вопрос, создавай желания, исполнение которых качественно изменит данную сферу. Создавай, выбирай аффирмации и управляй своим будущим. Чтобы создать желание, просто нажми «+» на орбите, что вокруг сферы.";
                                     }
                                     // Запускаем анимацию
                                     movingController
@@ -627,7 +631,20 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
                                     movingController
                                         .forward();
                                     allowClick=false;
-                                  })
+                                  },
+                                  doubleTap: (id){
+                                    if(id==0){
+                                      appViewModel.settings.fastActMainSphere?appViewModel.activateSphereWish(id, true):
+                                          appViewModel.hint="Режим быстрой актуализации отключен в настройках";
+                                    }else if(id<900){
+                                      appViewModel.settings.fastActSphere?appViewModel.activateSphereWish(id, true):
+                                        appViewModel.hint="Режим быстрой актуализации отключен в настройках";
+                                    }else if(id>899){
+                                      appViewModel.settings.fastActWish?appViewModel.activateSphereWish(id, true):
+                                        appViewModel.hint="Режим быстрой актуализации отключен в настройках";
+                                    }
+                                  },
+                              )
                           );
                         },
                       )

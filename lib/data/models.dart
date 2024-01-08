@@ -161,6 +161,9 @@ class WishData {
   bool isActive = true;
   bool isHidden = false;
 
+  bool shuffle=false;
+  String lastShuffle="|";
+
   WishData({required this.id, required this.parentId, required this.text, required this.description, this.photoIds = "", required this.affirmation, required this.color});
 }
 
@@ -260,7 +263,6 @@ class MainScreenState {
   final MoonItem moon;
   List<CircleData> allCircles = [];
   final int musicId;
-  String hint = "";
 
   MainScreenState({required this.moon, required this.musicId});
 }

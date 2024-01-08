@@ -158,16 +158,16 @@ class LocalRepository{
     final result = await dbHelper.getSphere(id, moonId);
     Map<String, dynamic> tmp = jsonDecode(result['childAims']);
     Map<String, int> chAims = tmp.map((key, value) => MapEntry(key, int.parse(value.toString())));
-    return (result.isNotEmpty?(WishData(id: result["id"], parentId: result["parentId"], text: result["text"], description: result["subtext"], affirmation: result["affirmation"].toString().split('|')[0], color: Color(int.parse(result["color"].toString())))..childAims=chAims..photoIds=result['photosIds']..isChecked=result['isChecked']=="1"?true:false..isActive=result["isActive"]=="1"?true:false..isHidden=result['isHidden']=="1"):null);
+    return (result.isNotEmpty?(WishData(id: result["id"], parentId: result["parentId"], text: result["text"], description: result["subtext"], affirmation: result["affirmation"].toString().split('|')[0], color: Color(int.parse(result["color"].toString())))..childAims=chAims..photoIds=result['photosIds']..isChecked=result['isChecked']=="1"?true:false..isActive=result["isActive"]=="1"?true:false..isHidden=result['isHidden']==1?true:false ):null);
   }
   Future<List<WishItem>> getAllSpheres(int moonId) async {
     final result = await dbHelper.getAllSpheres(moonId);
-    List<WishItem> list =  result.map((e) => WishItem(id: e['id'], parentId: e['parentId'], text: e['text'], isChecked: e['isChecked']=="1"?true:false, isActive: e['isActive']=='1'?true:false, isHidden: e['isHidden']=='1')).toList();
+    List<WishItem> list =  result.map((e) => WishItem(id: e['id'], parentId: e['parentId'], text: e['text'], isChecked: e['isChecked']=="1"?true:false, isActive: e['isActive']=='1'?true:false, isHidden: e['isHidden']==1?true:false)).toList();
     return list.where((element) => element.parentId>1).toList();
   }
   Future<List<CircleData>> getAllMoonSpheres(int moonId) async {
     final result = await dbHelper.getAllMoonSpheres(moonId);
-    List<CircleData> list =  result.map((e) => CircleData(id: e['id'], parenId: e['parentId'], text: e['text'],affirmation: e['affirmation'], color: Color(e['color']), subText: e['subtext'], photosIds: e['photosIds'], isHidden: e['isHidden']=="1"?true:false, isActive: e['isActive']=="1"?true:false)).toList();
+    List<CircleData> list =  result.map((e) => CircleData(id: e['id'], parenId: e['parentId'], text: e['text'],affirmation: e['affirmation'], color: Color(e['color']), subText: e['subtext'], photosIds: e['photosIds'], isHidden: e['isHidden']==1?true:false, isActive: e['isActive']=="1"?true:false)).toList();
     return list;
   }
   Future<List<int>> getSpheresChildAims(int id, int moonId) async {

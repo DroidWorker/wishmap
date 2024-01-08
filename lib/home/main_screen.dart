@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:capped_progress_indicator/capped_progress_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -38,15 +39,15 @@ class _MainScreenState extends State<MainScreen>{
         builder: (context, appVM, child){
           final hintStates = appVM.getHintStates();
           if(hintStates["firstOpenSphere"]==1&&appVM.mainScreenState!.allCircles.first.isActive){
-            appVM.mainScreenState?.hint="Создай свою карту желаний. Сначала заполни область своего “Я”. Потом последовательно заполни все сферы, и лишь потом приступай к синтезу желаний.";
+            appVM.hint="Создай свою карту желаний. Сначала заполни область своего “Я”. Потом последовательно заполни все сферы, и лишь потом приступай к синтезу желаний.";
             appVM.setHintState("firstOpenSphere", 0);
           }else if(appVM.mainScreenState!=null&&appVM.mainScreenState!.allCircles.where((e) => e.isActive).isEmpty){
-            appVM.mainScreenState?.hint = textIActualize[Random().nextInt(35)];
+            appVM.hint = textIActualize[Random().nextInt(35)];
           }
           else {
             final sphereid = appVM.mainCircles.last.id;
             final sphere = appVM.mainScreenState!.allCircles.where((element) => element.id==sphereid).first;
-            if(appVM!=null&&appVM.mainScreenState!.hint=="") {
+            if(appVM!=null&&appVM.hint=="") {
               if (sphere.shuffle && hintId != sphereid) {
                 final affirmations = sphere.affirmation.split("|");
                 if (sphere.lastShuffle.split("|")[1] != DateTime
@@ -58,7 +59,7 @@ class _MainScreenState extends State<MainScreen>{
                       .now()
                       .weekday
                       .toString()}";
-                  appVM.mainScreenState?.hint =
+                  appVM.hint =
                   sphere.lastShuffle.split("|")[0];
                   appVM.saveShuffle(sphere.id, true, sphere.lastShuffle);
                 }
@@ -68,7 +69,7 @@ class _MainScreenState extends State<MainScreen>{
                   appVM.saveShuffle(sphere.id, false, sphere.affirmation.split("|")[0]);
                   sphere.lastShuffle="${sphere.affirmation.split("|")[0]}|";
                 }
-                appVM.mainScreenState?.hint = sphere.lastShuffle.split("|")[0];
+                appVM.hint = sphere.lastShuffle.split("|")[0];
               }
               hintId = sphereid;
             }
@@ -126,7 +127,7 @@ class _MainScreenState extends State<MainScreen>{
                             ),
                             Expanded(
                                 flex: 6,
-                                child: Text("${appVM.mainScreenState?.hint}")
+                                child: SelectorTextWidget(appViewModel: appVM,)//Text("${appVM.hint}")
                             )
                           ],
                         ),
@@ -151,11 +152,11 @@ class _MainScreenState extends State<MainScreen>{
                                   pnPressCount=0;
                                   if(isPauseIcon){
                                     setState(() {
-                                      appVM.mainScreenState!.hint = quotesQuite[Random().nextInt(55)];
+                                      appVM.hint = quotesQuite[Random().nextInt(55)];
                                     });
                                   }else{
                                     setState(() {
-                                      appVM.mainScreenState!.hint = quoteMusic[Random().nextInt(100)];
+                                      appVM.hint = quoteMusic[Random().nextInt(100)];
                                     });
                                   }
                                 }
@@ -172,11 +173,11 @@ class _MainScreenState extends State<MainScreen>{
                                     ppPressCount=0;
                                     if(isPauseIcon){
                                       setState(() {
-                                        appVM.mainScreenState!.hint = quotesQuite[Random().nextInt(55)];
+                                        appVM.hint = quotesQuite[Random().nextInt(55)];
                                       });
                                     }else{
                                       setState(() {
-                                        appVM.mainScreenState!.hint = quoteMusic[Random().nextInt(100)];
+                                        appVM.hint = quoteMusic[Random().nextInt(100)];
                                       });
                                     }
                                   }
@@ -196,11 +197,11 @@ class _MainScreenState extends State<MainScreen>{
                                   pnPressCount=0;
                                   if(isPauseIcon){
                                     setState(() {
-                                      appVM.mainScreenState!.hint = quotesQuite[Random().nextInt(55)];
+                                      appVM.hint = quotesQuite[Random().nextInt(55)];
                                     });
                                   }else{
                                     setState(() {
-                                      appVM.mainScreenState!.hint = quoteMusic[Random().nextInt(100)];
+                                      appVM.hint = quoteMusic[Random().nextInt(100)];
                                     });
                                   }
                                 }
@@ -264,10 +265,10 @@ class _MainScreenState extends State<MainScreen>{
                                       appVM.backPressedCount++;
                                       if(appVM.backPressedCount==appVM.settings.quoteupdateFreq){
                                         appVM.backPressedCount=0;
-                                        appVM.mainScreenState!.hint=quoteBack[Random().nextInt(367)];
+                                        appVM.hint=quoteBack[Random().nextInt(367)];
                                       }
                                     }else{
-                                      appVM.mainScreenState!.hint = "Кнопка “карта” возвращает вас на верхний уровень карты “желаний”. Сейчас вы уже здесь!";
+                                      appVM.hint = "Кнопка “карта” возвращает вас на верхний уровень карты “желаний”. Сейчас вы уже здесь!";
                                     }
                                     appVM.setHintState("wheelClickNum", (pressNum+1));
                                     BlocProvider.of<NavigationBloc>(context)
@@ -335,5 +336,42 @@ class _MainScreenState extends State<MainScreen>{
 
     // Вернуть null в случае некорректного формата строки
     return null;
+  }
+}
+
+class SelectorTextWidget extends StatefulWidget {
+  final AppViewModel appViewModel;
+
+  SelectorTextWidget({required this.appViewModel});
+
+  @override
+  _SelectorTextWidgetState createState() => _SelectorTextWidgetState();
+}
+
+class _SelectorTextWidgetState extends State<SelectorTextWidget> {
+  bool disposed = true;
+  @override
+  void initState() {
+    super.initState();
+    widget.appViewModel.onChange = () {
+      if(!disposed)setState(() {}); // Вызываем setState для перестройки виджета
+    };
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    disposed = false;
+    return AnimatedTextKit(
+      isRepeatingAnimation: false,
+        animatedTexts: [
+        TyperAnimatedText(widget.appViewModel.hint, textStyle: const TextStyle(fontSize: 15))
+    ]
+    );
+  }
+
+  @override
+  void dispose() {
+    disposed=true;
+    super.dispose();
   }
 }

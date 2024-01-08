@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 
 import '../../ViewModel.dart';
+import '../../common/switch_widget.dart';
 import '../../navigation/navigation_block.dart';
 import '../../res/colors.dart';
 
@@ -152,9 +153,9 @@ class MainSettingsState extends State<MainSettings>{
             Text(subtitle, maxLines: 2, style: const TextStyle(fontSize: 14, color: AppColors.greytextColor),)
           ],
       )),
-      Switch(
+      MySwitch(
         value: isActive,
-        onChanged: (changed){onChanged(changed);},
+        onChanged: (changed){onChanged(changed);}
       )
     ],);
   }

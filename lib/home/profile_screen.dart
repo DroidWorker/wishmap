@@ -53,7 +53,7 @@ class _ProfileScreenState extends State<ProfileScreen>{
                 if(appViewModel.mainScreenState!=null)appViewModel.startMainScreen(appViewModel.mainScreenState!.moon);
                 if(appViewModel.backPressedCount==appViewModel.settings.quoteupdateFreq){
                   appViewModel.backPressedCount=0;
-                  appViewModel.mainScreenState!.hint=quoteBack[Random().nextInt(367)];
+                  appViewModel.hint=quoteBack[Random().nextInt(367)];
                 }
                 BlocProvider.of<NavigationBloc>(context)
                     .add(NavigateToMainScreenEvent());

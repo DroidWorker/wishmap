@@ -62,14 +62,30 @@ class _TaskScreenState extends State{
                       GestureDetector(
                         child: Container(
                           height: 30,
-                          child: page==0
-                              ? const Text("Все задачи",
+                          child: page==3
+                              ? const Text("На сегодня",
                               style: TextStyle(decoration: TextDecoration.underline))
-                              : const Text("Все задачи"),
+                              : const Text("На сегодня"),
                         ),
                         onTap: () {
                           setState(() {
-                            page = 0;
+                            page = 3;
+                            filter(page);
+                          });
+                        },
+                      ),
+                      const SizedBox(width: 5),
+                      GestureDetector(
+                        child: Container(
+                          height: 30,
+                          child:page==2
+                              ? const Text("не выполнены",
+                              style: TextStyle(decoration: TextDecoration.underline))
+                              : const Text("не выполнены"),
+                        ),
+                        onTap: () {
+                          setState((){
+                            page = 2;
                             filter(page);
                           });
                         },
@@ -94,18 +110,18 @@ class _TaskScreenState extends State{
                       GestureDetector(
                         child: Container(
                           height: 30,
-                          child:page==2
-                              ? const Text("не выполнены",
+                          child: page==0
+                              ? const Text("Все задачи",
                               style: TextStyle(decoration: TextDecoration.underline))
-                              : const Text("не выполнены"),
+                              : const Text("Все задачи"),
                         ),
                         onTap: () {
-                          setState((){
-                            page = 2;
+                          setState(() {
+                            page = 0;
                             filter(page);
                           });
                         },
-                      )
+                      ),
                     ],),
                     const SizedBox(height: 10,),
                     Expanded(child:
@@ -129,7 +145,7 @@ class _TaskScreenState extends State{
                         ),
                         onPressed: () {
                           if(appViewModel.mainScreenState!=null)appViewModel.startMainScreen(appViewModel.mainScreenState!.moon);
-                          appViewModel.mainScreenState!.hint="Добавление ЗАДАЧ происходит из цели, добавление цели из желания, а желания из сферы. Определяй сферу, создавай желания, ставь цели и выполняй задачи. Твои желания обязательно сбудутся";
+                          appViewModel.hint="Добавление ЗАДАЧ происходит из цели, добавление цели из желания, а желания из сферы. Определяй сферу, создавай желания, ставь цели и выполняй задачи. Твои желания обязательно сбудутся";
                           BlocProvider.of<NavigationBloc>(context)
                               .add(NavigateToMainScreenEvent());
                         },
@@ -191,10 +207,10 @@ class _TaskScreenState extends State{
                                   appVM.backPressedCount++;
                                   if(appVM.backPressedCount==appVM.settings.quoteupdateFreq){
                                     appVM.backPressedCount=0;
-                                    appVM.mainScreenState!.hint=quoteBack[Random().nextInt(367)];
+                                    appVM.hint=quoteBack[Random().nextInt(367)];
                                   }
                                 }else{
-                                  appVM.mainScreenState!.hint = "Кнопка “карта” возвращает вас на верхний уровень карты “желаний”. Сейчас вы уже здесь!";
+                                  appVM.hint = "Кнопка “карта” возвращает вас на верхний уровень карты “желаний”. Сейчас вы уже здесь!";
                                 }
                                 appVM.setHintState("wheelClickNum", (pressNum+1));
                                 BlocProvider.of<NavigationBloc>(context)
@@ -260,7 +276,8 @@ class _TaskScreenState extends State{
   filter(int type){
     setState(() {
       page==1?filteredTaskList = taskList.where((element) => element.isChecked).toList():
-      page==2?filteredTaskList = taskList.where((element) => !element.isChecked).toList():filteredTaskList = taskList;
+      page==2?filteredTaskList = taskList.where((element) => !element.isChecked).toList():
+      page==3?filteredTaskList = taskList.where((element) => element.isActive).toList():filteredTaskList = taskList;
     });
   }
 }

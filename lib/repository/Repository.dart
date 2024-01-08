@@ -563,7 +563,7 @@ class Repository{
           'photosIds': photosId,
           'affirmation': wd.affirmation,
           'isActive': true,
-          'isHidden': false
+          'isHidden': false,
         };
       await userRef.child(_auth.currentUser!.uid).child("moonlist").child(currentMoonId.toString()).child("spheres").child(wd.id.toString()).set(
           dataMap
