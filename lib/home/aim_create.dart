@@ -34,7 +34,7 @@ class AimScreen extends StatelessWidget {
                       icon: const Icon(Icons.keyboard_arrow_left),
                       iconSize: 30,
                       onPressed: () {
-                        if(text.text.isNotEmpty&&description.text.isNotEmpty){
+                        if(text.text.isNotEmpty||description.text.isNotEmpty){
                           showDialog(context: context,
                             builder: (BuildContext c) => AlertDialog(
                               contentPadding: EdgeInsets.zero,
@@ -55,7 +55,7 @@ class AimScreen extends StatelessWidget {
                                 TextButton(
                                   onPressed: () async { Navigator.pop(c, 'OK');
                                   await onSaveClicked(appViewModel,context);
-                                  BlocProvider.of<NavigationBloc>(context)
+                                  if(text.text.isNotEmpty&&description.text.isNotEmpty)BlocProvider.of<NavigationBloc>(context)
                                       .handleBackPress();
                                   },
                                   child: const Text('Да'),
@@ -105,6 +105,11 @@ class AimScreen extends StatelessWidget {
                   style: const TextStyle(color: Colors.black), // Черный текст ввода
                   decoration: InputDecoration(
                     filled: true,
+                      suffixIconConstraints: const BoxConstraints(
+                        minWidth: 7,
+                        minHeight: 2,
+                      ),
+                      suffixIcon: const Text("*"),
                     fillColor: AppColors.fieldFillColor,
                     hintText: 'Название цели',
                     hintStyle: TextStyle(color: Colors.black.withOpacity(0.3)),
@@ -119,6 +124,11 @@ class AimScreen extends StatelessWidget {
                   style: const TextStyle(color: Colors.black), // Черный текст ввода
                   decoration: InputDecoration(
                     filled: true,
+                    suffixIconConstraints: const BoxConstraints(
+                      minWidth: 7,
+                      minHeight: 2,
+                    ),
+                    suffixIcon: const Text("*"),
                     fillColor: AppColors.fieldFillColor,
                     hintText: 'Опиши подробно свое желание',
                     hintStyle: TextStyle(color: Colors.black.withOpacity(0.3)),
@@ -134,13 +144,19 @@ class AimScreen extends StatelessWidget {
                       ),
                     ),
                     onPressed: (){
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Необходимо сохранить цель'),
-                            duration: Duration(
-                                seconds: 3), // Установите желаемую продолжительность отображения
-                          ),
-                        );
+                      showDialog(context: context,
+                        builder: (BuildContext context) => AlertDialog(
+                          title: const Text('Необходимо сохранить цель'),
+                          shape: const RoundedRectangleBorder(
+                              borderRadius: BorderRadius.all(Radius.circular(32.0))),
+                          actions: <Widget>[
+                            TextButton(
+                              onPressed: () => Navigator.pop(context, 'OK'),
+                              child: const Text('OK'),
+                            ),
+                          ],
+                        ),
+                      );
                     },
                     child: const Text("Создать задачу", style: TextStyle(color: AppColors.greytextColor),)
                 ),
@@ -163,7 +179,7 @@ class AimScreen extends StatelessWidget {
     if(text.text.isEmpty||description.text.isEmpty){
       showDialog(context: maincontext,
         builder: (BuildContext context) => AlertDialog(
-          title: const Text('Заполните поля', textAlign: TextAlign.center,),
+          title: const Text('Необходимо заполнить все поля со знаком *', textAlign: TextAlign.center,),
           shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.all(Radius.circular(32.0))),
           actions: <Widget>[

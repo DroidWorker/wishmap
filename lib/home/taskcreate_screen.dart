@@ -39,7 +39,7 @@ class TaskScreenState extends State<TaskScreen>{
                       icon: const Icon(Icons.keyboard_arrow_left),
                       iconSize: 30,
                       onPressed: () {
-                        if(text.text.isNotEmpty&&description.text.isNotEmpty){
+                        if(text.text.isNotEmpty){
                           showDialog(context: context,
                             builder: (BuildContext context) => AlertDialog(
                               contentPadding: EdgeInsets.zero,
@@ -110,6 +110,7 @@ class TaskScreenState extends State<TaskScreen>{
                   style: const TextStyle(color: Colors.black), // Черный текст ввода
                   decoration: InputDecoration(
                       filled: true,
+                      suffix: const Text("*"),
                       fillColor: AppColors.fieldFillColor,
                       hintText: 'Название задачи',
                       hintStyle: TextStyle(color: Colors.black.withOpacity(0.3)),
@@ -146,7 +147,7 @@ class TaskScreenState extends State<TaskScreen>{
   }
 
   Future<void> onSaveClicked(AppViewModel appViewModel) async {
-    if (text.text.isEmpty || description.text.isEmpty) {
+    if (text.text.isEmpty) {
       showDialog(context: context,
         builder: (BuildContext context) =>
             AlertDialog(

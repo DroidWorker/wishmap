@@ -598,11 +598,17 @@ class _WishScreenState extends State<WishScreen>{
                                                 .add(NavigateToAimCreateScreenEvent(
                                                 appVM.wishScreenState!.wish.id));
                                           }else{
-                                            ScaffoldMessenger.of(context).showSnackBar(
-                                              const SnackBar(
-                                                content: Text('Необходимо сохранить желание'),
-                                                duration: Duration(
-                                                    seconds: 3), // Установите желаемую продолжительность отображения
+                                            showDialog(context: context,
+                                              builder: (BuildContext context) => AlertDialog(
+                                                title: const Text('Необходимо сохранить желание'),
+                                                shape: const RoundedRectangleBorder(
+                                                    borderRadius: BorderRadius.all(Radius.circular(32.0))),
+                                                actions: <Widget>[
+                                                  TextButton(
+                                                    onPressed: () => Navigator.pop(context, 'OK'),
+                                                    child: const Text('OK'),
+                                                  ),
+                                                ],
                                               ),
                                             );
                                           }}

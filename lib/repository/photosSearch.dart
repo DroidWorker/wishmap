@@ -14,7 +14,7 @@ class GRepository{
       List<dynamic> itemsList = decodedResponse["results"] as List<dynamic>;
       for (var element in itemsList) {
         var image = (element as Map<String, dynamic>)["urls"];
-        var thumbnailLink = image["regular"];
+        var thumbnailLink = image["small"];
         imgUrls.add(thumbnailLink);
         print("Thumbnail Link: $thumbnailLink");
       }

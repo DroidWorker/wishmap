@@ -38,8 +38,12 @@ class _MyOverlayState extends State<MyETOverlay> {
   TextEditingController controller = TextEditingController();
 
   @override
-  Widget build(BuildContext context) {
+  void initState() {
     controller.text=widget.text;
+    super.initState();
+  }
+  @override
+  Widget build(BuildContext context) {
     return Material(
       color: AppColors.backgroundColor,
       child: SafeArea(
@@ -51,7 +55,7 @@ class _MyOverlayState extends State<MyETOverlay> {
                 IconButton(
                   icon: const Icon(Icons.keyboard_arrow_left),
                   onPressed: () {
-                    widget.onClose("");
+                    widget.onClose(controller.text);
                   },
                 ),
                 const Spacer(),
@@ -72,12 +76,11 @@ class _MyOverlayState extends State<MyETOverlay> {
             ),
             const SizedBox(height: 4),
             Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  children: [
+                child:
                     TextField(
                       controller: controller,
                       maxLines: null,
+                      expands: true,
                       decoration: InputDecoration(
                         border: InputBorder.none,
                         filled: true,
@@ -85,9 +88,6 @@ class _MyOverlayState extends State<MyETOverlay> {
                         hintText: 'Введите текст...',
                         hintStyle: TextStyle(color: Colors.black.withOpacity(0.3)),
                       ),
-                    ),
-                  ],
-                ),
               ),
             ),
             if(MediaQuery.of(context).viewInsets.bottom!=0) SizedBox(height: 30,

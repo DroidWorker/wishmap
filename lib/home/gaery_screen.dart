@@ -7,6 +7,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:keyboard_attachable/keyboard_attachable.dart';
 import 'package:provider/provider.dart';
 import 'package:wishmap/common/google_gallery_widget.dart';
 import 'package:wishmap/common/manage_image_overlay.dart';
@@ -39,6 +40,7 @@ class GalleryScreenState extends State<GalleryScreen>{
           child: Column(
             children: [
               Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   IconButton(
                     icon: const Icon(Icons.keyboard_arrow_left),
@@ -47,7 +49,7 @@ class GalleryScreenState extends State<GalleryScreen>{
                       BlocProvider.of<NavigationBloc>(context).handleBackPress();
                     },
                   ),
-                  Expanded(child: ElevatedButton(
+                  ElevatedButton(
                       onPressed: () {
                         setState(() {
                           screenNumber = 0;
@@ -55,8 +57,8 @@ class GalleryScreenState extends State<GalleryScreen>{
                       },
                       style: ElevatedButton.styleFrom(elevation: 0, backgroundColor: Colors.transparent,),
                       child: Text("Мои образы", style:  TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black, decoration: screenNumber==0?TextDecoration.underline:TextDecoration.none),)
-                  ),),
-                  Expanded(child: ElevatedButton(
+                  ),
+                  ElevatedButton(
                       onPressed: () {
                         setState(() {
                           screenNumber = 1;
@@ -64,8 +66,8 @@ class GalleryScreenState extends State<GalleryScreen>{
                       },
                       style: ElevatedButton.styleFrom(elevation: 0, backgroundColor: Colors.transparent,),
                       child: Text("Галерея", style:  TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black, decoration: screenNumber==1?TextDecoration.underline:TextDecoration.none),)
-                  ),),
-                  Expanded(child: ElevatedButton(
+                  ),
+                  ElevatedButton(
                       onPressed: () {
                         setState(() {
                           screenNumber = 2;
@@ -73,7 +75,7 @@ class GalleryScreenState extends State<GalleryScreen>{
                       },
                       style: ElevatedButton.styleFrom(elevation: 0, backgroundColor: Colors.transparent,),
                       child: Text("Поиск", style:  TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black, decoration: screenNumber==2?TextDecoration.underline:TextDecoration.none),)
-                  ),),
+                  ),
                   /*Expanded(child: ElevatedButton(
                       onPressed: () {
                         setState(() {
@@ -85,7 +87,7 @@ class GalleryScreenState extends State<GalleryScreen>{
                   ),)*/
                 ]
               ),
-              screenNumber==0?  Consumer<AppViewModel>(builder: (context, appVM, child) {
+              screenNumber==0?  Expanded(child:SingleChildScrollView(child: Consumer<AppViewModel>(builder: (context, appVM, child) {
                 return LayoutBuilder(
                     builder: (context, constraints) {
                       double fullWidth = constraints.maxWidth-4;
@@ -93,18 +95,17 @@ class GalleryScreenState extends State<GalleryScreen>{
                       double rightWidth = constraints.maxWidth - leftWidth - 2;
                       List<Map<Uint8List, int?>> imagesSet = [];
                       appViewModel.cachedImages.indexed.forEach((element) {if(imagesSet.isNotEmpty&&imagesSet.last.length<3){imagesSet.last[element.$2]=element.$1;}else{imagesSet.add({element.$2: element.$1});}});
-                      return Expanded(child:
-                      Column(children:
+                      return Column(children:
                       imagesSet.map((e) {
                         if(e.length==1) {
                           return buildSingle(fullWidth, e.keys.first, appVM.isinLoading,false, imageId: e.values.first,onTap: (index) async {
-                          final image = await showOverlayedImageManager(context, index.toString(), mode: 1, image: appViewModel.cachedImages[index]);
-                          if(image!=null){
-                            setState(() {
-                              appViewModel.cachedImages.removeAt(index);
-                            });
-                          }
-                        });
+                            final image = await showOverlayedImageManager(context, index.toString(), mode: 1, image: appViewModel.cachedImages[index]);
+                            if(image!=null){
+                              setState(() {
+                                appViewModel.cachedImages.removeAt(index);
+                              });
+                            }
+                          });
                         } else if(e.length==2) return buildTwin(leftWidth, rightWidth, e, appVM.isinLoading,false, onTap: (index) async {
                           final image = await showOverlayedImageManager(context, index.toString(), mode: 1, image: appViewModel.cachedImages[index]);
                           if(image!=null){
@@ -130,15 +131,26 @@ class GalleryScreenState extends State<GalleryScreen>{
                             }
                           });
                       }).toList()
-                        ,)
                       );
-                    });}):
+                    });}))):
               screenNumber==1?Expanded(child: RoundedPhotoGallery(onClick: (image){
                 appViewModel.cachedImages.add(image);
-                BlocProvider.of<NavigationBloc>(context).handleBackPress();
+                showDialog(context: context,
+                  builder: (BuildContext context) => AlertDialog(
+                    title: const Text('Добавлено в мои образы'),
+                    shape: const RoundedRectangleBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(32.0))),
+                    actions: <Widget>[
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, 'OK'),
+                        child: const Text('OK'),
+                      ),
+                    ],
+                  ),
+                );
               })):
               screenNumber==2?
-              Consumer<AppViewModel>(builder: (context, appVM, child){
+              Consumer<AppViewModel>(builder: (ccontext, appVM, child){
                 if(appVM.photoUrls.isNotEmpty)onLoading=false;
                 return Expanded(child: Column(
                   children: [
@@ -164,9 +176,9 @@ class GalleryScreenState extends State<GalleryScreen>{
                                 // may be display the full list? or Nothing? it's your call
                               },
                               onSubmitted: (value, value2) {
+                                FocusManager.instance.primaryFocus?.unfocus();
                                 onLoading = true;
                                 appViewModel.searchImages(value);
-                                print("search  starteeeeeeeed$value");
                               },
                               onEditingProgress: (value, value2) {
                                 searchText = value;
@@ -184,12 +196,36 @@ class GalleryScreenState extends State<GalleryScreen>{
                       cornerRadius: 0,):
                     PhotoGalleryWidget(imageUrls: appViewModel.photoUrls, onTap: (url) async {
                       final image = await showOverlayedImageManager(context, url);
-                      if(image!=null)appViewModel.cachedImages.add(image);
+                      if(image!=null){
+                        showDialog(context: context,
+                          builder: (BuildContext context) => AlertDialog(
+                            title: const Text('Добавлено в мои образы'),
+                            shape: const RoundedRectangleBorder(
+                                borderRadius: BorderRadius.all(Radius.circular(32.0))),
+                            actions: <Widget>[
+                              TextButton(
+                                onPressed: () => Navigator.pop(context, 'OK'),
+                                child: const Text('OK'),
+                              ),
+                            ],
+                          ),
+                        );
+                        appViewModel.cachedImages.add(image);
+                      }
                     }),
                     //const Expanded(child: SizedBox())
                   ],
                 ));
-              }):const SizedBox()
+              }):const SizedBox(),
+              if(MediaQuery.of(context).viewInsets.bottom!=0) SizedBox(height: 30,
+                child: FooterLayout(
+                  footer: Container(height: 30,color: Colors.white,alignment: Alignment.centerRight, child:
+                  GestureDetector(
+                    onTap: (){FocusManager.instance.primaryFocus?.unfocus();},
+                    child: const Text("готово", style: TextStyle(fontSize: 20),),
+                  )
+                    ,),
+                ),)
             ],
           ),
       ),

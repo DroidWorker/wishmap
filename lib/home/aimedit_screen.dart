@@ -26,25 +26,28 @@ class AimEditScreenState extends State<AimEditScreen>{
   var isChanged = false;
   var isParentChecked = false;
 
+  bool isTextSetted = false;
+
   @override
   Widget build(BuildContext context) {
     text.addListener(() { if(ai?.text!=text.text)isChanged = true;});
     description.addListener(() { if(ai?.description!=description.text)isChanged = true;});
     return Consumer<AppViewModel>(
         builder: (context, appVM, child) {
-          ai ??= appVM.currentAim??AimData(id: -1, parentId: -1, text: 'объект не найден', description: "", isChecked: false);
-          if(roots.isEmpty&&ai!=null)appVM.convertToMyTreeNode(CircleData(id: ai!.id, text: ai!.text, color: Colors.transparent, parenId: ai!.parentId, isChecked: ai!.isChecked));
+          if(ai==null||ai!.id==-1)ai = appVM.currentAim??AimData(id: -1, parentId: -1, text: 'объект не найден', description: "", isChecked: false);
+          if(roots.isEmpty&&ai!=null&&ai!.id!=-1)appVM.convertToMyTreeNode(CircleData(id: ai!.id, text: ai!.text, color: Colors.transparent, parenId: ai!.parentId, isChecked: ai!.isChecked));
           roots = appVM.myNodes;
-          isParentChecked = appVM.mainScreenState!.allCircles.where((element) => element.id ==ai!.parentId).first.isChecked;
-          text.text = ai?.text??"Загрузка...";
-          description.text = ai?.description??"";
+          isParentChecked = ai!.id!=-1?appVM.mainScreenState!.allCircles.where((element) => element.id ==ai!.parentId).first.isChecked:false;
+          if(!isTextSetted&&ai!.id!=-1){
+            text.text = ai?.text??"Загрузка...";
+            description.text = ai?.description??"";
+            isTextSetted=true;
+          }
           return Scaffold(
             backgroundColor: AppColors.backgroundColor,
             body: SafeArea(
                 maintainBottomViewPadding: true,
-                child: LayoutBuilder(
-                    builder: (context, constraints) {
-                      return  Column(children:[ Expanded(child:Padding(
+                child:   Column(children:[ Expanded(child:Padding(
               padding: const EdgeInsets.all(15),
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -58,7 +61,7 @@ class AimEditScreenState extends State<AimEditScreen>{
                               icon: const Icon(Icons.keyboard_arrow_left),
                               iconSize: 30,
                               onPressed: () {
-                                if(ai!=null&&!ai!.isChecked&&text.text.isNotEmpty&&description.text.isNotEmpty&&isChanged){
+                                if(ai!=null&&!ai!.isChecked&&isChanged){
                                 showDialog(context: context,
                                   builder: (BuildContext context) => AlertDialog(
                                     contentPadding: EdgeInsets.zero,
@@ -80,7 +83,8 @@ class AimEditScreenState extends State<AimEditScreen>{
                                         onPressed: () async {
                                           Navigator.pop(context, 'OK');
                                           onSaveClick(appVM);
-                                          BlocProvider.of<NavigationBloc>(context)
+
+                                          if(text.text.isNotEmpty&&description.text.isNotEmpty)BlocProvider.of<NavigationBloc>(context)
                                               .handleBackPress();
                                         },
                                         child: const Text('Да'),
@@ -113,7 +117,40 @@ class AimEditScreenState extends State<AimEditScreen>{
                                     if(isParentChecked) {
                                       showCantChangeStatus();
                                     } else {
-                                      showDialog(context: context,
+                                      if(isChanged) {
+                                        showDialog(context: context,
+                                          builder: (BuildContext context) => AlertDialog(
+                                            contentPadding: EdgeInsets.zero,
+                                            shape: const RoundedRectangleBorder(
+                                                borderRadius: BorderRadius.all(Radius.circular(32.0))),
+                                            title: const Text('Внимание', textAlign: TextAlign.center,),
+                                            content: const Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Text("Вы изменили поля но не нажали 'Сохранить'", maxLines: 6, textAlign: TextAlign.center,),
+                                                SizedBox(height: 4,),
+                                                Divider(color: AppColors.dividerGreyColor,),
+                                                SizedBox(height: 4,),
+                                                Text("Сохранить изменения?", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),)
+                                              ],
+                                            ),
+                                            actions: <Widget>[
+                                              TextButton(
+                                                onPressed: () async { Navigator.pop(context, 'OK');
+                                                onSaveClick(appVM);
+                                                },
+                                                child: const Text('Да'),
+                                              ),
+                                              TextButton(
+                                                onPressed: () { Navigator.pop(context, 'Cancel');},
+                                                child: const Text('Нет'),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+                                        return;
+                                      }
+                                      if(ai!.childTasks.isNotEmpty){showDialog(context: context,
                                         builder: (BuildContext context) =>
                                             AlertDialog(
                                               contentPadding: EdgeInsets.zero,
@@ -201,7 +238,39 @@ class AimEditScreenState extends State<AimEditScreen>{
                                                 ),
                                               ],
                                             ),
-                                      );
+                                      );}else{
+                                        ai!.isChecked = !ai!
+                                            .isChecked;
+                                        appVM.updateAimStatus(
+                                            ai!.id, ai!.isChecked);
+                                        showDialog(context: context,
+                                          builder: (
+                                              BuildContext context) =>
+                                              AlertDialog(
+                                                title: ai!.isChecked
+                                                    ? const Text(
+                                                    'Достигнута')
+                                                    : const Text(
+                                                    'не Достигнута'),
+                                                shape: const RoundedRectangleBorder(
+                                                    borderRadius: BorderRadius
+                                                        .all(Radius
+                                                        .circular(
+                                                        32.0))),
+                                                actions: <Widget>[
+                                                  TextButton(
+                                                    onPressed: () {
+                                                      Navigator.pop(
+                                                          context,
+                                                          'OK');
+                                                    },
+                                                    child: const Text(
+                                                        'OK'),
+                                                  ),
+                                                ],
+                                              ),
+                                        );
+                                      }
                                     }
                                   }
                                 },
@@ -222,14 +291,14 @@ class AimEditScreenState extends State<AimEditScreen>{
                                       shape: const RoundedRectangleBorder(
                                           borderRadius: BorderRadius.all(Radius.circular(32.0))),
                                       title: const Text('Внимание', textAlign: TextAlign.center,),
-                                      content: const Column(
+                                      content: Column(
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
-                                          Text("Если в данной цели создавались задачи, то они также будут удалены", maxLines: 4, textAlign: TextAlign.center,),
-                                          SizedBox(height: 4,),
-                                          Divider(color: AppColors.dividerGreyColor,),
-                                          SizedBox(height: 4,),
-                                          Text("Удалить?", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),)
+                                          Text(ai!.childTasks.isNotEmpty?"Если в данной цели создавались задачи, то они также будут удалены":"Цель будет удалена", maxLines: 4, textAlign: TextAlign.center,),
+                                          const SizedBox(height: 4,),
+                                          const Divider(color: AppColors.dividerGreyColor,),
+                                          const SizedBox(height: 4,),
+                                          const Text("Удалить?", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),)
                                         ],
                                       ),
                                       actions: <Widget>[
@@ -304,119 +373,139 @@ class AimEditScreenState extends State<AimEditScreen>{
                         ),
                       ],
                     ),
-                    const SizedBox(height: 15,),
-                    TextField(
-                      onTap: (){if(ai!.isChecked)showUnavailable("Чтобы редактировать цель необходимо сменить статус \nна 'не выполнена'");},
-                      controller: text,
-                      showCursor: true,
-                      readOnly: ai!=null?(ai!.isChecked||!ai!.isActive?true:false):false,
-                      style: const TextStyle(color: Colors.black), // Черный текст ввода
-                      decoration: InputDecoration(
-                          filled: true,
-                          fillColor: ai!=null?(ai!.isChecked?AppColors.fieldLockColor:!ai!.isActive?AppColors.fieldInactive:AppColors.fieldFillColor):AppColors.fieldFillColor,
-                          hintText: 'Название',
-                          hintStyle: TextStyle(color: Colors.black.withOpacity(0.3)),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10.0),
-                          borderSide: const BorderSide(
-                            width: 0,
-                            style: BorderStyle.none,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 15,),
-                    TextField(
-                      minLines: 4,
-                      maxLines: 7,
-                      controller: description,
-                      onTap: () async {
-                        if(ai!.isChecked){showUnavailable("Чтобы редактировать цель необходимо сменить статус \nна 'не выполнена'");}
-                        else if(!ai!.isActive){showUneditable();}
-                        else {
-                          description.text = await showOverlayedEdittext(context, description.text, (ai!.isActive&&!ai!.isChecked))??"";
-                          appVM.isChanged= true;
-                        }
-                      },
-                      showCursor: false,
-                      readOnly: true,
-                      style: const TextStyle(color: Colors.black), // Черный текст ввода
-                      decoration: InputDecoration(
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10.0),
-                          borderSide: const BorderSide(
-                            width: 0,
-                            style: BorderStyle.none,
-                          ),
-                        ),
-                        filled: true, // Заливка фона
-                        fillColor: ai!=null?(ai!.isChecked?AppColors.fieldLockColor:!ai!.isActive?AppColors.fieldInactive:AppColors.fieldFillColor):AppColors.fieldFillColor,
-                        hintText: 'Описание', // Базовый текст
-                        hintStyle: TextStyle(color: Colors.black.withOpacity(0.3)), // Полупрозрачный черный базовый текст
-                      ),
-                    ),
-                    const SizedBox(height: 30),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.fieldFillColor,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(
-                                    10), // <-- Radius
+                    Expanded(child:SingleChildScrollView(
+                      child: Column(children:[
+                        const SizedBox(height: 15,),
+                        TextField(
+                          onTap: (){if(ai!.isChecked)showUnavailable("Чтобы редактировать цель необходимо сменить статус \nна 'не выполнена'");},
+                          controller: text,
+                          showCursor: true,
+                          readOnly: ai!=null?(ai!.isChecked||!ai!.isActive?true:false):false,
+                          style: const TextStyle(color: Colors.black), // Черный текст ввода
+                          decoration: InputDecoration(
+                            filled: true,
+                            suffixIconConstraints: const BoxConstraints(
+                              minWidth: 7,
+                              minHeight: 2,
+                            ),
+                            suffixIcon: const Text("*"),
+                            fillColor: ai!=null?(ai!.isChecked?AppColors.fieldLockColor:!ai!.isActive?AppColors.fieldInactive:AppColors.fieldFillColor):AppColors.fieldFillColor,
+                            hintText: 'Название',
+                            hintStyle: TextStyle(color: Colors.black.withOpacity(0.3)),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10.0),
+                              borderSide: const BorderSide(
+                                width: 0,
+                                style: BorderStyle.none,
                               ),
                             ),
-                            onPressed: () {
-                              if(ai!=null){
-                                if(!ai!.isActive){
-                                  showUnavailable("Чтобы редактировать цель необходимо сменить статус на 'aктуальная'");
-                                  return;
-                                }
-                                else if(ai!.isChecked){
-                                  showUnavailable("Чтобы редактировать цель необходимо сменить статус на 'не достигнута");
-                                  return;
-                                }
-                                BlocProvider.of<NavigationBloc>(context)
-                                    .add(NavigateToTaskCreateScreenEvent(ai!.id));
-                              }
-                            },
-                            child: const Text("Создать задачу",
-                              style: TextStyle(color: AppColors.greytextColor),)
+                          ),
                         ),
-                        const SizedBox(height: 5),
-                        const Text(
-                          "Укажи задачу дня для достижения цели. Помни! Задача актуальна 24 часа",
-                          style: TextStyle(
-                              fontSize: 10, color: AppColors.greytextColor),)
-                      ],
-                    ),
-                    const SizedBox(height: 15,),
-                    MyTreeView(key: UniqueKey(),roots: roots, onTap: (id, type){
-                      if(type=="m"){
-                        BlocProvider.of<NavigationBloc>(context).clearHistory();
-                        appVM.cachedImages.clear();
-                        appVM.startMainsphereeditScreen();
-                        BlocProvider.of<NavigationBloc>(context)
-                            .add(NavigateToMainSphereEditScreenEvent());
-                      }else if(type=="w"){
-                        BlocProvider.of<NavigationBloc>(context).clearHistory();
-                        appVM.startWishScreen(id, 0);
-                        BlocProvider.of<NavigationBloc>(context)
-                            .add(NavigateToWishScreenEvent());
-                      }else if(type=="a"&&widget.aimId!=id){
-                        appVM.getAim(id);
-                        BlocProvider.of<NavigationBloc>(context).removeLastFromBS();
-                        BlocProvider.of<NavigationBloc>(context)
-                            .add(NavigateToAimEditScreenEvent(id));
-                      }else if(type=="t"){
-                        appVM.currentTask=null;
-                        appVM.getTask(id);
-                        BlocProvider.of<NavigationBloc>(context).removeLastFromBS();
-                        BlocProvider.of<NavigationBloc>(context)
-                            .add(NavigateToTaskEditScreenEvent(id));
-                      }
-                    },),
+                        const SizedBox(height: 15,),
+                        TextField(
+                          minLines: 4,
+                          maxLines: 7,
+                          controller: description,
+                          onTap: () async {
+                            if(ai!.isChecked){showUnavailable("Чтобы редактировать цель необходимо сменить статус \nна 'не выполнена'");}
+                            else if(!ai!.isActive){showUneditable();}
+                            else {
+                              final returnedText = await showOverlayedEdittext(context, description.text, (ai!.isActive&&!ai!.isChecked))??"";
+                              if(returnedText!=description.text) {
+                                description.text = returnedText;
+                                isChanged = true;
+                                appVM.isChanged = true;
+                              }
+                            }
+                          },
+                          showCursor: false,
+                          readOnly: true,
+                          style: const TextStyle(color: Colors.black), // Черный текст ввода
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10.0),
+                              borderSide: const BorderSide(
+                                width: 0,
+                                style: BorderStyle.none,
+                              ),
+                            ),
+                            filled: true, // Заливка фона
+                            suffixIconConstraints: const BoxConstraints(
+                              minWidth: 7,
+                              minHeight: 2,
+                            ),
+                            suffixIcon: const Text("*"),
+                            fillColor: ai!=null?(ai!.isChecked?AppColors.fieldLockColor:!ai!.isActive?AppColors.fieldInactive:AppColors.fieldFillColor):AppColors.fieldFillColor,
+                            hintText: 'Описание', // Базовый текст
+                            hintStyle: TextStyle(color: Colors.black.withOpacity(0.3)), // Полупрозрачный черный базовый текст
+                          ),
+                        ),
+                        const SizedBox(height: 30),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.fieldFillColor,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(
+                                        10), // <-- Radius
+                                  ),
+                                ),
+                                onPressed: () {
+                                  if(ai!=null){
+                                    if(!ai!.isActive){
+                                      showUnavailable("Чтобы создать задачу необходимо сменить статус на 'aктуальная'");
+                                      return;
+                                    }
+                                    else if(ai!.isChecked){
+                                      showUnavailable("Чтобы создать задачу необходимо сменить статус на 'не достигнута'");
+                                      return;
+                                    }
+                                    BlocProvider.of<NavigationBloc>(context)
+                                        .add(NavigateToTaskCreateScreenEvent(ai!.id));
+                                  }
+                                },
+                                child: const Text("Создать задачу",
+                                  style: TextStyle(color: AppColors.greytextColor),)
+                            ),
+                            const SizedBox(height: 5),
+                            const Text(
+                              "Укажи задачу дня для достижения цели. Помни! Задача актуальна 24 часа",
+                              style: TextStyle(
+                                  fontSize: 10, color: AppColors.greytextColor),)
+                          ],
+                        ),
+                        const SizedBox(height: 15,),
+                        MyTreeView(key: UniqueKey(),roots: roots, onTap: (id, type){
+                          if(type=="m"){
+                            BlocProvider.of<NavigationBloc>(context).clearHistory();
+                            appVM.cachedImages.clear();
+                            appVM.startMainsphereeditScreen();
+                            BlocProvider.of<NavigationBloc>(context)
+                                .add(NavigateToMainSphereEditScreenEvent());
+                          }else if(type=="w"){
+                            BlocProvider.of<NavigationBloc>(context).clearHistory();
+                            appVM.startWishScreen(id, 0);
+                            BlocProvider.of<NavigationBloc>(context)
+                                .add(NavigateToWishScreenEvent());
+                          }else if(type=="a"&&widget.aimId!=id){
+                            appVM.getAim(id);
+                            appVM.myNodes.clear();
+                            BlocProvider.of<NavigationBloc>(context).removeLastFromBS();
+                            BlocProvider.of<NavigationBloc>(context)
+                                .add(NavigateToAimEditScreenEvent(id));
+                          }else if(type=="t"){
+                            appVM.getTask(id);
+                            appVM.myNodes.clear();
+                            BlocProvider.of<NavigationBloc>(context).removeLastFromBS();
+                            BlocProvider.of<NavigationBloc>(context)
+                                .add(NavigateToTaskEditScreenEvent(id));
+                          }
+                        },),
+                      ]),
+                    ))
+
                   ]
               ),
             )),
@@ -428,7 +517,8 @@ class AimEditScreenState extends State<AimEditScreen>{
                         child: const Text("готово", style: TextStyle(fontSize: 20),),
                       )
                         ,),
-                    ),)]);})
+                    ),)
+                      ])
             ));
     });
   }
@@ -455,7 +545,11 @@ class AimEditScreenState extends State<AimEditScreen>{
         ai!.description = description.text;
       }
       appVM.updateAim(ai!);
-      isChanged = false;
+      setState(() {
+        roots.clear();
+        appVM.aimItems[appVM.aimItems.indexWhere((element) => element.id==ai!.id)]=AimItem(id: ai!.id, parentId: ai!.parentId, text: ai!.text, isChecked: ai!.isChecked, isActive: ai!.isActive);
+        isChanged = false;
+      });
       showDialog(context: context,
         builder: (BuildContext context) => AlertDialog(
           title: const Text('сохраненa'),
@@ -474,7 +568,7 @@ class AimEditScreenState extends State<AimEditScreen>{
   void showUnavailable(String text){
     showDialog(context: context,
       builder: (BuildContext context) => AlertDialog(
-        contentPadding: EdgeInsets.zero,
+        contentPadding: const EdgeInsets.all(5),
         shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.all(Radius.circular(32.0))),
         content: Column(
@@ -494,21 +588,21 @@ class AimEditScreenState extends State<AimEditScreen>{
       ),
     );
   }
-  void showUneditable() {
+  void showUneditable({String text = "Чтобы редактировать необходимо изменить статус на 'актуальное' нажав кнопку 'осознать'"}) {
     showDialog(context: context,
       builder: (BuildContext context) =>
           AlertDialog(
             contentPadding: EdgeInsets.zero,
             shape: const RoundedRectangleBorder(
                 borderRadius: BorderRadius.all(Radius.circular(32.0))),
-            content: const Column(
+            content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  "Чтобы редактировать необходимо изменить статус на 'актуальное' нажав кнопку 'осознать'",
+                  text,
                   maxLines: 5, textAlign: TextAlign.center,),
-                SizedBox(height: 4,),
-                Divider(color: AppColors.dividerGreyColor,),
+                const SizedBox(height: 4,),
+                const Divider(color: AppColors.dividerGreyColor,),
               ],
             ),
             actions: <Widget>[

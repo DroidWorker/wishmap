@@ -56,11 +56,12 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
           final aims = appVM.aimItems.where((element) => element.parentId==0).toList();
           List<int> aimsids = aims.map((e) => e.id).toList();
           final tasks = appVM.taskItems.where((element) => aimsids.contains(element.parentId)).toList();
-          final List<MyTreeNode> root = [];
+          List<MyTreeNode> root = [];
           for (var element in aims) {
             final childTasks = tasks.where((e) => e.parentId==element.id).toList();
             root.add(MyTreeNode(id: element.id, type: 'a', title: element.text, isChecked: element.isChecked, children: childTasks.map((item) => MyTreeNode(id: item.id, type: 't', title: item.text, isChecked: item.isChecked)).toList()));
           }
+          if(root.isNotEmpty)root = [MyTreeNode(id: 0, type: 'm', title: curWd.text, isChecked: false, children: root)..noClickable=true];
           return Scaffold(
         backgroundColor: AppColors.backgroundColor,
         body: SafeArea(
@@ -245,7 +246,18 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
                     List<List<Uint8List>> imagesSet = [];
                     appViewModel.cachedImages.forEach((element) {if(imagesSet.isNotEmpty&&imagesSet.last.length<3){imagesSet.last.add(element);}else{imagesSet.add([element]);}});
                     if(imagesSet.isNotEmpty)imagesSet.removeAt(0);
-                    return Column(
+                    return InkWell(onTap: (){
+                      if(curWd.isActive) {
+                        appViewModel.isChanged = true;
+                        appViewModel.photoUrls.clear();
+                        BlocProvider.of<NavigationBloc>(context)
+                            .add(NavigateToGalleryScreenEvent());
+                      }else{
+                        showUneditable();
+                      }
+                    },
+                        child:
+                    Column(
                         mainAxisSize: MainAxisSize.min,
                         children:[
                           Row(
@@ -287,7 +299,8 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
                             else if(imagesSet.indexOf(e)%2!=0) return buildTriple(leftWidth, rightWidth, em, appVM.isinLoading,!curWd.isActive);
                             else return buildTripleReverce(leftWidth, rightWidth, em, appVM.isinLoading,!curWd.isActive);
                           }).toList()
-                        ]);
+                        ])
+                    );
                   },
                 ),
                 const SizedBox(height: 5),
@@ -356,6 +369,7 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
                           BlocProvider.of<NavigationBloc>(context)
                               .add(NavigateToWishScreenEvent());
                         }else if(type=="a"){
+                          appVM.myNodes.clear();
                           appVM.getAim(id);
                           BlocProvider.of<NavigationBloc>(context)
                               .add(NavigateToAimEditScreenEvent(id));

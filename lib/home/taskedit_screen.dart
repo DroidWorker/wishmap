@@ -28,6 +28,8 @@ class TaskEditScreenState extends State<TaskEditScreen>{
   var isChanged = false;
   var isParentChecked = false;
 
+  bool isTextSetted = false;
+
   @override
   Widget build(BuildContext context) {
     text.addListener(() { if(ai?.text!=text.text)isChanged = true;});
@@ -39,20 +41,20 @@ class TaskEditScreenState extends State<TaskEditScreen>{
             AimData ad = appVM.currentAim!;
             isParentChecked = ad.isChecked;
             var childNodes = MyTreeNode(id: ad.id, type: 'a', title: ad.text, isChecked: ad.isChecked, children: []);
-            print('dddddddddddddddddddd${childNodes} ${ai!.id} ${ad.parentId}');
-            if(roots.isEmpty&&ai!=null)appVM.convertToMyTreeNodeIncludedAimsTasks(childNodes, ai!.id, ad.parentId);
+            if(roots.isEmpty&&ai!=null&&ai?.id!=-1)appVM.convertToMyTreeNodeIncludedAimsTasks(childNodes, ai!.id, ad.parentId);
           }else {
             if(ai!.parentId!=-1)appVM.getAim(ai!.parentId);
           }
           roots=appVM.myNodes;
-          text.text = ai!.text;
-          description.text = ai!.description;
+          if(!isTextSetted&&ai!.id!=-1) {
+            text.text = ai!.text;
+            description.text = ai!.description;
+            isTextSetted=true;
+          }
           return Scaffold(
             backgroundColor: AppColors.backgroundColor,
             body: SafeArea(
-                child: LayoutBuilder(
-                    builder: (context, constraints) {
-                      return Column(children:[Padding(
+                child: Column(children:[Padding(
               padding: const EdgeInsets.all(15),
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -66,7 +68,7 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                               icon: const Icon(Icons.keyboard_arrow_left),
                               iconSize: 30,
                               onPressed: () {
-                                if(ai!=null&&!ai!.isChecked&&text.text.isNotEmpty&&description.text.isNotEmpty&&isChanged){
+                                if(ai!=null&&!ai!.isChecked&&isChanged){
                                   showDialog(context: context,
                                     builder: (BuildContext context) => AlertDialog(
                                       contentPadding: EdgeInsets.zero,
@@ -87,7 +89,7 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                                         TextButton(
                                           onPressed: () async { Navigator.pop(context, 'OK');
                                           onSaveClicked(appVM, ai!);
-                                          BlocProvider.of<NavigationBloc>(context)
+                                          if(text.text.isNotEmpty)BlocProvider.of<NavigationBloc>(context)
                                               .handleBackPress();
                                           },
                                           child: const Text('Да'),
@@ -119,6 +121,39 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                                   if(isParentChecked) {
                                     showCantChangeStatus();
                                   } else {
+                                    if(isChanged) {
+                                      showDialog(context: context,
+                                        builder: (BuildContext context) => AlertDialog(
+                                          contentPadding: EdgeInsets.zero,
+                                          shape: const RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.all(Radius.circular(32.0))),
+                                          title: const Text('Внимание', textAlign: TextAlign.center,),
+                                          content: const Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Text("Вы изменили поля но не нажали 'Сохранить'", maxLines: 6, textAlign: TextAlign.center,),
+                                              SizedBox(height: 4,),
+                                              Divider(color: AppColors.dividerGreyColor,),
+                                              SizedBox(height: 4,),
+                                              Text("Сохранить изменения?", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),)
+                                            ],
+                                          ),
+                                          actions: <Widget>[
+                                            TextButton(
+                                              onPressed: () async { Navigator.pop(context, 'OK');
+                                              onSaveClicked(appVM, ai!);
+                                              },
+                                              child: const Text('Да'),
+                                            ),
+                                            TextButton(
+                                              onPressed: () { Navigator.pop(context, 'Cancel');},
+                                              child: const Text('Нет'),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                      return;
+                                    }
                                     appVM.updateTaskStatus(
                                         ai!.id, !ai!.isChecked);
                                     showDialog(context: context,
@@ -153,23 +188,52 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                                   ),
                                 ),
                                 onPressed: () async {
-                                  appVM.deleteTask(ai!.id);
                                   showDialog(context: context,
                                     builder: (BuildContext c) => AlertDialog(
-                                      title: const Text('удаленa'),
+                                      contentPadding: EdgeInsets.zero,
                                       shape: const RoundedRectangleBorder(
                                           borderRadius: BorderRadius.all(Radius.circular(32.0))),
+                                      title: const Text('Внимание', textAlign: TextAlign.center,),
+                                      content: const Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text("Задача будет удалена", maxLines: 4, textAlign: TextAlign.center,),
+                                          SizedBox(height: 4,),
+                                          Divider(color: AppColors.dividerGreyColor,),
+                                          SizedBox(height: 4,),
+                                          Text("Удалить?", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),)
+                                        ],
+                                      ),
                                       actions: <Widget>[
                                         TextButton(
                                           onPressed: () { Navigator.pop(context, 'OK');
-                                          BlocProvider.of<NavigationBloc>(context).handleBackPress();},
-                                          child: const Text('OK'),
+                                          appVM.deleteTask(ai!.id);
+                                          showDialog(context: context,
+                                            builder: (BuildContext context) => AlertDialog(
+                                              title: const Text('Удалена'),
+                                              shape: const RoundedRectangleBorder(
+                                                  borderRadius: BorderRadius.all(Radius.circular(32.0))),
+                                              actions: <Widget>[
+                                                TextButton(
+                                                  onPressed: () { Navigator.pop(context, 'OK');
+                                                  BlocProvider.of<NavigationBloc>(context).handleBackPress();},
+                                                  child: const Text('OK'),
+                                                ),
+                                              ],
+                                            ),
+                                          ).then((value) {
+                                            BlocProvider.of<NavigationBloc>(context).handleBackPress();
+                                          });
+                                          },
+                                          child: const Text('Да'),
+                                        ),
+                                        TextButton(
+                                          onPressed: () { Navigator.pop(context, 'Cancel');},
+                                          child: const Text('Нет'),
                                         ),
                                       ],
                                     ),
-                                  ).then((value) {
-                                    BlocProvider.of<NavigationBloc>(context).handleBackPress();
-                                  });
+                                  );
                                 },
                                 child: const Text("Удалить",style: TextStyle(color: Colors.black, fontSize: 12))
                             ),
@@ -221,6 +285,11 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                       style: const TextStyle(color: Colors.black), // Черный текст ввода
                       decoration: InputDecoration(
                           filled: true,
+                        suffixIconConstraints: const BoxConstraints(
+                          minWidth: 7,
+                          minHeight: 2,
+                        ),
+                        suffixIcon: const Text("*"),
                           fillColor: ai!=null?(ai!.isChecked?AppColors.fieldLockColor:!ai!.isActive?AppColors.fieldInactive:AppColors.fieldFillColor):AppColors.fieldFillColor,
                           hintText: 'Название',
                           hintStyle: TextStyle(color: Colors.black.withOpacity(0.3)),
@@ -242,8 +311,12 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                         if(ai!.isChecked){showUnavailable();}
                         else if(!ai!.isActive){showUneditable();}
                         else {
-                          description.text = await showOverlayedEdittext(context, description.text, (ai!.isActive&&!ai!.isChecked))??"";
-                          appVM.isChanged= true;
+                          final returnedText = await showOverlayedEdittext(context, description.text, (ai!.isActive&&!ai!.isChecked))??"";
+                          if(returnedText!=description.text) {
+                            description.text = returnedText;
+                            isChanged = true;
+                            appVM.isChanged = true;
+                          }
                         }
                       },
                       showCursor: false,
@@ -279,6 +352,7 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                         BlocProvider.of<NavigationBloc>(context)
                             .add(NavigateToWishScreenEvent());
                       }else if(type=="a"){
+                        appVM.myNodes.clear();
                         appVM.getAim(id);
                         BlocProvider.of<NavigationBloc>(context).removeLastFromBS();
                         BlocProvider.of<NavigationBloc>(context)
@@ -302,15 +376,15 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                       )
                         ,),
                     ),)
-            ]);}))
+            ]))
     );
   });
   }
   void onSaveClicked(AppViewModel appVM, TaskData ai){
-    if(text.text.isEmpty||description.text.isEmpty){
+    if(text.text.isEmpty){
       showDialog(context: context,
         builder: (BuildContext context) => AlertDialog(
-          title: const Text('Заполните поля'),
+          title: const Text('Необходимо заполнить все поля со знаком *'),
           shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.all(Radius.circular(32.0))),
           actions: <Widget>[
@@ -327,7 +401,10 @@ class TaskEditScreenState extends State<TaskEditScreen>{
       ai.description = description.text;
     }
     appVM.updateTask(ai);
-    isChanged = false;
+    setState(() {
+      roots.clear();
+      isChanged = false;
+    });
     showDialog(context: context,
       builder: (BuildContext context) => AlertDialog(
         title: const Text('сохраненa'),

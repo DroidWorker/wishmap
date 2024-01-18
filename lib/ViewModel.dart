@@ -845,6 +845,7 @@ class AppViewModel with ChangeNotifier {
   }
   Future getAim(int id) async{
     try{
+      currentAim = null;
       var result = await Connectivity().checkConnectivity();
       if(result == ConnectivityResult.none)  connectivity = 'No Internet Connection';
       if(mainScreenState!=null) {
@@ -873,6 +874,7 @@ class AppViewModel with ChangeNotifier {
       if(connectivity != 'No Internet Connection')await repository.updateAim(ad, mainScreenState?.moon.id??0);
       await localRep.updateAim(ad,mainScreenState?.moon.id??0);
       currentAim=(AimData(id: ad.id, parentId: ad.parentId, text: ad.text, description: ad.description, isChecked: ad.isChecked, isActive: ad.isActive));
+      aimItems[aimItems.indexWhere((element) => element.id==ad.id)]=AimItem(id: ad.id, parentId: ad.parentId, text: ad.text, isChecked: ad.isChecked, isActive: ad.isActive);
       updateMoonSync(mainScreenState?.moon.id??0);
     }catch(ex){
       addError("#518${ex.toString()}");
@@ -948,6 +950,7 @@ class AppViewModel with ChangeNotifier {
       if(connectivity != 'No Internet Connection')await repository.updateTask(ad, mainScreenState?.moon.id??0);
       await localRep.updateTask(ad,mainScreenState?.moon.id??0);
       currentTask=(TaskData(id: ad.id, parentId: ad.parentId, text: ad.text, description: ad.description, isChecked: ad.isChecked, isActive: ad.isActive));
+      taskItems[taskItems.indexWhere((element) => element.id==ad.id)]=TaskItem(id: ad.id, parentId: ad.parentId, text: ad.text, isChecked: ad.isChecked, isActive: ad.isActive);
       updateMoonSync(mainScreenState?.moon.id??0);
     }catch(ex){
       addError("#524${ex.toString()}");
@@ -1075,7 +1078,10 @@ class AppViewModel with ChangeNotifier {
   Future<List<MyTreeNode>> convertToMyTreeNodeIncludedAimsTasks(MyTreeNode aimNode, int taskId, int wishId) async {
     final taskList = await getTasksForAim(aimNode.id);
     List<CircleData> allCircles = getParentTree(wishId);
-    List<MyTreeNode> children = <MyTreeNode>[MyTreeNode(id: aimNode.id, type: "a", title: aimNode.title, isChecked: aimNode.isChecked, children: (taskList?.map((e) =>  MyTreeNode(id: e.id, type: 't', title: e.text, isChecked: e.isChecked)..noClickable=e.id==taskId?true:false))?.toList()??[])];
+    taskList?.forEach((element) {
+      print("dddddddddddddddddddddddddddd${element.id} $taskId");
+    });
+    List<MyTreeNode> children = <MyTreeNode>[MyTreeNode(id: aimNode.id, type: "a", title: aimNode.title, isChecked: aimNode.isChecked, children: (taskList?.map((e) =>  MyTreeNode(id: e.id, type: 't', title: e.text, isChecked: e.isChecked)..noClickable=e.id==taskId))?.toList()??[])];
     for (var element in allCircles) {
       children=[MyTreeNode(id: element.id, type: element.id==0?"m":"w", title: element.text, isChecked:  element.isChecked, children: children)];
     }
