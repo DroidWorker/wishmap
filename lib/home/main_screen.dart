@@ -45,7 +45,7 @@ class _MainScreenState extends State<MainScreen>{
             appVM.hint = textIActualize[Random().nextInt(35)];
           }
           else {
-            final sphereid = appVM.mainCircles.last.id;
+            final sphereid = appVM.mainCircles.lastOrNull?.id??0;
             final sphere = appVM.mainScreenState!.allCircles.where((element) => element.id==sphereid).first;
             if(appVM!=null&&appVM.hint=="") {
               if (sphere.shuffle && hintId != sphereid) {

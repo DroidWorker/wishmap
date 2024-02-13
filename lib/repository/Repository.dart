@@ -198,6 +198,8 @@ class Repository{
           String circleId = circleData.id.toString();
           circleDataMap[circleId] = {
             "id": circleData.id,
+            'prevId': circleData.prevId,
+            'nextId': circleData.nextId,
             'text': circleData.text,
             'subText': circleData.subText,
             'color': circleData.color.value,
@@ -220,6 +222,8 @@ class Repository{
         String circleId = wishData.id.toString();
         circleDataMap[circleId] = {
           "id": wishData.id,
+          "prevId": wishData.prevId,
+          "nextId": wishData.nextId,
           'text': wishData.text,
           'subText': wishData.subText,
           'color': wishData.color.value,
@@ -294,6 +298,8 @@ class Repository{
           final Map<dynamic, dynamic> dataList = element.value as Map<dynamic,dynamic>;
           CircleData circleData = CircleData(
             id: int.parse(element.key.toString()),
+            nextId: dataList['nextId']==null?-1:int.tryParse(dataList['nextId'])??-1,
+            prevId: dataList['prevId']==null?-1:int.tryParse(dataList['prevId'])??-1,
             text: dataList['text'],
             subText: dataList['subText'] ?? "",
             color: Color(int.parse(dataList['color'].toString())),
@@ -323,6 +329,8 @@ class Repository{
           final Map<dynamic, dynamic> dataList = element.value as Map<dynamic,dynamic>;
           WishData circleData = WishData(
               id: int.parse(element.key.toString()),
+              nextId: dataList['nextId']==null?-1:int.tryParse(dataList['nextId'])??-1,
+              prevId: dataList['prevId']==null?-1:int.tryParse(dataList['prevId'])??-1,
               text: dataList['text'],
               description: dataList['subText'] ?? "",
               color: Color(int.parse(dataList['color'].toString())),
@@ -527,6 +535,8 @@ class Repository{
 
           var wd =  WishData(
             id: int.parse(dataList['id'].toString()),
+            nextId: dataList['nextId']==null?-1:int.tryParse(dataList['nextId'])??-1,
+            prevId: dataList['prevId']==null?-1:int.tryParse(dataList['prevId'])??-1,
             text: dataList['text'],
             description: dataList['subText'] ?? "",
             color: Color(int.parse(dataList['color'].toString())),
@@ -555,6 +565,8 @@ class Repository{
       // Преобразуем каждый объект в Map
         Map<String, dynamic> dataMap = {
           'id': wd.id,
+          'prevId': wd.prevId,
+          'nextId': wd.nextId,
           'text': wd.text,
           'subText': wd.description,
           'childAims': wd.childAims,
@@ -574,6 +586,13 @@ class Repository{
   Future deleteSphereWish(int wdid, int currentMoonId) async {
     if(_auth.currentUser!=null){
       userRef.child(_auth.currentUser!.uid).child("moonlist").child(currentMoonId.toString()).child("spheres").child(wdid.toString()).remove();
+      //updateMoonSync(currentMoonId);
+    }
+  }
+  Future updateNeighbour(int sphereId, bool updateNextId, int newId, int currentMoonId) async {
+    if(_auth.currentUser!=null){
+      updateNextId?userRef.child(_auth.currentUser!.uid).child("moonlist").child(currentMoonId.toString()).child("spheres").child(sphereId.toString()).child("nextId").set(newId):
+      userRef.child(_auth.currentUser!.uid).child("moonlist").child(currentMoonId.toString()).child("spheres").child(sphereId.toString()).child("prevId").set(newId);
       //updateMoonSync(currentMoonId);
     }
   }
@@ -846,28 +865,5 @@ class Repository{
       return diaryList;
     }
     return null;
-  }
-
-  //temp data
-  static getChildrenSpheres(int parentId){
-    switch(parentId){
-      case 0:
-        return [
-          Circle(id: 1, text: 'Икигай', color: const Color(0xFFFF0000)),
-          Circle(id: 2, text: 'Любовь', color: const Color(0xFFFF006B)),
-          Circle(id: 3, text: 'Дети', color: const Color(0xFFD9D9D9)),
-          Circle(id: 4, text: 'Путешествия', color: const Color(0xFFFFE600)),
-          Circle(id: 5, text: 'Карьера', color: const Color(0xFF0029FF)),
-          Circle(id: 6, text: 'Образование', color: const Color(0xFF46C8FF)),
-          Circle(id: 7, text: 'Семья', color: const Color(0xFF3FA600)),
-          Circle(id: 8, text: 'Богатство', color: const Color(0xFFB4EB5A)),
-          ];
-      default:
-        return [Circle(id: 11, text: "child11", color: Colors.deepOrangeAccent), Circle(id: 12, text: "child12", color: Colors.orange), Circle(id: 13, text: "child13", color: Colors.purpleAccent)];
-    }
-  }
-
-  static saveAim(){
-    return true;
   }
 }

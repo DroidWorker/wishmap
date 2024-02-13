@@ -4,6 +4,7 @@ import 'package:keyboard_attachable/keyboard_attachable.dart';
 import 'package:provider/provider.dart';
 import 'package:wishmap/data/models.dart';
 import '../ViewModel.dart';
+import '../common/EditTextOverlay.dart';
 import '../navigation/navigation_block.dart';
 import '../res/colors.dart';
 
@@ -12,6 +13,8 @@ class AimScreen extends StatelessWidget {
   AimScreen({super.key, required this.parentCircleId});
   final TextEditingController text = TextEditingController();
   final TextEditingController description = TextEditingController();
+
+  bool aimCreateClicked = false;
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +37,7 @@ class AimScreen extends StatelessWidget {
                       icon: const Icon(Icons.keyboard_arrow_left),
                       iconSize: 30,
                       onPressed: () {
-                        if(text.text.isNotEmpty||description.text.isNotEmpty){
+                        if((text.text.isNotEmpty||description.text.isNotEmpty)&&!aimCreateClicked){
                           showDialog(context: context,
                             builder: (BuildContext c) => AlertDialog(
                               contentPadding: EdgeInsets.zero,
@@ -69,7 +72,8 @@ class AimScreen extends StatelessWidget {
                                 ),
                               ],
                             ),
-                          );}else{
+                          );
+                        }else{
                           BlocProvider.of<NavigationBloc>(context)
                               .handleBackPress();
                         }
@@ -86,7 +90,11 @@ class AimScreen extends StatelessWidget {
                             ),
                           ),
                           onPressed: () async {
-                            await onSaveClicked(appViewModel,context);
+                            if(!aimCreateClicked){
+                              aimCreateClicked=true;
+                              await onSaveClicked(appViewModel,context);
+                            }
+
                           },
                           child: const Text("Сохранить цель", style: TextStyle(color: AppColors.blueButtonTextColor))
                       ),
@@ -121,6 +129,14 @@ class AimScreen extends StatelessWidget {
                   controller: description,
                   minLines: 4,
                   maxLines: 15,
+                  onTap: () async {
+                      final returnedText = await showOverlayedEdittext(context, description.text, true)??"";
+                      if(returnedText!=description.text) {
+                        description.text = returnedText;
+                      }
+                  },
+                  showCursor: false,
+                  readOnly: true,
                   style: const TextStyle(color: Colors.black), // Черный текст ввода
                   decoration: InputDecoration(
                     filled: true,
@@ -174,6 +190,30 @@ class AimScreen extends StatelessWidget {
                   ,),
               ),)])
     ));
+
+  }
+  void showUnavailable(String text, BuildContext maincontext){
+    showDialog(context: maincontext,
+      builder: (BuildContext context) => AlertDialog(
+        contentPadding: const EdgeInsets.all(5),
+        shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(32.0))),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(text, maxLines: 5, textAlign: TextAlign.center,),
+            const SizedBox(height: 4,),
+            const Divider(color: AppColors.dividerGreyColor,),
+          ],
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () async { Navigator.pop(context, 'OK'); },
+            child: const Text('Ok'),
+          ),
+        ],
+      ),
+    );
   }
   Future<void> onSaveClicked(AppViewModel appViewModel, BuildContext maincontext) async {
     if(text.text.isEmpty||description.text.isEmpty){
@@ -190,36 +230,42 @@ class AimScreen extends StatelessWidget {
           ],
         ),
       );
-      return;
     }
-    int? aimId = await appViewModel.createAim(AimData(id: 999, parentId: parentCircleId, text: text.text, description: description.text), parentCircleId);
-    if(aimId!=null) {
-      showDialog(context: maincontext,
-        builder: (BuildContext c) => AlertDialog(
-          title: const Text('сохранено'),
-          shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(Radius.circular(32.0))),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () { Navigator.pop(c, 'OK');},
-              child: const Text('OK'),
-            ),
-          ],
-        ),
-      ).then((value) {
-        BlocProvider.of<NavigationBloc>(maincontext).removeLastFromBS();
-        BlocProvider.of<NavigationBloc>(maincontext)
-            .add(NavigateToAimEditScreenEvent(aimId));
-      });
-
-    }else{
-      ScaffoldMessenger.of(maincontext).showSnackBar(
-        const SnackBar(
-          content: Text('Ошибка сохранения'),
-          duration: Duration(
-              seconds: 3), // Установите желаемую продолжительность отображения
-        ),
-      );
+    else {
+      int? aimId = await appViewModel.createAim(AimData(id: 999,
+          parentId: parentCircleId,
+          text: text.text,
+          description: description.text), parentCircleId);
+      if (aimId != null) {
+        showDialog(context: maincontext,
+          builder: (BuildContext c) =>
+              AlertDialog(
+                title: const Text('сохранено'),
+                shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(32.0))),
+                actions: <Widget>[
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(c, 'OK');
+                    },
+                    child: const Text('OK'),
+                  ),
+                ],
+              ),
+        ).then((value) {
+          BlocProvider.of<NavigationBloc>(maincontext).removeLastFromBS();
+          BlocProvider.of<NavigationBloc>(maincontext)
+              .add(NavigateToAimEditScreenEvent(aimId));
+        });
+      } else {
+        ScaffoldMessenger.of(maincontext).showSnackBar(
+          const SnackBar(
+            content: Text('Ошибка сохранения'),
+            duration: Duration(
+                seconds: 3), // Установите желаемую продолжительность отображения
+          ),
+        );
+      }
     }
   }
 }

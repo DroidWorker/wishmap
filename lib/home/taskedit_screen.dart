@@ -54,7 +54,8 @@ class TaskEditScreenState extends State<TaskEditScreen>{
           return Scaffold(
             backgroundColor: AppColors.backgroundColor,
             body: SafeArea(
-                child: Column(children:[Padding(
+                maintainBottomViewPadding: true,
+                child: Column(children:[Expanded(child:Padding(
               padding: const EdgeInsets.all(15),
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -135,46 +136,59 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                                               SizedBox(height: 4,),
                                               Divider(color: AppColors.dividerGreyColor,),
                                               SizedBox(height: 4,),
-                                              Text("Сохранить изменения?", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),)
+                                              Text("Сохранить изменения перед выполнением задачи?", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),)
                                             ],
                                           ),
                                           actions: <Widget>[
                                             TextButton(
                                               onPressed: () async { Navigator.pop(context, 'OK');
-                                              onSaveClicked(appVM, ai!);
+                                              if(onSaveClicked(appVM, ai!)) {
+                                                appVM.updateTaskStatus(
+                                                  ai!.id, !ai!.isChecked);
+                                              }
                                               },
                                               child: const Text('Да'),
                                             ),
                                             TextButton(
-                                              onPressed: () { Navigator.pop(context, 'Cancel');},
+                                              onPressed: () async {
+                                                Navigator.pop(context, 'Cancel');
+                                                await appVM.updateTaskStatus(
+                                                    ai!.id, !ai!.isChecked);
+                                                await appVM.getTask(ai?.id??0);
+                                                text.text=appVM.currentTask!.text;
+                                                description.text=appVM.currentTask!.text;
+                                                },
                                               child: const Text('Нет'),
                                             ),
                                           ],
                                         ),
                                       );
-                                      return;
+
+                                    }else {
+                                      appVM.updateTaskStatus(
+                                          ai!.id, !ai!.isChecked);
+                                      showDialog(context: context,
+                                        builder: (BuildContext context) =>
+                                            AlertDialog(
+                                              title: ai!.isChecked ? const Text(
+                                                  'выполнена') : const Text(
+                                                  ' не выполнена'),
+                                              shape: const RoundedRectangleBorder(
+                                                  borderRadius: BorderRadius
+                                                      .all(
+                                                      Radius.circular(32.0))),
+                                              actions: <Widget>[
+                                                TextButton(
+                                                  onPressed: () {
+                                                    Navigator.pop(
+                                                        context, 'OK');
+                                                  },
+                                                  child: const Text('OK'),
+                                                ),
+                                              ],
+                                            ),
+                                      );
                                     }
-                                    appVM.updateTaskStatus(
-                                        ai!.id, !ai!.isChecked);
-                                    showDialog(context: context,
-                                      builder: (BuildContext context) =>
-                                          AlertDialog(
-                                            title: ai!.isChecked ? const Text(
-                                                'выполнена') : const Text(
-                                                ' не выполнена'),
-                                            shape: const RoundedRectangleBorder(
-                                                borderRadius: BorderRadius.all(
-                                                    Radius.circular(32.0))),
-                                            actions: <Widget>[
-                                              TextButton(
-                                                onPressed: () {
-                                                  Navigator.pop(context, 'OK');
-                                                },
-                                                child: const Text('OK'),
-                                              ),
-                                            ],
-                                          ),
-                                    );
                                   }
                                 },
                                 child: const Text("Выполнена",style: TextStyle(color: Colors.black, fontSize: 12))
@@ -207,7 +221,7 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                                       actions: <Widget>[
                                         TextButton(
                                           onPressed: () { Navigator.pop(context, 'OK');
-                                          appVM.deleteTask(ai!.id);
+                                          appVM.deleteTask(ai!.id ,ai!.parentId);
                                           showDialog(context: context,
                                             builder: (BuildContext context) => AlertDialog(
                                               title: const Text('Удалена'),
@@ -277,96 +291,102 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                         ),
                       ],
                     ),
-                    TextField(
-                      onTap: (){if(ai!.isChecked)showUnavailable();},
-                      controller: text,
-                      showCursor: true,
-                      readOnly: ai!=null?(ai!.isChecked||!ai!.isActive?true:false):false,
-                      style: const TextStyle(color: Colors.black), // Черный текст ввода
-                      decoration: InputDecoration(
-                          filled: true,
-                        suffixIconConstraints: const BoxConstraints(
-                          minWidth: 7,
-                          minHeight: 2,
-                        ),
-                        suffixIcon: const Text("*"),
-                          fillColor: ai!=null?(ai!.isChecked?AppColors.fieldLockColor:!ai!.isActive?AppColors.fieldInactive:AppColors.fieldFillColor):AppColors.fieldFillColor,
-                          hintText: 'Название',
-                          hintStyle: TextStyle(color: Colors.black.withOpacity(0.3)),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10.0),
-                          borderSide: const BorderSide(
-                            width: 0,
-                            style: BorderStyle.none,
+                    Expanded(child: SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          TextField(
+                            onTap: (){if(ai!.isChecked)showUnavailable();},
+                            controller: text,
+                            showCursor: true,
+                            readOnly: ai!=null?(ai!.isChecked||!ai!.isActive?true:false):false,
+                            style: const TextStyle(color: Colors.black), // Черный текст ввода
+                            decoration: InputDecoration(
+                              filled: true,
+                              suffixIconConstraints: const BoxConstraints(
+                                minWidth: 7,
+                                minHeight: 2,
+                              ),
+                              suffixIcon: const Text("*"),
+                              fillColor: ai!=null?(ai!.isChecked?AppColors.fieldLockColor:!ai!.isActive?AppColors.fieldInactive:AppColors.fieldFillColor):AppColors.fieldFillColor,
+                              hintText: 'Название',
+                              hintStyle: TextStyle(color: Colors.black.withOpacity(0.3)),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10.0),
+                                borderSide: const BorderSide(
+                                  width: 0,
+                                  style: BorderStyle.none,
+                                ),
+                              ),
+                            ),
                           ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 15,),
-                    TextField(
-                      minLines: 4,
-                      maxLines: 7,
-                      controller: description,
-                      onTap: () async {
-                        if(ai!.isChecked){showUnavailable();}
-                        else if(!ai!.isActive){showUneditable();}
-                        else {
-                          final returnedText = await showOverlayedEdittext(context, description.text, (ai!.isActive&&!ai!.isChecked))??"";
-                          if(returnedText!=description.text) {
-                            description.text = returnedText;
-                            isChanged = true;
-                            appVM.isChanged = true;
-                          }
-                        }
-                      },
-                      showCursor: false,
-                      readOnly: true,
-                      style: const TextStyle(color: Colors.black), // Черный текст ввода
-                      decoration: InputDecoration(
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10.0),
-                          borderSide: const BorderSide(
-                            width: 0,
-                            style: BorderStyle.none,
+                          const SizedBox(height: 15,),
+                          TextField(
+                            minLines: 4,
+                            maxLines: 7,
+                            controller: description,
+                            onTap: () async {
+                              if(ai!.isChecked){showUnavailable();}
+                              else if(!ai!.isActive){showUneditable();}
+                              else {
+                                final returnedText = await showOverlayedEdittext(context, description.text, (ai!.isActive&&!ai!.isChecked))??"";
+                                if(returnedText!=description.text) {
+                                  description.text = returnedText;
+                                  isChanged = true;
+                                  appVM.isChanged = true;
+                                }
+                              }
+                            },
+                            showCursor: false,
+                            readOnly: true,
+                            style: const TextStyle(color: Colors.black), // Черный текст ввода
+                            decoration: InputDecoration(
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10.0),
+                                borderSide: const BorderSide(
+                                  width: 0,
+                                  style: BorderStyle.none,
+                                ),
+                              ),
+                              filled: true, // Заливка фона
+                              fillColor: ai!=null?(ai!.isChecked?AppColors.fieldLockColor:!ai!.isActive?AppColors.fieldInactive:AppColors.fieldFillColor):AppColors.fieldFillColor,
+                              hintText: 'Описание', // Базовый текст
+                              hintStyle: TextStyle(color: Colors.black.withOpacity(0.3)), // Полупрозрачный черный базовый текст
+                            ),
                           ),
-                        ),
-                        filled: true, // Заливка фона
-                        fillColor: ai!=null?(ai!.isChecked?AppColors.fieldLockColor:!ai!.isActive?AppColors.fieldInactive:AppColors.fieldFillColor):AppColors.fieldFillColor,
-                        hintText: 'Описание', // Базовый текст
-                        hintStyle: TextStyle(color: Colors.black.withOpacity(0.3)), // Полупрозрачный черный базовый текст
+                          const SizedBox(height: 15,),
+                          MyTreeView(key: UniqueKey(),roots: roots, onTap: (id,type){
+                            if(type=="m"){
+                              BlocProvider.of<NavigationBloc>(context).clearHistory();
+                              appVM.cachedImages.clear();
+                              appVM.startMainsphereeditScreen();
+                              BlocProvider.of<NavigationBloc>(context)
+                                  .add(NavigateToMainSphereEditScreenEvent());
+                            }else if(type=="w"){
+                              BlocProvider.of<NavigationBloc>(context).clearHistory();
+                              appVM.cachedImages.clear();
+                              appVM.wishScreenState=null;
+                              appVM.startWishScreen(id, 0);
+                              BlocProvider.of<NavigationBloc>(context)
+                                  .add(NavigateToWishScreenEvent());
+                            }else if(type=="a"){
+                              appVM.myNodes.clear();
+                              appVM.getAim(id);
+                              BlocProvider.of<NavigationBloc>(context).removeLastFromBS();
+                              BlocProvider.of<NavigationBloc>(context)
+                                  .add(NavigateToAimEditScreenEvent(id));
+                            }else if(type=="t"&&ai!.id!=id){
+                              appVM.getTask(id);
+                              BlocProvider.of<NavigationBloc>(context).removeLastFromBS();
+                              BlocProvider.of<NavigationBloc>(context)
+                                  .add(NavigateToTaskEditScreenEvent(id));
+                            }
+                          },),
+                        ],
                       ),
-                    ),
-                    const SizedBox(height: 15,),
-                    MyTreeView(key: UniqueKey(),roots: roots, onTap: (id,type){
-                      if(type=="m"){
-                        BlocProvider.of<NavigationBloc>(context).clearHistory();
-                        appVM.cachedImages.clear();
-                        appVM.startMainsphereeditScreen();
-                        BlocProvider.of<NavigationBloc>(context)
-                            .add(NavigateToMainSphereEditScreenEvent());
-                      }else if(type=="w"){
-                        BlocProvider.of<NavigationBloc>(context).clearHistory();
-                        appVM.cachedImages.clear();
-                        appVM.wishScreenState=null;
-                        appVM.startWishScreen(id, 0);
-                        BlocProvider.of<NavigationBloc>(context)
-                            .add(NavigateToWishScreenEvent());
-                      }else if(type=="a"){
-                        appVM.myNodes.clear();
-                        appVM.getAim(id);
-                        BlocProvider.of<NavigationBloc>(context).removeLastFromBS();
-                        BlocProvider.of<NavigationBloc>(context)
-                            .add(NavigateToAimEditScreenEvent(id));
-                      }else if(type=="t"&&ai!.id!=id){
-                        appVM.getTask(id);
-                        BlocProvider.of<NavigationBloc>(context).removeLastFromBS();
-                        BlocProvider.of<NavigationBloc>(context)
-                            .add(NavigateToTaskEditScreenEvent(id));
-                      }
-                    },),
+                    ))
                   ]
               ),
-        ),
+        )),
                   if(MediaQuery.of(context).viewInsets.bottom!=0) SizedBox(height: 30,
                     child: FooterLayout(
                       footer: Container(height: 30,color: Colors.white,alignment: Alignment.centerRight, child:
@@ -380,7 +400,7 @@ class TaskEditScreenState extends State<TaskEditScreen>{
     );
   });
   }
-  void onSaveClicked(AppViewModel appVM, TaskData ai){
+  bool onSaveClicked(AppViewModel appVM, TaskData ai){
     if(text.text.isEmpty){
       showDialog(context: context,
         builder: (BuildContext context) => AlertDialog(
@@ -395,7 +415,7 @@ class TaskEditScreenState extends State<TaskEditScreen>{
           ],
         ),
       );
-      return;
+      return false;
     }else{
       ai.text = text.text;
       ai.description = description.text;
@@ -418,6 +438,7 @@ class TaskEditScreenState extends State<TaskEditScreen>{
         ],
       ),
     );
+    return true;
   }
 
   void showUneditable() {

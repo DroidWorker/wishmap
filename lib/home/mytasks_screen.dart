@@ -271,7 +271,7 @@ class _TaskScreenState extends State{
     setState(() {
       taskList.removeWhere((element) => element.id==id);
     });
-    appViewModel.deleteTask(id);
+    //appViewModel.deleteTask(id);
   }
   filter(int type){
     setState(() {

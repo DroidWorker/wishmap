@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:keyboard_attachable/keyboard_attachable.dart';
 import 'package:provider/provider.dart';
 import '../ViewModel.dart';
+import '../common/EditTextOverlay.dart';
 import '../data/models.dart';
 import '../navigation/navigation_block.dart';
 import '../res/colors.dart';
@@ -18,6 +19,7 @@ class TaskScreen extends StatefulWidget {
 class TaskScreenState extends State<TaskScreen>{
   final TextEditingController text = TextEditingController();
   final TextEditingController description = TextEditingController();
+  bool taskCreateClicked = false;
   @override
   Widget build(BuildContext context) {
     final appViewModel = Provider.of<AppViewModel>(context);
@@ -39,7 +41,7 @@ class TaskScreenState extends State<TaskScreen>{
                       icon: const Icon(Icons.keyboard_arrow_left),
                       iconSize: 30,
                       onPressed: () {
-                        if(text.text.isNotEmpty){
+                        if(text.text.isNotEmpty&&!taskCreateClicked){
                           showDialog(context: context,
                             builder: (BuildContext context) => AlertDialog(
                               contentPadding: EdgeInsets.zero,
@@ -91,7 +93,10 @@ class TaskScreenState extends State<TaskScreen>{
                             ),
                           ),
                           onPressed: () async {
-                            await onSaveClicked(appViewModel);
+                            if(!taskCreateClicked){
+                              taskCreateClicked = true;
+                              await onSaveClicked(appViewModel);
+                            }
                           },
                           child: const Text("Сохранить задачу", style: TextStyle(color: AppColors.blueButtonTextColor),)
                       ),
@@ -110,7 +115,11 @@ class TaskScreenState extends State<TaskScreen>{
                   style: const TextStyle(color: Colors.black), // Черный текст ввода
                   decoration: InputDecoration(
                       filled: true,
-                      suffix: const Text("*"),
+                      suffixIconConstraints: const BoxConstraints(
+                        minWidth: 7,
+                        minHeight: 2,
+                      ),
+                      suffixIcon: const Text("*"),
                       fillColor: AppColors.fieldFillColor,
                       hintText: 'Название задачи',
                       hintStyle: TextStyle(color: Colors.black.withOpacity(0.3)),
@@ -122,6 +131,14 @@ class TaskScreenState extends State<TaskScreen>{
                   controller: description,
                   minLines: 4,
                   maxLines: 15,
+                  onTap: () async {
+                    final returnedText = await showOverlayedEdittext(context, description.text, true)??"";
+                    if(returnedText!=description.text) {
+                      description.text = returnedText;
+                    }
+                  },
+                  showCursor: false,
+                  readOnly: true,
                   style: const TextStyle(color: Colors.black), // Черный текст ввода
                   decoration: InputDecoration(
                       filled: true,
@@ -164,41 +181,41 @@ class TaskScreenState extends State<TaskScreen>{
               ],
             ),
       );
-      return;
-    }
-    int? taskId = await appViewModel.createTask(TaskData(id: 999,
-        parentId: widget.parentAimId,
-        text: text.text,
-        description: description.text), widget.parentAimId);
-    if (taskId != null) {
-      showDialog(context: context,
-        builder: (BuildContext c) =>
-            AlertDialog(
-              title: const Text('сохранено'),
-              shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(32.0))),
-              actions: <Widget>[
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(c, 'OK');
-                  },
-                  child: const Text('OK'),
-                ),
-              ],
-            ),
-      ).then((value) {
-        BlocProvider.of<NavigationBloc>(context).removeLastFromBS();
-        BlocProvider.of<NavigationBloc>(context)
-            .add(NavigateToTaskEditScreenEvent(taskId));
-      });
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Ошибка сохранения'),
-          duration: Duration(
-              seconds: 3), // Установите желаемую продолжительность отображения
-        ),
-      );
+    }else {
+      int? taskId = await appViewModel.createTask(TaskData(id: 999,
+          parentId: widget.parentAimId,
+          text: text.text,
+          description: description.text), widget.parentAimId);
+      if (taskId != null) {
+        showDialog(context: context,
+          builder: (BuildContext c) =>
+              AlertDialog(
+                title: const Text('сохранено'),
+                shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(32.0))),
+                actions: <Widget>[
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(c, 'OK');
+                    },
+                    child: const Text('OK'),
+                  ),
+                ],
+              ),
+        ).then((value) {
+          BlocProvider.of<NavigationBloc>(context).removeLastFromBS();
+          BlocProvider.of<NavigationBloc>(context)
+              .add(NavigateToTaskEditScreenEvent(taskId));
+        });
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Ошибка сохранения'),
+            duration: Duration(
+                seconds: 3), // Установите желаемую продолжительность отображения
+          ),
+        );
+      }
     }
   }
 }

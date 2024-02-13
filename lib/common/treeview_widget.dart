@@ -126,10 +126,12 @@ class MyTreeTile extends StatelessWidget {
                   ),
                 ),
                 const Spacer(),
-                entry.node.type == "w" && entry.node.id > 899
-                    ? (entry.node.isChecked
-                    ? Image.asset('assets/icons/wish_done.png', width: 20, height: 20,)
-                    : Image.asset('assets/icons/wish_active.png', width: 20, height: 20))
+                entry.node.type == "w" && entry.node.id > 800
+                    ? (entry.node.isHidden
+                    ? Image.asset('assets/icons/love5110868.png', width: 20, height: 20,)
+                    : entry.node.isChecked? Image.asset('assets/icons/wish_done.png', width: 20, height: 20,)
+                    : !entry.node.isActive? Image.asset('assets/icons/wish_unactive.png')
+                    :Image.asset('assets/icons/wish_active.png', width: 20, height: 20))
                     : (entry.node.type == "a"
                     ? (entry.node.isChecked
                     ? Image.asset('assets/icons/target_done.png', width: 20, height: 30)

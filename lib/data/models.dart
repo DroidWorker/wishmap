@@ -52,7 +52,11 @@ class CircleData{
   bool shuffle=false;
   String lastShuffle="|";
 
-  CircleData({required this.id, required this.text, this.subText = "", required this.color, required this.parenId, this.affirmation="", this.photosIds="", this.isChecked = false, this.isActive = true, this.isHidden = false});
+  //link mechanism
+  int prevId;
+  int nextId;
+
+  CircleData({required this.id, required this.prevId, required this.nextId, required this.text, this.subText = "", required this.color, required this.parenId, this.affirmation="", this.photosIds="", this.isChecked = false, this.isActive = true, this.isHidden = false});
 
   @override
   String toString(){
@@ -62,6 +66,8 @@ class CircleData{
   CircleData copy(){
     return CircleData(
     id: id,
+    prevId: prevId,
+    nextId: nextId,
     text: text,
     subText: subText,
     color: color,
@@ -76,12 +82,17 @@ class CircleData{
 
 class Circle {
   final int id;
-  final String text;
+  String text;
   final Color color;
   int radius;
   bool isActive;
+  bool isChecked;
 
-  Circle({required this.id, required this.text, required this.color, this.radius=80, this.isActive = true});
+  //link mechanism
+  int prevId;
+  int nextId;
+
+  Circle({required this.id, required this.prevId, required this.nextId, required this.text, required this.color, this.radius=80, this.isActive = true, this.isChecked = true});
 }
 
 class MainCircle {
@@ -94,8 +105,9 @@ class MainCircle {
   double radius;
   bool isVisible;
   bool isActive;
+  bool isChecked;
 
-  MainCircle({required this.id, required this.coords, required this.text, this.substring = "", this.textSize = 24, required this.color, this.radius=52, this.isVisible = true, this.isActive = true});
+  MainCircle({required this.id, required this.coords, required this.text, this.substring = "", this.textSize = 24, required this.color, this.radius=52, this.isVisible = true, this.isActive = true, this.isChecked = false});
 }
 
 class Pair{
@@ -164,7 +176,11 @@ class WishData {
   bool shuffle=false;
   String lastShuffle="|";
 
-  WishData({required this.id, required this.parentId, required this.text, required this.description, this.photoIds = "", required this.affirmation, required this.color});
+  //link mechanism
+  int prevId;
+  int nextId;
+
+  WishData({required this.id, required this.prevId, required this.nextId, required this.parentId, required this.text, required this.description, this.photoIds = "", required this.affirmation, required this.color});
 }
 
 class AimItem {
@@ -205,6 +221,8 @@ class MyTreeNode {
     required this.type,
     required this.title,
     required this.isChecked,
+    this.isHidden = false,
+    this.isActive = true,
     this.children = const <MyTreeNode>[],
   });
 
@@ -212,6 +230,8 @@ class MyTreeNode {
   final String type;//m-maincircle w-wish a-aim t-task
   final String title;
   bool isChecked;
+  bool isHidden;
+  bool isActive;
   bool noClickable = false;
   final List<MyTreeNode> children;
 
@@ -228,7 +248,7 @@ List<MyTreeNode> convertListToMyTreeNodes(List<WishItem> dataList) {
   var idsList = dataList.map((e) => e.id).toList();
   idsList.forEach((element) {
     final wi = dataList.firstWhere((e) => e.id==element);
-    roots.add(MyTreeNode(id: wi.id, type: 'w', title: wi.text, isChecked: wi.isChecked, children: getChildren(dataList, element)));
+    roots.add(MyTreeNode(id: wi.id, type: 'w', title: wi.text, isChecked: wi.isChecked, children: getChildren(dataList, element), isHidden: wi.isHidden));
   });
   List<int> rootsIds = [];
   List<MyTreeNode> finalroots = List.from(roots);
@@ -247,7 +267,7 @@ List<MyTreeNode> convertListToMyTreeNodes(List<WishItem> dataList) {
 }
 List<MyTreeNode> getChildren(List<WishItem> dataList, id){
   final children = dataList.where((element) => element.parentId==id).toList();
-  return children.map((e) => MyTreeNode(id: e.id, type: 'w', title: e.text, isChecked: e.isChecked, children: getChildren(dataList, e.id))).toList();
+  return children.map((e) => MyTreeNode(id: e.id, type: 'w', title: e.text, isChecked: e.isChecked, children: getChildren(dataList, e.id), isHidden: e.isHidden)).toList();
 }
 List<int> getRootsIds(MyTreeNode node){
   List<int> ids = [];
@@ -291,4 +311,36 @@ class CardData{
   Color color;
 
   CardData({required this.id, required this.emoji, required this.title, required this.description, required this.text, required this.color});
+}
+
+List<CircleData> sortList(List<CircleData> inputList) {
+  Map<int, CircleData> circleDataMap = {};
+  List<CircleData> sortedList = [];
+
+  // Создаем словарь, используя id в качестве ключей
+  inputList.forEach((circleData) {
+    circleDataMap[circleData.id] = circleData;
+  });
+
+  // Находим корневые элементы (те, у которых prevId == -1)
+  List<CircleData> rootElements = inputList.where((circleData) => circleData.prevId == -1).toList();
+
+  // Рекурсивно строим отсортированный список
+  void buildSortedList(CircleData parent) {
+    sortedList.add(parent);
+
+    // Проверяем nextId и рекурсивно вызываем для следующего элемента
+    if (parent.nextId != -1) {
+      buildSortedList(circleDataMap[parent.nextId]!);
+    }
+  }
+
+  // Для каждого корневого элемента вызываем построение отсортированного списка
+  rootElements.forEach((root) {
+    buildSortedList(root);
+  });
+  sortedList.forEach((element) {
+    print("element ${element.id}  ${element.text}");
+  });
+  return sortedList;
 }

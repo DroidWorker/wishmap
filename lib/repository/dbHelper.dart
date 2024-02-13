@@ -41,6 +41,8 @@ class DatabaseHelper {
       CREATE TABLE spheres(
         rowId INTEGER PRIMARY KEY AUTOINCREMENT,
         id INTEGER,
+        prevId INTEGER,
+        nextId INTEGER,
         moonId INTEGER,
         text TEXT,
         subtext TEXT,
@@ -247,6 +249,10 @@ class DatabaseHelper {
     Database db = await database;
     return await db.update("aims", {'isChecked': status,}, where: "id = ? AND moonId = ?", whereArgs: [aimId, moonid]);
   }
+  Future<int> updateAimChildren(int aimId, List<int> childTasks, int moonid) async {
+    Database db = await database;
+    return await db.update("aims", {'childTasks': childTasks.join("|"),}, where: "id = ? AND moonId = ?", whereArgs: [aimId, moonid]);
+  }
 
   Future<int> deleteAim(int id, int moonid) async {
     Database db = await database;
@@ -266,16 +272,17 @@ class DatabaseHelper {
   Future<int> insertSphere(WishData wd, int moonId) async {
     Database db = await database;
     String chAims = jsonEncode(wd.childAims);
-    return await db.insert("spheres", {'id': wd.id, 'moonId':moonId, 'text': wd.text, 'subtext': wd.description, 'affirmation': wd.affirmation, 'isActive':wd.isActive?1:0, 'isChecked': wd.isChecked?1:0, 'isHidden': wd.isHidden?1:0, 'parentId': wd.parentId, 'photosIds': wd.photoIds, 'color': wd.color.value, 'childAims': chAims, 'shuffle': 1, 'lastShuffle': ""});
+    return await db.insert("spheres", {'id': wd.id, 'prevId': wd.prevId, 'nextId': wd.nextId, 'moonId':moonId, 'text': wd.text, 'subtext': wd.description, 'affirmation': wd.affirmation, 'isActive':wd.isActive?1:0, 'isChecked': wd.isChecked?1:0, 'isHidden': wd.isHidden?1:0, 'parentId': wd.parentId, 'photosIds': wd.photoIds, 'color': wd.color.value, 'childAims': chAims, 'shuffle': 1, 'lastShuffle': wd.lastShuffle});
   }
   Future<int> insertOrUpdateSphere(WishData wd, int moonId) async {
     Database db = await database;
     String chAims = jsonEncode(wd.childAims);
-
     int result = await db.update(
       "spheres",
       {
         'id': wd.id,
+        'prevId': wd.prevId,
+        'nextId': wd.nextId,
         'moonId': moonId,
         'text': wd.text,
         'subtext': wd.description,
@@ -287,7 +294,7 @@ class DatabaseHelper {
         'photosIds': wd.photoIds,
         'color': wd.color.value,
         'childAims': chAims,
-        'shuffle': wd.shuffle,
+        'shuffle': wd.shuffle?1:0,
         'lastShuffle': wd.lastShuffle
       },
       where: "id = ? AND moonId = ?",
@@ -299,6 +306,8 @@ class DatabaseHelper {
         "spheres",
         {
           'id': wd.id,
+          'prevId': wd.prevId,
+          'nextId': wd.nextId,
           'moonId': moonId,
           'text': wd.text,
           'subtext': wd.description,
@@ -316,15 +325,14 @@ class DatabaseHelper {
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
     }
-
     return result;
   }
 
-  Future<int> updateSphere(WishData wd, int moonid) async {
+  /*Future<int> updateSphere(WishData wd, int moonid) async {
     Database db = await database;
     String chAims = wd.childAims.values.join("|");
-    return await db.update("spheres", {'text': wd.text, 'subtext': wd.description, 'affirmation': wd.affirmation, 'isActive':wd.isActive?1:0, 'isChecked': wd.isChecked?1:0, 'isHidden': wd.isHidden?1:0, 'parentId': wd.parentId, 'photosIds': wd.photoIds, 'color': wd.color.value, 'childAims': chAims}, where: "id = ? AND moonId = ?", whereArgs: [wd.id, moonid]);
-  }
+    return await db.update("spheres", {'text': wd.text, 'prevId': wd.prevId, 'nextId': wd.nextId, 'subtext': wd.description, 'affirmation': wd.affirmation, 'isActive':wd.isActive?1:0, 'isChecked': wd.isChecked?1:0, 'isHidden': wd.isHidden?1:0, 'parentId': wd.parentId, 'photosIds': wd.photoIds, 'color': wd.color.value, 'childAims': chAims}, where: "id = ? AND moonId = ?", whereArgs: [wd.id, moonid]);
+  }*/
   Future<int>activateSphere(int sphereId, bool status, int moonid) async {
     Database db = await database;
     return await db.update("spheres", {'isActive': 1,}, where: "id = ? AND moonId = ?", whereArgs: [sphereId, moonid]);
@@ -337,6 +345,11 @@ class DatabaseHelper {
     Database db = await database;
     return await db.update("spheres", {'isChecked': status,}, where: "id = ? AND moonId = ?", whereArgs: [sphereId, moonid]);
   }
+  Future<int> updateSphereNeighbours(int sphereId, bool isNextId, int newValue, int moonid) async {
+    Database db = await database;
+    return isNextId? await db.update("spheres", {'nextId': newValue,}, where: "id = ? AND moonId = ?", whereArgs: [sphereId, moonid]):
+    await db.update("spheres", {'prevId': newValue,}, where: "id = ? AND moonId = ?", whereArgs: [sphereId, moonid]);
+  }
   Future<int> updateSphereImages(int sphereId, String imageIds, int moonid) async {
     Database db = await database;
     final res = db.update("spheres", {'photosIds': imageIds,}, where: "id = ? AND moonId = ?", whereArgs: [sphereId, moonid]);
@@ -346,6 +359,10 @@ class DatabaseHelper {
     Database db = await database;
     final res = db.update("spheres", {'shuffle': shuffle?"1":"0", 'lastShuffle': lastShuffle}, where: "id = ? AND moonId = ?", whereArgs: [sphereId, moonid]);
     return res;
+  }
+  Future<int> updateWishChildren(int wishId, List<int> childAims, int moonid) async {
+    Database db = await database;
+    return await db.update("spheres", {'childAims': jsonEncode(childAims.asMap()),}, where: "id = ? AND moonId = ?", whereArgs: [wishId, moonid]);
   }
   Future<int> deleteSphere(int id, int moonid) async {
     Database db = await database;

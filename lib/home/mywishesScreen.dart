@@ -41,7 +41,9 @@ class _WishesScreenState extends State<WishesScreen>{
           }else{roots.clear();}
           return Scaffold(
             backgroundColor: AppColors.backgroundColor,
-            body: SafeArea(child: Padding(
+            body: SafeArea(
+                maintainBottomViewPadding: true,
+                child: Padding(
               padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
               child: Column(
                 children: [
@@ -126,12 +128,11 @@ class _WishesScreenState extends State<WishesScreen>{
                     ),
 
                   ],),
-                  Expanded(child: LayoutBuilder(
+                  Expanded(child: SingleChildScrollView(child: LayoutBuilder(
                       builder: (context, constraints) {
                         return Align(
                       alignment: Alignment.centerLeft,
                       child: SizedBox(
-                        height: constraints.maxHeight,
                         child: MyTreeView(key: UniqueKey(), roots: roots, applyColorChangibg: false, onTap: (id, type){
                           if(type=="m"){
                             BlocProvider.of<NavigationBloc>(context).clearHistory();
@@ -155,7 +156,7 @@ class _WishesScreenState extends State<WishesScreen>{
                           }
                         },),
                       )
-                  );})),
+                  );}))),
                   /*Expanded(child:
                   ListView.builder(
                       itemCount: filteredWishList.length,
@@ -307,6 +308,6 @@ class _WishesScreenState extends State<WishesScreen>{
     setState(() {
       filteredWishList.removeWhere((element) => element.id==id);
     });
-    appViewModel?.deleteSphereWish(id);
+    appViewModel?.deleteSphereWish(id, -1, -1);
   }
 }

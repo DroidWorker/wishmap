@@ -8,6 +8,7 @@ import 'dart:math';
 import 'package:flutter/physics.dart';
 
 import '../data/static.dart';
+import '../data/static_affirmations_women.dart';
 import '../navigation/navigation_block.dart';
 
 class CircleWidget extends StatefulWidget {
@@ -129,10 +130,10 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
     return mediaQueryData.size;
   }
 
-
   @override
   void initState() {
     super.initState();
+    print("iniiiiiiiiiit");
     var firstCercle = vm?.mainScreenState?.allCircles.firstWhere((element) => element.id==0);
     if(firstCercle!=null)vm?.mainCircles=[MainCircle(id: 0, coords: Pair(key:0.0,value:0.0), text: firstCercle.text, color: firstCercle.color)];
     ctrl = AnimationController.unbounded(vsync: this);
@@ -153,12 +154,12 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
       final px = centerX + (widget.size/2-40) * cos(plusesRotations[i]);
       final py = centerY + (widget.size/2-40) * sin(plusesRotations[i]);
       circlePositions.add(Offset(x, y));
-      plusesPositions.add(Offset(px, py));
+      if(centralCircles.isNotEmpty&&!centralCircles.last.isChecked)plusesPositions.add(Offset(px, py));
     }
     if(widget.circles.isEmpty){
       final px = widget.center.key-40 + (widget.size/2-40) * cos(1);
       final py = widget.center.value-40 + (widget.size/2-40) * sin(1);
-      plusesPositions.add(Offset(px,py));
+      if(centralCircles.isNotEmpty&&!centralCircles.last.isChecked)plusesPositions.add(Offset(px,py));
       plusesRotations.add(1);
     }
     //screenSize = getScreenSize(this as BuildContext);
@@ -187,20 +188,32 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
 
     showHideController.addStatusListener((status) {
       if(status==AnimationStatus.completed){
-        int circleid = -101;
+        int circleid = vm!.mainScreenState!.allCircles.isNotEmpty?vm!.mainScreenState!.allCircles.map((circle) => circle.id).reduce((value, element) => value > element ? value : element)+1:-101;
+        int prevId = -1;
+        int nextId = -1;
         if(plusId>=0){
-          if(widget.circles.length>plusId+1&&widget.circles[plusId].id<vm!.mainScreenState!.allCircles.last.id){
-            circleid = (widget.circles[plusId+1].id-widget.circles[plusId].id)~/2+widget.circles[plusId].id;
+          if(widget.circles.length>plusId+1){
+            //если количество свер на окружности больше чем количество плюсов и это не последняя  сфера в базе
+            //(если сфера вставляется не последней)
+            prevId = widget.circles[plusId].id;
+            nextId = widget.circles[plusId+1].id;
+            //..circleid = (widget.circles[plusId+1].id-widget.circles[plusId].id)~/2+widget.circles[plusId].id;
           }else if(widget.circles.length==plusId+1){
-            circleid = ((((widget.circles[plusId].id+100)~/100)*100)-widget.circles[plusId].id)~/2+widget.circles[plusId].id;
+            //если сера вставляется в конец(что = вставке в начало)
+            prevId = widget.circles[plusId].id;
+            nextId = -1;
+            //circleid = ((((widget.circles[plusId].id+10000)~/10000)*10000)-widget.circles[plusId].id)~/2+widget.circles[plusId].id;
           }else{
-            circleid = vm!.mainScreenState!.allCircles.isNotEmpty?((vm!.mainScreenState!.allCircles.last.id) ~/ 100) * 100 + 100:-101;
+            //сли создается на чистой окружности
+            prevId = -1;
+            nextId = -1;
+            //circleid = vm!.mainScreenState!.allCircles.isNotEmpty?((vm!.mainScreenState!.allCircles.last.id) ~/ 10000) * 10000 + 10000:-101;
           }
         }
         if(widget.circles.isNotEmpty)plusId++;
         vm?.cachedImages.clear();
-        vm?.createNewSphereWish(WishData(id: circleid, parentId: centralCircles.last.id, text: "new item", description: "", affirmation: "", color: Colors.red));
-        widget.circles.insert(plusId, Circle(id: circleid, text: "new item", color: Colors.red, radius: (widget.size*0.2).toInt()));
+        vm?.createNewSphereWish(WishData(id: circleid, prevId: prevId, nextId: nextId, parentId: centralCircles.last.id, text: "Новое желание", description: "", affirmation: (defaultAffirmations.join("|").toString()), color: Colors.red), true);
+        widget.circles.insert(plusId, Circle(id: circleid, prevId: prevId, nextId: nextId, text: "Новое желание", color: Colors.red, radius: (widget.size*0.2).toInt(), isChecked: false));
         plusId=-1;
         circlePositions.clear();
         circleRotations.clear();
@@ -218,7 +231,7 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
           final px = centerX + (widget.size/2-40) * cos(plusesRotations[i]);
           final py = centerY + (widget.size/2-40) * sin(plusesRotations[i]);
           circlePositions.add(Offset(x, y));
-          plusesPositions.add(Offset(px, py));
+          if(centralCircles.isNotEmpty&&!centralCircles.last.isChecked)plusesPositions.add(Offset(px, py));
         }
         var diametr = (widget.size*0.2).toInt();
         if(widget.circles.length>8&&widget.circles.length<=16){
@@ -247,14 +260,14 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
   void startInertia(double velocity) {
     ctrl.animateWith(
       FrictionSimulation(
-        0.1, // Коэффициент трения
+        0.03, // Коэффициент трения
         ctrl.value,
         velocity / 70, // Скорость инерции
       ),
     );
   }
 
-  void initAnim(int id, int itemId){
+  void initAnim(int id, int itemId){https://drive.google.com/file/d/1QdsM-FHXSbf8tl9zTUkETXqL6pscM7Mh/view?usp=drive_link
     final initialTop = animationDirectionForward?widget.center.value-centralCircles.last.radius:widget.circles[itemId].radius*-0.5;//centralCircles.last.coords.value;
     final initialLeft = animationDirectionForward?widget.center.key-centralCircles.last.radius:widget.center.key * 2 - centralCircles.last.radius*1.5;//centralCircles.last.coords.key;
     final finalTop = animationDirectionForward?widget.circles[itemId].radius*-0.5:widget.center.value-centralCircles[centralCircles.length-2].radius;
@@ -273,7 +286,8 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
           textSize: 24,
           color: widget.circles[itemId].color,
           radius: centralCircles[0].radius,
-          isActive: widget.circles[itemId].isActive));
+          isActive: widget.circles[itemId].isActive,
+          isChecked: widget.circles[itemId].isChecked));
       if (centralCircles.length > 2) {
         centralCircles[centralCircles
             .length - 3].isVisible = false;
@@ -377,7 +391,7 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
         if(widget.circles.isEmpty){
           final px = widget.center.key-40 + (widget.size/2-40) * cos(1);
           final py = widget.center.value-40 + (widget.size/2-40) * sin(1);
-          plusesPositions.add(Offset(px,py));
+          if(centralCircles.isNotEmpty&&!centralCircles.last.isChecked)plusesPositions.add(Offset(px,py));
           plusesRotations.add(1);
         }
         final angleBetween = 2*pi/widget.circles.length;
@@ -392,7 +406,7 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
           final px = centerX + (widget.size/2-40) * cos(plusesRotations[i]);
           final py = centerY + (widget.size/2-40) * sin(plusesRotations[i]);
           circlePositions.add(Offset(x, y));
-          plusesPositions.add(Offset(px, py));
+          if(centralCircles.isNotEmpty&&!centralCircles.last.isChecked)plusesPositions.add(Offset(px, py));
         }
         afterMovingController.reset();
         afterMovingController.forward();
@@ -417,9 +431,9 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
       widget.clearData=false;
     }
 
-
+    final radius = MediaQuery.of(context).size.width*0.15;
     for (int i = 0; i<centralCircles.length; i++) {
-      centralCircles[i].radius= MediaQuery.of(context).size.width*0.15;
+      centralCircles[i].radius= radius;
       if (centralCircles[i].coords.key == 0.0 ||
           centralCircles[i].coords.value == 0.0) {
         centralCircles[i].coords = Pair(
@@ -470,19 +484,19 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
         final px = centerX + (widget.size/2-40) * cos(plusesRotations[i]);
         final py = centerY + (widget.size/2-40) * sin(plusesRotations[i]);
         circlePositions.add(Offset(x, y));
-        plusesPositions.add(Offset(px, py));
+        if(centralCircles.isNotEmpty&&!centralCircles.last.isChecked)plusesPositions.add(Offset(px, py));
       }
       if(widget.circles.isEmpty){
         final px = widget.center.key-40 + (widget.size/2-40) * cos(1);
         final py = widget.center.value-40 + (widget.size/2-40) * sin(1);
-        plusesPositions.add(Offset(px,py));
-        plusesRotations.add(1);
+        if(centralCircles.isNotEmpty&&!centralCircles.last.isChecked){plusesPositions.add(Offset(px,py));
+        plusesRotations.add(1);}
       }
       circlesHash = newHash;
     }
     else{
       for(int i = 0; i<widget.circles.length; i++){
-        if(widget.circles.length>8&&widget.circles.length<=16){
+        if(widget.circles.length>8){
           widget.circles[i].radius=(widget.size*0.15).toInt();
         } else{
           widget.circles[i].radius=(widget.size*0.2).toInt();
@@ -559,14 +573,14 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
                           }else if(centralCircles.last.id<900){
                             appViewModel.hint = textNewSphere[Random().nextInt(18)];
                           }
-                          if(widget.circles.length<=12) {
+                          if(widget.circles.length<12) {
                             plusId= e.key;
                             showHideController.reset();
                             showHideController.forward();
                           }else{
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
-                                content: Text("максимальное количество сфер - 13"),
+                                content: Text("максимальное количество сфер - 12"),
                                 duration: Duration(seconds: 3),
                               ),
                             );
@@ -633,15 +647,25 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
                                     allowClick=false;
                                   },
                                   doubleTap: (id){
-                                    if(id==0){
-                                      appViewModel.settings.fastActMainSphere?appViewModel.activateSphereWish(id, true):
+                                    if(!entry.value.isActive){
+                                      if(id==0){
+                                        appViewModel.settings.fastActMainSphere?appViewModel.activateSphereWish(id, true):
+                                            appViewModel.hint="Режим быстрой актуализации отключен в настройках";
+                                      }else if(id<900){
+                                        appViewModel.settings.fastActSphere?appViewModel.activateSphereWish(id, true):
                                           appViewModel.hint="Режим быстрой актуализации отключен в настройках";
-                                    }else if(id<900){
-                                      appViewModel.settings.fastActSphere?appViewModel.activateSphereWish(id, true):
-                                        appViewModel.hint="Режим быстрой актуализации отключен в настройках";
-                                    }else if(id>899){
-                                      appViewModel.settings.fastActWish?appViewModel.activateSphereWish(id, true):
-                                        appViewModel.hint="Режим быстрой актуализации отключен в настройках";
+                                      }else if(id>800){
+                                        appViewModel.settings.fastActWish?appViewModel.activateSphereWish(id, true):
+                                          appViewModel.hint="Режим быстрой актуализации отключен в настройках";
+                                      }
+                                    }else{
+                                      appViewModel.cachedImages.clear();
+                                      appViewModel.wishScreenState = null;
+                                      appViewModel.startWishScreen(
+                                          entry.value.id, 0);
+                                      appViewModel.mainCircles = centralCircles;
+                                      BlocProvider.of<NavigationBloc>(context)
+                                          .add(NavigateToWishScreenEvent());
                                     }
                                   },
                               )
@@ -681,21 +705,6 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
                                       style: const TextStyle(color: Colors.white, fontSize: 24),
                                       textAlign: TextAlign.center,
                                     ),
-                                    /*AnimatedBuilder(
-                                      animation: AlphaAnimation,
-                                      builder: (context, child) {
-                                        return Opacity(
-                                          opacity: textAlphaAnimValue,
-                                          child: Text(
-                                            value.id==0?value.substring:"",
-                                            style: const TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 10),
-                                            textAlign: TextAlign.center,
-                                          ),
-                                        );
-                                      },
-                                    )*/
                                   ],),
                                 )
                         ),
@@ -800,7 +809,7 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
 
       // Обновляем позицию каждой окружности и угол поворота
       circlePositions[i] = Offset(newX, newY);
-      plusesPositions[i] = Offset(newPlusX, newPlusY);
+      if(centralCircles.isNotEmpty&&!centralCircles.last.isChecked)plusesPositions[i] = Offset(newPlusX, newPlusY);
     }
 
     var diametr = (widget.size*0.2).toInt();

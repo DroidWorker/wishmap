@@ -1,8 +1,12 @@
+import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_fancy_tree_view/flutter_fancy_tree_view.dart';
+import 'package:wishmap/data/static_affirmations_women.dart';
+import 'package:wishmap/main.dart';
 import 'package:wishmap/repository/Repository.dart';
 import 'package:wishmap/repository/photosSearch.dart';
 import 'package:wishmap/repository/local_repository.dart';
@@ -77,15 +81,15 @@ class AppViewModel with ChangeNotifier {
   int backPressedCount = 0;
 
   List<CircleData> defaultCircles = [
-    CircleData(id: 0, text: 'Я', subText: "состояние", color: const Color(0xFF000000), parenId: -1),
-    CircleData(id: 100, text: 'Икигай', color: const Color(0xFFFF0000), parenId: 0),
-    CircleData(id: 200, text: 'Любовь', color: const Color(0xFFFF006B), parenId: 0),
-    CircleData(id: 300, text: 'Дети', color: const Color(0xFFD9D9D9), parenId: 0),
-    CircleData(id: 400, text: 'Путешествия', color: const Color(0xFFFFE600), parenId: 0),
-    CircleData(id: 500, text: 'Карьера', color: const Color(0xFF0029FF), parenId: 0),
-    CircleData(id: 600, text: 'Образование', color: const Color(0xFF46C8FF), parenId: 0),
-    CircleData(id: 700, text: 'Семья', color: const Color(0xFF3FA600), parenId: 0),
-    CircleData(id: 800, text: 'Богатство', color: const Color(0xFFB4EB5A), parenId: 0),
+    CircleData(id: 0, prevId: -1, nextId: 100, text: 'Я', subText: "состояние", color: const Color(0xFF000000), affirmation: defaultAffirmations.join("|"), parenId: -1)..shuffle=true..lastShuffle="${defaultAffirmations[Random().nextInt(defaultAffirmations.length)]}|${DateTime.now().weekday.toString()}",
+    CircleData(id: 100, prevId: 0, nextId: 200, text: 'Икигай', color: const Color(0xFFFF0000), affirmation: defaultAffirmations.join("|"), parenId: 0)..shuffle=true..lastShuffle="${defaultAffirmations[Random().nextInt(defaultAffirmations.length)]}|${DateTime.now().weekday.toString()}",
+    CircleData(id: 200, prevId: 100, nextId: 300, text: 'Любовь', color: const Color(0xFFFF006B), affirmation: defaultAffirmations.join("|"), parenId: 0)..shuffle=true..lastShuffle="${defaultAffirmations[Random().nextInt(defaultAffirmations.length)]}|${DateTime.now().weekday.toString()}",
+    CircleData(id: 300, prevId: 200, nextId: 400, text: 'Дети', color: const Color(0xFFD9D9D9), affirmation: defaultAffirmations.join("|"), parenId: 0)..shuffle=true..lastShuffle="${defaultAffirmations[Random().nextInt(defaultAffirmations.length)]}|${DateTime.now().weekday.toString()}",
+    CircleData(id: 400, prevId: 300, nextId: 500, text: 'Путешествия', color: const Color(0xFFFFE600), affirmation: defaultAffirmations.join("|"), parenId: 0)..shuffle=true..lastShuffle="${defaultAffirmations[Random().nextInt(defaultAffirmations.length)]}|${DateTime.now().weekday.toString()}",
+    CircleData(id: 500, prevId: 400, nextId: 600, text: 'Карьера', color: const Color(0xFF0029FF), affirmation: defaultAffirmations.join("|"), parenId: 0)..shuffle=true..lastShuffle="${defaultAffirmations[Random().nextInt(defaultAffirmations.length)]}|${DateTime.now().weekday.toString()}",
+    CircleData(id: 600, prevId: 500, nextId: 700, text: 'Образование', color: const Color(0xFF46C8FF), affirmation: defaultAffirmations.join("|"), parenId: 0)..shuffle=true..lastShuffle="${defaultAffirmations[Random().nextInt(defaultAffirmations.length)]}|${DateTime.now().weekday.toString()}",
+    CircleData(id: 700, prevId: 600, nextId: 800, text: 'Семья', color: const Color(0xFF3FA600), affirmation: defaultAffirmations.join("|"), parenId: 0)..shuffle=true..lastShuffle="${defaultAffirmations[Random().nextInt(defaultAffirmations.length)]}|${DateTime.now().weekday.toString()}",
+    CircleData(id: 800, prevId: 700, nextId: -1, text: 'Богатство', color: const Color(0xFFB4EB5A), affirmation: defaultAffirmations.join("|"), parenId: 0)..shuffle=true..lastShuffle="${defaultAffirmations[Random().nextInt(defaultAffirmations.length)]}|${DateTime.now().weekday.toString()}",
   ];
   //diaryScreen
   List<CardData> diaryItems = [
@@ -437,14 +441,14 @@ class AppViewModel with ChangeNotifier {
       mainScreenState = MainScreenState(moon: mi, musicId: 0);
       try {
         //mainScreenState!.allCircles = (await repository.getSpheres(mi.id)) ?? [];
-        mainScreenState!.allCircles = (await localRep.getAllMoonSpheres(mi.id)).where((element) => !element.isHidden).toList();
+        mainScreenState!.allCircles = (await localRep.getAllMoonSpheres(mi.id));
         if(mainScreenState!.allCircles.isEmpty) return;
         var ms = mainScreenState!.allCircles.first;
-        mainCircles.add(MainCircle(id: ms.id, coords: Pair(key: 0.0, value: 0.0), text: ms.text, substring: ms.subText, color: ms.color, isActive: ms.isActive));
+        mainCircles.add(MainCircle(id: ms.id, coords: Pair(key: 0.0, value: 0.0), text: ms.text, substring: ms.subText, color: ms.color, isActive: ms.isActive, isChecked: ms.isChecked));
         var cc = mainScreenState!.allCircles.where((element) => element.parenId == mainCircles.last.id).toList();
         currentCircles.clear();
         cc.forEach((element) {
-          if(!element.isHidden)currentCircles.add(Circle(id: element.id, text: element.text, color: element.color, isActive: element.isActive));
+          if(!element.isHidden)currentCircles.add(Circle(id: element.id, prevId: element.prevId, nextId: element.nextId, text: element.text, color: element.color, isActive: element.isActive, isChecked: element.isChecked));
         });
         isinLoading=false;
         notifyListeners();
@@ -457,11 +461,11 @@ class AppViewModel with ChangeNotifier {
       try {
         mainScreenState!.allCircles = tmp;
         var ms = mainScreenState!.allCircles.first;
-        mainCircles.add(MainCircle(id: ms.id, coords: Pair(key: 0.0, value: 0.0), text: ms.text, substring: ms.subText, color: ms.color, isActive: ms.isActive));
+        mainCircles.add(MainCircle(id: ms.id, coords: Pair(key: 0.0, value: 0.0), text: ms.text, substring: ms.subText, color: ms.color, isActive: ms.isActive, isChecked: ms.isChecked));
         var cc = mainScreenState!.allCircles.where((element) => element.parenId == mainCircles.last.id).toList();
         currentCircles.clear();
         cc.forEach((element) {
-          if(!element.isHidden)currentCircles.add(Circle(id: element.id, text: element.text, color: element.color, isActive: element.isActive));
+          if(!element.isHidden)currentCircles.add(Circle(id: element.id, prevId: element.prevId, nextId: element.nextId, text: element.text, color: element.color, isActive: element.isActive, isChecked: element.isChecked));
         });
         isinLoading=false;
         notifyListeners();
@@ -470,16 +474,20 @@ class AppViewModel with ChangeNotifier {
       }
     }
   }
+  int getShowedCirclesCount(int parentId){
+    var cc = mainScreenState!.allCircles.where((element) => (element.parenId == parentId)&&element.isHidden==false).toList();
+    return cc.length;
+  }
 
   List<Circle>? openSphere(int id) {
     if (mainScreenState != null&&mainScreenState!.allCircles.isNotEmpty) {
       try {
         var mc = mainScreenState!.allCircles.firstWhere((element) => element.id == id);
-        id>mainCircles.last.id?mainCircles.add(MainCircle(id: mc.id, coords: Pair(key: 0.0, value: 0.0), text: mc.text, color: mc.color, isActive: mc.isActive)):mainCircles.removeLast();
+        id>mainCircles.last.id?mainCircles.add(MainCircle(id: mc.id, coords: Pair(key: 0.0, value: 0.0), text: mc.text, color: mc.color, isActive: mc.isActive, isChecked: mc.isChecked)):mainCircles.removeLast();
         var cc = mainScreenState!.allCircles.where((element) => element.parenId == id).toList();
         currentCircles.clear();
         cc.forEach((element) {
-          if(!element.isHidden)currentCircles.add(Circle(id: element.id, text: element.text, color: element.color, isActive: element.isActive));
+          if(!element.isHidden)currentCircles.add(Circle(id: element.id, prevId: element.prevId, nextId: element.nextId, text: element.text, color: element.color, isActive: element.isActive, isChecked: element.isChecked));
         });
       } catch (ex) {
         addError("#5734${ex.toString()}");
@@ -489,27 +497,35 @@ class AppViewModel with ChangeNotifier {
     return null;
   }
 
-  Future<void> startWishScreen(int wishId, int parentId) async{
+  Future<WishData> startWishScreen(int wishId, int parentId, {isUpdateScreen = false}) async{
     try {
       var result = await Connectivity().checkConnectivity();
       if(result == ConnectivityResult.none)  connectivity = 'No Internet Connection';
       isChanged = false;
-      cachedImages.clear();
-      myNodes.clear();
+      if(!isUpdateScreen){
+        cachedImages.clear();
+        myNodes.clear();
+      }
       WishData wdItem;
       /*var tmp = mainScreenState!.allCircles.where((element) => element.id==wishId);
       if(tmp.isNotEmpty){*/
         /*isDataFetched!=0?wdItem = (await repository.getMyWish(wishId, mainScreenState!.moon.id)) ?? WishData(id: -100, parentId: 0, text: "не удалось загрузить данные", description: "", affirmation: "", color: Colors.transparent):*/
-        wdItem = (await localRep.getSphere(wishId, mainScreenState!.moon.id)) ?? WishData(id: -100, parentId: 0, text: "не удалось загрузить данные", description: "", affirmation: "", color: Colors.transparent);
+        wdItem = (await localRep.getSphere(wishId, mainScreenState!.moon.id)) ?? WishData(id: -100, prevId: -1, nextId: -1, parentId: 0, text: "не удалось загрузить данные", description: "", affirmation: "", color: Colors.transparent);
       /*}else{
         wdItem = WishData(id: wishId, parentId: parentId, text: "", description: "", affirmation: "", color: Colors.green);
       }*/
-      wishScreenState = WishScreenState(wish: wdItem);
+      if(!isUpdateScreen) {
+        wishScreenState = WishScreenState(wish: wdItem);
+      } else {
+        wishScreenState?.wish = wdItem;
+      }
       notifyListeners();
+      return wdItem;
     }catch(ex, s){
       addError("#436${ex.toString()}");
       print("sssssssssssssssss $s");
     }
+    return WishData(id: -1, prevId: -1, nextId: -1, parentId: -1, text: "error 522 cant load data", description: "description", affirmation: "affirmation", color: Colors.red);
   }
 
   Future<void> startMyTasksScreen() async{
@@ -613,7 +629,7 @@ class AppViewModel with ChangeNotifier {
     }
   }
 
-  Future<void> createNewSphereWish(WishData wd) async{
+  Future<void> createNewSphereWish(WishData wd, bool updateNeighbours) async{
     try {
       Map<int, Uint8List> photos = {};
       String photosIds = "";
@@ -625,14 +641,17 @@ class AppViewModel with ChangeNotifier {
         localRep.addImage(lastImageId, element);
       }
       wd.photos = photos;
-      if(connectivity != 'No Internet Connection')await repository.createSphereWish(wd, mainScreenState?.moon.id??0);
+      wd.shuffle = false;
+      if(connectivity != 'No Internet Connection')/*await*/ repository.createSphereWish(wd, mainScreenState?.moon.id??0);
       await localRep.insertORudateSphere(wd, mainScreenState?.moon.id??0);
       localRep.updateSphereImages(wd.id, photosIds,mainScreenState?.moon.id??0);
+      if(updateNeighbours)updateSphereNeighbours(wd.id, wd.prevId, wd.nextId);
       var sphereInAllCircles= mainScreenState!.allCircles.indexWhere((element) => element.id==wd.id);
       if(sphereInAllCircles==-1){
-        mainScreenState!.allCircles.add(CircleData(id: wd.id, text: wd.text, color: wd.color, parenId: wd.parentId)..shuffle=wd.shuffle..lastShuffle=wd.lastShuffle);
-        mainScreenState!.allCircles.sort((a,b)=>a.id.compareTo(b.id));
-        if(wd.id > 899)wishItems.add(WishItem(id: wd.id, text: wd.text, isChecked: wd.isChecked, isActive: wd.isActive, isHidden: wd.isHidden));
+        mainScreenState!.allCircles.add(CircleData(id: wd.id, prevId: wd.prevId, nextId: wd.nextId, text: wd.text, color: wd.color, parenId: wd.parentId)..shuffle=wd.shuffle..lastShuffle=wd.lastShuffle);
+        mainScreenState!.allCircles = sortList(mainScreenState!.allCircles);
+        //mainScreenState!.allCircles.sort((a,b)=>a.id.compareTo(b.id));
+        if(wd.id > 800)wishItems.add(WishItem(id: wd.id, text: wd.text, isChecked: wd.isChecked, isActive: wd.isActive, isHidden: wd.isHidden));
       }
       else{
         mainScreenState!.allCircles[sphereInAllCircles]
@@ -641,6 +660,7 @@ class AppViewModel with ChangeNotifier {
         ..isActive = true;
         if(mainCircles.last.id==wd.id) mainCircles.last..color=wd.color..text=wd.text..isActive=true;
       }
+      currentCircles.where((element) => element.id==wd.id).firstOrNull?.text=wd.text;
       var sphereInWishesList = wishItems.indexWhere((element) => element.id==wd.id);
       if(sphereInWishesList>=0){
         wishItems[sphereInWishesList]=WishItem(id: wd.id, text: wd.text, isChecked: wd.isChecked,isActive: wd.isActive, isHidden: wd.isHidden);
@@ -649,6 +669,23 @@ class AppViewModel with ChangeNotifier {
     }catch(ex){
       addError("сфера не была сохранена: $ex");
     }
+  }
+  Future updateSphereNeighbours(int insertedSphere, int prevSphereId, int nextSphereId) async{
+    if(mainScreenState?.allCircles!=null){
+      if(prevSphereId!=-1){
+        mainScreenState!.allCircles.where((element) => element.id==prevSphereId).firstOrNull?.nextId=insertedSphere;
+        repository.updateNeighbour(prevSphereId, true, insertedSphere, mainScreenState?.moon.id??0);
+        localRep.updateSphereNeighbours(prevSphereId, true, insertedSphere, mainScreenState?.moon.id??0);
+      }
+      if(nextSphereId!=-1){
+        mainScreenState!.allCircles.where((element) => element.id==nextSphereId).firstOrNull?.prevId=insertedSphere;
+        repository.updateNeighbour(nextSphereId, false, insertedSphere, mainScreenState?.moon.id??0);
+        localRep.updateSphereNeighbours(nextSphereId, false, insertedSphere, mainScreenState?.moon.id??0);
+      }
+    }
+  }
+  bool hasChildWishes(int wishId){
+    return mainScreenState?.allCircles.where((element) => element.parenId==wishId).isNotEmpty??false;
   }
   Future<void> updateSphereWish(WishData wd) async{
     try {
@@ -662,10 +699,10 @@ class AppViewModel with ChangeNotifier {
         localRep.addImage(lastImageId, element);
       }
       wd.photos = photos;
-      if(connectivity != 'No Internet Connection')await repository.createSphereWish(wd, mainScreenState?.moon.id??0);
+      if(connectivity != 'No Internet Connection')/*await*/ repository.createSphereWish(wd, mainScreenState?.moon.id??0);
       await localRep.insertORudateSphere(wd, mainScreenState?.moon.id??0);
       localRep.updateSphereImages(wd.id, photosIds,mainScreenState?.moon.id??0);
-      mainScreenState!.allCircles[mainScreenState!.allCircles.indexWhere((element) => element.id==wd.id)] = CircleData(id: wd.id, text: wd.text, color: wd.color, parenId: wd.parentId, affirmation: wd.affirmation, subText: wd.description)..photosIds=photosIds;
+      mainScreenState!.allCircles[mainScreenState!.allCircles.indexWhere((element) => element.id==wd.id)] = CircleData(id: wd.id, prevId: wd.prevId, nextId: wd.nextId, text: wd.text, color: wd.color, parenId: wd.parentId, affirmation: wd.affirmation, subText: wd.description)..photosIds=photosIds;
       updateMoonSync(mainScreenState?.moon.id??0);
     }catch(ex){
       addError("сфера не была сохранена: $ex");
@@ -696,7 +733,7 @@ class AppViewModel with ChangeNotifier {
           });
         }else if(settings.wishActualizingMode==1){
           int parentWish = mainScreenState?.allCircles.where((element) => element.id==id).first.parenId??-1;
-          if(parentWish>899) await activateSphereWish(parentWish, true);
+          if(parentWish>800) await activateSphereWish(parentWish, true);
         }
         //actualize child aims
         List<int> childAims = await localRep.getSpheresChildAims(id, mainScreenState?.moon.id??0);
@@ -712,36 +749,89 @@ class AppViewModel with ChangeNotifier {
       }
       updateMoonSync(mainScreenState?.moon.id??0);
     }catch(ex){
-      addError("сфера не была актуализирована: $ex");
+      addError("сфера не была актуализирована 006: $ex");
     }
   }
-  Future<void> hideSphereWish(int id, bool isHide) async{
+  Future<void> hideSphereWish(int id, bool isHide, bool recursive) async{
     try {
+      if(isHide) {
+        if(recursive) {
+          var allwishes = getFullBranch(id);
+          List<CircleData> wishes = [];
+          Set<int> uniqueIds = {};
+
+          // Итерируем по внешнему списку
+          for (List<CircleData> innerList in allwishes) {
+            // Итерируем по внутреннему списку
+            for (CircleData obj in innerList) {
+              // Если id объекта уникально, добавляем его в результат
+              if (uniqueIds.add(obj.id)&&obj.id>=id) {
+                wishes.add(obj);
+              }
+            }
+          }
+          for (var e in wishes) {
+            hideSphereWish(e.id, isHide, false);
+            if(mainScreenState!=null){
+              final i = mainScreenState!.allCircles.indexWhere((element) => element.id==e.id);
+              if(i>=0)mainScreenState!.allCircles[i].isHidden=isHide;
+            }
+            if(wishItems.isNotEmpty){
+              final i = wishItems.indexWhere((element) => element.id == e.id);
+              if(i>=0)wishItems[i].isHidden = isHide;
+            }
+          }
+        }
+      }
       if(connectivity != 'No Internet Connection')await repository.hideWish(id, mainScreenState!.moon.id, isHide);
       await localRep.hideSphere(id, isHide, mainScreenState!.moon.id);
-      mainScreenState!.allCircles[mainScreenState!.allCircles.indexWhere((element) => element.id==id)].isActive=true;
+      toggleHidden(myNodes.first, 'w', id, isHide);
+      if(mainScreenState!=null){
+        final i = mainScreenState!.allCircles.indexWhere((element) => element.id==id);
+        if(i>=0)mainScreenState!.allCircles[i].isHidden=isHide;
+      }
+      if(wishItems.isNotEmpty){
+        final i = wishItems.indexWhere((element) => element.id == id);
+        if(i>=0)wishItems[i].isHidden = isHide;
+      }
       updateMoonSync(mainScreenState?.moon.id??0);
+      notifyListeners();
     }catch(ex){
-      addError("сфера не была актуализирована: $ex");
+      addError("сфера не была актуализирована 007: $ex");
     }
   }
-  Future<void> deleteSphereWish(int id) async{
+  Future<void> deleteSphereWish(int id, int prevId, int nextId) async{
     try {
       if(mainScreenState!=null){
         for (var element in mainScreenState!.allCircles) {
           if(element.parenId==id){
-            deleteSphereWish(element.id);
+            deleteSphereWish(element.id, element.prevId, element.nextId);
           }
         }
       }
+      if(mainScreenState?.allCircles!=null){
+        if(prevId!=-1){
+          mainScreenState!.allCircles.where((element) => element.id==prevId).firstOrNull?.nextId=nextId;
+          repository.updateNeighbour(prevId, true, nextId, mainScreenState?.moon.id??0);
+          localRep.updateSphereNeighbours(prevId, true, nextId, mainScreenState?.moon.id??0);
+        }
+        if(nextId!=-1){
+          mainScreenState!.allCircles.where((element) => element.id==nextId).firstOrNull?.prevId=prevId;
+          repository.updateNeighbour(nextId, false, prevId, mainScreenState?.moon.id??0);
+          localRep.updateSphereNeighbours(nextId, false, prevId, mainScreenState?.moon.id??0);
+        }
+      }
+      wishItems.removeWhere((element) => element.id==id);
+      //mainScreenState!.allCircles.removeWhere((element) => element.id==id);
       await deleteallChildAims(id);
       if(connectivity != 'No Internet Connection')await repository.deleteSphereWish(id, mainScreenState?.moon.id??0);
       await localRep.deleteSphere(id,mainScreenState?.moon.id??0);
       updateMoonSync(mainScreenState?.moon.id??0);
-    }catch(ex){
+    }catch(ex, s){
       addError("сфера не была удалена: $ex");
     }
   }
+
   Future<void> deleteallChildAims(int wishId)async{
     try{
       final wish = /*isDataFetched!=0?await repository.getMyWish(wishId, mainScreenState!.moon.id):*/
@@ -833,11 +923,13 @@ class AppViewModel with ChangeNotifier {
   Future<int?> createAim(AimData ad, int parentCircleId) async{
     try {
       int? aimId;
-      if(connectivity != 'No Internet Connection')aimId = (await repository.createAim(ad, parentCircleId, mainScreenState?.moon.id??0))??-1;
+      if(connectivity != 'No Internet Connection')/*aimId =*/ (/*await*/ repository.createAim(ad, parentCircleId, mainScreenState?.moon.id??0))??-1;
       aimId = await localRep.addAim(AimData(id: aimId??-1, parentId: parentCircleId, text: ad.text, description: ad.description), mainScreenState?.moon.id??-1);
       currentAim=(AimData(id: aimId, parentId: ad.parentId, text: ad.text, description: ad.description, isChecked: ad.isChecked, isActive: ad.isActive));
       aimItems.add(AimItem(id: aimId,parentId: parentCircleId, text: ad.text, isChecked: ad.isChecked, isActive: ad.isActive));
+      if(wishScreenState!=null)wishScreenState!.wish.childAims["kjkjkjkj"]=aimId;
       updateMoonSync(mainScreenState?.moon.id??0);
+      print("rwturmffffffffffffffffff${aimId}");
       return aimId;
     }catch(ex){
       addError("#5711${ex.toString()}");
@@ -866,7 +958,7 @@ class AppViewModel with ChangeNotifier {
       aimItems.where((element) => element.id==id).first.isActive=true;
       updateMoonSync(mainScreenState?.moon.id??0);
     }catch(ex){
-      addError("сфера не была актуализирована: $ex");
+      addError("сфера не была актуализирована 008: $ex");
     }
   }
   Future<void> updateAim(AimData ad) async{
@@ -880,11 +972,12 @@ class AppViewModel with ChangeNotifier {
       addError("#518${ex.toString()}");
     }
   }
-  Future<void> deleteAim(int aimId) async{
+  Future<void> deleteAim(int aimId, int parentWishId) async{
     try {
       await deleteallChildTasks(aimId);
       if(connectivity != 'No Internet Connection')await repository.deleteAim(aimId, mainScreenState?.moon.id??0);
       localRep.deleteAim(aimId,mainScreenState?.moon.id??0);
+      localRep.updateWishChildren(parentWishId, aimId, mainScreenState?.moon.id??0);
       aimItems.removeWhere((element) => element.id == aimId);
       updateMoonSync(mainScreenState?.moon.id??0);
     }catch(ex){
@@ -924,6 +1017,7 @@ class AppViewModel with ChangeNotifier {
       taskId = await localRep.addTask(TaskData(id: taskId, parentId: parentAimId, text: ad.text, description: ad.description), mainScreenState?.moon.id??-1);
       currentTask=(TaskData(id: taskId, parentId: ad.parentId, text: ad.text, description: ad.description, isChecked: ad.isChecked, isActive: ad.isActive));
       taskItems.add(TaskItem(id: taskId, parentId: parentAimId, text: ad.text, isChecked: ad.isChecked, isActive: ad.isActive));
+      if(currentAim!=null)currentAim!.childTasks.add(taskId);
       updateMoonSync(mainScreenState?.moon.id??0);
       return taskId;
     }catch(ex){
@@ -956,10 +1050,11 @@ class AppViewModel with ChangeNotifier {
       addError("#524${ex.toString()}");
     }
   }
-  Future<void> deleteTask(int taskId) async{
+  Future<void> deleteTask(int taskId, int parentAimId) async{
     try {
       if(connectivity != 'No Internet Connection')await repository.deleteTask(taskId, mainScreenState?.moon.id??0);
       await localRep.deleteTask(taskId,mainScreenState?.moon.id??0);
+      localRep.updateAimChildren(parentAimId, taskId, mainScreenState?.moon.id??0);
       taskItems.removeWhere((element) => element.id == taskId);
       updateMoonSync(mainScreenState?.moon.id??0);
     }catch(ex){
@@ -989,7 +1084,7 @@ class AppViewModel with ChangeNotifier {
       aimItems.where((element) => element.id==id).first.isActive=true;
       updateMoonSync(mainScreenState?.moon.id??0);
     }catch(ex){
-      addError("сфера не была актуализирована: $ex");
+      addError("сфера не была актуализирована 009: $ex");
     }
   }
 
@@ -1069,7 +1164,7 @@ class AppViewModel with ChangeNotifier {
     List<CircleData> allCircles = getParentTree(circle.parenId);
     List<MyTreeNode> children = <MyTreeNode>[MyTreeNode(id: circle.id, type: "a", title: circle.text, isChecked: circle.isChecked, children: (taskList?.map((e) =>  MyTreeNode(id: e.id, type: 't', title: e.text, isChecked: e.isChecked)))?.toList()??[])..noClickable=true];
     for (var element in allCircles) {
-      children=[MyTreeNode(id: element.id, type: element.id==0?"m":"w", title: element.text, children: children, isChecked: element.isChecked)];
+      children=[MyTreeNode(id: element.id, type: element.id==0?"m":"w", title: element.text, children: children, isChecked: element.isChecked, isActive: element.isActive)];
     }
     myNodes = children;
     notifyListeners();
@@ -1078,48 +1173,15 @@ class AppViewModel with ChangeNotifier {
   Future<List<MyTreeNode>> convertToMyTreeNodeIncludedAimsTasks(MyTreeNode aimNode, int taskId, int wishId) async {
     final taskList = await getTasksForAim(aimNode.id);
     List<CircleData> allCircles = getParentTree(wishId);
-    taskList?.forEach((element) {
-      print("dddddddddddddddddddddddddddd${element.id} $taskId");
-    });
     List<MyTreeNode> children = <MyTreeNode>[MyTreeNode(id: aimNode.id, type: "a", title: aimNode.title, isChecked: aimNode.isChecked, children: (taskList?.map((e) =>  MyTreeNode(id: e.id, type: 't', title: e.text, isChecked: e.isChecked)..noClickable=e.id==taskId))?.toList()??[])];
     for (var element in allCircles) {
-      children=[MyTreeNode(id: element.id, type: element.id==0?"m":"w", title: element.text, isChecked:  element.isChecked, children: children)];
+      children=[MyTreeNode(id: element.id, type: element.id==0?"m":"w", title: element.text, isChecked:  element.isChecked, isActive: element.isActive, children: children)];
     }
     myNodes= children;
     notifyListeners();
     return children;
   }
-  /*Future<List<MyTreeNode>> convertToMyTreeNodeFullBranch(int wishId) async {
-    var addChildTasksAims = true;
-    final fullBranch = getFullBranch(wishId);
-    taskItems = /*isDataFetched!=0?((await repository.getMyTasks(mainScreenState!.moon.id))??[]):*/
-    await localRep.getAllTasks(mainScreenState?.moon.id??0);
-    aimItems = /*isDataFetched!=0?((await repository.getMyAims(mainScreenState!.moon.id))??[]):*/
-    await localRep.getAllAims(mainScreenState?.moon.id??0);
-    MyTreeNode? root;
-    for (var melement in fullBranch) {
-      final List<MyTreeNode> childNodes = [];
-      if(addChildTasksAims){
-        final chilldAims = aimItems.where((element) => element.parentId==melement.id);
-        for (var e in chilldAims) {
-          final childTasks = taskItems.where((item) => item.parentId==e.id);
-          childNodes.add(MyTreeNode(id: e.id, type: 'a', title: e.text, isChecked: e.isChecked, children: (childTasks.map((t) => MyTreeNode(id: t.id, type: 't', title: t.text, isChecked: t.isChecked))).toList()));
-        }
-      }
-      if(root != null)childNodes.add(root);
-      root = MyTreeNode(id: melement.id, type: melement.id==0?"m":"w", title: melement.text, isChecked: melement.isChecked,children: childNodes)..noClickable=melement.id==wishId?true:false;
-      if(melement.id==wishId) addChildTasksAims=false;
-    }
-    if(root!=null) {
-      myNodes= [root];
-      notifyListeners();
-      return [root];
-    } else {
-      myNodes.clear();
-      notifyListeners();
-      return [];
-    }
-  }*/
+
   Future<List<MyTreeNode>> convertToMyTreeNodeFullBranch(int wishId) async {
     var addChildTasksAims = true;
     final fullBranch = getFullBranch(wishId);
@@ -1161,7 +1223,7 @@ class AppViewModel with ChangeNotifier {
           }
         }
         if(loclRoot != null)childNodes.add(loclRoot);
-        loclRoot = MyTreeNode(id: melement.id, type: melement.id==0?"m":"w", title: melement.text, isChecked: melement.isChecked,children: childNodes)..noClickable=melement.id==wishId?true:false;
+        loclRoot = MyTreeNode(id: melement.id, type: melement.id==0?"m":"w", title: melement.text, isChecked: melement.isChecked, isActive:  melement.isActive,  children: childNodes, isHidden: melement.isHidden)..noClickable=melement.id==wishId?true:false;
         if(melement.id==wishId) addChildTasksAims=false;
       }
       if(loclRoot!=null){
@@ -1169,10 +1231,6 @@ class AppViewModel with ChangeNotifier {
         mchildNodesIds[mchildNodes.indexOf(mchildNodes.last)]=(e.last.parenId);
       }
     });
-    print("fuuuuuuull${fullBranch}");
-    print("seeeeeeeeeeeeeeek${mchildNodes}");
-    print("keeeeeeeeeeeeeeeeeevvvvvvvvvv${mchildNodesIds}");
-    print("cooooooooooommmmmmm${commonPart}");
     if(commonPart.isEmpty){
       root = mchildNodes.first;
     }else {
@@ -1203,25 +1261,13 @@ class AppViewModel with ChangeNotifier {
             type: melement.id == 0 ? "m" : "w",
             title: melement.text,
             isChecked: melement.isChecked,
+            isActive: melement.isActive,
             children: childNodes)
           ..noClickable = melement.id == wishId ? true : false;
         if (melement.id == wishId) addChildTasksAims = false;
       });
     }
 
-    /*for (var melement in fullBranch) {
-      final List<MyTreeNode> childNodes = [];
-      if(addChildTasksAims){
-        final chilldAims = aimItems.where((element) => element.parentId==melement.id);
-        for (var e in chilldAims) {
-          final childTasks = taskItems.where((item) => item.parentId==e.id);
-          childNodes.add(MyTreeNode(id: e.id, type: 'a', title: e.text, isChecked: e.isChecked, children: (childTasks.map((t) => MyTreeNode(id: t.id, type: 't', title: t.text, isChecked: t.isChecked))).toList()));
-        }
-      }
-      if(root != null)childNodes.add(root);
-      root = MyTreeNode(id: melement.id, type: melement.id==0?"m":"w", title: melement.text, isChecked: melement.isChecked,children: childNodes)..noClickable=melement.id==wishId?true:false;
-      if(melement.id==wishId) addChildTasksAims=false;
-    }*/
     if(root!=null) {
       myNodes= [root!];
       notifyListeners();
@@ -1242,13 +1288,22 @@ class AppViewModel with ChangeNotifier {
       }
     }
   }
+  void toggleHidden(MyTreeNode e, String type, int targetId, bool value) {
+    if (e.id == targetId&&e.type==type) {
+      e.isHidden = value;
+    } else {
+      for (var child in e.children) {
+        toggleHidden(child, type, targetId, value);
+      }
+    }
+  }
 
   List<CircleData> getParentTree(int targetId) {
     if(mainScreenState==null||targetId==-1)return List.empty();
     List<CircleData> objects = mainScreenState!.allCircles;
     List<CircleData> path = [];
 
-    CircleData targetObject = objects.firstWhere((obj) => obj.id == targetId, orElse: () => CircleData(id: -1, text: "", color: Colors.transparent, parenId: -1));
+    CircleData targetObject = objects.firstWhere((obj) => obj.id == targetId, orElse: () => CircleData(id: -1, prevId: -1, nextId: -1, text: "", color: Colors.transparent, parenId: -1));
 
     if (targetObject.id == -1) {
       return path; // Возвращаем пустой список, если объект с заданным идентификатором не найден

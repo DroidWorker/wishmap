@@ -21,7 +21,6 @@ import 'firebase_options.dart';
 import 'home/myaims_screen.dart';
 import 'home/mywishesScreen.dart';
 import 'home/profile_screen.dart';
-import 'home/spheresoflife_screen.dart';
 import 'home/taskedit_screen.dart';
 import 'navigation/navigation_block.dart';
 import 'home/main_screen.dart';
@@ -92,8 +91,6 @@ class MyApp extends StatelessWidget {
       return AuthScreen();
     } else if (state is NavigationCardsScreenState) {
       return CardsScreen();
-    } else if (state is NavigationSpheresOfLifeScreenState) {
-      return const SpheresOfLifeScreen();
     } else if (state is NavigationWishScreenState) {
       return WishScreen();
     } else if (state is NavigationAimCreateScreenState) {

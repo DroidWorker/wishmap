@@ -22,7 +22,7 @@ class _TaskItem extends State<WishItemWidget>{
         child:Row(children: [
           Expanded(child: Text(widget.ti.text)),
           IconButton(
-            icon: widget.ti.isChecked?Image.asset('assets/icons/wish_done.png'):widget.ti.isActive?Image.asset('assets/icons/wish_active.png'):Image.asset('assets/icons/wish_unactive.png'),
+            icon: widget.ti.isHidden?Image.asset('assets/icons/love5110868.png'):widget.ti.isChecked?Image.asset('assets/icons/wish_done.png'):!widget.ti.isActive?Image.asset('assets/icons/wish_unactive.png'):Image.asset('assets/icons/wish_active.png'),
             iconSize: 30,
             onPressed: () {
               widget.onClick(widget.ti.id);

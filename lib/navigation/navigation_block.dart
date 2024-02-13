@@ -166,8 +166,6 @@ class NavigationBloc extends Bloc<NavigationEvent, NavigationState> {
       _navigationHistory.add(NavigationMainScreenState());
     } else if (event is NavigateToCardsScreenEvent) {
       _navigationHistory.add(NavigationCardsScreenState());
-    } else if (event is NavigateToSpheresOfLifeScreenEvent) {
-      _navigationHistory.add(NavigationSpheresOfLifeScreenState());
     } else if (event is NavigateToWishScreenEvent) {
       _navigationHistory.add(NavigationWishScreenState());
     } else if (event is NavigateToAimCreateScreenEvent) {

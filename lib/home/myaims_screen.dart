@@ -262,6 +262,6 @@ class _AimsScreenState extends State<AimsScreen>{
     setState(() {
       filteredAimList.removeWhere((element) => element.id==id);
     });
-    appViewModel.deleteAim(id);
+    //appViewModel.deleteAim(id);
   }
 }
