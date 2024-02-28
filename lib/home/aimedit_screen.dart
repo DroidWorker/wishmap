@@ -105,7 +105,7 @@ class AimEditScreenState extends State<AimEditScreen>{
                               },
                             ),
                             const Spacer(),
-                            TextButton(
+                            if(ai!.isActive)TextButton(
                                 style: TextButton.styleFrom(
                                   backgroundColor: ai!.isChecked?AppColors.pinkButtonTextColor:AppColors.greyBackButton,
                                   shape: const RoundedRectangleBorder(
@@ -137,7 +137,8 @@ class AimEditScreenState extends State<AimEditScreen>{
                                             actions: <Widget>[
                                               TextButton(
                                                 onPressed: () async { Navigator.pop(context, 'OK');
-                                                if (ai!.childTasks.isNotEmpty) {
+                                                  onSaveClick(appVM);
+                                                  if (ai!.childTasks.isNotEmpty) {
                                                   showDialog(context: context,
                                                     builder: (BuildContext context) =>
                                                         AlertDialog(
@@ -194,10 +195,8 @@ class AimEditScreenState extends State<AimEditScreen>{
                                                               onPressed: () {
                                                                 Navigator.pop(
                                                                     context, 'OK');
-                                                                if (onSaveClick(appVM)) {
                                                                   ai!.isChecked = !ai!.isChecked;
                                                                   appVM.updateAimStatus(ai!.id, ai!.isChecked);
-                                                                }
                                                                 showDialog(
                                                                   context: context,
                                                                   builder: (
@@ -244,12 +243,8 @@ class AimEditScreenState extends State<AimEditScreen>{
                                                         ),
                                                   );
                                                 }else {
-                                                  if (onSaveClick(appVM)) {
-                                                    ai!.isChecked = !ai!
-                                                        .isChecked;
-                                                    appVM.updateAimStatus(
-                                                        ai!.id, ai!.isChecked);
-                                                  }
+                                                    ai!.isChecked = !ai!.isChecked;
+                                                    appVM.updateAimStatus(ai!.id, ai!.isChecked);
                                                 }
                                                 },
                                                 child: const Text('Да'),
@@ -257,14 +252,132 @@ class AimEditScreenState extends State<AimEditScreen>{
                                               TextButton(
                                                 onPressed: () async {
                                                   Navigator.pop(context, 'Cancel');
-                                                  ai!.isChecked = !ai!
-                                                      .isChecked;
-                                                  await appVM.updateAimStatus(
-                                                      ai!.id, ai!.isChecked);
-                                                  await appVM.getAim(ai!.id);
-                                                  text.text=appVM.currentAim!.text;
-                                                  description.text=appVM.currentAim!.description;
-                                                  isChanged = false;
+                                                  if (ai!.childTasks.isNotEmpty) {
+                                                    showDialog(context: context,
+                                                      builder: (BuildContext context) =>
+                                                          AlertDialog(
+                                                            contentPadding: EdgeInsets
+                                                                .zero,
+                                                            shape: const RoundedRectangleBorder(
+                                                                borderRadius: BorderRadius
+                                                                    .all(
+                                                                    Radius.circular(
+                                                                        32.0))),
+                                                            title: const Text('Внимание',
+                                                              textAlign: TextAlign
+                                                                  .center,),
+                                                            content: Column(
+                                                              mainAxisSize: MainAxisSize
+                                                                  .min,
+                                                              children: [
+                                                                (!ai!.isChecked)
+                                                                    ? const Text(
+                                                                  "Если в данной цели создавались задачи, то они также получат статус 'выполнена'",
+                                                                  maxLines: 6,
+                                                                  textAlign: TextAlign
+                                                                      .center,)
+                                                                    :
+                                                                const Text(
+                                                                  "Если в данной цели создавались другие задачи, то они останутся в статусе 'выполнена'",
+                                                                  maxLines: 6,
+                                                                  textAlign: TextAlign
+                                                                      .center,),
+                                                                const SizedBox(
+                                                                  height: 4,),
+                                                                const Divider(
+                                                                  color: AppColors
+                                                                      .dividerGreyColor,),
+                                                                const SizedBox(
+                                                                  height: 4,),
+                                                                (ai!.isChecked)
+                                                                    ? const Text(
+                                                                  "Не Достигнута?",
+                                                                  style: TextStyle(
+                                                                      fontWeight: FontWeight
+                                                                          .bold,
+                                                                      fontSize: 18),)
+                                                                    :
+                                                                const Text("Достигнута?",
+                                                                  style: TextStyle(
+                                                                      fontWeight: FontWeight
+                                                                          .bold,
+                                                                      fontSize: 18),)
+                                                              ],
+                                                            ),
+                                                            actions: <Widget>[
+                                                              TextButton(
+                                                                onPressed: () async {
+                                                                  Navigator.pop(
+                                                                      context, 'OK');
+                                                                  ai!.isChecked = !ai!
+                                                                      .isChecked;
+                                                                  await appVM.updateAimStatus(
+                                                                      ai!.id, ai!.isChecked);
+                                                                  await appVM.getAim(ai!.id);
+                                                                  text.text =
+                                                                      appVM.currentAim!.text;
+                                                                  description.text =
+                                                                      appVM.currentAim!
+                                                                          .description;
+                                                                  isChanged = false;
+                                                                  showDialog(
+                                                                    context: context,
+                                                                    builder: (
+                                                                        BuildContext context) =>
+                                                                        AlertDialog(
+                                                                          title: ai!
+                                                                              .isChecked
+                                                                              ? const Text(
+                                                                              'Достигнута')
+                                                                              : const Text(
+                                                                              'не Достигнута'),
+                                                                          shape: const RoundedRectangleBorder(
+                                                                              borderRadius: BorderRadius
+                                                                                  .all(
+                                                                                  Radius
+                                                                                      .circular(
+                                                                                      32.0))),
+                                                                          actions: <
+                                                                              Widget>[
+                                                                            TextButton(
+                                                                              onPressed: () {
+                                                                                Navigator
+                                                                                    .pop(
+                                                                                    context,
+                                                                                    'OK');
+                                                                              },
+                                                                              child: const Text(
+                                                                                  'OK'),
+                                                                            ),
+                                                                          ],
+                                                                        ),
+                                                                  );
+                                                                },
+                                                                child: const Text('Да'),
+                                                              ),
+                                                              TextButton(
+                                                                onPressed: () {
+                                                                  Navigator.pop(
+                                                                      context, 'Cancel');
+                                                                },
+                                                                child: const Text('Нет'),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                    );
+                                                  }else {
+                                                    ai!.isChecked = !ai!
+                                                        .isChecked;
+                                                    await appVM.updateAimStatus(
+                                                        ai!.id, ai!.isChecked);
+                                                    await appVM.getAim(ai!.id);
+                                                    text.text =
+                                                        appVM.currentAim!.text;
+                                                    description.text =
+                                                        appVM.currentAim!
+                                                            .description;
+                                                    isChanged = false;
+                                                  }
                                                   },
                                                 child: const Text('Нет'),
                                               ),
@@ -474,7 +587,7 @@ class AimEditScreenState extends State<AimEditScreen>{
                                 child: const Text("Удалить",style: TextStyle(color: Colors.black, fontSize: 12))
                             ),
                             const SizedBox(width: 3,),
-                            ai!=null&&!ai!.isActive?TextButton(
+                            ai!=null&&!ai!.isActive&&!ai!.isChecked?TextButton(
                                 style: TextButton.styleFrom(
                                   backgroundColor: AppColors.greyBackButton,
                                   shape: const RoundedRectangleBorder(
@@ -489,7 +602,7 @@ class AimEditScreenState extends State<AimEditScreen>{
                                 },
                                 child: const Text("Актуализировать",
                                     style: TextStyle(color: AppColors.blueTextColor, fontSize: 12))
-                            ):
+                            ): ai!=null&&!ai!.isActive&&ai!.isChecked?const SizedBox():
                             TextButton(
                                 style: TextButton.styleFrom(
                                   backgroundColor: AppColors.greyBackButton,
@@ -498,7 +611,11 @@ class AimEditScreenState extends State<AimEditScreen>{
                                   ),
                                 ),
                                 onPressed: () async {
-                                  if(ai!=null&&!ai!.isChecked)onSaveClick(appVM);
+                                  if(ai!=null&&!ai!.isChecked) {
+                                    onSaveClick(appVM);
+                                  } else{
+                                    showUneditable(text: "Невозможноо сохранить цель в статусе 'достигнута'");
+                                  }
                                 },
                                 child: const Text("Cохранить цель",
                                   style: TextStyle(color: AppColors.blueTextColor, fontSize: 12))
@@ -518,7 +635,11 @@ class AimEditScreenState extends State<AimEditScreen>{
                       child: Column(children:[
                         const SizedBox(height: 15,),
                         TextField(
-                          onTap: (){if(ai!.isChecked)showUnavailable("Чтобы редактировать цель необходимо сменить статус \nна 'не выполнена'");},
+                          onTap: (){
+                            if(ai!.isChecked&&!ai!.isActive) {showUnavailable("3адача выполнена в прошлой карте. Изменению не подлежит. Вы можете видеть ее в журнале задач в разделах 'выполненные' и 'все задачи', а также в иерархии цели и желания.\n\nВы можете удалить задачу. Если вам нужна подобная, просто создайте новую задачу.");}
+                            else if(ai!.isChecked) {showUnavailable("Чтобы редактировать цель необходимо сменить статус \nна 'не выполнена'");}
+                            else if(!ai!.isActive) {showUnavailable("Невозможно изменить неактуализированную задачу");}
+                          },
                           controller: text,
                           showCursor: true,
                           readOnly: ai!=null?(ai!.isChecked||!ai!.isActive?true:false):false,
@@ -548,14 +669,17 @@ class AimEditScreenState extends State<AimEditScreen>{
                           maxLines: 7,
                           controller: description,
                           onTap: () async {
-                            if(ai!.isChecked){showUnavailable("Чтобы редактировать цель необходимо сменить статус \nна 'не выполнена'");}
+                            if(ai!.isChecked){
+                              if(ai!.isChecked&&!ai!.isActive) {showUnavailable("3адача выполнена в прошлой карте. Изменению не подлежит. Вы можете видеть ее в журнале задач в разделах 'выполненные' и 'все задачи', а также в иерархии цели и желания.\n\nВы можете удалить задачу. Если вам нужна подобная, просто создайте новую задачу.");}
+                              else if(ai!.isChecked) {showUnavailable("Чтобы редактировать цель необходимо сменить статус \nна 'не выполнена'");}
+                              else if(!ai!.isActive) {showUnavailable("Невозможно изменить неактуализированную задачу");}
+                            }
                             else if(!ai!.isActive){showUneditable();}
                             else {
                               final returnedText = await showOverlayedEdittext(context, description.text, (ai!.isActive&&!ai!.isChecked))??"";
                               if(returnedText!=description.text) {
                                 description.text = returnedText;
                                 isChanged = true;
-                                appVM.isChanged = true;
                               }
                             }
                           },
@@ -619,25 +743,29 @@ class AimEditScreenState extends State<AimEditScreen>{
                           ],
                         ),
                         const SizedBox(height: 15,),
-                        MyTreeView(key: UniqueKey(),roots: roots, onTap: (id, type){
+                        MyTreeView(key: UniqueKey(),roots: roots, onTap: (id, type) async {
                           if(type=="m"){
+                            if(isChanged){if(await showOnExit(appVM)==false) return;}
                             BlocProvider.of<NavigationBloc>(context).clearHistory();
                             appVM.cachedImages.clear();
                             appVM.startMainsphereeditScreen();
                             BlocProvider.of<NavigationBloc>(context)
                                 .add(NavigateToMainSphereEditScreenEvent());
                           }else if(type=="w"){
+                          if(isChanged){if(await showOnExit(appVM)==false) return;}
                             BlocProvider.of<NavigationBloc>(context).clearHistory();
                             appVM.startWishScreen(id, 0);
                             BlocProvider.of<NavigationBloc>(context)
                                 .add(NavigateToWishScreenEvent());
                           }else if(type=="a"&&widget.aimId!=id){
+                          if(isChanged){if(await showOnExit(appVM)==false) return;}
                             appVM.getAim(id);
                             appVM.myNodes.clear();
                             BlocProvider.of<NavigationBloc>(context).removeLastFromBS();
                             BlocProvider.of<NavigationBloc>(context)
                                 .add(NavigateToAimEditScreenEvent(id));
                           }else if(type=="t"){
+                          if(isChanged){if(await showOnExit(appVM)==false) return;}
                             appVM.getTask(id);
                             appVM.myNodes.clear();
                             BlocProvider.of<NavigationBloc>(context).removeLastFromBS();
@@ -665,10 +793,10 @@ class AimEditScreenState extends State<AimEditScreen>{
     });
   }
 
-  bool onSaveClick(AppViewModel appVM){
+  Future<bool> onSaveClick(AppViewModel appVM) async {
     if(ai!=null){
       if(text.text.isEmpty||description.text.isEmpty){
-        showDialog(context: context,
+        await showDialog(context: context,
           builder: (BuildContext context) => AlertDialog(
             title: const Text('Заполните поля'),
             shape: const RoundedRectangleBorder(
@@ -708,6 +836,41 @@ class AimEditScreenState extends State<AimEditScreen>{
     }
     return true;
   }
+  Future<bool> showOnExit(AppViewModel appVM) async {
+    return await showDialog(context: context,
+      builder: (BuildContext context) => AlertDialog(
+        contentPadding: EdgeInsets.zero,
+        shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(32.0))),
+        title: const Text('Внимание', textAlign: TextAlign.center,),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text("Вы изменили поля но не нажали 'Сохранить'", maxLines: 6, textAlign: TextAlign.center,),
+            SizedBox(height: 4,),
+            Divider(color: AppColors.dividerGreyColor,),
+            SizedBox(height: 4,),
+            Text("Сохранить изменения?", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),)
+          ],
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(context, true);
+              await onSaveClick(appVM);
+            },
+            child: const Text('Да'),
+          ),
+          TextButton(
+            onPressed: () { Navigator.pop(context, true);
+            appVM.isChanged=false;},
+            child: const Text('Нет'),
+          ),
+        ],
+      ),
+    );
+  }
+
   void showUnavailable(String text){
     showDialog(context: context,
       builder: (BuildContext context) => AlertDialog(

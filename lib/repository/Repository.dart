@@ -205,6 +205,7 @@ class Repository{
             'color': circleData.color.value,
             'parentId': circleData.parenId,
             'isActive': circleData.isActive,
+            'affirmation': circleData.affirmation,
           };
         }
         await userRef.child(_auth.currentUser!.uid).child("moonlist").child(moonItem.id.toString()).child("spheres").set(
@@ -298,13 +299,14 @@ class Repository{
           final Map<dynamic, dynamic> dataList = element.value as Map<dynamic,dynamic>;
           CircleData circleData = CircleData(
             id: int.parse(element.key.toString()),
-            nextId: dataList['nextId']==null?-1:int.tryParse(dataList['nextId'])??-1,
-            prevId: dataList['prevId']==null?-1:int.tryParse(dataList['prevId'])??-1,
-            text: dataList['text'],
+              nextId: dataList['nextId'] == null ? -1 : (dataList['nextId'] is int ? dataList['nextId'] : int.tryParse(dataList['nextId']) ?? -1),
+              prevId: dataList['prevId'] == null ? -1 : (dataList['prevId'] is int ? dataList['prevId'] : int.tryParse(dataList['prevId']) ?? -1),
+              text: dataList['text'],
             subText: dataList['subText'] ?? "",
             color: Color(int.parse(dataList['color'].toString())),
             parenId: int.parse(dataList['parentId'].toString()),
             photosIds: dataList['photosIds']??"",
+            affirmation: dataList['affirmation']??"",
             isChecked: dataList['isChecked']??false,
             isActive: dataList["isActive"]??true,
             isHidden: dataList['isHidden']??false
@@ -329,10 +331,10 @@ class Repository{
           final Map<dynamic, dynamic> dataList = element.value as Map<dynamic,dynamic>;
           WishData circleData = WishData(
               id: int.parse(element.key.toString()),
-              nextId: dataList['nextId']==null?-1:int.tryParse(dataList['nextId'])??-1,
-              prevId: dataList['prevId']==null?-1:int.tryParse(dataList['prevId'])??-1,
-              text: dataList['text'],
-              description: dataList['subText'] ?? "",
+              nextId: dataList['nextId'] == null ? -1 : (dataList['nextId'] is int ? dataList['nextId'] : int.tryParse(dataList['nextId']) ?? -1),
+              prevId: dataList['prevId'] == null ? -1 : (dataList['prevId'] is int ? dataList['prevId'] : int.tryParse(dataList['prevId']) ?? -1),
+              text: dataList['text'].toString(),
+              description: dataList['subText'].toString() ?? "",
               color: Color(int.parse(dataList['color'].toString())),
               parentId: int.parse(dataList['parentId'].toString()),
               photoIds: dataList['photosIds']??"",
@@ -478,7 +480,20 @@ class Repository{
       if (dataSnapshot.children.isNotEmpty) {
         dataSnapshot.children.forEach((element) {
           final Map<dynamic, dynamic> dataList = element.value as Map<dynamic,dynamic>;
-          Map<dynamic, dynamic> childTasksMap = dataList['childTasks']!=null?Map<dynamic, dynamic>.from(dataList['childTasks']):{};
+          Map<dynamic, dynamic> childTasksMap = {};
+          if (dataList['childTasks'] != null) {
+            if (dataList['childTasks'] is List) {
+              // Преобразовать список в карту, если это необходимо
+              for (var i = 0; i < dataList['childTasks'].length; i++) {
+                childTasksMap[i] = dataList['childTasks'][i];
+              }
+            } else if (dataList['childTasks'] is Map) {
+              // Просто присвоить, если уже является картой
+              childTasksMap = Map<dynamic, dynamic>.from(dataList['childTasks']);
+            } else {
+              // Обработка других случаев, если необходимо
+            }
+          }
           List<int> childTasksList = childTasksMap.values.map((value) => int.parse(value.toString())).toList();
           aimsList.add(AimData(
               id: int.parse(dataList['id'].toString()),

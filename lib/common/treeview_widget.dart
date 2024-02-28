@@ -130,7 +130,7 @@ class MyTreeTile extends StatelessWidget {
                     ? (entry.node.isHidden
                     ? Image.asset('assets/icons/love5110868.png', width: 20, height: 20,)
                     : entry.node.isChecked? Image.asset('assets/icons/wish_done.png', width: 20, height: 20,)
-                    : !entry.node.isActive? Image.asset('assets/icons/wish_unactive.png')
+                    : !entry.node.isActive? Image.asset('assets/icons/wish_unactive.png', width: 20, height: 20)
                     :Image.asset('assets/icons/wish_active.png', width: 20, height: 20))
                     : (entry.node.type == "a"
                     ? (entry.node.isChecked

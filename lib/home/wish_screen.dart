@@ -53,7 +53,7 @@ class _WishScreenState extends State<WishScreen>{
     TextEditingController _affirmation = TextEditingController(text: curwish.affirmation.split("|")[0]);
     _title.addListener(() { if(_title.text!=appViewModel.wishScreenState!.wish.text)appViewModel.isChanged = true;curwish.text=_title.text;});
     _description.addListener(() { if(_description.text!=appViewModel.wishScreenState!.wish.description)appViewModel.isChanged = true;curwish.description=_description.text;});
-    _affirmation.addListener(() { if(_affirmation.text!=appViewModel.wishScreenState!.wish.affirmation)appViewModel.isChanged = true;});
+    _affirmation.addListener(() { });
 
     return  Consumer<AppViewModel>(
         builder: (context, appVM, child){
@@ -80,6 +80,11 @@ class _WishScreenState extends State<WishScreen>{
                     .toList();
                 if (intList.isNotEmpty) appViewModel.getImages(intList);
               }
+            }
+            if(appViewModel.cachedImages.length!=curwish.photoIds.length){
+              appViewModel.isChanged=true;
+            }else {
+              appViewModel.isChanged=false;
             }
             appViewModel.wishScreenState!.isDataloaded = true;
           }
@@ -146,7 +151,7 @@ class _WishScreenState extends State<WishScreen>{
                           }
                       ),
                       const Expanded(child: SizedBox(),),
-                      if(curwish.id > 800)
+                      if(curwish.id > 800&&curwish.isActive)
                         TextButton(
                             style: TextButton.styleFrom(
                               backgroundColor: curwish.isChecked?AppColors.pinkButtonTextColor:AppColors.greyBackButton,
@@ -180,8 +185,8 @@ class _WishScreenState extends State<WishScreen>{
                                       actions: <Widget>[
                                         TextButton(
                                           onPressed: () async { Navigator.pop(context, 'OK');
-                                          await onSaveClicked(appVM, false, _title, _description, _affirmation);
-                                          changeStatus(appVM);
+                                          final result = await onSaveClicked(appVM, false, _title, _description, _affirmation);
+                                          if(result)changeStatus(appVM);
                                           },
                                           child: const Text('Да'),
                                         ),
@@ -282,34 +287,54 @@ class _WishScreenState extends State<WishScreen>{
                             ),
                           ),
                           onPressed: () async {
-                            appVM.wishScreenState!.wish
-                              ..text=_title.text
-                              ..description=_description.text
-                              ..affirmation=curwish.affirmation
-                              ..color = _color!;
-                            await appViewModel.createNewSphereWish(appVM.wishScreenState!.wish, false);
-                            appViewModel.isChanged = false;
-                            showDialog(
-                              context: context,
-                              builder: (BuildContext context) {
-                                return AlertDialog(
-                                  title: const Text('сохранено'),
+                            if(_title.text.isEmpty||_affirmation.text.isEmpty){
+                              await showDialog(context: context,
+                                builder: (BuildContext context) => AlertDialog(
+                                  title: const Text('Необходимо заполнить все поля со знаком *'),
+                                  shape: const RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.all(Radius.circular(32.0))),
                                   actions: <Widget>[
                                     TextButton(
-                                      onPressed: () {
-                                        Navigator.pop(context, 'OK');
-                                        setState(() {appVM.convertToMyTreeNodeFullBranch(curwish.id);});
-                                      },
+                                      onPressed: () => Navigator.pop(context, 'OK'),
                                       child: const Text('OK'),
                                     ),
                                   ],
-                                );
-                              },
-                            );
+                                ),
+                              );
+                            }else {
+                              appVM.wishScreenState!.wish
+                                ..text = _title.text
+                                ..description = _description.text
+                                ..affirmation = curwish.affirmation
+                                ..color = _color!;
+                              await appViewModel.createNewSphereWish(
+                                  appVM.wishScreenState!.wish, false);
+                              appViewModel.isChanged = false;
+                              showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return AlertDialog(
+                                    title: const Text('сохранено'),
+                                    actions: <Widget>[
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.pop(context, 'OK');
+                                          setState(() {
+                                            appVM.convertToMyTreeNodeFullBranch(
+                                                curwish.id);
+                                          });
+                                        },
+                                        child: const Text('OK'),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
+                            }
                           },
                           child: const Text("Cохранить",
                             style: TextStyle(color: AppColors.blueTextColor, fontSize: 12),)
-                      )else if(!curwish.isActive)
+                      )else if(!curwish.isActive&&!curwish.isChecked)
                       TextButton(
                           style: TextButton.styleFrom(
                             backgroundColor: AppColors.greyBackButton,
@@ -460,7 +485,11 @@ class _WishScreenState extends State<WishScreen>{
                             const SizedBox(height: 5),
                             TextField(
                               controller: _title,
-                              onTap: (){if(curwish.isChecked)showUnavailable("Чтобы редактировать желание необходимо перевести в статус \nна 'не исполнено'");else if(!curwish.isActive)showUneditable();},
+                              onTap: (){
+                                if(curwish.isChecked&&!curwish.isActive) {showUnavailable("Желание исполнено в прошлой карте. Изменению не подлежит. Вы можете видеть ее в журнале желаний в разделах 'исполненные' и 'все цели', а также в иерархии желания.\n\nВы можете удалить желание. Если вам нужна подобная, просто создайте новую.");}
+                                else if(curwish.isChecked)showUnavailable("Чтобы редактировать желание необходимо перевести в статус \nна 'не исполнено'");
+                                else if(!curwish.isActive)showUneditable();
+                              },
                               showCursor: true,
                               readOnly: curwish.isChecked||!curwish.isActive?true:false,
                               style: const TextStyle(color: Colors.black), // Черный текст ввода
@@ -489,7 +518,11 @@ class _WishScreenState extends State<WishScreen>{
                               maxLines: 7,
                               controller: _description,
                               onTap: () async {
-                                if(curwish.isChecked){showUnavailable("Чтобы редактировать желание необходимо сменить статус \nна 'не выполнено'");}
+                                if(curwish.isChecked)
+                                {
+                                    if(curwish.isChecked&&!curwish.isActive) {showUnavailable("Желание исполнено в прошлой карте. Изменению не подлежит. Вы можете видеть ее в журнале желаний в разделах 'исполненные' и 'все цели', а также в иерархии желания.\n\nВы можете удалить желание. Если вам нужна подобная, просто создайте новую.");}
+                                    else if(curwish.isChecked)showUnavailable("Чтобы редактировать желание необходимо перевести в статус \nна 'не исполнено'");else if(!curwish.isActive)showUneditable();
+                                }
                                 else if(!curwish.isActive){showUneditable();}
                                 else {
                                   final newText = await showOverlayedEdittext(context, _description.text, (curwish.isActive&&!curwish.isChecked))??"";
@@ -561,8 +594,9 @@ class _WishScreenState extends State<WishScreen>{
                                         ),
                                         ...imagesSet.map((e) {
                                           Map<Uint8List, int?> em = Map.fromIterable(e, key: (v)=>v, value: (v)=>null);
-                                          if(e.length==1) return buildSingle(fullWidth, e.first, appVM.isinLoading, !curwish.isActive);
-                                          else if(e.length==2) return buildTwin(leftWidth, rightWidth, em, appVM.isinLoading, !curwish.isActive);
+                                          if(e.length==1) {
+                                            return buildSingle(fullWidth, e.first, appVM.isinLoading, !curwish.isActive);
+                                          } else if(e.length==2) return buildTwin(leftWidth, rightWidth, em, appVM.isinLoading, !curwish.isActive);
                                           else if(imagesSet.indexOf(e)%2!=0) return buildTriple(leftWidth, rightWidth, em, appVM.isinLoading, !curwish.isActive);
                                           else return buildTripleReverce(leftWidth, rightWidth, em, appVM.isinLoading, !curwish.isActive);
                                         }).toList()
@@ -579,7 +613,7 @@ class _WishScreenState extends State<WishScreen>{
                                     ),
                                   ),
                                   onPressed: (){
-                                    appViewModel.isChanged = true;
+                                    //appViewModel.isChanged = true;
                                     appViewModel.photoUrls.clear();
                                     curwish.isChecked?showUnavailable("Чтобы редактировать желание необходимо сменить статус \nна 'не выполнено'"):!curwish.isActive?showUneditable():BlocProvider.of<NavigationBloc>(context)
                                         .add(NavigateToGalleryScreenEvent());
@@ -606,9 +640,8 @@ class _WishScreenState extends State<WishScreen>{
                                 });
                                 if(curwish.shuffle) curwish.lastShuffle = "|${DateTime.now().weekday.toString()}";
                                 _affirmation.text=affirmationsStr?.split("|")[0]??"";
+                                if(affirmationsStr!=curwish.affirmation)appViewModel.isChanged =true;
                                 curwish.affirmation=affirmationsStr??"";
-                                print("fffffffffffffffff${curwish.affirmation}");
-                                appViewModel.isChanged =true;
                                 }
                               },
                               style: const TextStyle(color: Colors.black), // Черный текст ввода
@@ -646,10 +679,16 @@ class _WishScreenState extends State<WishScreen>{
                                   )
                                 ],),
                                   onTap: () {
+                                  final shotColor = _color?.value;
                                     curwish.isChecked?showUnavailable("Чтобы редактировать желание необходимо сменить статус \nна 'не выполнено'"):!curwish.isActive?showUneditable():showDialog(
                                       context: context,
                                       builder: (context) {
-                                        return ColorPickerWidget(initColor: _color, onColorSelected: (Color c){setState(() {_color=c;curwish.color=c;appViewModel.isChanged=true;});});
+                                        return ColorPickerWidget(initColor: _color, onColorSelected: (Color c){setState(() {
+                                          if(shotColor!=c.value)appViewModel.isChanged=true;
+                                          _color=c;
+                                          curwish.color=c;
+                                        });
+                                        });
                                       },
                                     );
                                   },
@@ -660,30 +699,28 @@ class _WishScreenState extends State<WishScreen>{
                                 child: Column(children: [
                                   const Text("Цели и задачи", style: TextStyle(color: Colors.black54),),
                                   const SizedBox(height: 5),
-                                  MyTreeView(key: UniqueKey(),roots: root, onTap: (id, type){
+                                  MyTreeView(key: UniqueKey(),roots: root, onTap: (id, type) async {
                                     if(type=="m"){
-                                      if(appViewModel.isChanged){showOnExit(appVM, _title, _description, _affirmation);}else{
+                                      if(appViewModel.isChanged){if(await showOnExit(appVM, _title, _description, _affirmation)==false) return;}
                                       BlocProvider.of<NavigationBloc>(context).clearHistory();
                                       appVM.cachedImages.clear();
                                       appVM.startMainsphereeditScreen();
                                       BlocProvider.of<NavigationBloc>(context)
                                           .add(NavigateToMainSphereEditScreenEvent());
-                                    }}else if(type=="w"){
-                                      if(appViewModel.isChanged){showOnExit(appVM, _title, _description, _affirmation);}else{
+                                    }else if(type=="w"){
+                                      if(appViewModel.isChanged){if(await showOnExit(appVM, _title, _description, _affirmation)==false) return;}
                                       curwish=WishData(id: -1, prevId: -1, nextId: -1, parentId: -1, text: "text", description: "description", affirmation: "affirmation", color: Colors.transparent);
                                       appVM.startWishScreen(id, 0);
-                                    }}else if(type=="a"){
-                                      if(appViewModel.isChanged){showOnExit(appVM, _title, _description, _affirmation);}else{
+                                    }else if(type=="a"){
+                                      if(appViewModel.isChanged){if(await showOnExit(appVM, _title, _description, _affirmation)==false) return;}
                                       appVM.getAim(id);
                                       appVM.myNodes.clear();
-                                      BlocProvider.of<NavigationBloc>(context)
-                                          .add(NavigateToAimEditScreenEvent(id));
-                                    }}else if(type=="t"){
-                                      if(appViewModel.isChanged){showOnExit(appVM, _title, _description, _affirmation);}else{
+                                      BlocProvider.of<NavigationBloc>(context).add(NavigateToAimEditScreenEvent(id));
+                                    }else if(type=="t"){
+                                      if(appViewModel.isChanged){if(await showOnExit(appVM, _title, _description, _affirmation)==false) return;}
                                       appVM.getTask(id);
-                                      BlocProvider.of<NavigationBloc>(context)
-                                          .add(NavigateToTaskEditScreenEvent(id));
-                                    }}
+                                      BlocProvider.of<NavigationBloc>(context).add(NavigateToTaskEditScreenEvent(id));
+                                    }
                                   },),
                                   const SizedBox(height: 5),
                                   if(curwish.id > 800)
@@ -695,7 +732,10 @@ class _WishScreenState extends State<WishScreen>{
                                           ),
                                         ),
                                         onPressed: (){
-                                          if(curwish.isChecked) showUnavailable("Чтобы редактировать желание необходимо сменить статус \nна 'не выполнено'"); else if(!curwish.isActive)showUneditable(); else{
+                                          if(curwish.isChecked&&!curwish.isActive) {showUnavailable("Желание исполнено в прошлой карте. Изменению не подлежит. Вы можете видеть ее в журнале желаний в разделах 'исполненные' и 'все цели', а также в иерархии желания.\n\nВы можете удалить желание. Если вам нужна подобная, просто создайте новую.");}
+                                          else if(curwish.isChecked)showUnavailable("Чтобы редактировать желание необходимо перевести в статус \nна 'не исполнено'");
+                                          else if(!curwish.isActive)showUneditable();
+                                          else{
                                           if(appVM.mainScreenState!.allCircles.where((element) => element.id==appVM.wishScreenState!.wish.id).isNotEmpty) {
                                             BlocProvider.of<NavigationBloc>(context)
                                                 .add(NavigateToAimCreateScreenEvent(
@@ -857,9 +897,9 @@ class _WishScreenState extends State<WishScreen>{
     }
   }
 
-  Future<void> onSaveClicked(AppViewModel appVM, bool isExit, TextEditingController title, TextEditingController description, TextEditingController affirmation) async {
+  Future<bool> onSaveClicked(AppViewModel appVM, bool isExit, TextEditingController title, TextEditingController description, TextEditingController affirmation) async {
     if(title.text.isEmpty||affirmation.text.isEmpty){
-      showDialog(context: context,
+      await showDialog(context: context,
         builder: (BuildContext context) => AlertDialog(
           title: const Text('Необходимо заполнить все поля со знаком *'),
           shape: const RoundedRectangleBorder(
@@ -872,7 +912,7 @@ class _WishScreenState extends State<WishScreen>{
           ],
         ),
       );
-      return;
+      return false;
     }
     appVM.wishScreenState!.wish
       ..text=title.text
@@ -891,18 +931,21 @@ class _WishScreenState extends State<WishScreen>{
           TextButton(
             onPressed: () {
               Navigator.pop(context, 'OK');
-              if(isExit)BlocProvider.of<NavigationBloc>(context)
+              if(isExit) {
+                BlocProvider.of<NavigationBloc>(context)
                   .handleBackPress();
+              }
             },
             child: const Text('OK'),
           ),
         ],
       ),
     );
+    return true;
   }
 
-  void showOnExit(AppViewModel appVM, TextEditingController title, TextEditingController description, TextEditingController affirmation){
-    showDialog(context: context,
+  Future<bool> showOnExit(AppViewModel appVM, TextEditingController title, TextEditingController description, TextEditingController affirmation) async {
+    return await showDialog(context: context,
       builder: (BuildContext context) => AlertDialog(
         contentPadding: EdgeInsets.zero,
         shape: const RoundedRectangleBorder(
@@ -920,13 +963,14 @@ class _WishScreenState extends State<WishScreen>{
         ),
         actions: <Widget>[
           TextButton(
-            onPressed: () async { Navigator.pop(context, 'OK');
-            onSaveClicked(appVM, true, title, description, affirmation);
+            onPressed: () async {
+              Navigator.pop(context, true);
+              await onSaveClicked(appVM, true, title, description, affirmation);
             },
             child: const Text('Да'),
           ),
           TextButton(
-            onPressed: () { Navigator.pop(context, 'Cancel');
+            onPressed: () { Navigator.pop(context, true);
               appVM.isChanged=false;},
             child: const Text('Нет'),
           ),
@@ -943,7 +987,7 @@ class _WishScreenState extends State<WishScreen>{
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(text, maxLines: 5, textAlign: TextAlign.center,),
+            Text(text, maxLines: 5, textAlign: TextAlign.center),
             const SizedBox(height: 4,),
             const Divider(color: AppColors.dividerGreyColor,),
           ],
@@ -969,9 +1013,9 @@ class _WishScreenState extends State<WishScreen>{
               children: [
                 Text(
                   "Чтобы редактировать необходимо изменить статус на 'актуальное' нажав кнопку 'осознать'",
-                  maxLines: 5, textAlign: TextAlign.center,),
+                  maxLines: 5, textAlign: TextAlign.center),
                 SizedBox(height: 4,),
-                Divider(color: AppColors.dividerGreyColor,),
+                Divider(color: AppColors.dividerGreyColor),
               ],
             ),
             actions: <Widget>[

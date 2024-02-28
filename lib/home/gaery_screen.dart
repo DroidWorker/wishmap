@@ -114,7 +114,7 @@ class GalleryScreenState extends State<GalleryScreen>{
                             });
                           }
                         });
-                        else if(imagesSet.indexOf(e)%2!=0) return buildTriple(leftWidth, rightWidth, e, appVM.isinLoading,false, onTap: (index) async {
+                        else if(imagesSet.indexOf(e)%2==0) return buildTriple(leftWidth, rightWidth, e, appVM.isinLoading,false, onTap: (index) async {
                           final image = await showOverlayedImageManager(context, index.toString(), mode: 1, image: appViewModel.cachedImages[index]);
                           if(image!=null){
                             setState(() {

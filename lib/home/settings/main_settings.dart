@@ -18,6 +18,8 @@ class MainSettingsState extends State<MainSettings>{
   @override
   Widget build(BuildContext context) {
     final appViewModel = Provider.of<AppViewModel>(context);
+    print("upppppppppdaaaa0 ${appViewModel.settings.sphereActualizingMode}");
+    print("upppppppppdaaaa01 ${appViewModel.settings.sphereActualizingMode==0}");
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
       body: SafeArea(
@@ -53,15 +55,17 @@ class MainSettingsState extends State<MainSettings>{
               const SizedBox(height: 8,),
               const Center(child: Text("при нажатии кнопки 'Представить' при входе в экран редакции сферы при актуализации наследованных задач из последней ранее актуальной карты", style: TextStyle(fontSize: 14, color: AppColors.greytextColor),),),
               const SizedBox(height: 10,),
-              buildSettingItem("Автоматическая", "при актуализации вышестоящего 'Я'", appViewModel.settings.sphereActualizingMode==0, (changed){setState(() {
+              buildSettingItem("Автоматическая", "при актуализации вышестоящего 'Я'", appViewModel.settings.sphereActualizingMode==0, (changed){
                 appViewModel.settings.sphereActualizingMode=0;
                 appViewModel.saveSettings();
-              });}),
+                setState(() {});
+              }),
               const Center(child: Text("или")),
-              buildSettingItem("Автоматическая", "при актуализации нижестоящего желания", appViewModel.settings.sphereActualizingMode==1, (changed){setState(() {
+              buildSettingItem("Автоматическая", "при актуализации нижестоящего желания", appViewModel.settings.sphereActualizingMode==1, (changed){
                 appViewModel.settings.sphereActualizingMode=1;
                 appViewModel.saveSettings();
-              });}),
+                setState(() {});
+              }),
               const SizedBox(height: 10),
               buildSettingItem("Быстая", "двойным нажатием по лейблу сферы", appViewModel.settings.fastActSphere, (changed){appViewModel.settings.fastActSphere=changed;appViewModel.saveSettings();}),
               const SizedBox(height: 5,),

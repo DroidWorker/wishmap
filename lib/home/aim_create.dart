@@ -217,6 +217,7 @@ class AimScreen extends StatelessWidget {
   }
   Future<void> onSaveClicked(AppViewModel appViewModel, BuildContext maincontext) async {
     if(text.text.isEmpty||description.text.isEmpty){
+      aimCreateClicked=false;
       showDialog(context: maincontext,
         builder: (BuildContext context) => AlertDialog(
           title: const Text('Необходимо заполнить все поля со знаком *', textAlign: TextAlign.center,),

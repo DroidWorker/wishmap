@@ -46,6 +46,11 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
         List<int> intList = ids.map((str) => int.parse(str)).toList();
         appViewModel.getImages(intList);
       }
+      if(appViewModel.cachedImages.length!=curWd.photosIds.length){
+        appViewModel.isChanged=true;
+      }else {
+        appViewModel.isChanged=false;
+      }
     }
     TextEditingController text = TextEditingController(text: curWd.text);
     TextEditingController affirmation = TextEditingController(text: curWd.affirmation.split("|")[0]);
@@ -125,23 +130,71 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
                         ),
                       ),
                       onPressed: () async {
-                        await appViewModel.updateSphereWish(WishData(id: curWd.id, prevId: curWd.prevId, nextId: curWd.nextId, parentId: curWd.parenId, text: curWd.text, description: curWd.subText, affirmation: curWd.affirmation, color: curWd.color));
-                        if(appViewModel.mainScreenState!=null) await appViewModel.startMainScreen(appViewModel.mainScreenState!.moon);
-                        appViewModel.hint="Отлично! Теперь пришло время заполнить все сферы жизни. Ты можешь настроить состав и название сфер так, как считаешь нужным. И помни, что максимальное количество сфер ограничено и равно 1.";
-                        appViewModel.isChanged = false;
-                        showDialog(context: context,
-                        builder: (BuildContext context) => AlertDialog(
-                          title: const Text('Сохранено'),
-                          shape: const RoundedRectangleBorder(
-                              borderRadius: BorderRadius.all(Radius.circular(32.0))),
-                          actions: <Widget>[
-                            TextButton(
-                              onPressed: () => Navigator.pop(context, 'OK'),
-                              child: const Text('OK'),
+                        if(appViewModel.isChanged){
+                          showDialog(context: context,
+                            builder: (BuildContext c) => AlertDialog(
+                              contentPadding: EdgeInsets.zero,
+                              shape: const RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.all(Radius.circular(32.0))),
+                              title: const Text('Внимание', textAlign: TextAlign.center,),
+                              content: const Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text("Вы изменили поля но не нажали 'Сохранить'", maxLines: 6, textAlign: TextAlign.center,),
+                                  SizedBox(height: 4,),
+                                  Divider(color: AppColors.dividerGreyColor,),
+                                  SizedBox(height: 4,),
+                                  Text("Сохранить изменения?", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),)
+                                ],
+                              ),
+                              actions: <Widget>[
+                                TextButton(
+                                  onPressed: () async { Navigator.pop(c, 'OK');
+                                  onSaveClicked(appVM);
+                                  },
+                                  child: const Text('Да'),
+                                ),
+                                TextButton(
+                                  onPressed: () { Navigator.pop(context, 'Cancel');
+                                  BlocProvider.of<NavigationBloc>(context)
+                                      .add(NavigateToMainScreenEvent());},
+                                  child: const Text('Нет'),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                        );
+                          );}else {
+                          await appViewModel.updateSphereWish(WishData(
+                              id: curWd.id,
+                              prevId: curWd.prevId,
+                              nextId: curWd.nextId,
+                              parentId: curWd.parenId,
+                              text: curWd.text,
+                              description: curWd.subText,
+                              affirmation: curWd.affirmation,
+                              color: curWd.color));
+                          if (appViewModel.mainScreenState !=
+                              null) await appViewModel.startMainScreen(
+                              appViewModel.mainScreenState!.moon);
+                          appViewModel.hint =
+                          "Отлично! Теперь пришло время заполнить все сферы жизни. Ты можешь настроить состав и название сфер так, как считаешь нужным. И помни, что максимальное количество сфер ограничено и равно 1.";
+                          appViewModel.isChanged = false;
+                          showDialog(context: context,
+                            builder: (BuildContext context) =>
+                                AlertDialog(
+                                  title: const Text('Сохранено'),
+                                  shape: const RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.all(
+                                          Radius.circular(32.0))),
+                                  actions: <Widget>[
+                                    TextButton(
+                                      onPressed: () =>
+                                          Navigator.pop(context, 'OK'),
+                                      child: const Text('OK'),
+                                    ),
+                                  ],
+                                ),
+                          );
+                        }
                       },
                       child: const Text("Cохранить",
                         style: TextStyle(color: AppColors.blueTextColor),)
@@ -158,6 +211,7 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
                           appViewModel.activateSphereWish(curWd.id, true);
                           if(appVM.mainScreenState!=null)appViewModel.startMainScreen(appVM.mainScreenState!.moon);
                           curWd.isActive = true;
+                          appVM.mainCircles.firstOrNull?.isActive=true;
                         });
                       },
                       child: const Text("Осознать",
@@ -302,7 +356,6 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
                     ),
                     onPressed: (){
                       if(curWd.isActive) {
-                        appViewModel.isChanged = true;
                         appViewModel.photoUrls.clear();
                         BlocProvider.of<NavigationBloc>(context)
                             .add(NavigateToGalleryScreenEvent());
@@ -330,10 +383,17 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
                       )
                     ],),
                       onTap: () {
+                        final shotColor = circleColor.value;
                         if(curWd.isActive){showDialog(
                           context: context,
                           builder: (context) {
-                            return ColorPickerWidget(initColor: circleColor ,onColorSelected: (Color c){setState(() {curWd.color=c; circleColor = c;appViewModel.isChanged=true;});});
+                            return ColorPickerWidget(initColor: circleColor ,onColorSelected: (Color c){
+                              setState(() {
+                                if(shotColor!=c.value)appViewModel.isChanged=true;
+                                curWd.color=c;
+                                circleColor = c;
+                              });
+                            });
                           },
                         );}else{
                           showUneditable();

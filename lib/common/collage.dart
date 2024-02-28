@@ -1,4 +1,3 @@
-import 'dart:ffi';
 import 'dart:typed_data';
 
 import 'package:capped_progress_indicator/capped_progress_indicator.dart';
@@ -98,7 +97,7 @@ Widget buildTripleReverce(double leftwidth, double rightwidth, Map<Uint8List, in
     children: [
       Column(children: [
         InkWell(
-          onTap: (){if(onTap!=null)onTap(images.values.toList()[0]!);},
+          onTap: (){if(onTap!=null)onTap(images.values.toList()[1]!);},
           child: Container(width: rightwidth, height: leftwidth/2-2, color: AppColors.fieldFillColor,
             child: isinLoading? const Align(alignment: Alignment.bottomCenter,
               child: LinearCappedProgressIndicator(
@@ -110,7 +109,7 @@ Widget buildTripleReverce(double leftwidth, double rightwidth, Map<Uint8List, in
         ),
         const SizedBox(height: 2),
         InkWell(
-          onTap: (){if(onTap!=null)onTap(images.values.toList()[1]!);},
+          onTap: (){if(onTap!=null)onTap(images.values.toList()[2]!);},
           child: Container(width: rightwidth, height: leftwidth/2-1, color: AppColors.fieldFillColor,
             child: isinLoading? const Align(alignment: Alignment.bottomCenter,
               child: LinearCappedProgressIndicator(
@@ -123,7 +122,7 @@ Widget buildTripleReverce(double leftwidth, double rightwidth, Map<Uint8List, in
       ],),
       const SizedBox(width: 2),
       InkWell(
-        onTap: (){if(onTap!=null)onTap(images.values.toList()[2]!);},
+        onTap: (){if(onTap!=null)onTap(images.values.toList()[0]!);},
         child: Container(width: leftwidth, height: leftwidth, color: AppColors.fieldFillColor,
           child: isinLoading? const Align(alignment: Alignment.bottomCenter,
             child: LinearCappedProgressIndicator(

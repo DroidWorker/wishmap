@@ -19,7 +19,7 @@ class CircleWidget extends StatefulWidget {
   final Function(double) onRotate;
   final Function(DragEndDetails) onEndRotate;
   final Function(int id, int itemId) startMoving;
-  final Function(int id) doubleTap;
+  final Function(int id, int parentId) doubleTap;
 
   CircleWidget({Key? key,required this.itemId, required this.circle, required this.size, required this.center, required this.onRotate, required this.onEndRotate, required this.startMoving, required this.doubleTap}) : super(key: key);
 
@@ -37,7 +37,7 @@ class _CircleWidgetState extends State<CircleWidget>{
         widget.startMoving(widget.circle.id, widget.itemId);
       },
       onDoubleTap: (){
-        widget.doubleTap(widget.circle.id);
+        widget.doubleTap(widget.circle.id, widget.circle.parentId);
       },
       onPanStart: (details) {
         final centerX = widget.center.key;
@@ -195,12 +195,15 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
           if(widget.circles.length>plusId+1){
             //если количество свер на окружности больше чем количество плюсов и это не последняя  сфера в базе
             //(если сфера вставляется не последней)
+            /*prevId = widget.circles[plusId].id;
+            nextId = widget.circles[plusId+1].id;*/
             prevId = widget.circles[plusId].id;
-            nextId = widget.circles[plusId+1].id;
+            final nextIndex = vm?.mainScreenState?.allCircles.indexWhere((element) => element.id == widget.circles[plusId].id)??-1;
+            nextId = (nextIndex!=-1)? vm?.mainScreenState?.allCircles[nextIndex+1].id??-1: -1;
             //..circleid = (widget.circles[plusId+1].id-widget.circles[plusId].id)~/2+widget.circles[plusId].id;
           }else if(widget.circles.length==plusId+1){
             //если сера вставляется в конец(что = вставке в начало)
-            prevId = widget.circles[plusId].id;
+            prevId = vm?.mainScreenState?.allCircles.where((element) => element.id == widget.circles[plusId].id).firstOrNull?.id??-1;
             nextId = -1;
             //circleid = ((((widget.circles[plusId].id+10000)~/10000)*10000)-widget.circles[plusId].id)~/2+widget.circles[plusId].id;
           }else{
@@ -213,7 +216,7 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
         if(widget.circles.isNotEmpty)plusId++;
         vm?.cachedImages.clear();
         vm?.createNewSphereWish(WishData(id: circleid, prevId: prevId, nextId: nextId, parentId: centralCircles.last.id, text: "Новое желание", description: "", affirmation: (defaultAffirmations.join("|").toString()), color: Colors.red), true);
-        widget.circles.insert(plusId, Circle(id: circleid, prevId: prevId, nextId: nextId, text: "Новое желание", color: Colors.red, radius: (widget.size*0.2).toInt(), isChecked: false));
+        widget.circles.insert(plusId, Circle(id: circleid, parentId: centralCircles.last.id, prevId: prevId, nextId: nextId, text: "Новое желание", color: Colors.red, radius: (widget.size*0.2).toInt(), isChecked: false));
         plusId=-1;
         circlePositions.clear();
         circleRotations.clear();
@@ -646,17 +649,26 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
                                         .forward();
                                     allowClick=false;
                                   },
-                                  doubleTap: (id){
+                                  doubleTap: (id, parentId){
                                     if(!entry.value.isActive){
                                       if(id==0){
-                                        appViewModel.settings.fastActMainSphere?appViewModel.activateSphereWish(id, true):
-                                            appViewModel.hint="Режим быстрой актуализации отключен в настройках";
-                                      }else if(id<900){
-                                        appViewModel.settings.fastActSphere?appViewModel.activateSphereWish(id, true):
-                                          appViewModel.hint="Режим быстрой актуализации отключен в настройках";
-                                      }else if(id>800){
-                                        appViewModel.settings.fastActWish?appViewModel.activateSphereWish(id, true):
-                                          appViewModel.hint="Режим быстрой актуализации отключен в настройках";
+                                        if(appViewModel.settings.fastActMainSphere){
+                                          appViewModel.activateSphereWish(id, true);
+                                          widget.circles.where((element) => element.id==id).firstOrNull?.isActive=true;
+                                          setState(() { });
+                                        }else appViewModel.addError("Режим быстрой актуализации отключен в настройках");
+                                      }else if(parentId==0){
+                                        if(appViewModel.settings.fastActSphere){
+                                          appViewModel.activateSphereWish(id, true);
+                                          widget.circles.where((element) => element.id==id).firstOrNull?.isActive=true;
+                                          setState(() { });
+                                        }else appViewModel.addError("Режим быстрой актуализации отключен в настройках");
+                                      }else if(parentId!=0){
+                                       if(appViewModel.settings.fastActWish){
+                                         appViewModel.activateSphereWish(id, true);
+                                         widget.circles.where((element) => element.id==id).firstOrNull?.isActive=true;
+                                         setState(() { });
+                                       }else appViewModel.addError("Режим быстрой актуализации отключен в настройках");
                                       }
                                     }else{
                                       appViewModel.cachedImages.clear();
@@ -708,6 +720,15 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
                                   ],),
                                 )
                         ),
+                        onDoubleTap: (){
+                          if(allowClick&&centralCircles[index].id == 0&&centralCircles[index].isActive==false){
+                            if(appViewModel.settings.fastActMainSphere){
+                              appViewModel.activateSphereWish(0, true);
+                              centralCircles.firstOrNull?.isActive=true;
+                              setState(() { });
+                            }else appViewModel.addError("Режим быстрой актуализации отключен в настройках");
+                          }
+                        },
                         onTap: () {
                           if(allowClick) {
                             if (centralCircles.length - 1 != index) {

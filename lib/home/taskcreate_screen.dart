@@ -165,6 +165,7 @@ class TaskScreenState extends State<TaskScreen>{
 
   Future<void> onSaveClicked(AppViewModel appViewModel) async {
     if (text.text.isEmpty) {
+      taskCreateClicked=false;
       showDialog(context: context,
         builder: (BuildContext context) =>
             AlertDialog(

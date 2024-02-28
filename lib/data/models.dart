@@ -82,8 +82,9 @@ class CircleData{
 
 class Circle {
   final int id;
+  final int parentId;
   String text;
-  final Color color;
+  Color color;
   int radius;
   bool isActive;
   bool isChecked;
@@ -92,7 +93,7 @@ class Circle {
   int prevId;
   int nextId;
 
-  Circle({required this.id, required this.prevId, required this.nextId, required this.text, required this.color, this.radius=80, this.isActive = true, this.isChecked = true});
+  Circle({required this.id, required this.parentId, required this.prevId, required this.nextId, required this.text, required this.color, this.radius=80, this.isActive = true, this.isChecked = true});
 }
 
 class MainCircle {
@@ -248,7 +249,7 @@ List<MyTreeNode> convertListToMyTreeNodes(List<WishItem> dataList) {
   var idsList = dataList.map((e) => e.id).toList();
   idsList.forEach((element) {
     final wi = dataList.firstWhere((e) => e.id==element);
-    roots.add(MyTreeNode(id: wi.id, type: 'w', title: wi.text, isChecked: wi.isChecked, children: getChildren(dataList, element), isHidden: wi.isHidden));
+    roots.add(MyTreeNode(id: wi.id, type: 'w', title: wi.text, isChecked: wi.isChecked, isActive: wi.isActive, children: getChildren(dataList, element), isHidden: wi.isHidden));
   });
   List<int> rootsIds = [];
   List<MyTreeNode> finalroots = List.from(roots);
@@ -326,21 +327,28 @@ List<CircleData> sortList(List<CircleData> inputList) {
   List<CircleData> rootElements = inputList.where((circleData) => circleData.prevId == -1).toList();
 
   // Рекурсивно строим отсортированный список
-  void buildSortedList(CircleData parent) {
-    sortedList.add(parent);
+  void buildSortedList(int parentId) {
+    if (circleDataMap.containsKey(parentId)) {
+      CircleData parent = circleDataMap[parentId]!;
+      sortedList.add(parent);
 
-    // Проверяем nextId и рекурсивно вызываем для следующего элемента
-    if (parent.nextId != -1) {
-      buildSortedList(circleDataMap[parent.nextId]!);
+      // Проверяем nextId и рекурсивно вызываем для следующего элемента
+      if (parent.nextId != -1) {
+        buildSortedList(parent.nextId);
+      }
     }
   }
 
   // Для каждого корневого элемента вызываем построение отсортированного списка
   rootElements.forEach((root) {
-    buildSortedList(root);
+    buildSortedList(root.id);
   });
+
   sortedList.forEach((element) {
     print("element ${element.id}  ${element.text}");
   });
+  print("aaaaaaaaaaaaaaaaaaa${inputList.length}      ${sortedList.length}" );
+
   return sortedList;
 }
+

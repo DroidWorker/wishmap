@@ -4,9 +4,7 @@ import 'dart:typed_data';
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_fancy_tree_view/flutter_fancy_tree_view.dart';
 import 'package:wishmap/data/static_affirmations_women.dart';
-import 'package:wishmap/main.dart';
 import 'package:wishmap/repository/Repository.dart';
 import 'package:wishmap/repository/photosSearch.dart';
 import 'package:wishmap/repository/local_repository.dart';
@@ -186,9 +184,9 @@ class AppViewModel with ChangeNotifier {
         if((result!=ConnectivityResult.none)){
           //await localRep.clearMoons();
           final localMoons = await localRep.getMoons();
-          moonItems.forEach((element) {
+          for (var element in moonItems) {
             if(localMoons.where((e) => e.id==element.id).isEmpty)localRep.addMoon(element);
-          });
+          }
         }
       }
       if(moonItems.isEmpty/*||isDateAfter(now, moonItems.last.date)*/) {
@@ -265,16 +263,21 @@ class AppViewModel with ChangeNotifier {
         await repository.addMoon(moonItems.last, defaultCircles);
         await localRep.addAllMoons(moonItems.last, defaultCircles);
       }else{
-        List<CircleData> moonCircles = (await repository.getSpheres(moonId-1))??[];
-        if(moonCircles.isNotEmpty){
-          for (int i=0; i<moonCircles.length; i++){
-            moonCircles[i].isActive = false;
+        try {
+          List<CircleData> moonCircles = (await repository.getSpheres(
+              moonId - 1)) ?? [];
+          if (moonCircles.isNotEmpty) {
+            for (int i = 0; i < moonCircles.length; i++) {
+              moonCircles[i].isActive = false;
+            }
+            await repository.addMoon(moonItems.last, moonCircles);
+            await localRep.addAllMoons(moonItems.last, moonCircles);
+          } else {
+            await repository.addMoon(moonItems.last, defaultCircles);
+            await localRep.addAllMoons(moonItems.last, defaultCircles);
           }
-          await repository.addMoon(moonItems.last, moonCircles);
-          await localRep.addAllMoons(moonItems.last, moonCircles);
-        }else{
-          await repository.addMoon(moonItems.last, defaultCircles);
-          await localRep.addAllMoons(moonItems.last, defaultCircles);
+        }catch(ex, s){
+          print("shot errrrrrrrr $ex --- $s");
         }
       }
     }else{
@@ -293,12 +296,16 @@ class AppViewModel with ChangeNotifier {
         }
       }
     }
-    final aims = await localRep.getAllAimsData(moonId-1);
+    List<AimData> aims = await localRep.getAllAimsData(moonId-1);
+    if(aims.isEmpty) aims = await repository.getMyAimsData(moonId-1)?? [];
     aims.forEach((element) async {
+      element.isActive=false;
       await localRep.addAim(element,moonId);
     });
-    final tasks = await localRep.getAllTasksData(moonId-1);
+    List<TaskData> tasks = await localRep.getAllTasksData(moonId-1);
+    if(tasks.isEmpty) tasks = await repository.getMyTasksData(moonId-1)?? [];
     tasks.forEach((element) async {
+      element.isActive=false;
       await localRep.addTask(element,moonId);
     });
     final diary = await localRep.getAllDiary(moonId-1);
@@ -325,9 +332,9 @@ class AppViewModel with ChangeNotifier {
 
   Future fetchMoons() async{
     final moons = (await repository.getMoonList())??[];
-    moons.forEach((value) {
+    for (var value in moons) {
       localRep.addMoon(value);
-    });
+    }
   }
 
   Future fetchImages() async{
@@ -447,9 +454,9 @@ class AppViewModel with ChangeNotifier {
         mainCircles.add(MainCircle(id: ms.id, coords: Pair(key: 0.0, value: 0.0), text: ms.text, substring: ms.subText, color: ms.color, isActive: ms.isActive, isChecked: ms.isChecked));
         var cc = mainScreenState!.allCircles.where((element) => element.parenId == mainCircles.last.id).toList();
         currentCircles.clear();
-        cc.forEach((element) {
-          if(!element.isHidden)currentCircles.add(Circle(id: element.id, prevId: element.prevId, nextId: element.nextId, text: element.text, color: element.color, isActive: element.isActive, isChecked: element.isChecked));
-        });
+        for (var element in cc) {
+          if(!element.isHidden)currentCircles.add(Circle(id: element.id, parentId: element.parenId, prevId: element.prevId, nextId: element.nextId, text: element.text, color: element.color, isActive: element.isActive, isChecked: element.isChecked));
+        }
         isinLoading=false;
         notifyListeners();
       } catch (ex, s) {
@@ -464,9 +471,9 @@ class AppViewModel with ChangeNotifier {
         mainCircles.add(MainCircle(id: ms.id, coords: Pair(key: 0.0, value: 0.0), text: ms.text, substring: ms.subText, color: ms.color, isActive: ms.isActive, isChecked: ms.isChecked));
         var cc = mainScreenState!.allCircles.where((element) => element.parenId == mainCircles.last.id).toList();
         currentCircles.clear();
-        cc.forEach((element) {
-          if(!element.isHidden)currentCircles.add(Circle(id: element.id, prevId: element.prevId, nextId: element.nextId, text: element.text, color: element.color, isActive: element.isActive, isChecked: element.isChecked));
-        });
+        for (var element in cc) {
+          if(!element.isHidden)currentCircles.add(Circle(id: element.id, parentId: element.parenId, prevId: element.prevId, nextId: element.nextId, text: element.text, color: element.color, isActive: element.isActive, isChecked: element.isChecked));
+        }
         isinLoading=false;
         notifyListeners();
       } catch (ex) {
@@ -486,9 +493,9 @@ class AppViewModel with ChangeNotifier {
         id>mainCircles.last.id?mainCircles.add(MainCircle(id: mc.id, coords: Pair(key: 0.0, value: 0.0), text: mc.text, color: mc.color, isActive: mc.isActive, isChecked: mc.isChecked)):mainCircles.removeLast();
         var cc = mainScreenState!.allCircles.where((element) => element.parenId == id).toList();
         currentCircles.clear();
-        cc.forEach((element) {
-          if(!element.isHidden)currentCircles.add(Circle(id: element.id, prevId: element.prevId, nextId: element.nextId, text: element.text, color: element.color, isActive: element.isActive, isChecked: element.isChecked));
-        });
+        for (var element in cc) {
+          if(!element.isHidden)currentCircles.add(Circle(id: element.id, parentId: element.parenId, prevId: element.prevId, nextId: element.nextId, text: element.text, color: element.color, isActive: element.isActive, isChecked: element.isChecked));
+        }
       } catch (ex) {
         addError("#5734${ex.toString()}");
       }
@@ -650,6 +657,7 @@ class AppViewModel with ChangeNotifier {
       if(sphereInAllCircles==-1){
         mainScreenState!.allCircles.add(CircleData(id: wd.id, prevId: wd.prevId, nextId: wd.nextId, text: wd.text, color: wd.color, parenId: wd.parentId)..shuffle=wd.shuffle..lastShuffle=wd.lastShuffle);
         mainScreenState!.allCircles = sortList(mainScreenState!.allCircles);
+
         //mainScreenState!.allCircles.sort((a,b)=>a.id.compareTo(b.id));
         if(wd.id > 800)wishItems.add(WishItem(id: wd.id, text: wd.text, isChecked: wd.isChecked, isActive: wd.isActive, isHidden: wd.isHidden));
       }
@@ -660,7 +668,7 @@ class AppViewModel with ChangeNotifier {
         ..isActive = true;
         if(mainCircles.last.id==wd.id) mainCircles.last..color=wd.color..text=wd.text..isActive=true;
       }
-      currentCircles.where((element) => element.id==wd.id).firstOrNull?.text=wd.text;
+      currentCircles.where((element) => element.id==wd.id).firstOrNull?..text=wd.text..color=wd.color;
       var sphereInWishesList = wishItems.indexWhere((element) => element.id==wd.id);
       if(sphereInWishesList>=0){
         wishItems[sphereInWishesList]=WishItem(id: wd.id, text: wd.text, isChecked: wd.isChecked,isActive: wd.isActive, isHidden: wd.isHidden);
@@ -720,7 +728,7 @@ class AppViewModel with ChangeNotifier {
             await activateSphereWish(eid, true);
           });
         }
-      }else if(id<900){
+      }else if(id<=800){
 
       }else{
         if(settings.sphereActualizingMode==1){
@@ -738,10 +746,13 @@ class AppViewModel with ChangeNotifier {
         //actualize child aims
         List<int> childAims = await localRep.getSpheresChildAims(id, mainScreenState?.moon.id??0);
         List<int> childTasks = [];
-        childAims.forEach((eid) async {
+        for (var eid in childAims) {
           activateAim(eid, true);
-          if(settings.taskActualizingMode==0)childTasks.addAll(await localRep.getAimsChildTasks(eid, mainScreenState?.moon.id??0));
-        });
+          if(settings.taskActualizingMode==0) {
+            final ts = await localRep.getAimsChildTasks(eid, mainScreenState?.moon.id??0);
+            childTasks.addAll(ts);
+          }
+        }
         //actualize childTasks
         for (var eid in childTasks) {
           activateTask(eid, true);
@@ -785,19 +796,23 @@ class AppViewModel with ChangeNotifier {
       }
       if(connectivity != 'No Internet Connection')await repository.hideWish(id, mainScreenState!.moon.id, isHide);
       await localRep.hideSphere(id, isHide, mainScreenState!.moon.id);
-      toggleHidden(myNodes.first, 'w', id, isHide);
+      print("aaaaaaaaaaaaaaaaf${mainScreenState==null}");
+      try{if(myNodes.isNotEmpty)toggleHidden(myNodes.first, 'w', id, isHide);}catch(ex, c){print("eeeeeeeeeeeexxxxxxxxxxxxxxxxxx$c");}
+      print("aaaaaaaaaaaaaaaaf0");
       if(mainScreenState!=null){
         final i = mainScreenState!.allCircles.indexWhere((element) => element.id==id);
+        print("aaaaaaaaaaaaaaaaf1  ${i}");
         if(i>=0)mainScreenState!.allCircles[i].isHidden=isHide;
       }
       if(wishItems.isNotEmpty){
         final i = wishItems.indexWhere((element) => element.id == id);
+        print("aaaaaaaaaaaaaaaaf1  ${i}");
         if(i>=0)wishItems[i].isHidden = isHide;
       }
       updateMoonSync(mainScreenState?.moon.id??0);
       notifyListeners();
     }catch(ex){
-      addError("сфера не была актуализирована 007: $ex");
+      addError("состояние не изменено 007: $ex");
     }
   }
   Future<void> deleteSphereWish(int id, int prevId, int nextId) async{
@@ -942,7 +957,11 @@ class AppViewModel with ChangeNotifier {
       if(result == ConnectivityResult.none)  connectivity = 'No Internet Connection';
       if(mainScreenState!=null) {
         /*currentAim = isDataFetched!=0?await repository.getMyAim(id, mainScreenState!.moon.id):*/
-        currentAim = await localRep.getAim(id,mainScreenState?.moon.id??0);
+        try {
+          currentAim = await localRep.getAim(id, mainScreenState?.moon.id ?? 0);
+        }catch(ex, s){
+          print("exxxxxxxxxxxxxxxxxxxxxxxxx $ex --- $s");
+        }
         notifyListeners();
       } else {
         throw Exception("#2365 lost datas");
@@ -1210,7 +1229,7 @@ class AppViewModel with ChangeNotifier {
     }
     final Map<int, int> mchildNodesIds = {};
     final List<MyTreeNode> mchildNodes = [];
-    fullBranch.forEach((e) {
+    for (var e in fullBranch) {
       MyTreeNode? loclRoot;
       addChildTasksAims=true;
       for (var melement in e) {
@@ -1230,11 +1249,11 @@ class AppViewModel with ChangeNotifier {
         mchildNodes.add(loclRoot);
         mchildNodesIds[mchildNodes.indexOf(mchildNodes.last)]=(e.last.parenId);
       }
-    });
+    }
     if(commonPart.isEmpty){
       root = mchildNodes.first;
     }else {
-      commonPart.forEach((melement) {
+      for (var melement in commonPart) {
         final List<MyTreeNode> childNodes = [];
         if (addChildTasksAims) {
           final chilldAims = aimItems.where((element) =>
@@ -1265,7 +1284,7 @@ class AppViewModel with ChangeNotifier {
             children: childNodes)
           ..noClickable = melement.id == wishId ? true : false;
         if (melement.id == wishId) addChildTasksAims = false;
-      });
+      }
     }
 
     if(root!=null) {
@@ -1322,9 +1341,9 @@ class AppViewModel with ChangeNotifier {
     if(mainScreenState==null||wishId==-1)return List.empty();
     List<int> targetIds = getDeepChild(wishId);
     List<List<CircleData>> result = [];
-    targetIds.forEach((element) {
+    for (var element in targetIds) {
       result.add(getParentTree(element));
-    });
+    }
     return result;
   }
 
@@ -1332,9 +1351,9 @@ class AppViewModel with ChangeNotifier {
     List<int> result = [];
     final childId = mainScreenState!.allCircles.where((element) => element.parenId==id).toList();
     if(childId.isNotEmpty){
-      childId.forEach((element) {
+      for (var element in childId) {
         result.addAll(getDeepChild(element.id));
-    });
+    }
     }else {
       result.add(id);
     }

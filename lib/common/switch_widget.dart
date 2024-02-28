@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 
 import '../res/colors.dart';
 
-class MySwitch extends StatefulWidget {
+  class MySwitch extends StatefulWidget {
   bool value = false;
   Function(bool state) onChanged;
   MySwitch({super.key, required this.onChanged, this.value = false});
@@ -17,6 +17,14 @@ class _MyCustomSwitchState extends State<MySwitch> {
   void initState() {
     switchValue = widget.value;
     super.initState();
+  }
+
+  @override
+  void didUpdateWidget(MySwitch oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.value != widget.value) {
+      switchValue = widget.value;
+    }
   }
 
   @override

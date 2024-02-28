@@ -34,13 +34,32 @@ class _RoundedPhotoGalleryState extends State<RoundedPhotoGallery> {
   }
 
   Future<void> _loadImages() async {
-      final albums = await PhotoManager.getAssetPathList(type: RequestType.image);
+    final albums = await PhotoManager.getAssetPathList(type: RequestType.image);
+
+    AssetPathEntity? cameraAlbum;
+
+    // Поиск альбома камеры
+    for (var album in albums) {
+      if (album.name.toLowerCase() == "all"||album.name.toLowerCase() == "все") {
+        cameraAlbum = album;
+        break;
+      }
+    }
+
+    if (cameraAlbum != null) {
+      final assets = await cameraAlbum.getAssetListRange(start: 0, end: 100); // Загрузка первых 100 изображений
+      setState(() {
+        _images = assets;
+      });
+    }
+    else{
       if (albums.isNotEmpty) {
         final assets = await albums[0].getAssetListRange(start: 0, end: 100); // Загрузка первых 100 изображений
         setState(() {
           _images = assets;
         });
       }
+    }
   }
 
   Widget build(BuildContext context) {

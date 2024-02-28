@@ -35,6 +35,7 @@ class _AimsScreenState extends State<AimsScreen>{
           allAims = appVM.aimItems;
           page==1?filteredAimList = allAims.where((element) => element.isChecked).toList():
           page==2?filteredAimList = allAims.where((element) => !element.isChecked).toList():filteredAimList = allAims;
+          page==3?filteredAimList = allAims.where((element) => element.isActive).toList():filteredAimList = allAims;
           isPBActive=appVM.isinLoading;
           return Scaffold(
             backgroundColor: AppColors.backgroundColor,

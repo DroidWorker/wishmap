@@ -73,7 +73,7 @@ class _MyOverlayState extends State<MyAffirmationOverlay> {
       currentAffirmation=widget.affirmations.first;
       if(!widget.isShuffle)currentIndex = 0;
     }
-    if(currentEditIndex!=-1)controller.text=widget.affirmations[currentEditIndex];
+    if(currentEditIndex!=-1&&currentEditIndex<widget.affirmations.length)controller.text=widget.affirmations[currentEditIndex];
     return Positioned.fill(
       child: Material(
           color: AppColors.backgroundColor,
@@ -127,6 +127,8 @@ class _MyOverlayState extends State<MyAffirmationOverlay> {
                         setState(() {
                           widget.affirmations.removeWhere((element) => element==currentAffirmation);
                           currentAffirmation="";
+                          currentEditIndex=-1;
+                          currentIndex=-1;
                         });
                       },
                       child: const Text("Удалить", style: TextStyle(color: AppColors.blueTextColor))

@@ -139,7 +139,7 @@ class LocalRepository{
   Future addAllMoons(MoonItem mi, List<CircleData> childCircles) async{
       await dbHelper.insertMoon(mi);
       childCircles.forEach((element) async {
-        await dbHelper.insertSphere(WishData(id: element.id, prevId: element.prevId, nextId: element.nextId, parentId: element.parenId, text: element.text, description: element.subText, affirmation: element.affirmation, color: element.color)..isActive=element.isActive, mi.id);
+        await dbHelper.insertSphere(WishData(id: element.id, prevId: element.prevId, nextId: element.nextId, parentId: element.parenId, text: element.text, description: element.subText, affirmation: element.affirmation, color: element.color)..isActive=element.isActive..isChecked=element.isChecked..isHidden=element.isHidden, mi.id);
       });
   }
   Future<List<MoonItem>> getMoons() async{
@@ -162,7 +162,7 @@ class LocalRepository{
   }
   Future<List<WishItem>> getAllSpheres(int moonId) async {
     final result = await dbHelper.getAllSpheres(moonId);
-    List<WishItem> list =  result.map((e) => WishItem(id: e['id'], parentId: e['parentId'], text: e['text'], isChecked: e['isChecked']=="1"?true:false, isActive: e['isActive']=='1'?true:false, isHidden: e['isHidden']==1?true:false)).toList();
+    List<WishItem> list =  result.map((e) => WishItem(id: e['id'], parentId: e['parentId'], text: e['text'], isChecked: e['isChecked']=="1"?true:false, isActive: e['isActive'].toString()=="1"?true:false, isHidden: e['isHidden']==1?true:false)).toList();
     return list.where((element) => element.parentId>1).toList();
   }
   Future<List<CircleData>> getAllMoonSpheres(int moonId) async {
@@ -224,13 +224,13 @@ class LocalRepository{
   }
   Future<List<int>> getAimsChildTasks(int id, int moonId) async {
     final result = await dbHelper.getAim(id, moonId);
+    print("result aim - ${result['childTasks']}");
     return (result['childTasks']!=null&&result["childTasks"].toString()!="")?result['childTasks'].toString().split("|").map((e) => int.parse(e)).toList():[];
   }
   Future<int> addAim(AimData ad, int moonId) async{
     final aims = await getAllAims(moonId);
-    await dbHelper.insertAim(AimData(id: ad.id==-1?(aims.length>0?aims[aims.length-1].id:-1)+1:ad.id, parentId: ad.parentId, text: ad.text, description: ad.description)..childTasks = ad.childTasks, moonId);
+    await dbHelper.insertAim(AimData(id: ad.id==-1?(aims.length>0?aims[aims.length-1].id:-1)+1:ad.id, parentId: ad.parentId, text: ad.text, description: ad.description, isChecked: ad.isChecked, isActive: ad.isActive)..childTasks = ad.childTasks, moonId);
     int retId = ad.id==-1?(aims.length>0?aims[aims.length-1].id:-1)+1:ad.id;
-    print('ffffffffffffffffff${retId}     yy${ad.id}');
     return retId;
   }
   Future deleteAim(int aimId, int moonId) async{
@@ -265,7 +265,7 @@ class LocalRepository{
   }
   Future addTask(TaskData td, int moonId) async{
     final tasks = await getAllTasks(moonId);
-    await dbHelper.insertTask(TaskData(id: td.id==-1?(tasks.lastOrNull?.id??-1)+1:td.id, parentId: td.parentId, text: td.text, description: td.description), moonId);
+    await dbHelper.insertTask(TaskData(id: td.id==-1?(tasks.lastOrNull?.id??-1)+1:td.id, parentId: td.parentId, text: td.text, description: td.description, isChecked: td.isChecked, isActive: td.isActive), moonId);
     return td.id==-1?tasks.lastOrNull?.id??0:td.id;
   }
   Future deleteTask(int taskId, int moonId) async{
