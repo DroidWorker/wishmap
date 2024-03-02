@@ -25,6 +25,7 @@ class AimEditScreenState extends State<AimEditScreen>{
   AimData? ai;
   var isChanged = false;
   var isParentChecked = false;
+  var isParentActive = false;
 
   bool isTextSetted = false;
 
@@ -35,9 +36,11 @@ class AimEditScreenState extends State<AimEditScreen>{
     return Consumer<AppViewModel>(
         builder: (context, appVM, child) {
           if(ai==null||ai!.id==-1)ai = appVM.currentAim??AimData(id: -1, parentId: -1, text: 'объект не найден', description: "", isChecked: false);
-          if(roots.isEmpty&&ai!=null&&ai!.id!=-1)appVM.convertToMyTreeNode(CircleData(id: ai!.id, prevId: -1, nextId: -1, text: ai!.text, color: Colors.transparent, parenId: ai!.parentId, isChecked: ai!.isChecked));
+          if(roots.isEmpty&&ai!=null&&ai!.id!=-1)appVM.convertToMyTreeNode(CircleData(id: ai!.id, prevId: -1, nextId: -1, text: ai!.text, color: Colors.transparent, parenId: ai!.parentId, isChecked: ai!.isChecked, isActive: ai!.isActive));
           roots = appVM.myNodes;
-          isParentChecked = ai!.id!=-1?appVM.mainScreenState!.allCircles.where((element) => element.id ==ai!.parentId).first.isChecked:false;
+          final parentObj = ai!.id!=-1?appVM.mainScreenState!.allCircles.where((element) => element.id ==ai!.parentId).firstOrNull:null;
+          isParentChecked = parentObj?.isChecked??false;
+          isParentActive = parentObj?.isActive??false;
           if(!isTextSetted&&ai!.id!=-1){
             text.text = ai?.text??"Загрузка...";
             description.text = ai?.description??"";
@@ -595,10 +598,14 @@ class AimEditScreenState extends State<AimEditScreen>{
                                   ),
                                 ),
                                 onPressed: () async {
-                                  setState(() {
-                                    appVM.activateAim(ai!.id, true);
-                                    ai!.isActive = true;
-                                  });
+                                  if(isParentActive) {
+                                    setState(() {
+                                      appVM.activateAim(ai!.id, true);
+                                      ai!.isActive = true;
+                                    });
+                                  }else{
+                                    showUnavailable("Чтобы актуализировать цели и задачи необходимо актуализировать вышестоящее желание нажав кнопку 'воплотить'");
+                                  }
                                 },
                                 child: const Text("Актуализировать",
                                     style: TextStyle(color: AppColors.blueTextColor, fontSize: 12))

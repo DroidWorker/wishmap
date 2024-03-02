@@ -40,6 +40,7 @@ class _WishScreenState extends State<WishScreen>{
 
   bool isParentChecked = false;
   bool isParentHidden = false;
+  bool isParentActive = false;
 
   WishData curwish = WishData(id: -1, prevId: -1, nextId: -1, parentId: -1, text: "", description: "", affirmation: "", color: Colors.grey);
 
@@ -47,6 +48,7 @@ class _WishScreenState extends State<WishScreen>{
 
   @override
   Widget build(BuildContext context) {
+    print("curwishhhhhhhhh${curwish.isActive}");
     final appViewModel = Provider.of<AppViewModel>(context);
     TextEditingController _title = TextEditingController(text: curwish.text);
     TextEditingController _description = TextEditingController(text: curwish.description);
@@ -68,6 +70,7 @@ class _WishScreenState extends State<WishScreen>{
             appVM.convertToMyTreeNodeFullBranch(curwish.id);
             final parentObj = appVM.mainScreenState!.allCircles.where((element) => element.id==curwish.parentId).firstOrNull;
             isParentChecked = parentObj?.isChecked??true;
+            isParentActive = parentObj?.isActive??false;
             isParentHidden = parentObj?.isHidden??true;
             if(appVM.wishScreenState!.wish.photoIds.isNotEmpty&&!isDataLoaded){
               final ids = appVM.wishScreenState!.wish.photoIds.split("|");
@@ -342,17 +345,21 @@ class _WishScreenState extends State<WishScreen>{
                               borderRadius: BorderRadius.all(Radius.circular(10)),
                             ),
                           ),
-                          onPressed: () async {
-                            setState(() {
+                          onPressed: () {
+                            if(isParentActive) {
                               appViewModel.activateSphereWish(curwish.id, true);
-                              appViewModel.mainCircles.where((element) => element.id==curwish.id).first.isActive=true;
-                              curwish.isActive=true;
-                            });
+                              setState(() {
+                                appViewModel.mainCircles.where((element) => element.id == curwish.id).firstOrNull?.isActive = true;
+                                curwish.isActive = true;
+                              });
+                            } else{
+                              showUnavailable("Чтобы представить это желание необходимо сначала представить вышестоящий объект");
+                            }
                           },
                           child: const Text("Представить",
                             style: TextStyle(color: AppColors.redTextColor),)
                       )
-                      else if(curwish.isChecked&&curwish.id > 800)
+                      else if(curwish.isChecked&&curwish.isActive&&curwish.id > 800)
                           TextButton(
                               style: TextButton.styleFrom(
                                 backgroundColor: curwish.isHidden?AppColors.pinkButtonTextColor:AppColors.greyBackButton,

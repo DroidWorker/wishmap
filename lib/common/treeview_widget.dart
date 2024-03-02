@@ -135,11 +135,13 @@ class MyTreeTile extends StatelessWidget {
                     : (entry.node.type == "a"
                     ? (entry.node.isChecked
                     ? Image.asset('assets/icons/target_done.png', width: 20, height: 30)
-                    : Image.asset('assets/icons/target_active.png', width: 20, height: 30))
+                    : entry.node.isActive ? Image.asset('assets/icons/target_active.png', width: 20, height: 30)
+                    : Image.asset('assets/icons/target_unactive.png', width: 20, height: 30))
                     : (entry.node.type == "t"
                     ? (entry.node.isChecked
                     ? Image.asset('assets/icons/task_done.png', width: 20, height: 30)
-                    : Image.asset('assets/icons/task_active.png', width: 20, height: 30))
+                    : entry.node.isActive ? Image.asset('assets/icons/task_active.png', width: 20, height: 30)
+                    : Image.asset('assets/icons/task_unactive.png', width: 20, height: 30))
                     : Container())),
               ],
             ),

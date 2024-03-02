@@ -205,6 +205,8 @@ class Repository{
             'color': circleData.color.value,
             'parentId': circleData.parenId,
             'isActive': circleData.isActive,
+            'isChecked': circleData.isChecked,
+            'isHidden': circleData.isHidden,
             'affirmation': circleData.affirmation,
           };
         }
@@ -255,7 +257,7 @@ class Repository{
           'parentId': aimData.parentId,
           "isChecked": aimData.isChecked,
           "isActive": aimData.isActive,
-          'childTask': aimData.childTasks.asMap()
+          'childTasks': aimData.childTasks.asMap()
         };
       }
       await userRef.child(_auth.currentUser!.uid).child("moonlist").child(moonId.toString()).child("aims").set(
@@ -483,15 +485,13 @@ class Repository{
           Map<dynamic, dynamic> childTasksMap = {};
           if (dataList['childTasks'] != null) {
             if (dataList['childTasks'] is List) {
-              // Преобразовать список в карту, если это необходимо
+              // Преобразовать список в карту,
               for (var i = 0; i < dataList['childTasks'].length; i++) {
                 childTasksMap[i] = dataList['childTasks'][i];
               }
             } else if (dataList['childTasks'] is Map) {
               // Просто присвоить, если уже является картой
               childTasksMap = Map<dynamic, dynamic>.from(dataList['childTasks']);
-            } else {
-              // Обработка других случаев, если необходимо
             }
           }
           List<int> childTasksList = childTasksMap.values.map((value) => int.parse(value.toString())).toList();

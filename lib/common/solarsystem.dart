@@ -65,14 +65,22 @@ class _CircleWidgetState extends State<CircleWidget>{
           shape: BoxShape.circle,
           color: widget.circle.isActive?widget.circle.color:const Color.fromARGB(255, 217, 217, 217),
         ),
-        child: Center( // Используйте Center, чтобы разместить текст по центру
-          child: AutoSizeText(
-            widget.circle.text,
-            maxLines: 1,
-            style: const TextStyle(color: Colors.white, fontSize: 16),
-            textAlign: TextAlign.center,
-          )
-        ),
+        child: Stack(
+          children: [
+            Center( // Используйте Center, чтобы разместить текст по центру
+                child: AutoSizeText(
+                  widget.circle.text,
+                  maxLines: 1,
+                  style: const TextStyle(color: Colors.white, fontSize: 16),
+                  textAlign: TextAlign.center,
+                )
+            ),
+            if(widget.circle.isChecked)Align(
+              alignment: Alignment.topRight,
+              child: Image.asset('assets/icons/wish_done.png', width: 20, height: 20),
+            )
+          ],
+        )
       ),
     );
   }
@@ -159,7 +167,7 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
     if(widget.circles.isEmpty){
       final px = widget.center.key-40 + (widget.size/2-40) * cos(1);
       final py = widget.center.value-40 + (widget.size/2-40) * sin(1);
-      if(centralCircles.isNotEmpty&&!centralCircles.last.isChecked)plusesPositions.add(Offset(px,py));
+      if(centralCircles.isEmpty||(centralCircles.isNotEmpty&&!centralCircles.last.isChecked))plusesPositions.add(Offset(px,py));
       plusesRotations.add(1);
     }
     //screenSize = getScreenSize(this as BuildContext);
@@ -650,7 +658,7 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
                                     allowClick=false;
                                   },
                                   doubleTap: (id, parentId){
-                                    if(!entry.value.isActive){
+                                    if(!entry.value.isActive&&!entry.value.isChecked){
                                       if(id==0){
                                         if(appViewModel.settings.fastActMainSphere){
                                           appViewModel.activateSphereWish(id, true);
@@ -706,26 +714,41 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
                               shape: BoxShape.circle,
                               color: value.isActive?value.color:const Color.fromARGB(255, 217, 217, 217),
                             ),
-                            child: Center(
+                            child: Stack(
+                              children: [
+                                Center(
                                   child: Column(mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                    const SizedBox(height: 5,),
-                                    AutoSizeText(
-                                      value.text,
-                                      maxLines: 1,
-                                      minFontSize: 14,
-                                      style: const TextStyle(color: Colors.white, fontSize: 24),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ],),
+                                      const SizedBox(height: 5,),
+                                      AutoSizeText(
+                                        value.text,
+                                        maxLines: 1,
+                                        minFontSize: 14,
+                                        style: const TextStyle(color: Colors.white, fontSize: 24),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ],),
+                                ),
+                                if(value.isChecked)Align(
+                                  alignment: Alignment.topRight,
+                                  child: Image.asset('assets/icons/wish_done.png', width: 25, height: 25),
                                 )
+                              ],
+                            )
                         ),
-                        onDoubleTap: (){
+                        onDoubleTap: () async {
                           if(allowClick&&centralCircles[index].id == 0&&centralCircles[index].isActive==false){
                             if(appViewModel.settings.fastActMainSphere){
-                              appViewModel.activateSphereWish(0, true);
-                              centralCircles.firstOrNull?.isActive=true;
-                              setState(() { });
+                              await appViewModel.activateSphereWish(0, true, updateScreen: true).then((value) {
+                                setState(() {
+                                  widget.circles = appViewModel.currentCircles;
+                                  centralCircles = appViewModel.mainCircles;
+                                });
+                              });
+                              /*centralCircles.firstOrNull?.isActive=true;
+                              setState(() {
+
+                              });*/
                             }else appViewModel.addError("Режим быстрой актуализации отключен в настройках");
                           }
                         },

@@ -27,6 +27,7 @@ class TaskEditScreenState extends State<TaskEditScreen>{
   final description = TextEditingController();
   var isChanged = false;
   var isParentChecked = false;
+  var isParentActive = false;
 
   bool isTextSetted = false;
 
@@ -40,7 +41,8 @@ class TaskEditScreenState extends State<TaskEditScreen>{
           if(appVM.currentAim!=null) {
             AimData ad = appVM.currentAim!;
             isParentChecked = ad.isChecked;
-            var childNodes = MyTreeNode(id: ad.id, type: 'a', title: ad.text, isChecked: ad.isChecked, children: []);
+            isParentActive = ad.isActive;
+            var childNodes = MyTreeNode(id: ad.id, type: 'a', title: ad.text, isChecked: ad.isChecked, isActive: ad.isActive , children: []);
             if(roots.isEmpty&&ai!=null&&ai?.id!=-1)appVM.convertToMyTreeNodeIncludedAimsTasks(childNodes, ai!.id, ad.parentId);
           }else {
             if(ai!.parentId!=-1)appVM.getAim(ai!.parentId);
@@ -263,10 +265,14 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                                   ),
                                 ),
                                 onPressed: () async {
-                                  setState(() {
-                                    appVM.activateTask(ai!.id, true);
-                                    ai!.isActive = true;
-                                  });
+                                  if(isParentActive) {
+                                    setState(() {
+                                      appVM.activateTask(ai!.id, true);
+                                      ai!.isActive = true;
+                                    });
+                                  }else{
+                                    showUnavailable(text: "Чтобы актуализировать задачу необходимо актуализировать вышестоящее желание");
+                                  }
                                 },
                                 child: const Text("Актуализировать",
                                     style: TextStyle(color: AppColors.blueTextColor, fontSize: 12))

@@ -36,11 +36,13 @@ class MyETOverlay extends StatefulWidget {
 
 class _MyOverlayState extends State<MyETOverlay> {
   TextEditingController controller = TextEditingController();
+  final _focusNode = FocusNode();
 
   @override
   void initState() {
     controller.text=widget.text;
     super.initState();
+    _focusNode.requestFocus();
   }
   @override
   Widget build(BuildContext context) {
@@ -79,6 +81,8 @@ class _MyOverlayState extends State<MyETOverlay> {
                 child:
                     TextField(
                       controller: controller,
+                      focusNode: _focusNode,
+                      autofocus: true,
                       maxLines: null,
                       expands: true,
                       decoration: InputDecoration(

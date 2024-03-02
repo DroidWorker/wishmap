@@ -268,7 +268,7 @@ List<MyTreeNode> convertListToMyTreeNodes(List<WishItem> dataList) {
 }
 List<MyTreeNode> getChildren(List<WishItem> dataList, id){
   final children = dataList.where((element) => element.parentId==id).toList();
-  return children.map((e) => MyTreeNode(id: e.id, type: 'w', title: e.text, isChecked: e.isChecked, children: getChildren(dataList, e.id), isHidden: e.isHidden)).toList();
+  return children.map((e) => MyTreeNode(id: e.id, type: 'w', title: e.text, isChecked: e.isChecked, isActive: e.isActive, children: getChildren(dataList, e.id), isHidden: e.isHidden)).toList();
 }
 List<int> getRootsIds(MyTreeNode node){
   List<int> ids = [];

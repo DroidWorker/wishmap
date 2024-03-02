@@ -33,6 +33,7 @@ class _WishesScreenState extends State<WishesScreen>{
         builder: (context, appVM, child) {
           appViewModel=appVM;
           allWishList = appVM.wishItems;
+          if(appVM.mainScreenState!.allCircles.length>8&&allWishList.isEmpty)appVM.startMyWishesScreen();
           page==1?filteredWishList = allWishList.where((element) => element.isChecked).toList():
           page==2?filteredWishList = allWishList.where((element) => !element.isChecked).toList():
           page==3?filteredWishList = allWishList.where((element) => element.isActive).toList():filteredWishList = allWishList;

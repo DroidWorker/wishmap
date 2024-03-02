@@ -266,7 +266,8 @@ class LocalRepository{
   Future addTask(TaskData td, int moonId) async{
     final tasks = await getAllTasks(moonId);
     await dbHelper.insertTask(TaskData(id: td.id==-1?(tasks.lastOrNull?.id??-1)+1:td.id, parentId: td.parentId, text: td.text, description: td.description, isChecked: td.isChecked, isActive: td.isActive), moonId);
-    return td.id==-1?tasks.lastOrNull?.id??0:td.id;
+    int retId = td.id==-1?(tasks.length>0?tasks[tasks.length-1].id:-1)+1:td.id;
+    return retId;
   }
   Future deleteTask(int taskId, int moonId) async{
     await dbHelper.deleteTask(taskId, moonId);
