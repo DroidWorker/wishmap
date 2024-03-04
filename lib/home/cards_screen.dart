@@ -23,6 +23,7 @@ class CardsScreenState extends State<CardsScreen>{
   bool isInSync = false;
   @override
   Widget build(BuildContext context) {
+    BlocProvider.of<NavigationBloc>(context).clearHistory();
     final now  = DateTime.now();
     final appViewModel = Provider.of<AppViewModel>(context);
     if(appViewModel.moonItems.isEmpty) {

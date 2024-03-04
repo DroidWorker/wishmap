@@ -346,12 +346,17 @@ class _WishScreenState extends State<WishScreen>{
                             ),
                           ),
                           onPressed: () {
-                            if(isParentActive) {
-                              appViewModel.activateSphereWish(curwish.id, true);
-                              setState(() {
-                                appViewModel.mainCircles.where((element) => element.id == curwish.id).firstOrNull?.isActive = true;
-                                curwish.isActive = true;
-                              });
+                            if(isParentActive||appVM.settings.wishActualizingMode==1) {
+                              if(appVM.settings.sphereActualizingMode==1||appVM.isParentSphereActive(curwish.id)){
+                                appViewModel.activateSphereWish(curwish.id, true);
+                                setState(() {
+                                  appViewModel.mainCircles.where((element) =>
+                                  element.id == curwish.id).firstOrNull?.isActive = true;
+                                  curwish.isActive = true;
+                                });
+                              } else{
+                                showUnavailable("Чтобы представить это желание необходимо сначала представить вышестоящиую сферу");
+                              }
                             } else{
                               showUnavailable("Чтобы представить это желание необходимо сначала представить вышестоящий объект");
                             }
@@ -359,7 +364,7 @@ class _WishScreenState extends State<WishScreen>{
                           child: const Text("Представить",
                             style: TextStyle(color: AppColors.redTextColor),)
                       )
-                      else if(curwish.isChecked&&curwish.isActive&&curwish.id > 800)
+                      else if(curwish.isChecked&&curwish.id > 800)
                           TextButton(
                               style: TextButton.styleFrom(
                                 backgroundColor: curwish.isHidden?AppColors.pinkButtonTextColor:AppColors.greyBackButton,

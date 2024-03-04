@@ -16,6 +16,7 @@ class AuthScreen extends StatefulWidget {
 class _AuthScreen_State extends State<AuthScreen> {
   bool isAuth = true;
   bool isChecked = true;
+  bool isInLoading = false;
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _nameController = TextEditingController();
@@ -187,7 +188,13 @@ class _AuthScreen_State extends State<AuthScreen> {
                                   String login = _loginController.text;
                                   String password = _passwordController.text;
                                   try{
+                                    setState(() {
+                                      isInLoading = true;
+                                    });
                                     await appViewModel.signIn(login, password);
+                                    setState(() {
+                                      isInLoading = false;
+                                    });
                                     print("sgnin");
                                     BlocProvider.of<NavigationBloc>(context)
                                         .removeLastFromBS();
@@ -215,7 +222,8 @@ class _AuthScreen_State extends State<AuthScreen> {
                             },
                             child: Text(isAuth?'Войти':'Зарегистрироваться'),
                           )),
-                      const SizedBox(height: 10.0),
+                      if(isInLoading) const LinearProgressIndicator(),
+                      SizedBox(height: isInLoading?7.0:10.0),
                       SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(

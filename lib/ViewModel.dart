@@ -1349,6 +1349,15 @@ class AppViewModel with ChangeNotifier {
     }
   }
 
+  bool isParentSphereActive(int wishId){
+    final parentWish = mainScreenState?.allCircles.where((element) => element.id==wishId).firstOrNull;
+    if(parentWish!=null&&parentWish.parenId!=0){
+      return isParentSphereActive(parentWish.parenId);
+    }else {
+      return parentWish?.isActive??true;
+    }
+  }
+
   List<CircleData> getParentTree(int targetId) {
     if(mainScreenState==null||targetId==-1)return List.empty();
     List<CircleData> objects = mainScreenState!.allCircles;
