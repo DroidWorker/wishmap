@@ -173,7 +173,7 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
     //screenSize = getScreenSize(this as BuildContext);
     movingController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1000), // Длительность анимации
+      duration: const Duration(milliseconds: 700), // Длительность анимации
     );
     afterMovingController = AnimationController(
       vsync: this,
@@ -351,21 +351,25 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
     );
     // Добавляем слушателя анимации для обновления состояния и перерисовки виджета
     Vanimation.addListener(() {
-      setState(() {
+      if(centralCircles.length>1) {
+        setState(() {
         centralCircles[centralCircles
             .length - 2].coords.value =
             Vanimation.value;
       });
+      }
     });
     Hanimation.addListener(() {
-      setState(() {
+      if(centralCircles.length>1) {
+        setState(() {
         centralCircles[centralCircles
             .length - 2].coords.key =
             Hanimation.value;
       });
+      }
     });
     radiusToCenterVanimation.addListener(() {
-      setState(() {
+        setState(() {
         centralCircles[centralCircles
             .length - 1].coords.value =
             radiusToCenterVanimation.value;
@@ -421,20 +425,25 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
         }
         afterMovingController.reset();
         afterMovingController.forward();
+        allowClick=true;
+        print("alloew click - true1");
       }else{{
         if(centralCircles.length>2){
           centralCircles[centralCircles.length-3].isVisible = true;
         }
         setState(() {
+          circlesHash=0;
           centralCircles.removeLast();
+          allowClick=true;
+          print("alloew click - true2");
         });
       }}
-      allowClick=true;
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    print("rebuild widget");
     vm = Provider.of<AppViewModel>(context);
     if(centralCircles.isEmpty||widget.clearData) {
       centralCircles = List<MainCircle>.from(vm!.mainCircles);
@@ -579,6 +588,7 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
                           ),
                         ),
                         onTap: () {
+                          print("onplustap");
                           if(centralCircles.last.id==0){
                             appViewModel.hint = textNewI[Random().nextInt(18)];
                           }else if(centralCircles.last.id<900){
@@ -621,44 +631,57 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
                                   size: widget.size,
                                   center: widget.center,
                                   onRotate: (angle) {
-                                    rotationCounter++;
-                                    if(rotationCounter==5){
-                                      rotationCounter=0;
-                                      if(centralCircles.last.id==0) {
-                                        appViewModel.hint = "Это анимация, которая призвана показать, как сферы вашей жизни словно вращаются по внешней орбите, в центре которой ваше 'Я'";
-                                      } else if(centralCircles.last.id < 900)appViewModel.hint = "Это анимация, которая призвана показать, как желания вашей жизни словно вращаются по внешней орбите, в центре которой определенная сфера жизни";
-                                      else appViewModel.hint = "Это анимация, которая призвана показать, как желания вашей жизни словно вращаются по внешней орбите, в центре которой желание побольше";
-                                    }
+                                    print("oncircletap0");
                                     lastdirection = angle;
                                     _updateCircleRotation(
                                         angle, widget.size, widget.center,
                                         (widget.size) / 2);
                                   },
                                   onEndRotate: (details) {
+                                    print("oncircletap1");
                                     startInertia(
                                         ((details.velocity.pixelsPerSecond.dx +
                                             details.velocity.pixelsPerSecond.dy)
                                             .abs() / 2) *
                                             (lastdirection < 0 ? (-1) : 1));
+                                    /*rotationCounter++;
+                                    if(rotationCounter==5){
+                                      rotationCounter=0;
+                                      if(centralCircles.last.id==0) {
+                                        appViewModel.hint = "Это анимация, которая призвана показать, как сферы вашей жизни словно вращаются по внешней орбите, в центре которой ваше 'Я'";
+                                      } else if(centralCircles.last.id < 900)appViewModel.hint = "Это анимация, которая призвана показать, как желания вашей жизни словно вращаются по внешней орбите, в центре которой определенная сфера жизни";
+                                      else appViewModel.hint = "Это анимация, которая призвана показать, как желания вашей жизни словно вращаются по внешней орбите, в центре которой желание побольше";
+                                    }*/
                                   },
                                   startMoving: (id, itemId) {
-                                    animationDirectionForward = true;
-                                    initAnim(id, itemId);
-                                    if(!widget.circles[itemId].isActive){
-                                      itemId<900?appViewModel.hint=textSphereActualize[Random().nextInt(5)]:
-                                      appViewModel.hint=textWishActualize[Random().nextInt(15)];
-                                    }else{
-                                      appViewModel.hint="Ты в карте сферы. Сфера — это целая область жизни. Если ты хочешь развить данную сферу, задай себе вопрос: “что я хочу изменить в этой сфере, каковы мои желания?”. Отвечая на этот вопрос, создавай желания, исполнение которых качественно изменит данную сферу. Создавай, выбирай аффирмации и управляй своим будущим. Чтобы создать желание, просто нажми «+» на орбите, что вокруг сферы.";
+                                    print("oncircletap2 - $allowClick");
+                                    if(allowClick) {
+                                      print(
+                                          "allow stat change false - start moving");
+                                      allowClick = false;
+                                      animationDirectionForward = true;
+                                      initAnim(id, itemId);
+                                      if (!widget.circles[itemId].isActive) {
+                                        itemId < 900
+                                            ? appViewModel.hint =
+                                        textSphereActualize[Random().nextInt(5)]
+                                            :
+                                        appViewModel.hint =
+                                        textWishActualize[Random().nextInt(15)];
+                                      } else {
+                                        appViewModel.hint =
+                                        "Ты в карте сферы. Сфера — это целая область жизни. Если ты хочешь развить данную сферу, задай себе вопрос: “что я хочу изменить в этой сфере, каковы мои желания?”. Отвечая на этот вопрос, создавай желания, исполнение которых качественно изменит данную сферу. Создавай, выбирай аффирмации и управляй своим будущим. Чтобы создать желание, просто нажми «+» на орбите, что вокруг сферы.";
+                                      }
+                                      // Запускаем анимацию
+                                      movingController
+                                          .reset();
+                                      movingController
+                                          .forward();
                                     }
-                                    // Запускаем анимацию
-                                    movingController
-                                        .reset();
-                                    movingController
-                                        .forward();
-                                    allowClick=false;
                                   },
                                   doubleTap: (id, parentId){
-                                    if(!entry.value.isActive&&!entry.value.isChecked){
+                                    print("oncircletap3");
+                                    if(allowClick&&!entry.value.isActive&&!entry.value.isChecked){
                                       if(id==0){
                                         if(appViewModel.settings.fastActMainSphere){
                                           appViewModel.activateSphereWish(id, true);
@@ -675,6 +698,8 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
                                        if(appViewModel.settings.fastActWish){
                                          appViewModel.activateSphereWish(id, true);
                                          widget.circles.where((element) => element.id==id).firstOrNull?.isActive=true;
+                                         centralCircles.forEach((element) {element.isActive=true;});
+                                         appViewModel.mainCircles = centralCircles;
                                          setState(() { });
                                        }else appViewModel.addError("Режим быстрой актуализации отключен в настройках");
                                       }
@@ -737,6 +762,7 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
                             )
                         ),
                         onDoubleTap: () async {
+                          print("oncentralcircletap");
                           if(allowClick&&centralCircles[index].id == 0&&centralCircles[index].isActive==false){
                             if(appViewModel.settings.fastActMainSphere){
                               await appViewModel.activateSphereWish(0, true, updateScreen: true).then((value) {
@@ -753,7 +779,10 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
                           }
                         },
                         onTap: () {
+                          print("oncentralcircletap - $allowClick");
                           if(allowClick) {
+                            print("allow stat change false - central circle tap");
+                            allowClick = false;
                             if (centralCircles.length - 1 != index) {
                               animationDirectionForward = false;
                               widget.circles = vm?.openSphere(value.id) ?? [];
@@ -800,7 +829,6 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
                                       .id == centralCircles.last.id));
                               movingController.reset();
                               movingController.forward();
-                              allowClick = false;
                             } else if (centralCircles[index].id == 0) {
                               appViewModel.cachedImages.clear();
                               appViewModel.startMainsphereeditScreen();
@@ -831,41 +859,34 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
   }
 
   void _updateCircleRotation(double newRotation, double size, Pair center, double radius, {bool isAnim = false}) {
+    print("invoked update rotation");
+
+    final centerX = widget.center.key-40;
+    final centerY = widget.center.value-40;
+    final radiusminusforty = (radius-40);
+    final offset = widget.circles.isNotEmpty?(80-widget.circles.first.radius)/2:0;
     for (int i = 0; i < widget.circles.length; i++) {
-      final oldRotation = circleRotations[i];
-      final oldPlusRotation = plusesRotations[i];
 
       // Вычисляем новый угол поворота, учитывая старый угол и новый угол
-      final newRotationInRadians = (oldRotation + newRotation);
-      final newPlusRotationInRadians = (oldPlusRotation + newRotation);
-
-      circleRotations[i] = oldRotation+newRotation;
-      plusesRotations[i] = oldPlusRotation+newRotation;
-
-      final centerX = widget.center.key-40;
-      final centerY = widget.center.value-40;
+      circleRotations[i] = (circleRotations[i] + newRotation);
+      plusesRotations[i] = (plusesRotations[i] + newRotation);
 
       // Вычисляем новые координаты на основе нового угла поворота, радиуса и центральных координат
-      final newX = (centerX + (radius-40) * cos(newRotationInRadians))+(80-widget.circles[i].radius)/2;
-      final newY = (centerY + (radius-40) * sin(newRotationInRadians))+(80-widget.circles[i].radius)/2;
-      final newPlusX = centerX + (radius-40) * cos(newPlusRotationInRadians);
-      final newPlusY = centerY + (radius-40) * sin(newPlusRotationInRadians);
+      final newX = (centerX + radiusminusforty * cos(circleRotations[i]))+offset;
+      final newY = (centerY + radiusminusforty * sin(circleRotations[i]))+offset;
+      final newPlusX = centerX + radiusminusforty * cos(plusesRotations[i]);
+      final newPlusY = centerY + radiusminusforty * sin(plusesRotations[i]);
 
       // Обновляем позицию каждой окружности и угол поворота
       circlePositions[i] = Offset(newX, newY);
       if(centralCircles.isNotEmpty&&!centralCircles.last.isChecked)plusesPositions[i] = Offset(newPlusX, newPlusY);
     }
 
-    var diametr = (widget.size*0.2).toInt();
-    if(widget.circles.length>8&&widget.circles.length<=16){
+    //var diametr = (widget.size*0.2).toInt();
+    if(widget.circles.length>8){
       for(int i = 0; i < widget.circles.length; i++){
         //if (circleRotations[i]%(2*pi) >= pi && circleRotations[i]%(2*pi) <= 2*pi){widget.circles[i].radius=diametr-(diametr/3.7*(cos(circleRotations[i]))).toInt().abs();}
-        /*else{*/widget.circles[i].radius=(widget.size*0.15).toInt();//}
-      }
-    }else if(widget.circles.length>16){
-      for(int i = 0; i < widget.circles.length; i++){
-        if (circleRotations[i]%(2*pi) >= pi && circleRotations[i]%(2*pi) <= 2*pi){widget.circles[i].radius=diametr-(diametr/2*(cos(circleRotations[i]))).toInt().abs();}
-        else{widget.circles[i].radius=(widget.size*0.07).toInt();}
+        /*else*/widget.circles[i].radius=(widget.size*0.15).toInt();
       }
     }
     // Вызываем setState, чтобы обновить виджет

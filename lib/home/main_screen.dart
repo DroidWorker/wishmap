@@ -12,6 +12,7 @@ import 'package:wishmap/res/colors.dart';
 import 'package:wishmap/data/models.dart';
 
 import '../ViewModel.dart';
+import '../common/custom_bottom_button.dart';
 import '../common/moon_widget.dart';
 
 class MainScreen extends StatefulWidget {
@@ -85,8 +86,7 @@ class _MainScreenState extends State<MainScreen>{
                         Row(
                           children: [
                             IconButton(
-                              icon: const Icon(Icons.menu),
-                              iconSize: 30,
+                              icon: const Icon(Icons.menu, size: 30,),
                               onPressed: () {
                                 BlocProvider.of<NavigationBloc>(context)
                                     .add(NavigateToProfileScreenEvent());
@@ -144,8 +144,7 @@ class _MainScreenState extends State<MainScreen>{
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             IconButton(
-                              icon: Image.asset('assets/icons/prev.png'),
-                              iconSize: 35,
+                              icon: Image.asset('assets/icons/prev.png', height: 35, width: 35),
                               onPressed: () {
                                 pnPressCount++;
                                 if(pnPressCount==5){
@@ -164,8 +163,7 @@ class _MainScreenState extends State<MainScreen>{
                             ),
                             const SizedBox(width: 20),
                             IconButton(
-                              icon: isPauseIcon?Image.asset('assets/icons/plau.png'):Image.asset('assets/icons/pause.png'),
-                              iconSize: 35,
+                              icon: isPauseIcon?Image.asset('assets/icons/plau.png', height: 35, width: 35):Image.asset('assets/icons/pause.png', height: 35, width: 35),
                               onPressed: () {
                                 setState((){
                                   ppPressCount++;
@@ -189,8 +187,7 @@ class _MainScreenState extends State<MainScreen>{
                             ),
                             const SizedBox(width: 15),
                             IconButton(
-                              icon: Image.asset('assets/icons/next.png'),
-                              iconSize: 35,
+                              icon: Image.asset('assets/icons/next.png', height: 35, width: 35),
                               onPressed: () {
                                 pnPressCount++;
                                 if(pnPressCount==5){
@@ -220,41 +217,34 @@ class _MainScreenState extends State<MainScreen>{
                           color: Colors.black,
                           cornerRadius: 0,
                         ),
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(5, 3, 5, 0),
+                        Container(
+                          padding: const EdgeInsets.fromLTRB(5, 3, 5, 0 ),
+                          width: MediaQuery.of(context).size.width,
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.center,
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
-                              ElevatedButton(
+                              CustomBottomButton(
                                   onPressed: () {
                                     _CDWidgetKey.currentState?.stateSnapshot();
                                     appVM.startMyTasksScreen();
                                     BlocProvider.of<NavigationBloc>(context)
                                         .add(NavigateToTasksScreenEvent());
                                   },
-                                  style: ElevatedButton.styleFrom(elevation: 0, backgroundColor: Colors.transparent,),                                  child: Column(
-                                      children: [
-                                        Image.asset('assets/icons/checklist2665651.png', height: 30, width: 30),
-                                        const Text("Задачи", style:  TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.black),)
-                                      ]
-                                  ),
+                                  icon: Image.asset('assets/icons/checklist2665651.png', height: 30, width: 30),
+                                  label: "Задачи"
                               ),
-                              ElevatedButton(
+                              CustomBottomButton(
                                   onPressed: () {
                                     _CDWidgetKey.currentState?.stateSnapshot();
                                     appVM.startMyAimsScreen();
                                     BlocProvider.of<NavigationBloc>(context)
                                         .add(NavigateToAimsScreenEvent());
                                   },
-                                  style: ElevatedButton.styleFrom(elevation: 0, backgroundColor: Colors.transparent,),                                   child: Column(
-                                      children: [
-                                        Image.asset('assets/icons/goal6002764.png', height: 30, width: 30),
-                                        const Text("Цели", style:  TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.black),)
-                                      ]
-                                  )
+                                  icon:  Image.asset('assets/icons/goal6002764.png', height: 30, width: 30),
+                                  label: "Цели"
                               ),
-                              ElevatedButton(
+                              CustomBottomButton(
                                   onPressed: () {
                                     if(appVM.mainScreenState!=null){
                                       appVM.mainCircles.clear();
@@ -274,40 +264,28 @@ class _MainScreenState extends State<MainScreen>{
                                     BlocProvider.of<NavigationBloc>(context)
                                         .add(NavigateToMainScreenEvent());
                                   },
-                                  style: ElevatedButton.styleFrom(elevation: 0, backgroundColor: Colors.transparent,),                                   child: Column(
-                                      children: [
-                                        Image.asset('assets/icons/wheel2526426.png', height: 35, width: 35),
-                                        const Text("Карта", style:  TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.black),)
-                                      ]
-                                  )
+                                  icon: Image.asset('assets/icons/wheel2526426.png', height: 35, width: 35),
+                                  label: "Карта"
                               ),
-                              ElevatedButton(
+                              CustomBottomButton(
                                   onPressed: () {
                                     _CDWidgetKey.currentState?.stateSnapshot();
                                     appVM.startMyWishesScreen();
                                     BlocProvider.of<NavigationBloc>(context)
                                         .add(NavigateToWishesScreenEvent());
                                   },
-                                  style: ElevatedButton.styleFrom(elevation: 0, backgroundColor: Colors.transparent,),                                   child: Column(
-                                      children: [
-                                        Image.asset('assets/icons/notelove1648387.png', height: 30, width: 30),
-                                        const Text("Желания", style:  TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.black),)
-                                      ]
-                                  )
+                                  icon: Image.asset('assets/icons/notelove1648387.png', height: 30, width: 30),
+                                  label: "Желания"
                               ),
-                              ElevatedButton(
+                              CustomBottomButton(
                                   onPressed: () {
                                     appVM.getDiary();
                                     _CDWidgetKey.currentState?.stateSnapshot();
                                     BlocProvider.of<NavigationBloc>(context)
                                         .add(NavigateToDiaryScreenEvent());
                                   },
-                                  style: ElevatedButton.styleFrom(elevation: 0, backgroundColor: Colors.transparent,),                                   child: Column(
-                                      children: [
-                                        Image.asset('assets/icons/notepad2725914.png', height: 30, width: 30),
-                                        const Text("Дневник", style:  TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.black),)
-                                      ]
-                                  )
+                                  icon: Image.asset('assets/icons/notepad2725914.png', height: 30, width: 30),
+                                  label: "Дневник"
                               ),
                             ],
                           ),)

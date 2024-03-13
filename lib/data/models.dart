@@ -347,7 +347,6 @@ List<CircleData> sortList(List<CircleData> inputList) {
   sortedList.forEach((element) {
     print("element ${element.id}  ${element.text}");
   });
-  print("aaaaaaaaaaaaaaaaaaa${inputList.length}      ${sortedList.length}" );
 
   return sortedList;
 }

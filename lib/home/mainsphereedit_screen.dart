@@ -75,8 +75,7 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
               children: [
                 Row(children: [
                   IconButton(
-                    icon: const Icon(Icons.keyboard_arrow_left),
-                    iconSize: 30,
+                    icon: const Icon(Icons.keyboard_arrow_left,  size: 30,),
                     onPressed: () {
                       if(appViewModel.isChanged){
                       showDialog(context: context,
@@ -207,8 +206,8 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
                         ),
                       ),
                       onPressed: () {
-                        setState(() {
-                          appViewModel.activateSphereWish(curWd.id, true);
+                        setState(() async {
+                          await appViewModel.activateSphereWish(curWd.id, true);
                           if(appVM.mainScreenState!=null)appViewModel.startMainScreen(appVM.mainScreenState!.moon);
                           curWd.isActive = true;
                           appVM.mainCircles.firstOrNull?.isActive=true;
@@ -254,13 +253,17 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
                     controller: affirmation,
                     readOnly: true,
                     onTap: () async {
-                      final affirmationsStr = curWd.affirmation==""?
+                      if(curWd.isActive) {
+                        final affirmationsStr = curWd.affirmation==""?
                         await showOverlayedAffirmations(context, defaultAffirmations, false, curWd.shuffle, onShuffleClick: (value){curWd.shuffle=value;}):
                         await showOverlayedAffirmations(context, curWd.affirmation.split("|"), true, curWd.shuffle, onShuffleClick: (value){curWd.shuffle=value;});
-                      if(curWd.shuffle) curWd.lastShuffle = "|${DateTime.now().weekday.toString()}";
-                      affirmation.text=affirmationsStr?.split("|")[0]??"";
-                      curWd.affirmation=affirmationsStr??"";
-                      appViewModel.isChanged =true;
+                        if(curWd.shuffle) curWd.lastShuffle = "|${DateTime.now().weekday.toString()}";
+                        affirmation.text=affirmationsStr?.split("|")[0]??"";
+                        curWd.affirmation=affirmationsStr??"";
+                        appViewModel.isChanged =true;
+                      }else{
+                        showUneditable();
+                      }
                       },
                     style: const TextStyle(color: Colors.black), // Черный текст ввода
                     decoration: InputDecoration(

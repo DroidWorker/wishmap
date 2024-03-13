@@ -183,7 +183,7 @@ class Repository{
       return null;
     }
   }
-  Future addMoon(MoonItem moonItem, List<CircleData> defaultCircles) async {
+  Future addMoon(MoonItem moonItem, List<CircleData>? defaultCircles, List<WishData>? defaultWishes) async {
     if(_auth.currentUser!=null){
         await userRef.child(_auth.currentUser!.uid).child("moonlist").child(moonItem.id.toString()).set({
           'text': moonItem.text,
@@ -194,22 +194,42 @@ class Repository{
         // Записываем данные для circles, используя индексы из объектов
         Map<String, dynamic> circleDataMap = {};
 
-        for (CircleData circleData in defaultCircles) {
-          String circleId = circleData.id.toString();
-          circleDataMap[circleId] = {
-            "id": circleData.id,
-            'prevId': circleData.prevId,
-            'nextId': circleData.nextId,
-            'text': circleData.text,
-            'subText': circleData.subText,
-            'color': circleData.color.value,
-            'parentId': circleData.parenId,
-            'isActive': circleData.isActive,
-            'isChecked': circleData.isChecked,
-            'isHidden': circleData.isHidden,
-            'affirmation': circleData.affirmation,
-          };
-        }
+        if(defaultCircles!=null) {
+          for (CircleData circleData in defaultCircles) {
+            String circleId = circleData.id.toString();
+            circleDataMap[circleId] = {
+              "id": circleData.id,
+              'prevId': circleData.prevId,
+              'nextId': circleData.nextId,
+              'text': circleData.text,
+              'subText': circleData.subText,
+              'color': circleData.color.value,
+              'parentId': circleData.parenId,
+              'isActive': circleData.isActive,
+              'isChecked': circleData.isChecked,
+              'isHidden': circleData.isHidden,
+              'affirmation': circleData.affirmation,
+            };
+          }
+        }else if(defaultWishes!=null){
+          for (WishData wishData in defaultWishes) {
+            String circleId = wishData.id.toString();
+            circleDataMap[circleId] = {
+              "id": wishData.id,
+              'prevId': wishData.prevId,
+              'nextId': wishData.nextId,
+              'text': wishData.text,
+              'subText': wishData.description,
+              'color': wishData.color.value,
+              'parentId': wishData.parentId,
+              'isActive': wishData.isActive,
+              'isChecked': wishData.isChecked,
+              'isHidden': wishData.isHidden,
+              'affirmation': wishData.affirmation,
+              'childAims': wishData.childAims
+            };
+          }
+        }else{throw Exception("no data");}
         await userRef.child(_auth.currentUser!.uid).child("moonlist").child(moonItem.id.toString()).child("spheres").set(
           circleDataMap
         );

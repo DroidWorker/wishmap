@@ -91,6 +91,11 @@ class _AuthScreen_State extends State<AuthScreen> {
                         ), const SizedBox(height: 20.0),],
                       TextFormField(
                         controller: _loginController,
+                        onChanged: (text){
+                          if(text.contains(" ")){
+                            _loginController.text=text.replaceAll(" ", "");
+                          }
+                        },
                         decoration: const InputDecoration(
                           border: InputBorder.none,
                           hintText: "E-mail",
@@ -188,6 +193,7 @@ class _AuthScreen_State extends State<AuthScreen> {
                                   String login = _loginController.text;
                                   String password = _passwordController.text;
                                   try{
+                                    appViewModel.authData=AuthData(login: login, password: password);
                                     setState(() {
                                       isInLoading = true;
                                     });
@@ -195,12 +201,10 @@ class _AuthScreen_State extends State<AuthScreen> {
                                     setState(() {
                                       isInLoading = false;
                                     });
-                                    print("sgnin");
                                     BlocProvider.of<NavigationBloc>(context)
                                         .removeLastFromBS();
                                     BlocProvider.of<NavigationBloc>(context)
                                         .add(NavigateToCardsScreenEvent());
-                                    print("open cards");
                                   }catch(ex){}
                                 }else{
                                   String name = _nameController.text;

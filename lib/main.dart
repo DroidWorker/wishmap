@@ -55,6 +55,7 @@ class MyApp extends StatelessWidget {
             title: 'wishMap',
               builder: (BuildContext context, Widget? widget) {
                 ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
+                  print("fatal error: ${errorDetails.exception} /n ${errorDetails.stack}");
                   return CustomError(errorDetails: errorDetails);
                 };
                 return widget!;

@@ -106,11 +106,31 @@ class _MyTestState extends State {
                     await internetSpeedTest.startTesting(
                       downloadTestServer: "http://speedtest.ftp.otenet.gr/files/test1Mb.db",
                         uploadTestServer: "http://speedtest.ftp.otenet.gr/",
-                        onProgress: (double percent, TestResult data) {
+                        onStarted: () {
+                          setState(() => _testInProgress = true);
+                        }, onCompleted: (TestResult download, TestResult upload) {
+
+                      setState(() {
+                        _downloadRate = download.transferRate;
+                        _unitText =
+                        download.unit == SpeedUnit.kbps ? 'Kbps' : 'Mbps';
+                        _downloadProgress = '100';
+                        _downloadCompletionTime = download.durationInMillis;
+                      });
+                      setState(() {
+                        _uploadRate = upload.transferRate;
+                        _unitText =
+                        upload.unit == SpeedUnit.kbps ? 'Kbps' : 'Mbps';
+                        _uploadProgress = '100';
+                        _uploadCompletionTime = upload.durationInMillis;
+                        _testInProgress = false;
+                      });
+                    }, onProgress: (double percent, TestResult data) {
+
                       setState(() {
                         _unitText =
-                        data.unit == SpeedUnit.Kbps ? 'Kbps' : 'Mbps';
-                        if (data.type == TestType.DOWNLOAD) {
+                        data.unit == SpeedUnit.kbps ? 'Kbps' : 'Mbps';
+                        if (data.type == TestType.download) {
                           _downloadRate = data.transferRate;
                           _downloadProgress = percent.toStringAsFixed(2);
                         } else {
@@ -120,24 +140,33 @@ class _MyTestState extends State {
                       });
                     }, onError: (String errorMessage, String speedTestError) {
                       reset();
-                      setState((){text=errorMessage;});
-                    },
-                        onDone: (TestResult download, TestResult upload) {
-                          setState(() {
-                            _downloadRate = download.transferRate;
-                            _unitText =
-                            download.unit == SpeedUnit.Kbps ? 'Kbps' : 'Mbps';
-                            _downloadProgress = '100';
-                            _downloadCompletionTime = download.durationInMillis;
-                          });
-                          setState(() {
-                            _uploadRate = upload.transferRate;
-                            _unitText =
-                            upload.unit == SpeedUnit.Kbps ? 'Kbps' : 'Mbps';
-                            _uploadProgress = '100';
-                            _uploadCompletionTime = upload.durationInMillis;
-                            _testInProgress = false;
-                          });
+                    }, onDefaultServerSelectionInProgress: () {
+                      setState(() {
+                        _isServerSelectionInProgress = true;
+                      });
+                    }, onDefaultServerSelectionDone: (Client? client) {
+                      setState(() {
+                        _isServerSelectionInProgress = false;
+                        _ip = client?.ip;
+                        _asn = client?.asn;
+                        _isp = client?.isp;
+                      });
+                    }, onDownloadComplete: (TestResult data) {
+                      setState(() {
+                        _downloadRate = data.transferRate;
+                        _unitText =
+                        data.unit == SpeedUnit.kbps ? 'Kbps' : 'Mbps';
+                        _downloadCompletionTime = data.durationInMillis;
+                      });
+                    }, onUploadComplete: (TestResult data) {
+                      setState(() {
+                        _uploadRate = data.transferRate;
+                        _unitText =
+                        data.unit == SpeedUnit.kbps ? 'Kbps' : 'Mbps';
+                        _uploadCompletionTime = data.durationInMillis;
+                      });
+                    }, onCancel: () {
+                      reset();
                     });
                   },
                 )

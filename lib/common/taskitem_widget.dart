@@ -38,8 +38,7 @@ class _TaskItem extends State<TaskItemWidget>{
             ),
           ),
           IconButton(
-            icon: widget.ti.isChecked ? Image.asset('assets/icons/task_done.png') : widget.ti.isActive?Image.asset('assets/icons/task_active.png') : Image.asset('assets/icons/task_unactive.png'),
-            iconSize: 30,
+            icon: widget.ti.isChecked ? Image.asset('assets/icons/task_done.png', width: 30, height: 30) : widget.ti.isActive?Image.asset('assets/icons/task_active.png', width: 30, height: 30) : Image.asset('assets/icons/task_unactive.png', width: 30, height: 30),
             onPressed: () {
               widget.onClick(widget.ti.id);
             },

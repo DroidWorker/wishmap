@@ -41,6 +41,7 @@ class _WishScreenState extends State<WishScreen>{
   bool isParentChecked = false;
   bool isParentHidden = false;
   bool isParentActive = false;
+  bool parentIsSphere = false;
 
   WishData curwish = WishData(id: -1, prevId: -1, nextId: -1, parentId: -1, text: "", description: "", affirmation: "", color: Colors.grey);
 
@@ -48,7 +49,6 @@ class _WishScreenState extends State<WishScreen>{
 
   @override
   Widget build(BuildContext context) {
-    print("curwishhhhhhhhh${curwish.isActive}");
     final appViewModel = Provider.of<AppViewModel>(context);
     TextEditingController _title = TextEditingController(text: curwish.text);
     TextEditingController _description = TextEditingController(text: curwish.description);
@@ -72,6 +72,7 @@ class _WishScreenState extends State<WishScreen>{
             isParentChecked = parentObj?.isChecked??true;
             isParentActive = parentObj?.isActive??false;
             isParentHidden = parentObj?.isHidden??true;
+            parentIsSphere = parentObj!=null?(parentObj.parenId<=0?true:false):false;
             if(appVM.wishScreenState!.wish.photoIds.isNotEmpty&&!isDataLoaded){
               final ids = appVM.wishScreenState!.wish.photoIds.split("|");
               if(ids.isNotEmpty) {
@@ -101,8 +102,7 @@ class _WishScreenState extends State<WishScreen>{
                   child:Column(children:[
                     Row(children: [
                       IconButton(
-                          icon: const Icon(Icons.keyboard_arrow_left),
-                          iconSize: 30,
+                          icon: const Icon(Icons.keyboard_arrow_left, size: 30,),
                           onPressed: () {
                             if(curwish.isHidden){
                               appVM.mainCircles.clear();
@@ -346,8 +346,8 @@ class _WishScreenState extends State<WishScreen>{
                             ),
                           ),
                           onPressed: () {
-                            if(isParentActive||appVM.settings.wishActualizingMode==1) {
-                              if(appVM.settings.sphereActualizingMode==1||appVM.isParentSphereActive(curwish.id)){
+                            if(isParentActive||appVM.settings.wishActualizingMode==1||parentIsSphere) {
+                              if(appVM.settings.sphereActualizingMode==1||appVM.isParentSphereActive(curwish.id)||curwish.parentId==0){
                                 appViewModel.activateSphereWish(curwish.id, true);
                                 setState(() {
                                   appViewModel.mainCircles.where((element) =>

@@ -141,6 +141,7 @@ class _MyOverlayState extends State<MyAffirmationOverlay> {
                       ),
                       onPressed: (){
                         setState(() {
+                          widget.affirmations[currentEditIndex] = controller.text;
                           widget.isShuffle = false;
                           widget.onShuffleClick(widget.isShuffle);
                           currentIndex = currentEditIndex;

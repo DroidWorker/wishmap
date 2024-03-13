@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 import 'dart:ui';
+import 'package:flutter/cupertino.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wishmap/repository/dbHelper.dart';
 
@@ -10,6 +11,10 @@ import '../data/models.dart';
 class LocalRepository{
   SharedPreferences? _prefs;
   late final DatabaseHelper dbHelper;
+
+  List<int> spheresToActivate = [];
+  List<int> aimsToActivate = [];
+  List<int> tasksToActivate = [];
 
   LocalRepository() {
     init();
@@ -26,6 +31,13 @@ class LocalRepository{
     }
     _prefs!.setString("login", login);
     _prefs!.setString("password", password);
+  }
+  Future<void> clearAuth() async {
+    if (_prefs == null) {
+      await init(); // Дождитесь завершения инициализации
+    }
+    _prefs!.remove("login");
+    _prefs!.remove("password");
   }
 
   Future<AuthData?> getAuth() async {
@@ -89,6 +101,14 @@ class LocalRepository{
     await _prefs!.setString("name", pd.name);
     await _prefs!.setString("surname", pd.surname);
   }
+  Future<void> clearProfile() async {
+    if (_prefs == null) {
+      await init(); // Дождитесь завершения инициализации
+    }
+    await _prefs!.remove("id");
+    await _prefs!.remove("name");
+    await _prefs!.remove("surname");
+  }
 
   Future<ProfileData?> getProfile() async {
     if (_prefs == null) {
@@ -110,6 +130,9 @@ class LocalRepository{
 
   Future clearDatabase(int moonId) async {
     await dbHelper.clearDatabase(moonId);
+  }
+  Future dropDB() async{
+    await dbHelper.dropDatabase();
   }
 
   Future updateMoonSync(int moonId, int timestamp) async{
@@ -136,10 +159,13 @@ class LocalRepository{
   Future clearMoons() async{
     dbHelper.clearMoons();
   }
-  Future addAllMoons(MoonItem mi, List<CircleData> childCircles) async{
+  Future addAllMoons(MoonItem mi, List<CircleData>? childCircles, List<WishData>? childWishes) async{
       await dbHelper.insertMoon(mi);
-      childCircles.forEach((element) async {
+      childCircles?.forEach((element) async {
         await dbHelper.insertSphere(WishData(id: element.id, prevId: element.prevId, nextId: element.nextId, parentId: element.parenId, text: element.text, description: element.subText, affirmation: element.affirmation, color: element.color)..isActive=element.isActive..isChecked=element.isChecked..isHidden=element.isHidden, mi.id);
+      });
+      childWishes?.forEach((element) async {
+        await dbHelper.insertSphere(element, mi.id);
       });
   }
   Future<List<MoonItem>> getMoons() async{
@@ -192,8 +218,11 @@ class LocalRepository{
   Future updateSphereStatus(int sphereId, bool status, int moonId) async{
     await dbHelper.updateSphereStatus(sphereId, status, moonId);
   }
-  Future activateSphere(int sphereId, bool status, int moonId) async{
-    await dbHelper.activateSphere(sphereId, status, moonId);
+  activateSphere(int sphereId) {
+    spheresToActivate.add(sphereId);
+  }
+  Future commitASpheresActivation(bool status, int moonId) async{
+    await dbHelper.activateSpheres(spheresToActivate, status, moonId);
   }
   Future hideSphere(int sphereId, bool isHide, int moonId) async{
     await dbHelper.hideSphere(sphereId, isHide, moonId);
@@ -228,6 +257,7 @@ class LocalRepository{
     return (result['childTasks']!=null&&result["childTasks"].toString()!="")?result['childTasks'].toString().split("|").map((e) => int.parse(e)).toList():[];
   }
   Future<int> addAim(AimData ad, int moonId) async{
+    print("adaim ${ad.childTasks}");
     final aims = await getAllAims(moonId);
     await dbHelper.insertAim(AimData(id: ad.id==-1?(aims.length>0?aims[aims.length-1].id:-1)+1:ad.id, parentId: ad.parentId, text: ad.text, description: ad.description, isChecked: ad.isChecked, isActive: ad.isActive)..childTasks = ad.childTasks, moonId);
     int retId = ad.id==-1?(aims.length>0?aims[aims.length-1].id:-1)+1:ad.id;

@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:page_view_dot_indicator/page_view_dot_indicator.dart';
@@ -7,6 +8,7 @@ import 'package:provider/provider.dart';
 
 import '../ViewModel.dart';
 import '../common/cardWidget.dart';
+import '../common/custom_bottom_button.dart';
 import '../data/models.dart';
 import '../data/static.dart';
 import '../navigation/navigation_block.dart';
@@ -40,8 +42,7 @@ class DiaryScreen extends StatefulWidget {
                                   Row(
                                     children: [
                                       IconButton(
-                                        icon: const Icon(Icons.keyboard_arrow_left),
-                                        iconSize: 30,
+                                        icon: const Icon(Icons.keyboard_arrow_left, size: 30),
                                         onPressed: () {
                                           appVM.backPressedCount++;
                                           if(appVM.backPressedCount==appVM.settings.quoteupdateFreq){
@@ -64,7 +65,7 @@ class DiaryScreen extends StatefulWidget {
                                   const SizedBox(height: 5,),
                                   const Text("Просто попробуй вести свой дневник, ты увидишь, это потрясающе", textAlign: TextAlign.center,),
                                   SizedBox(
-                                    height: constraints.maxHeight-220,
+                                    height: constraints.maxHeight-230,
                                     child: PageView.builder(
                                       controller: _pageController,
                                       onPageChanged: (index){setState(() {
@@ -139,80 +140,63 @@ class DiaryScreen extends StatefulWidget {
                               endIndent: 0,
                               color: Colors.black,
                             ),
-                            Padding(
-                              padding: const EdgeInsets.fromLTRB(5, 3, 5, 0),
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  ElevatedButton(
-                                    onPressed: () {
-                                      appVM.startMyTasksScreen();
-                                      BlocProvider.of<NavigationBloc>(context)
-                                          .add(NavigateToTasksScreenEvent());
-                                    },
-                                    style: ElevatedButton.styleFrom(elevation: 0, backgroundColor: Colors.transparent,),                                  child: Column(
-                                      children: [
-                                        Image.asset('assets/icons/checklist2665651.png', height: 30, width: 30),
-                                        const Text("Задачи", style:  TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.black),)
-                                      ]
-                                  ),
-                                  ),
-                                  ElevatedButton(
-                                      onPressed: () {
-                                        appVM.startMyAimsScreen();
-                                        BlocProvider.of<NavigationBloc>(context)
-                                            .add(NavigateToAimsScreenEvent());
-                                      },
-                                      style: ElevatedButton.styleFrom(elevation: 0, backgroundColor: Colors.transparent,),                                   child: Column(
-                                      children: [
-                                        Image.asset('assets/icons/goal6002764.png', height: 30, width: 30),
-                                        const Text("Цели", style:  TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.black),)
-                                      ]
-                                  )
-                                  ),
-                                  ElevatedButton(
-                                      onPressed: () {
-                                        if(appVM.mainScreenState!=null){
-                                          appVM.mainCircles.clear();
-                                          appVM.startMainScreen(appVM.mainScreenState!.moon);
-                                        }
-                                        BlocProvider.of<NavigationBloc>(context)
-                                            .add(NavigateToMainScreenEvent());
-                                      },
-                                      style: ElevatedButton.styleFrom(elevation: 0, backgroundColor: Colors.transparent,),                                   child: Column(
-                                      children: [
-                                        Image.asset('assets/icons/wheel2526426.png', height: 35, width: 35),
-                                        const Text("Карта", style:  TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.black),)
-                                      ]
-                                  )
-                                  ),
-                                  ElevatedButton(
-                                      onPressed: () {
-                                        appVM.startMyWishesScreen();
-                                        BlocProvider.of<NavigationBloc>(context)
-                                            .add(NavigateToWishesScreenEvent());
-                                      },
-                                      style: ElevatedButton.styleFrom(elevation: 0, backgroundColor: Colors.transparent,),                                   child: Column(
-                                      children: [
-                                        Image.asset('assets/icons/notelove1648387.png', height: 30, width: 30),
-                                        const Text("Желания", style:  TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.black),)
-                                      ]
-                                  )
-                                  ),
-                                  ElevatedButton(
-                                      onPressed: () {
+                           SizedBox(
+                               height: 52,
+                               child: Padding(
+                             padding: const EdgeInsets.fromLTRB(10, 2, 10, 0),
+                             child: Row(
+                               crossAxisAlignment: CrossAxisAlignment.center,
+                               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                               children: [
+                                 CustomBottomButton(
+                                     onPressed: () {
+                                       appVM.startMyTasksScreen();
+                                       BlocProvider.of<NavigationBloc>(context)
+                                           .add(NavigateToTasksScreenEvent());
+                                     },
+                                     icon: Image.asset('assets/icons/checklist2665651.png', height: 30, width: 30),
+                                     label: "Задачи"
+                                 ),
+                                 CustomBottomButton(
+                                     onPressed: () {
+                                       appVM.startMyAimsScreen();
+                                       BlocProvider.of<NavigationBloc>(context)
+                                           .add(NavigateToAimsScreenEvent());
+                                     },
+                                     icon: Image.asset('assets/icons/goal6002764.png', height: 30, width: 30),
+                                     label: "Цели"
 
-                                      },
-                                      style: ElevatedButton.styleFrom(elevation: 0, backgroundColor: Colors.transparent,),                                   child: Column(
-                                      children: [
-                                        Image.asset('assets/icons/notepad2725914.png', height: 30, width: 30),
-                                        const Text("Дневник", style:  TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.black),)
-                                      ]
-                                  )
-                                  ),
-                                ],
-                            ),)
+                                 ),
+                                 CustomBottomButton(
+                                     onPressed: () {
+                                       if(appVM.mainScreenState!=null){
+                                         appVM.mainCircles.clear();
+                                         appVM.startMainScreen(appVM.mainScreenState!.moon);
+                                       }
+                                       BlocProvider.of<NavigationBloc>(context)
+                                           .add(NavigateToMainScreenEvent());
+                                     },
+                                     icon: Image.asset('assets/icons/wheel2526426.png', height: 35, width: 35),
+                                     label: "Карта"
+
+                                 ),
+                                 CustomBottomButton(
+                                     onPressed: () {
+                                       appVM.startMyWishesScreen();
+                                       BlocProvider.of<NavigationBloc>(context)
+                                           .add(NavigateToWishesScreenEvent());
+                                     },
+                                     icon: Image.asset('assets/icons/notelove1648387.png', height: 30, width: 30),
+                                     label: "Желания"
+                                 ),
+                                 CustomBottomButton(
+                                     onPressed: () {                                      },
+                                     icon: Image.asset('assets/icons/notepad2725914.png', height: 30, width: 30),
+                                     label: "Дневник"
+                                 ),
+                               ],
+                             ),)
+                           )
                         ],
                     ));
             })

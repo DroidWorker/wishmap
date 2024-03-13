@@ -4,6 +4,7 @@ import 'package:capped_progress_indicator/capped_progress_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
+import 'package:wishmap/common/custom_bottom_button.dart';
 import '../ViewModel.dart';
 import '../common/treeview_widget.dart';
 import '../data/models.dart';
@@ -24,6 +25,7 @@ class _WishesScreenState extends State<WishesScreen>{
   List<WishItem> filteredWishList = [];
   List<MyTreeNode> roots = [];
   AppViewModel? appViewModel;
+  bool isWishesRequested = false;
 
   var isPBActive = false;
 
@@ -33,7 +35,10 @@ class _WishesScreenState extends State<WishesScreen>{
         builder: (context, appVM, child) {
           appViewModel=appVM;
           allWishList = appVM.wishItems;
-          if(appVM.mainScreenState!.allCircles.length>8&&allWishList.isEmpty)appVM.startMyWishesScreen();
+          if(allWishList.isEmpty&&!isWishesRequested){
+            appVM.startMyWishesScreen();
+            isWishesRequested = true;
+          }
           page==1?filteredWishList = allWishList.where((element) => element.isChecked).toList():
           page==2?filteredWishList = allWishList.where((element) => !element.isChecked).toList():
           page==3?filteredWishList = allWishList.where((element) => element.isActive).toList():filteredWishList = allWishList;
@@ -51,8 +56,7 @@ class _WishesScreenState extends State<WishesScreen>{
                 children: [
                   Row(children: [
                     IconButton(
-                      icon: const Icon(Icons.keyboard_arrow_left),
-                      iconSize: 30,
+                      icon: const Icon(Icons.keyboard_arrow_left, size: 30,),
                       onPressed: () {
                         BlocProvider.of<NavigationBloc>(context)
                             .add(NavigateToMainScreenEvent());
@@ -199,38 +203,30 @@ class _WishesScreenState extends State<WishesScreen>{
                     cornerRadius: 0,
                   ),
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(5, 3, 5, 0),
+                    padding: const EdgeInsets.fromLTRB(0, 3, 0, 0),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        ElevatedButton(
+                        CustomBottomButton(
                           onPressed: () {
                             appVM.startMyTasksScreen();
                             BlocProvider.of<NavigationBloc>(context)
                                 .add(NavigateToTasksScreenEvent());
                           },
-                          style: ElevatedButton.styleFrom(elevation: 0, backgroundColor: Colors.transparent,),                                  child: Column(
-                            children: [
-                              Image.asset('assets/icons/checklist2665651.png', height: 30, width: 30),
-                              const Text("Задачи", style:  TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.black),)
-                            ]
+                          icon: Image.asset('assets/icons/checklist2665651.png', height: 30, width: 30),
+                          label: "Задачи"
                         ),
-                        ),
-                        ElevatedButton(
+                        CustomBottomButton(
                             onPressed: () {
                               appVM.startMyAimsScreen();
                               BlocProvider.of<NavigationBloc>(context)
                                   .add(NavigateToAimsScreenEvent());
                             },
-                            style: ElevatedButton.styleFrom(elevation: 0, backgroundColor: Colors.transparent,),                                   child: Column(
-                            children: [
-                              Image.asset('assets/icons/goal6002764.png', height: 30, width: 30),
-                              const Text("Цели", style:  TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.black),)
-                            ]
-                        )
+                            icon:  Image.asset('assets/icons/goal6002764.png', height: 30, width: 30),
+                            label:  "Цели"
                         ),
-                        ElevatedButton(
+                        CustomBottomButton(
                             onPressed: () {
                               if(appVM.mainScreenState!=null){
                                 appVM.mainCircles.clear();
@@ -250,38 +246,26 @@ class _WishesScreenState extends State<WishesScreen>{
                               BlocProvider.of<NavigationBloc>(context)
                                   .add(NavigateToMainScreenEvent());
                             },
-                            style: ElevatedButton.styleFrom(elevation: 0, backgroundColor: Colors.transparent,),                                   child: Column(
-                            children: [
-                              Image.asset('assets/icons/wheel2526426.png', height: 35, width: 35),
-                              const Text("Карта", style:  TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.black),)
-                            ]
-                        )
+                             icon: Image.asset('assets/icons/wheel2526426.png', height: 35, width: 35),
+                            label: "Карта"
                         ),
-                        ElevatedButton(
+                        CustomBottomButton(
                             onPressed: () {
                               appVM.startMyWishesScreen();
                               BlocProvider.of<NavigationBloc>(context)
                                   .add(NavigateToWishesScreenEvent());
                             },
-                            style: ElevatedButton.styleFrom(elevation: 0, backgroundColor: Colors.transparent,),                                   child: Column(
-                            children: [
-                              Image.asset('assets/icons/notelove1648387.png', height: 30, width: 30),
-                              const Text("Желания", style:  TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.black),)
-                            ]
-                        )
+                            icon:  Image.asset('assets/icons/notelove1648387.png', height: 30, width: 30),
+                            label:  "Желания"
                         ),
-                        ElevatedButton(
+                        CustomBottomButton(
                             onPressed: () {
                               appVM.getDiary();
                               BlocProvider.of<NavigationBloc>(context)
                                   .add(NavigateToDiaryScreenEvent());
                             },
-                            style: ElevatedButton.styleFrom(elevation: 0, backgroundColor: Colors.transparent,),                                   child: Column(
-                            children: [
-                              Image.asset('assets/icons/notepad2725914.png', height: 30, width: 30),
-                              const Text("Дневник", style:  TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.black),)
-                            ]
-                        )
+                            icon:  Image.asset('assets/icons/notepad2725914.png', height: 30, width: 30),
+                            label:  "Дневник"
                         ),
                       ],
                     ),)

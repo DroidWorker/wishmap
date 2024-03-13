@@ -15,8 +15,7 @@ bool isFound = false;
       appBar: AppBar(
         foregroundColor: Colors.white,
         title: IconButton(
-          icon: const Icon(Icons.keyboard_arrow_left),
-          iconSize: 30,
+          icon: const Icon(Icons.keyboard_arrow_left, size: 30,),
           onPressed: (){
             BlocProvider.of<NavigationBloc>(context).handleBackPress();
           },

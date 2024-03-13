@@ -220,6 +220,28 @@ class _ProfileScreenState extends State<ProfileScreen>{
                   Icon(Icons.arrow_forward_ios)
                 ],),
               ),
+              const SizedBox(height: 5),
+              const Divider(
+                height: 3,
+                color: AppColors.dividerGreyColor,
+                indent: 5,
+                endIndent: 5,
+              ),
+              const SizedBox(height: 5),
+              InkWell(
+                onTap: () async {
+                  await appViewModel.signOut().then((value){
+                    BlocProvider.of<NavigationBloc>(context).clearHistory();
+                    BlocProvider.of<NavigationBloc>(context)
+                        .add(NavigateToAuthScreenEvent());
+                  });
+                },
+                child: const Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text("Выход"),
+                    Icon(Icons.arrow_forward_ios)
+                  ],),
+              ),
             ],
           ),
         ))

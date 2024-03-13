@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:sqflite/sqflite.dart';
@@ -115,6 +116,14 @@ class DatabaseHelper {
     // Удаление всех данных из таблицы diary
     await db.delete('diary', where: "moonId = ?", whereArgs: [moonId]);
   }
+  Future dropDatabase() async{
+    Database db = await database;
+    await db.delete("spheres");
+    await db.delete("aims");
+    await db.delete("tasks");
+    await db.delete("diary");
+    await db.delete("moons");
+  }
   Future clearMoons()async{
     Database db = await database;
     await db.delete('moons');
@@ -187,10 +196,10 @@ class DatabaseHelper {
   Future<int> insertTask(TaskData td, int moonid) async {
     Database db = await database;
     final parentAim = await getAim(td.parentId, moonid);
-    String childTasks = parentAim["childTasks"].toString();
+    String childTasks = parentAim["childTasks"]!=null?parentAim["childTasks"].toString():"";
     childTasks==""?childTasks=td.id.toString():childTasks+="|${td.id}";
     await db.update("aims", {"childTasks": childTasks}, where: "id = ? AND moonId = ?", whereArgs: [td.parentId, moonid]);
-    return await db.insert('tasks', {'id': td.id, 'moonId':moonid, 'text': td.text, 'subtext': td.description, 'parentId': td.parentId, 'isChecked': td.isChecked?1:0, 'isActive': td.isActive});
+    return await db.insert('tasks', {'id': td.id, 'moonId':moonid, 'text': td.text, 'subtext': td.description, 'parentId': td.parentId, 'isChecked': td.isChecked?1:0, 'isActive': td.isActive?1:0});
   }
 
   Future<int> updateTask(TaskData td, int moonid) async {
@@ -225,13 +234,19 @@ class DatabaseHelper {
 
   Future<int> insertAim(AimData ad, int moonid) async {
     Database db = await database;
-    String chTasks = ad.childTasks.join("|");
+    print("chitasks   ${ad.childTasks}");
+    String chTasks = "";//ad.childTasks.join("|");
+    print("-> chtasks  ${chTasks}");
     final sphere = await getSphere(ad.parentId, moonid);
-    Map<String, dynamic> tmp = jsonDecode(sphere['childAims']);
-    Map<String, int> chAims = tmp.map((key, value) => MapEntry(key, int.parse(value.toString())));
-    chAims["${ad.id}nvjvdjh"] = ad.id;
-    await db.update("spheres", {"childAims": jsonEncode(chAims)}, where: "id = ? AND moonId = ?", whereArgs: [ad.parentId, moonid]);
-    return await db.insert("aims", {'id': ad.id, 'moonId':moonid, 'text': ad.text, 'subtext': ad.description, 'parentId': ad.parentId, 'childTasks':chTasks, 'isChecked': ad.isChecked?1:0,  'isActive': ad.isActive});
+    Map<String, int> chAims = {};
+    if(sphere['childAims']!=null) {
+      Map<String, dynamic> tmp = jsonDecode(sphere['childAims']);
+      chAims = tmp.map((key, value) =>
+          MapEntry(key, int.parse(value.toString())));
+      chAims["${ad.id}nvjvdjh"] = ad.id;
+    }
+    if(chAims.isNotEmpty)await db.update("spheres", {"childAims": jsonEncode(chAims)}, where: "id = ? AND moonId = ?", whereArgs: [ad.parentId, moonid]);
+    return await db.insert("aims", {'id': ad.id, 'moonId':moonid, 'text': ad.text, 'subtext': ad.description, 'parentId': ad.parentId, 'childTasks':chTasks, 'isChecked': ad.isChecked?1:0,  'isActive': ad.isActive?1:0});
   }
 
   Future<int> updateAim(AimData ad, int moonid) async {
@@ -333,9 +348,13 @@ class DatabaseHelper {
     String chAims = wd.childAims.values.join("|");
     return await db.update("spheres", {'text': wd.text, 'prevId': wd.prevId, 'nextId': wd.nextId, 'subtext': wd.description, 'affirmation': wd.affirmation, 'isActive':wd.isActive?1:0, 'isChecked': wd.isChecked?1:0, 'isHidden': wd.isHidden?1:0, 'parentId': wd.parentId, 'photosIds': wd.photoIds, 'color': wd.color.value, 'childAims': chAims}, where: "id = ? AND moonId = ?", whereArgs: [wd.id, moonid]);
   }*/
-  Future<int>activateSphere(int sphereId, bool status, int moonid) async {
+  Future activateSpheres(List<int> sphereIds, bool status, int moonid) async {
     Database db = await database;
-    return await db.update("spheres", {'isActive': 1,}, where: "id = ? AND moonId = ?", whereArgs: [sphereId, moonid]);
+    var batch = db.batch();
+    sphereIds.forEach((sphereId) {
+      batch.update("spheres", {'isActive': 1,}, where: "id = ? AND moonId = ?", whereArgs: [sphereId, moonid]);
+    });
+    await batch.commit();
   }
   Future<int>hideSphere(int sphereId, bool isHide, int moonid) async {
     Database db = await database;

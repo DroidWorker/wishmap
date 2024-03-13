@@ -38,8 +38,7 @@ class TaskScreenState extends State<TaskScreen>{
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.keyboard_arrow_left),
-                      iconSize: 30,
+                      icon: const Icon(Icons.keyboard_arrow_left, size: 30,),
                       onPressed: () {
                         if(text.text.isNotEmpty&&!taskCreateClicked){
                           showDialog(context: context,

@@ -37,8 +37,7 @@ class _AimItem extends State<AimItemWidget>{
             ),
           ),
           IconButton(
-            icon: widget.ai.isChecked ? Image.asset('assets/icons/target_done.png'): widget.ai.isActive? Image.asset('assets/icons/target_active.png') : Image.asset('assets/icons/target_unactive.png'),
-            iconSize: 30,
+            icon: widget.ai.isChecked ? Image.asset('assets/icons/target_done.png', width: 30, height: 30): widget.ai.isActive? Image.asset('assets/icons/target_active.png', width: 30, height: 30) : Image.asset('assets/icons/target_unactive.png', width: 30, height: 30),
             onPressed: () {
               widget.onClick(widget.ai.id);
             },

@@ -119,8 +119,114 @@ class NavigationMainSettingsScreenState extends NavigationState {}
 
 
 class NavigationBloc extends Bloc<NavigationEvent, NavigationState> {
-  NavigationBloc() : super(NavigationMainScreenState());
+  NavigationBloc() : super(NavigationMainScreenState()) {
+    on<NavigateToAuthScreenEvent>((event, emit) {
+      _navigationHistory.add(NavigationAuthScreenState());
+      emit(_navigationHistory.last);
+    });
 
+    on<NavigateToMainScreenEvent>((event, emit) {
+      _navigationHistory.add(NavigationMainScreenState());
+      emit(_navigationHistory.last);
+    });
+
+    on<NavigateToCardsScreenEvent>((event, emit) {
+      _navigationHistory.add(NavigationCardsScreenState());
+      emit(_navigationHistory.last);
+    });
+
+    on<NavigateToWishScreenEvent>((event, emit) {
+      _navigationHistory.add(NavigationWishScreenState());
+      emit(_navigationHistory.last);
+    });
+
+    on<NavigateToAimCreateScreenEvent>((event, emit) {
+      _navigationHistory.add(NavigationAimCreateScreenState(parentCircleId: event.circleId));
+      emit(_navigationHistory.last);
+    });
+
+    on<NavigateToAimEditScreenEvent>((event, emit) {
+      _navigationHistory.add(NavigationAimEditScreenState(event.aimId));
+      emit(_navigationHistory.last);
+    });
+
+    on<NavigateToTasksScreenEvent>((event, emit) {
+      _navigationHistory.clear();
+      _navigationHistory.add(NavigationMainScreenState());
+      _navigationHistory.add(NavigationTasksScreenState());
+      emit(_navigationHistory.last);
+    });
+
+    on<NavigateToWishesScreenEvent>((event, emit) {
+      _navigationHistory.clear();
+      _navigationHistory.add(NavigationMainScreenState());
+      _navigationHistory.add(NavigationWishesScreenState());
+      emit(_navigationHistory.last);
+    });
+
+    on<NavigateToAimsScreenEvent>((event, emit) {
+      _navigationHistory.clear();
+      _navigationHistory.add(NavigationMainScreenState());
+      _navigationHistory.add(NavigationAimsScreenState());
+      emit(_navigationHistory.last);
+    });
+
+    on<NavigateToProfileScreenEvent>((event, emit) {
+      _navigationHistory.clear();
+      _navigationHistory.add(NavigationMainScreenState());
+      _navigationHistory.add(NavigationProfileScreenState());
+      emit(_navigationHistory.last);
+    });
+
+    on<NavigateToTaskCreateScreenEvent>((event, emit) {
+      _navigationHistory.add(NavigationTaskCreateScreenState(event.parentAimId));
+      emit(_navigationHistory.last);
+    });
+
+    on<NavigateToTaskEditScreenEvent>((event, emit) {
+      _navigationHistory.add(NavigationTaskEditScreenState(event.taskId));
+      emit(_navigationHistory.last);
+    });
+
+    on<NavigateToMainSphereEditScreenEvent>((event, emit) {
+      _navigationHistory.add(NavigationMainSphereEditScreenState());
+      emit(_navigationHistory.last);
+    });
+
+    on<NavigateToDiaryScreenEvent>((event, emit) {
+      _navigationHistory.add(NavigationDiaryScreenState());
+      emit(_navigationHistory.last);
+    });
+
+    on<NavigateToDiaryEditScreenEvent>((event, emit) {
+      _navigationHistory.add(NavigationDiaryEditScreenState(event.id));
+      emit(_navigationHistory.last);
+    });
+
+    on<NavigateToGalleryScreenEvent>((event, emit) {
+      _navigationHistory.add(NavigationGalleryScreenState());
+      emit(_navigationHistory.last);
+    });
+
+    on<NavigateToQRScreenEvent>((event, emit) {
+      _navigationHistory.add(NavigationQRScreenState());
+      emit(_navigationHistory.last);
+    });
+
+    on<NavigateToPersonalSettingsScreenEvent>((event, emit) {
+      _navigationHistory.add(NavigationPersonalSettingsScreenState());
+      emit(_navigationHistory.last);
+    });
+
+    on<NavigateToMainSettingsScreenEvent>((event, emit) {
+      _navigationHistory.add(NavigationMainSettingsScreenState());
+      emit(_navigationHistory.last);
+    });
+
+    on<NavigateBackEvent>((event, emit) {
+      emit(_navigationHistory.last);
+    });
+  }
   final List<NavigationState> _navigationHistory = [NavigationCardsScreenState()];
 
   final _backPressController = StreamController<bool>();

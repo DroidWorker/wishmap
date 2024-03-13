@@ -56,8 +56,7 @@ class DiaryEditScreenState extends State<DiaryEditScreen>{
                   Align(
                     alignment: Alignment.centerLeft,
                     child:IconButton(
-                      icon: const Icon(Icons.keyboard_arrow_left),
-                      iconSize: 30,
+                      icon: const Icon(Icons.keyboard_arrow_left, size: 30,),
                       onPressed: () {
                         appVM.updateDiary(CardData(id: diaryItem.id, emoji: currentEmoji, title: currentTitle, description: currentSubtitle, text: currentdescription, color: diaryItem.color));
                         BlocProvider.of<NavigationBloc>(context).handleBackPress();
