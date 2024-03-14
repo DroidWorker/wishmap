@@ -207,9 +207,13 @@ class DatabaseHelper {
     return await db.update("tasks", {'id': td.id, 'text': td.text, 'subtext': td.description, 'parentId': td.parentId, 'isChecked': td.isChecked?1:0}, where: "id = ? AND moonId = ?", whereArgs: [td.id, moonid]);
   }
 
-  Future<int> activateTask(int aimId, int moonid) async {
+  Future activateTask(List<int> aimIds, int moonid) async {
     Database db = await database;
-    return await db.update("tasks", {'isActive': 1,}, where: "id = ? AND moonId = ?", whereArgs: [aimId, moonid]);
+    var batch = db.batch();
+    aimIds.forEach((aimId) {
+      batch.update("tasks", {'isActive': 1,}, where: "id = ? AND moonId = ?", whereArgs: [aimId, moonid]);
+    });
+    await batch.commit();
   }
 
   Future<int> updateTaskStatus(int aimId, bool status, int moonid) async {
@@ -255,9 +259,13 @@ class DatabaseHelper {
     return await db.update("aims", {'text': ad.text, 'subtext': ad.description, 'parentId': ad.parentId, 'childTasks':chTasks, 'isChecked': ad.isChecked?1:0}, where: "id = ? AND moonId = ?", whereArgs: [ad.id, moonid]);
   }
 
-  Future<int> activateAim(int aimId, int moonid) async {
+  Future activateAim(List<int> aimIds, int moonid) async {
     Database db = await database;
-    return await db.update("aims", {'isActive': 1,}, where: "id = ? AND moonId = ?", whereArgs: [aimId, moonid]);
+    var batch = db.batch();
+    aimIds.forEach((aimId) {
+      batch.update("aims", {'isActive': 1,}, where: "id = ? AND moonId = ?", whereArgs: [aimId, moonid]);
+    });
+    await batch.commit();
   }
 
   Future<int> updateAimStatus(int aimId, bool status, int moonid) async {
@@ -284,10 +292,14 @@ class DatabaseHelper {
     return await db.query('aims', where: "moonId = ?", whereArgs: [moonid]);
   }
 
-  Future<int> insertSphere(WishData wd, int moonId) async {
+  Future insertSphere(List<WishData> wd, int moonId) async {
     Database db = await database;
-    String chAims = jsonEncode(wd.childAims);
-    return await db.insert("spheres", {'id': wd.id, 'prevId': wd.prevId, 'nextId': wd.nextId, 'moonId':moonId, 'text': wd.text, 'subtext': wd.description, 'affirmation': wd.affirmation, 'isActive':wd.isActive?1:0, 'isChecked': wd.isChecked?1:0, 'isHidden': wd.isHidden?1:0, 'parentId': wd.parentId, 'photosIds': wd.photoIds, 'color': wd.color.value, 'childAims': chAims, 'shuffle': 1, 'lastShuffle': wd.lastShuffle});
+    var batch = db.batch();
+    wd.forEach((wdItem) {
+      String chAims = jsonEncode(wdItem.childAims);
+      batch.insert("spheres", {'id': wdItem.id, 'prevId': wdItem.prevId, 'nextId': wdItem.nextId, 'moonId':moonId, 'text': wdItem.text, 'subtext': wdItem.description, 'affirmation': wdItem.affirmation, 'isActive':wdItem.isActive?1:0, 'isChecked': wdItem.isChecked?1:0, 'isHidden': wdItem.isHidden?1:0, 'parentId': wdItem.parentId, 'photosIds': wdItem.photoIds, 'color': wdItem.color.value, 'childAims': chAims, 'shuffle': 1, 'lastShuffle': wdItem.lastShuffle});
+    });
+    await batch.commit();
   }
   Future<int> insertOrUpdateSphere(WishData wd, int moonId) async {
     Database db = await database;

@@ -693,15 +693,15 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
                                           appViewModel.activateSphereWish(id, true);
                                           widget.circles.where((element) => element.id==id).firstOrNull?.isActive=true;
                                           setState(() { });
-                                        }else appViewModel.addError("Режим быстрой актуализации отключен в настройках");
+                                        }else appViewModel.addError("Режим быстрой актуализации едоступен");
                                       }else if(parentId!=0){
-                                       if(appViewModel.settings.fastActWish){
+                                       if(appViewModel.settings.fastActWish&&((appViewModel.settings.wishActualizingMode==1&&appViewModel.settings.sphereActualizingMode==1)||centralCircles.lastOrNull?.isActive==true)){
                                          appViewModel.activateSphereWish(id, true);
                                          widget.circles.where((element) => element.id==id).firstOrNull?.isActive=true;
                                          centralCircles.forEach((element) {element.isActive=true;});
                                          appViewModel.mainCircles = centralCircles;
                                          setState(() { });
-                                       }else appViewModel.addError("Режим быстрой актуализации отключен в настройках");
+                                       }else appViewModel.addError("Режим быстрой актуализации недоступен");
                                       }
                                     }else{
                                       appViewModel.cachedImages.clear();

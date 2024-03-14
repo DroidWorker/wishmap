@@ -37,6 +37,7 @@ class TaskEditScreenState extends State<TaskEditScreen>{
     description.addListener(() { if(ai?.text!=text.text)isChanged = true;});
     return Consumer<AppViewModel>(
         builder: (context, appVM, child) {
+          print("taskeeditscreen ${appVM.currentTask?.id}   ${appVM.currentTask?.text}");
           ai = appVM.currentTask??TaskData(id: -1, parentId: -1, text: 'объект не найден', description: "", isChecked: false);
           if(appVM.currentAim!=null) {
             AimData ad = appVM.currentAim!;

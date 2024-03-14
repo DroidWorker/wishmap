@@ -55,7 +55,7 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
     TextEditingController text = TextEditingController(text: curWd.text);
     TextEditingController affirmation = TextEditingController(text: curWd.affirmation.split("|")[0]);
     circleColor = curWd.color;
-    text.addListener(() { curWd.text=text.text;appViewModel.isChanged = true;});
+    text.addListener(() { if(text.text!=curWd.text)appViewModel.isChanged = true;curWd.text=text.text;});
     return Consumer<AppViewModel>(
         builder: (context, appVM, child){
           final aims = appVM.aimItems.where((element) => element.parentId==0).toList();

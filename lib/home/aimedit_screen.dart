@@ -760,6 +760,7 @@ class AimEditScreenState extends State<AimEditScreen>{
                           }else if(type=="w"){
                           if(isChanged){if(await showOnExit(appVM)==false) return;}
                             BlocProvider.of<NavigationBloc>(context).clearHistory();
+                            appVM.wishScreenState = null;
                             appVM.startWishScreen(id, 0);
                             BlocProvider.of<NavigationBloc>(context)
                                 .add(NavigateToWishScreenEvent());

@@ -758,7 +758,7 @@ class AppViewModel with ChangeNotifier {
         List<int> childAims = await localRep.getSpheresChildAims(id, mainScreenState?.moon.id??0);
         List<int> childTasks = [];
         for (var eid in childAims) {
-          activateAim(eid, true);
+          activateAim(eid, true, needToCommit: false);
           if(settings.taskActualizingMode==0) {
             final ts = await localRep.getAimsChildTasks(eid, mainScreenState?.moon.id??0);
             childTasks.addAll(ts);
@@ -766,8 +766,10 @@ class AppViewModel with ChangeNotifier {
         }
         //actualize childTasks
         for (var eid in childTasks) {
-          activateTask(eid, true);
+          activateTask(eid, true, needToCommit: false);
         }
+        localRep.commitAimsActivation(status, mainScreenState!.moon.id);
+        localRep.commitTasksActivation(status, mainScreenState!.moon.id);
       }else if(id<=800){
 
       }else{
@@ -788,7 +790,7 @@ class AppViewModel with ChangeNotifier {
         List<int> childAims = await localRep.getSpheresChildAims(id, mainScreenState?.moon.id??0);
         List<int> childTasks = [];
         for (var eid in childAims) {
-          activateAim(eid, true);
+          activateAim(eid, true, needToCommit: false);
           if(settings.taskActualizingMode==0) {
             final ts = await localRep.getAimsChildTasks(eid, mainScreenState?.moon.id??0);
             childTasks.addAll(ts);
@@ -796,8 +798,10 @@ class AppViewModel with ChangeNotifier {
         }
         //actualize childTasks
         for (var eid in childTasks) {
-          activateTask(eid, true);
+          activateTask(eid, true, needToCommit: false);
         }
+        localRep.commitAimsActivation(status, mainScreenState!.moon.id);
+        localRep.commitTasksActivation(status, mainScreenState!.moon.id);
       }
       if(myNodes.isNotEmpty)toggleActive(myNodes.first, 'w', id, status);
       if(updateScreen){
@@ -1020,12 +1024,13 @@ class AppViewModel with ChangeNotifier {
       addError("#764$ex");
     }
   }
-  Future<void> activateAim(int id, bool status) async{
+  activateAim(int id, bool status, {needToCommit = true}) {
     try {
       if(connectivity != 'No Internet Connection') repository.activateAim(id, mainScreenState!.moon.id, status);
-      await localRep.activateAim(id, status, mainScreenState!.moon.id);
+      localRep.activateAim(id);
       if(myNodes.isNotEmpty)toggleActive(myNodes.first, 'a', id, status);
       aimItems.where((element) => element.id==id).firstOrNull?.isActive=true;
+      if(needToCommit)localRep.commitAimsActivation(status, mainScreenState!.moon.id);
       updateMoonSync(mainScreenState?.moon.id??0);
     }catch(ex){
       addError("сфера не была актуализирована 008: $ex");
@@ -1147,12 +1152,13 @@ class AppViewModel with ChangeNotifier {
       addError("#528${ex.toString()}");
     }
   }
-  Future<void> activateTask(int id, bool status) async{
+ activateTask(int id, bool status, {needToCommit = true}) {
     try {
       if(connectivity != 'No Internet Connection') repository.activateTask(id, mainScreenState!.moon.id, status);
-      await localRep.activateTask(id, status, mainScreenState!.moon.id);
+      localRep.activateTask(id);
       if(myNodes.isNotEmpty)toggleActive(myNodes.first, 't', id, status);
       taskItems.where((element) => element.id==id).firstOrNull?.isActive=true;
+      if(needToCommit)localRep.commitTasksActivation(status, mainScreenState!.moon.id);
       updateMoonSync(mainScreenState?.moon.id??0);
     }catch(ex, s){
       print("eeeeeeeeerrrrrrrrrrr $ex -|__|- $s");
@@ -1242,16 +1248,19 @@ class AppViewModel with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<List<MyTreeNode>> convertToMyTreeNodeIncludedAimsTasks(MyTreeNode aimNode, int taskId, int wishId) async {
+  Future convertToMyTreeNodeIncludedAimsTasks(MyTreeNode aimNode, int taskId, int wishId) async {
+    print("taaaaaaaaaaaaaaaaaaaaaaask treeeee ${taskId}");
     final taskList = await getTasksForAim(aimNode.id);
+    taskList?.forEach((element) {
+      print("task element - ${element.id}  -  ${element.text}");
+    });
     List<CircleData> allCircles = getParentTree(wishId);
     List<MyTreeNode> children = <MyTreeNode>[MyTreeNode(id: aimNode.id, type: "a", title: aimNode.title, isChecked: aimNode.isChecked, isActive: aimNode.isActive, children: (taskList?.map((e) =>  MyTreeNode(id: e.id, type: 't', title: e.text, isChecked: e.isChecked, isActive: e.isActive)..noClickable=e.id==taskId))?.toList()??[])];
     for (var element in allCircles) {
       children=[MyTreeNode(id: element.id, type: element.id==0?"m":"w", title: element.text, isChecked:  element.isChecked, isActive: element.isActive, children: children)];
     }
-    myNodes= children;
+    myNodes = children;
     notifyListeners();
-    return children;
   }
 
   Future<List<MyTreeNode>> convertToMyTreeNodeFullBranch(int wishId) async {

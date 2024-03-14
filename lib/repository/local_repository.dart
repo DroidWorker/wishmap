@@ -161,12 +161,15 @@ class LocalRepository{
   }
   Future addAllMoons(MoonItem mi, List<CircleData>? childCircles, List<WishData>? childWishes) async{
       await dbHelper.insertMoon(mi);
-      childCircles?.forEach((element) async {
-        await dbHelper.insertSphere(WishData(id: element.id, prevId: element.prevId, nextId: element.nextId, parentId: element.parenId, text: element.text, description: element.subText, affirmation: element.affirmation, color: element.color)..isActive=element.isActive..isChecked=element.isChecked..isHidden=element.isHidden, mi.id);
-      });
-      childWishes?.forEach((element) async {
-        await dbHelper.insertSphere(element, mi.id);
-      });
+      if(childWishes!=null)await dbHelper.insertSphere(childWishes, mi.id);
+      else if(childCircles!=null){
+        List<WishData> wishes = [];
+        childCircles.forEach((element) async {
+          wishes.add(WishData(id: element.id, prevId: element.prevId, nextId: element.nextId, parentId: element.parenId, text: element.text, description: element.subText, affirmation: element.affirmation, color: element.color)..isActive=element.isActive..isChecked=element.isChecked..isHidden=element.isHidden);
+        });
+        await dbHelper.insertSphere(wishes, mi.id);
+
+      }
   }
   Future<List<MoonItem>> getMoons() async{
     final moons = (await dbHelper.getAllMoons());
@@ -204,7 +207,7 @@ class LocalRepository{
     return chAims.values.toList();
   }
   Future addSphere(WishData wd, int moonId) async{
-    await dbHelper.insertSphere(wd, moonId);
+    await dbHelper.insertSphere([wd], moonId);
   }
   Future insertORudateSphere(WishData wd, int moonId) async{
     await dbHelper.insertOrUpdateSphere(wd, moonId);
@@ -223,6 +226,7 @@ class LocalRepository{
   }
   Future commitASpheresActivation(bool status, int moonId) async{
     await dbHelper.activateSpheres(spheresToActivate, status, moonId);
+    spheresToActivate.clear();
   }
   Future hideSphere(int sphereId, bool isHide, int moonId) async{
     await dbHelper.hideSphere(sphereId, isHide, moonId);
@@ -277,8 +281,12 @@ class LocalRepository{
     chTasks.removeWhere((element) => element==removableId);
     await dbHelper.updateAimChildren(aimId, chTasks, moonId);
   }
-  Future activateAim(int aimId, bool status, int moonId) async{
-    await dbHelper.activateAim(aimId, moonId);
+  activateAim(int aimId) {
+    aimsToActivate.add(aimId);
+  }
+  Future commitAimsActivation(bool status, int moonId) async{
+    await dbHelper.activateAim(aimsToActivate, moonId);
+    aimsToActivate.clear();
   }
 
   Future<TaskData> getTask(int id, int moonId) async {
@@ -308,8 +316,12 @@ class LocalRepository{
   Future updateTaskStatus(int taskId, bool status, int moonId) async{
     await dbHelper.updateTaskStatus(taskId, status, moonId);
   }
-  Future activateTask(int taskId, bool status, int moonId) async{
-    await dbHelper.activateTask(taskId, moonId);
+  activateTask(int taskId){
+    tasksToActivate.add(taskId);
+  }
+  Future commitTasksActivation(bool status, int moonId) async{
+    await dbHelper.activateTask(tasksToActivate, moonId);
+    tasksToActivate.clear();
   }
 
   Future<List<CardData>> getAllDiary(int moonId) async {

@@ -154,7 +154,7 @@ class _WishScreenState extends State<WishScreen>{
                           }
                       ),
                       const Expanded(child: SizedBox(),),
-                      if(curwish.id > 800&&curwish.isActive)
+                      if(curwish.parentId > 1&&curwish.isActive)
                         TextButton(
                             style: TextButton.styleFrom(
                               backgroundColor: curwish.isChecked?AppColors.pinkButtonTextColor:AppColors.greyBackButton,
@@ -233,7 +233,7 @@ class _WishScreenState extends State<WishScreen>{
                                 content: Column(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    (curwish.childAims.isEmpty&&!appVM.hasChildWishes(curwish.id))?const Text("Объект будет удален"):(curwish.id > 800)?const Text("Если в данном желании создавались желания, цели и задачи, то они также будут удалены", maxLines: 4, textAlign: TextAlign.center,):
+                                    (curwish.childAims.isEmpty&&!appVM.hasChildWishes(curwish.id))?const Text("Объект будет удален"):(curwish.parentId > 1)?const Text("Если в данном желании создавались желания, цели и задачи, то они также будут удалены", maxLines: 4, textAlign: TextAlign.center,):
                                     const Text("Если в данной сфере\n создавались желания,\n цели и задачи, то они\n также будут удалены", maxLines: 4, textAlign: TextAlign.center,),
                                     const SizedBox(height: 4,),
                                     const Divider(color: AppColors.dividerGreyColor,),
@@ -364,7 +364,7 @@ class _WishScreenState extends State<WishScreen>{
                           child: const Text("Представить",
                             style: TextStyle(color: AppColors.redTextColor),)
                       )
-                      else if(curwish.isChecked&&curwish.id > 800)
+                      else if(curwish.isChecked&&curwish.parentId > 1)
                           TextButton(
                               style: TextButton.styleFrom(
                                 backgroundColor: curwish.isHidden?AppColors.pinkButtonTextColor:AppColors.greyBackButton,
@@ -560,7 +560,7 @@ class _WishScreenState extends State<WishScreen>{
                               ),
                             ),
                             const SizedBox(height: 10),
-                            if(curwish.id > 800)
+                            if(curwish.parentId > 1)
                               LayoutBuilder(
                                 builder: (context, constraints) {
                                   double fullWidth = constraints.maxWidth-4;
@@ -616,7 +616,7 @@ class _WishScreenState extends State<WishScreen>{
                                 },
                               ),
                             const SizedBox(height: 5),
-                            if(curwish.id > 800)
+                            if(curwish.parentId > 1)
                               ElevatedButton(
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: AppColors.fieldFillColor,
@@ -729,13 +729,17 @@ class _WishScreenState extends State<WishScreen>{
                                       appVM.myNodes.clear();
                                       BlocProvider.of<NavigationBloc>(context).add(NavigateToAimEditScreenEvent(id));
                                     }else if(type=="t"){
+                                      print("taaaaaaaaaaask ${id}");
                                       if(appViewModel.isChanged){if(await showOnExit(appVM, _title, _description, _affirmation)==false) return;}
+                                      appVM.myNodes.clear();
+                                      appVM.currentAim = null;
+                                      appVM.currentTask = null;
                                       appVM.getTask(id);
                                       BlocProvider.of<NavigationBloc>(context).add(NavigateToTaskEditScreenEvent(id));
                                     }
                                   },),
                                   const SizedBox(height: 5),
-                                  if(curwish.id > 800)
+                                  if(curwish.parentId > 1)
                                     ElevatedButton(
                                         style: ElevatedButton.styleFrom(
                                           backgroundColor: AppColors.fieldFillColor,
