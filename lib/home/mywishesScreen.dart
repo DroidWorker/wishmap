@@ -146,7 +146,7 @@ class _WishesScreenState extends State<WishesScreen>{
                             appVM.startMainsphereeditScreen();
                             BlocProvider.of<NavigationBloc>(context)
                                 .add(NavigateToMainSphereEditScreenEvent());
-                          }else if(type=="w"){
+                          }else if(type=="w"||type=="s"){
                             appVM.wishScreenState = null;
                             appVM.startWishScreen(id, 0);
                             BlocProvider.of<NavigationBloc>(context)

@@ -308,16 +308,18 @@ class AppViewModel with ChangeNotifier {
     }
     List<AimData> aims = await localRep.getAllAimsData(moonId-1);
     if(aims.isEmpty) aims = await repository.getMyAimsData(moonId-1)?? [];
-    aims.forEach((element) async {
+    for(var element in aims) {
       element.isActive=false;
-      await localRep.addAim(element,moonId);
-    });
+      localRep.addAllAims(element);
+    }
+    await localRep.commitAimsAdd(moonId);
     List<TaskData> tasks = await localRep.getAllTasksData(moonId-1);
     if(tasks.isEmpty) tasks = await repository.getMyTasksData(moonId-1)?? [];
     tasks.forEach((element) async {
       element.isActive=false;
-      await localRep.addTask(element,moonId);
+      localRep.addAllTasks(element);
     });
+    await localRep.commitTasksAdd(moonId);
     final diary = await localRep.getAllDiary(moonId-1);
     diary.forEach((element) async {
       await localRep.addDiary(element,moonId);
@@ -373,8 +375,14 @@ class AppViewModel with ChangeNotifier {
 
   Future<void> fetchAims(int moonId) async{
     final aims = await repository.getMyAimsData(moonId);
-    if(aims!=null)for (var element in aims) {
+    /*if(aims!=null)for (var element in aims) {
       await localRep.addAim(element,mainScreenState?.moon.id??-1);
+    }*/
+    if(aims!=null){
+      for(var aim in aims){
+        localRep.addAllAims(aim);
+      }
+      await localRep.commitAimsAdd(moonId);
     }
     isDataFetched--;
   }
@@ -385,10 +393,16 @@ class AppViewModel with ChangeNotifier {
   }
 
   Future fetchTasks(int moonId) async{
-    final aims = await repository.getMyTasksData(moonId);
-    aims?.forEach((element) {
+    final tasks = await repository.getMyTasksData(moonId);
+    /*aims?.forEach((element) {
       localRep.addTask(element,mainScreenState?.moon.id??-1);
-    });
+    });*/
+    if(tasks!=null){
+      for(var task in tasks) {
+        localRep.addAllTasks(task);
+      }
+      localRep.commitTasksAdd(moonId);
+    }
     isDataFetched--;
   }
   Future pushTasks(int moonId) async{
@@ -463,6 +477,7 @@ class AppViewModel with ChangeNotifier {
       try {
         //mainScreenState!.allCircles = (await repository.getSpheres(mi.id)) ?? [];
         mainScreenState!.allCircles = (await localRep.getAllMoonSpheres(mi.id));
+        print('aaaaaaaaaaaaaaaaaaaaa  ${mainScreenState!.allCircles}');
         if(mainScreenState!.allCircles.isEmpty) {
           mainScreenState!.allCircles = (await repository.getSpheres(mi.id)) ?? [];
           addError("произошла ошибка при загрузке данных");
@@ -478,6 +493,7 @@ class AppViewModel with ChangeNotifier {
         isinLoading=false;
         notifyListeners();
       } catch (ex, s) {
+        print("errror   ${ex}");
         print("eeeeeeeeee $s");
         addError("#579${ex.toString()}");
       }
@@ -744,8 +760,10 @@ class AppViewModel with ChangeNotifier {
       if(wishItems.where((element) => element.id==id).firstOrNull?.isChecked==true) return;
       if(connectivity != 'No Internet Connection') repository.activateWish(id, mainScreenState!.moon.id, status);
       await localRep.activateSphere(id);
-      mainScreenState!.allCircles[mainScreenState!.allCircles.indexWhere((element) => element.id==id)].isActive=true;
+      final wi =  mainScreenState!.allCircles[mainScreenState!.allCircles.indexWhere((element) => element.id==id)];
+      wi.isActive=true;
       wishItems.firstWhereOrNull((e)=>e.id==id)?.isActive=true;
+
       currentCircles.firstWhereOrNull((element) => element.id==id)?.isActive=status;
       if(id==0){
         if(settings.sphereActualizingMode==0){
@@ -770,18 +788,19 @@ class AppViewModel with ChangeNotifier {
         }
         localRep.commitAimsActivation(status, mainScreenState!.moon.id);
         localRep.commitTasksActivation(status, mainScreenState!.moon.id);
-      }else if(id<=800){
+      }else if(wi.parenId==0){
 
       }else{
         if(settings.sphereActualizingMode==1){
-          int parentSphere = mainScreenState?.allCircles.where((element) => element.id==id).first.parenId??-1;
-          await activateSphereWish(parentSphere, true, updateScreen: updateScreen, needToCommit: false);
+          int parentSphereid = mainScreenState?.allCircles.firstWhereOrNull((element) => element.id==id)?.parenId??-1;
+          final parentSphere = mainScreenState?.allCircles.firstWhereOrNull((element) => element.id==parentSphereid);
+          if(parentSphere!=null&&parentSphere.parenId==0&&!parentSphere.isActive)await activateSphereWish(parentSphere.id, true, updateScreen: updateScreen, needToCommit: false);
         }
         if(settings.wishActualizingMode==0){
           List<int> childWishes = mainScreenState?.allCircles.where((element) => element.parenId==id).map((e) => e.id).toList()??[];
-          childWishes.forEach((eid) async {
+          for (var eid in childWishes) {
             await activateSphereWish(eid, true, needToCommit: false);
-          });
+          }
         }else if(settings.wishActualizingMode==1){
           int parentWish = mainScreenState?.allCircles.where((element) => element.id==id).first.parenId??-1;
           if(parentWish>800) await activateSphereWish(parentWish, true, updateScreen: updateScreen);
@@ -798,7 +817,7 @@ class AppViewModel with ChangeNotifier {
         }
         //actualize childTasks
         for (var eid in childTasks) {
-          activateTask(eid, true, needToCommit: false);
+          await activateTask(eid, true, needToCommit: false);
         }
         localRep.commitAimsActivation(status, mainScreenState!.moon.id);
         localRep.commitTasksActivation(status, mainScreenState!.moon.id);
@@ -850,17 +869,13 @@ class AppViewModel with ChangeNotifier {
       }
       if(connectivity != 'No Internet Connection')await repository.hideWish(id, mainScreenState!.moon.id, isHide);
       await localRep.hideSphere(id, isHide, mainScreenState!.moon.id);
-      print("aaaaaaaaaaaaaaaaf${mainScreenState==null}");
       try{if(myNodes.isNotEmpty)toggleHidden(myNodes.first, 'w', id, isHide);}catch(ex, c){print("eeeeeeeeeeeexxxxxxxxxxxxxxxxxx$c");}
-      print("aaaaaaaaaaaaaaaaf0");
       if(mainScreenState!=null){
         final i = mainScreenState!.allCircles.indexWhere((element) => element.id==id);
-        print("aaaaaaaaaaaaaaaaf1  ${i}");
         if(i>=0)mainScreenState!.allCircles[i].isHidden=isHide;
       }
       if(wishItems.isNotEmpty){
         final i = wishItems.indexWhere((element) => element.id == id);
-        print("aaaaaaaaaaaaaaaaf1  ${i}");
         if(i>=0)wishItems[i].isHidden = isHide;
       }
       updateMoonSync(mainScreenState?.moon.id??0);
@@ -955,7 +970,10 @@ class AppViewModel with ChangeNotifier {
             updateWishStatus(e.id, status, recursive: false);
             if(mainScreenState!=null){
               final i = mainScreenState!.allCircles.indexWhere((element) => element.id==e.id);
-              if(i>=0)mainScreenState!.allCircles[i].isChecked=status;
+              if(i>=0){
+                mainScreenState!.allCircles[i].isChecked=status;
+                mainScreenState!.allCircles[i].isActive=true;
+              }
             }
             if(wishItems.isNotEmpty){
               final i = wishItems.indexWhere((element) => element.id == e.id);
@@ -976,7 +994,12 @@ class AppViewModel with ChangeNotifier {
       toggleChecked(myNodes.first, 'w', wishId, status);
       if(mainScreenState!=null){
         final i = mainScreenState!.allCircles.indexWhere((element) => element.id==wishId);
-        if(i>=0)mainScreenState!.allCircles[i].isChecked=status;
+        if(i>=0){
+          mainScreenState!.allCircles[i].isChecked=status;
+          mainScreenState!.allCircles[i].isActive=true;
+        }
+        mainCircles.firstWhereOrNull((element) => element.id==wishId)?..isActive=true..isChecked=status;
+        currentCircles.firstWhereOrNull((element) => element.id==wishId)?..isActive=true..isChecked=status;
       }
       if(wishItems.isNotEmpty){
         final i = wishItems.indexWhere((element) => element.id == wishId);
@@ -1242,14 +1265,13 @@ class AppViewModel with ChangeNotifier {
     List<CircleData> allCircles = getParentTree(circle.parenId);
     List<MyTreeNode> children = <MyTreeNode>[MyTreeNode(id: circle.id, type: "a", title: circle.text, isChecked: circle.isChecked, isActive: circle.isActive, children: (taskList?.map((e) =>  MyTreeNode(id: e.id, type: 't', title: e.text, isChecked: e.isChecked, isActive: e.isActive)))?.toList()??[])..noClickable=true];
     for (var element in allCircles) {
-      children=[MyTreeNode(id: element.id, type: element.id==0?"m":"w", title: element.text, children: children, isChecked: element.isChecked, isActive: element.isActive)];
+      children=[MyTreeNode(id: element.id, type: element.id==0?"m":element.parenId==0?"s":"w", title: element.text, children: children, isChecked: element.isChecked, isActive: element.isActive)];
     }
     myNodes = children;
     notifyListeners();
   }
 
   Future convertToMyTreeNodeIncludedAimsTasks(MyTreeNode aimNode, int taskId, int wishId) async {
-    print("taaaaaaaaaaaaaaaaaaaaaaask treeeee ${taskId}");
     final taskList = await getTasksForAim(aimNode.id);
     taskList?.forEach((element) {
       print("task element - ${element.id}  -  ${element.text}");
@@ -1257,7 +1279,7 @@ class AppViewModel with ChangeNotifier {
     List<CircleData> allCircles = getParentTree(wishId);
     List<MyTreeNode> children = <MyTreeNode>[MyTreeNode(id: aimNode.id, type: "a", title: aimNode.title, isChecked: aimNode.isChecked, isActive: aimNode.isActive, children: (taskList?.map((e) =>  MyTreeNode(id: e.id, type: 't', title: e.text, isChecked: e.isChecked, isActive: e.isActive)..noClickable=e.id==taskId))?.toList()??[])];
     for (var element in allCircles) {
-      children=[MyTreeNode(id: element.id, type: element.id==0?"m":"w", title: element.text, isChecked:  element.isChecked, isActive: element.isActive, children: children)];
+      children=[MyTreeNode(id: element.id, type: element.id==0?"m":element.parenId==0?"s":"w", title: element.text, isChecked:  element.isChecked, isActive: element.isActive, children: children)];
     }
     myNodes = children;
     notifyListeners();
@@ -1301,11 +1323,11 @@ class AppViewModel with ChangeNotifier {
           final chilldAims = aimItems.where((element) => element.parentId==melement.id);
           for (var e in chilldAims) {
             final childTasks = taskItems.where((item) => item.parentId==e.id);
-            childNodes.add(MyTreeNode(id: e.id, type: 'a', title: e.text, isChecked: e.isChecked,  isActive: e.isActive, children: (childTasks.map((t) => MyTreeNode(id: t.id, type: 't', title: t.text, isChecked: t.isChecked, isActive: e.isActive))).toList()));
+            childNodes.add(MyTreeNode(id: e.id, type: 'a', title: e.text, isChecked: e.isChecked,  isActive: e.isActive, children: (childTasks.map((t) => MyTreeNode(id: t.id, type: 't', title: t.text, isChecked: t.isChecked, isActive: t.isActive))).toList()));
           }
         }
         if(loclRoot != null)childNodes.add(loclRoot);
-        loclRoot = MyTreeNode(id: melement.id, type: melement.id==0?"m":"w", title: melement.text, isChecked: melement.isChecked, isActive:  melement.isActive,  children: childNodes, isHidden: melement.isHidden)..noClickable=melement.id==wishId?true:false;
+        loclRoot = MyTreeNode(id: melement.id, type: melement.id==0?"m":melement.parenId==0?"s":"w", title: melement.text, isChecked: melement.isChecked, isActive:  melement.isActive,  children: childNodes, isHidden: melement.isHidden)..noClickable=melement.id==wishId?true:false;
         if(melement.id==wishId) addChildTasksAims=false;
       }
       if(loclRoot!=null){
@@ -1313,9 +1335,6 @@ class AppViewModel with ChangeNotifier {
         mchildNodesIds[mchildNodes.indexOf(mchildNodes.last)]=(e.last.parenId);
       }
     }
-    commonPart.forEach((element) {
-      print("cooommon   ${element.text}");
-    });
     if(commonPart.isEmpty){
       root = mchildNodes.first;
     }else {
@@ -1342,7 +1361,7 @@ class AppViewModel with ChangeNotifier {
           });
         }
         root = MyTreeNode(id: melement.id,
-            type: melement.id == 0 ? "m" : "w",
+            type: melement.id == 0 ? "m":melement.parenId==0?"s":"w",
             title: melement.text,
             isChecked: melement.isChecked,
             isActive: melement.isActive,

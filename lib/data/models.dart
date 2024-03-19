@@ -228,7 +228,7 @@ class MyTreeNode {
   });
 
   final int  id;
-  final String type;//m-maincircle w-wish a-aim t-task
+  final String type;//m-maincircle s-sphere w-wish a-aim t-task
   final String title;
   bool isChecked;
   bool isHidden;
@@ -348,6 +348,7 @@ List<CircleData> sortList(List<CircleData> inputList) {
     print("element ${element.id}  ${element.text}");
   });
 
+  print("sort list returned ${sortedList.length} items");
   return sortedList;
 }
 

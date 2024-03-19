@@ -202,6 +202,16 @@ class DatabaseHelper {
     return await db.insert('tasks', {'id': td.id, 'moonId':moonid, 'text': td.text, 'subtext': td.description, 'parentId': td.parentId, 'isChecked': td.isChecked?1:0, 'isActive': td.isActive?1:0});
   }
 
+  Future<int> addAllTasks(List<TaskData> tds, int moonid) async {
+    Database db = await database;
+    var batch = db.batch();
+    tds.forEach((td) {
+      batch.insert('tasks', {'id': td.id, 'moonId':moonid, 'text': td.text, 'subtext': td.description, 'parentId': td.parentId, 'isChecked': td.isChecked?1:0, 'isActive': td.isActive?1:0});
+    });
+    await batch.commit();
+    return 1;
+  }
+
   Future<int> updateTask(TaskData td, int moonid) async {
     Database db = await database;
     return await db.update("tasks", {'id': td.id, 'text': td.text, 'subtext': td.description, 'parentId': td.parentId, 'isChecked': td.isChecked?1:0}, where: "id = ? AND moonId = ?", whereArgs: [td.id, moonid]);
@@ -251,6 +261,16 @@ class DatabaseHelper {
     }
     if(chAims.isNotEmpty)await db.update("spheres", {"childAims": jsonEncode(chAims)}, where: "id = ? AND moonId = ?", whereArgs: [ad.parentId, moonid]);
     return await db.insert("aims", {'id': ad.id, 'moonId':moonid, 'text': ad.text, 'subtext': ad.description, 'parentId': ad.parentId, 'childTasks':chTasks, 'isChecked': ad.isChecked?1:0,  'isActive': ad.isActive?1:0});
+  }
+  Future<int> addAllAims(List<AimData> tds, int moonid) async {
+    Database db = await database;
+    var batch = db.batch();
+    tds.forEach((ad) {
+      String chTasks = ad.childTasks.join("|");
+      batch.insert("aims", {'id': ad.id, 'moonId':moonid, 'text': ad.text, 'subtext': ad.description, 'parentId': ad.parentId, 'childTasks':chTasks, 'isChecked': ad.isChecked?1:0,  'isActive': ad.isActive?1:0});
+    });
+    await batch.commit();
+    return 1;
   }
 
   Future<int> updateAim(AimData ad, int moonid) async {
@@ -374,7 +394,7 @@ class DatabaseHelper {
   }
   Future<int> updateSphereStatus(int sphereId, bool status, int moonid) async {
     Database db = await database;
-    return await db.update("spheres", {'isChecked': status,}, where: "id = ? AND moonId = ?", whereArgs: [sphereId, moonid]);
+    return await db.update("spheres", {'isChecked': status?1:0, 'isActive': 1}, where: "id = ? AND moonId = ?", whereArgs: [sphereId, moonid]);
   }
   Future<int> updateSphereNeighbours(int sphereId, bool isNextId, int newValue, int moonid) async {
     Database db = await database;

@@ -88,6 +88,7 @@ class _MainScreenState extends State<MainScreen>{
                             IconButton(
                               icon: const Icon(Icons.menu, size: 30,),
                               onPressed: () {
+                                appVM.mainCircles.clear();
                                 BlocProvider.of<NavigationBloc>(context)
                                     .add(NavigateToProfileScreenEvent());
                               },

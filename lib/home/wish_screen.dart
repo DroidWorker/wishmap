@@ -2,6 +2,7 @@ import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:capped_progress_indicator/capped_progress_indicator.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:keyboard_attachable/keyboard_attachable.dart';
@@ -85,12 +86,14 @@ class _WishScreenState extends State<WishScreen>{
                 if (intList.isNotEmpty) appViewModel.getImages(intList);
               }
             }
-            if(appViewModel.cachedImages.length!=curwish.photoIds.length){
-              appViewModel.isChanged=true;
-            }else {
-              appViewModel.isChanged=false;
-            }
             appViewModel.wishScreenState!.isDataloaded = true;
+          }
+          final ids = appVM.wishScreenState?.wish.photoIds.split("|")??[];
+          if(ids.firstOrNull=="")ids.clear();
+          if(appViewModel.cachedImages.length!=ids.length){
+            appViewModel.isChanged=true;
+          }else {
+            appViewModel.isChanged=false;
           }
           root.clear();
           root.addAll(appVM.myNodes);
@@ -719,7 +722,7 @@ class _WishScreenState extends State<WishScreen>{
                                       appVM.startMainsphereeditScreen();
                                       BlocProvider.of<NavigationBloc>(context)
                                           .add(NavigateToMainSphereEditScreenEvent());
-                                    }else if(type=="w"){
+                                    }else if(type=="w"||type=="s"){
                                       if(appViewModel.isChanged){if(await showOnExit(appVM, _title, _description, _affirmation)==false) return;}
                                       curwish=WishData(id: -1, prevId: -1, nextId: -1, parentId: -1, text: "text", description: "description", affirmation: "affirmation", color: Colors.transparent);
                                       appVM.startWishScreen(id, 0);
@@ -729,7 +732,6 @@ class _WishScreenState extends State<WishScreen>{
                                       appVM.myNodes.clear();
                                       BlocProvider.of<NavigationBloc>(context).add(NavigateToAimEditScreenEvent(id));
                                     }else if(type=="t"){
-                                      print("taaaaaaaaaaask ${id}");
                                       if(appViewModel.isChanged){if(await showOnExit(appVM, _title, _description, _affirmation)==false) return;}
                                       appVM.myNodes.clear();
                                       appVM.currentAim = null;
@@ -792,7 +794,7 @@ class _WishScreenState extends State<WishScreen>{
   }
 
   void changeStatus(AppViewModel appVM){
-    if(appVM.wishScreenState!.wish.childAims.isNotEmpty) {
+    if(appVM.wishScreenState!.wish.childAims.isNotEmpty||appVM.mainScreenState?.allCircles.firstWhereOrNull((element) => element.parenId==appVM.wishScreenState!.wish.id)!=null) {
       showDialog(context: context,
         builder: (BuildContext context) =>
             AlertDialog(
@@ -805,7 +807,7 @@ class _WishScreenState extends State<WishScreen>{
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  curwish.childAims.isEmpty?const Text(""):(!curwish.isChecked) ? const Text(
+                  /*curwish.childAims.isEmpty?const Text(""):*/(!curwish.isChecked) ? const Text(
                     "Если в данном желании создавались другие желания, цели и задачи, то они также получат статус 'исполнена' / 'достигнута' / 'выполнена'",
                     maxLines: 6,
                     textAlign: TextAlign.center,) :

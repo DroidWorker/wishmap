@@ -757,7 +757,7 @@ class AimEditScreenState extends State<AimEditScreen>{
                             appVM.startMainsphereeditScreen();
                             BlocProvider.of<NavigationBloc>(context)
                                 .add(NavigateToMainSphereEditScreenEvent());
-                          }else if(type=="w"){
+                          }else if(type=="w"||type=="s"){
                           if(isChanged){if(await showOnExit(appVM)==false) return;}
                             BlocProvider.of<NavigationBloc>(context).clearHistory();
                             appVM.wishScreenState = null;

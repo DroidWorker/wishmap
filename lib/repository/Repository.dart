@@ -222,6 +222,7 @@ class Repository{
               'subText': wishData.description,
               'color': wishData.color.value,
               'parentId': wishData.parentId,
+              'photosIds': wishData.photoIds,
               'isActive': wishData.isActive,
               'isChecked': wishData.isChecked,
               'isHidden': wishData.isHidden,

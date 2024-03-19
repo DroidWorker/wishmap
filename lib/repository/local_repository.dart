@@ -16,6 +16,9 @@ class LocalRepository{
   List<int> aimsToActivate = [];
   List<int> tasksToActivate = [];
 
+  List<TaskData> tasksToAdd = [];
+  List<AimData> aimsToAdd = [];
+
   LocalRepository() {
     init();
   }
@@ -197,6 +200,7 @@ class LocalRepository{
   Future<List<CircleData>> getAllMoonSpheres(int moonId) async {
     final result = await dbHelper.getAllMoonSpheres(moonId);
     List<CircleData> list =  result.map((e) => CircleData(id: e['id'], prevId: e['prevId'], nextId: e['nextId'], parenId: e['parentId'], text: e['text'],affirmation: e['affirmation'], color: Color(e['color']), subText: e['subtext'], photosIds: e['photosIds'], isHidden: e['isHidden']==1?true:false, isActive: e['isActive']=="1"?true:false, isChecked: e['isChecked']=="1"?true:false)).toList();
+    print("circleslist   ${list.length}");
     //filter list for queqe displaying
     return sortList(list);
   }
@@ -267,6 +271,13 @@ class LocalRepository{
     int retId = ad.id==-1?(aims.length>0?aims[aims.length-1].id:-1)+1:ad.id;
     return retId;
   }
+  addAllAims(AimData ad) {
+    aimsToAdd.add(ad);
+  }
+  Future commitAimsAdd(int moonId) async{
+    await dbHelper.addAllAims(aimsToAdd, moonId);
+    aimsToAdd.clear();
+  }
   Future deleteAim(int aimId, int moonId) async{
     await dbHelper.deleteAim(aimId, moonId);
   }
@@ -306,6 +317,13 @@ class LocalRepository{
     await dbHelper.insertTask(TaskData(id: td.id==-1?(tasks.lastOrNull?.id??-1)+1:td.id, parentId: td.parentId, text: td.text, description: td.description, isChecked: td.isChecked, isActive: td.isActive), moonId);
     int retId = td.id==-1?(tasks.length>0?tasks[tasks.length-1].id:-1)+1:td.id;
     return retId;
+  }
+  Future addAllTasks(TaskData td) async{
+    tasksToAdd.add(td);
+  }
+  Future commitTasksAdd(int moonId) async{
+    await dbHelper.addAllTasks(tasksToAdd, moonId);
+    tasksToAdd.clear();
   }
   Future deleteTask(int taskId, int moonId) async{
     await dbHelper.deleteTask(taskId, moonId);

@@ -1,4 +1,5 @@
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
@@ -681,7 +682,7 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
                                   },
                                   doubleTap: (id, parentId){
                                     print("oncircletap3");
-                                    if(allowClick&&!entry.value.isActive&&!entry.value.isChecked){
+                                    if(allowClick&&!entry.value.isActive&&!entry.value.isChecked&&(appViewModel.settings.fastActMainSphere||appViewModel.settings.fastActSphere||appViewModel.settings.fastActWish)){
                                       if(id==0){
                                         if(appViewModel.settings.fastActMainSphere){
                                           appViewModel.activateSphereWish(id, true);
@@ -763,20 +764,60 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
                         ),
                         onDoubleTap: () async {
                           print("oncentralcircletap");
-                          if(allowClick&&centralCircles[index].id == 0&&centralCircles[index].isActive==false){
-                            if(appViewModel.settings.fastActMainSphere){
+                          if(allowClick&&!centralCircles[index].isChecked){
+                            /*if(appViewModel.settings.fastActMainSphere){
                               await appViewModel.activateSphereWish(0, true, updateScreen: true).then((value) {
                                 setState(() {
                                   widget.circles = appViewModel.currentCircles;
                                   centralCircles = appViewModel.mainCircles;
                                 });
                               });
-                              /*centralCircles.firstOrNull?.isActive=true;
-                              setState(() {
-
-                              });*/
-                            }else appViewModel.addError("Режим быстрой актуализации отключен в настройках");
-                          }
+                            }*/
+                              final id = centralCircles[index].id;
+                              final parentId = appViewModel.mainScreenState!.allCircles.firstWhereOrNull((element) => element.id==id)?.parenId;
+                              if(id==0){
+                                if(appViewModel.settings.fastActMainSphere&&centralCircles[index].isActive==false){
+                                  appViewModel.activateSphereWish(id, true);
+                                  widget.circles.where((element) => element.id==id).firstOrNull?.isActive=true;
+                                  setState(() { });
+                                }else {
+                                  appViewModel.cachedImages.clear();
+                                  appViewModel.startMainsphereeditScreen();
+                                  BlocProvider.of<NavigationBloc>(context)
+                                      .add(NavigateToMainSphereEditScreenEvent());
+                                }
+                              }else if(parentId==0){
+                                if(appViewModel.settings.fastActSphere&&centralCircles[index].isActive==false){
+                                  appViewModel.activateSphereWish(id, true);
+                                  widget.circles.where((element) => element.id==id).firstOrNull?.isActive=true;
+                                  setState(() { });
+                                }else {
+                                  appViewModel.cachedImages.clear();
+                                  appViewModel.wishScreenState = null;
+                                  appViewModel.startWishScreen(
+                                      centralCircles[index].id, 0);
+                                  appViewModel.mainCircles = centralCircles;
+                                  BlocProvider.of<NavigationBloc>(context)
+                                      .add(NavigateToWishScreenEvent());
+                                };
+                              }else if(parentId!=0){
+                                if(appViewModel.settings.fastActWish&&((appViewModel.settings.wishActualizingMode==1&&appViewModel.settings.sphereActualizingMode==1)||centralCircles.lastOrNull?.isActive==true)){
+                                  appViewModel.activateSphereWish(id, true);
+                                  widget.circles.where((element) => element.id==id).firstOrNull?.isActive=true;
+                                  centralCircles.forEach((element) {element.isActive=true;});
+                                  appViewModel.mainCircles = centralCircles;
+                                  setState(() { });
+                                }else {
+                                  appViewModel.cachedImages.clear();
+                                  appViewModel.wishScreenState = null;
+                                  appViewModel.startWishScreen(
+                                      centralCircles[index].id, 0);
+                                  appViewModel.mainCircles = centralCircles;
+                                  BlocProvider.of<NavigationBloc>(context)
+                                      .add(NavigateToWishScreenEvent());
+                                }
+                              }
+                            }
                         },
                         onTap: () {
                           print("oncentralcircletap - $allowClick");

@@ -38,6 +38,10 @@ class TaskEditScreenState extends State<TaskEditScreen>{
     return Consumer<AppViewModel>(
         builder: (context, appVM, child) {
           print("taskeeditscreen ${appVM.currentTask?.id}   ${appVM.currentTask?.text}");
+          if(appVM.currentTask?.id!=ai?.id){
+            isTextSetted=false;
+            roots.clear();
+          }
           ai = appVM.currentTask??TaskData(id: -1, parentId: -1, text: 'объект не найден', description: "", isChecked: false);
           if(appVM.currentAim!=null) {
             AimData ad = appVM.currentAim!;
@@ -378,7 +382,7 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                               appVM.startMainsphereeditScreen();
                               BlocProvider.of<NavigationBloc>(context)
                                   .add(NavigateToMainSphereEditScreenEvent());
-                            }else if(type=="w"){
+                            }else if(type=="w"||type=="s"){
                               if(isChanged){if(await showOnExit(appVM, ai!)==false) return;}
                               BlocProvider.of<NavigationBloc>(context).clearHistory();
                               appVM.cachedImages.clear();

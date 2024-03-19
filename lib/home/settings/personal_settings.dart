@@ -44,6 +44,7 @@ class PersonalSettingsState extends State<PersonalSettings>{
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   IconButton(onPressed: (){
+                    appViewModel.mainCircles.clear();
                     if(appViewModel.mainScreenState!=null)appViewModel.startMainScreen(appViewModel.mainScreenState!.moon);
                     BlocProvider.of<NavigationBloc>(context).handleBackPress();
                   }, icon: const Icon(Icons.arrow_back_ios, size: 15,)),

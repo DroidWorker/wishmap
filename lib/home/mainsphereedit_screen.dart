@@ -64,7 +64,7 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
           List<MyTreeNode> root = [];
           for (var element in aims) {
             final childTasks = tasks.where((e) => e.parentId==element.id).toList();
-            root.add(MyTreeNode(id: element.id, type: 'a', title: element.text, isChecked: element.isChecked, children: childTasks.map((item) => MyTreeNode(id: item.id, type: 't', title: item.text, isChecked: item.isChecked)).toList()));
+            root.add(MyTreeNode(id: element.id, type: 'a', title: element.text, isChecked: element.isChecked, isActive: element.isActive, children: childTasks.map((item) => MyTreeNode(id: item.id, type: 't', title: item.text, isChecked: item.isChecked, isActive: item.isActive)).toList()));
           }
           if(root.isNotEmpty)root = [MyTreeNode(id: 0, type: 'm', title: curWd.text, isChecked: false, children: root)..noClickable=true];
           return Scaffold(
@@ -130,39 +130,9 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
                       ),
                       onPressed: () async {
                         if(appViewModel.isChanged){
-                          showDialog(context: context,
-                            builder: (BuildContext c) => AlertDialog(
-                              contentPadding: EdgeInsets.zero,
-                              shape: const RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.all(Radius.circular(32.0))),
-                              title: const Text('Внимание', textAlign: TextAlign.center,),
-                              content: const Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text("Вы изменили поля но не нажали 'Сохранить'", maxLines: 6, textAlign: TextAlign.center,),
-                                  SizedBox(height: 4,),
-                                  Divider(color: AppColors.dividerGreyColor,),
-                                  SizedBox(height: 4,),
-                                  Text("Сохранить изменения?", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),)
-                                ],
-                              ),
-                              actions: <Widget>[
-                                TextButton(
-                                  onPressed: () async { Navigator.pop(c, 'OK');
-                                  onSaveClicked(appVM);
-                                  },
-                                  child: const Text('Да'),
-                                ),
-                                TextButton(
-                                  onPressed: () { Navigator.pop(context, 'Cancel');
-                                  BlocProvider.of<NavigationBloc>(context)
-                                      .add(NavigateToMainScreenEvent());},
-                                  child: const Text('Нет'),
-                                ),
-                              ],
-                            ),
-                          );}else {
-                          await appViewModel.updateSphereWish(WishData(
+                          onSaveClicked(appVM);
+                        }else {
+                          /*await appViewModel.updateSphereWish(WishData(
                               id: curWd.id,
                               prevId: curWd.prevId,
                               nextId: curWd.nextId,
@@ -170,10 +140,8 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
                               text: curWd.text,
                               description: curWd.subText,
                               affirmation: curWd.affirmation,
-                              color: curWd.color));
-                          if (appViewModel.mainScreenState !=
-                              null) await appViewModel.startMainScreen(
-                              appViewModel.mainScreenState!.moon);
+                              color: curWd.color));*/
+                          if (appViewModel.mainScreenState != null) await appViewModel.startMainScreen(appViewModel.mainScreenState!.moon);
                           appViewModel.hint =
                           "Отлично! Теперь пришло время заполнить все сферы жизни. Ты можешь настроить состав и название сфер так, как считаешь нужным. И помни, что максимальное количество сфер ограничено и равно 1.";
                           appViewModel.isChanged = false;
@@ -416,7 +384,7 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
                           appVM.startMainsphereeditScreen();
                           BlocProvider.of<NavigationBloc>(context)
                               .add(NavigateToMainSphereEditScreenEvent());
-                        }}else if(type=="w"){
+                        }}else if(type=="w"||type=="s"){
                           if(appViewModel.isChanged){showOnExit(appVM);}else{
                           BlocProvider.of<NavigationBloc>(context).clearHistory();
                           appVM.startWishScreen(id, 0);
