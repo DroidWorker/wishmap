@@ -46,11 +46,13 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
         List<int> intList = ids.map((str) => int.parse(str)).toList();
         appViewModel.getImages(intList);
       }
-      if(appViewModel.cachedImages.length!=curWd.photosIds.length){
-        appViewModel.isChanged=true;
-      }else {
-        appViewModel.isChanged=false;
-      }
+    }
+    final ids = curWd.photosIds.split("|")??[];
+    if(ids.firstOrNull=="")ids.clear();
+    if(appViewModel.cachedImages.length!=ids.length){
+      appViewModel.isChanged=true;
+    }else {
+      appViewModel.isChanged=false;
     }
     TextEditingController text = TextEditingController(text: curWd.text);
     TextEditingController affirmation = TextEditingController(text: curWd.affirmation.split("|")[0]);
@@ -103,6 +105,8 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
                             ),
                             TextButton(
                               onPressed: () { Navigator.pop(context, 'Cancel');
+                                appViewModel.mainCircles.clear();
+                              appViewModel.startMainScreen(appViewModel.mainScreenState!.moon);
                               BlocProvider.of<NavigationBloc>(context)
                                   .add(NavigateToMainScreenEvent());},
                               child: const Text('Нет'),
@@ -110,6 +114,8 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
                           ],
                         ),
                       );}else{
+                        appViewModel.mainCircles.clear();
+                        appViewModel.startMainScreen(appViewModel.mainScreenState!.moon);
                         BlocProvider.of<NavigationBloc>(context)
                             .add(NavigateToMainScreenEvent());
                       }
@@ -466,6 +472,8 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
           TextButton(
             onPressed: () {
               Navigator.pop(c, 'OK');
+              appViewModel.mainCircles.clear();
+              appViewModel.startMainScreen(appViewModel.mainScreenState!.moon);
               BlocProvider.of<NavigationBloc>(context)
                   .add(NavigateToMainScreenEvent());
               },

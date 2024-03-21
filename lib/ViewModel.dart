@@ -115,6 +115,20 @@ class AppViewModel with ChangeNotifier {
     }
   }
 
+  void createReport(){
+    String json = "mainCircles\n";
+    mainCircles.forEach((element) {
+      final obj = element.toJson();
+      json += "${obj['id']} - ${obj['text']}\n";
+    });
+    json+="orbital  circles\n";
+    currentCircles.forEach((element) {
+      final obj = element.toJson();
+      json += "${obj['id']} - ${obj['text']}\n";
+    });
+    repository.addReport(DateTime.now().toString().replaceAll(".", " "), json);
+  }
+
   Future clearLocalDB() async {
     await localRep.clearDatabase(mainScreenState?.moon.id??-1);
   }
@@ -476,9 +490,9 @@ class AppViewModel with ChangeNotifier {
       mainScreenState = MainScreenState(moon: mi, musicId: 0);
       try {
         //mainScreenState!.allCircles = (await repository.getSpheres(mi.id)) ?? [];
-        mainScreenState!.allCircles = (await localRep.getAllMoonSpheres(mi.id));
-        print('aaaaaaaaaaaaaaaaaaaaa  ${mainScreenState!.allCircles}');
-        if(mainScreenState!.allCircles.isEmpty) {
+        final spheres = (await localRep.getAllMoonSpheres(mi.id));
+        mainScreenState?.allCircles = spheres;
+        if(spheres.isEmpty) {
           mainScreenState!.allCircles = (await repository.getSpheres(mi.id)) ?? [];
           addError("произошла ошибка при загрузке данных");
         }
@@ -710,6 +724,8 @@ class AppViewModel with ChangeNotifier {
       if(sphereInWishesList>=0){
         wishItems[sphereInWishesList]=WishItem(id: wd.id, text: wd.text, isChecked: wd.isChecked,isActive: wd.isActive, isHidden: wd.isHidden);
       }*/
+      wishScreenState?.wish.photoIds=photosIds;
+      notifyListeners();
       wishItems.clear();
       updateMoonSync(mainScreenState?.moon.id??0);
     }catch(ex){
@@ -1348,10 +1364,12 @@ class AppViewModel with ChangeNotifier {
                 type: 'a',
                 title: e.text,
                 isChecked: e.isChecked,
+                isActive: e.isActive,
                 children: (childTasks.map((t) => MyTreeNode(id: t.id,
                     type: 't',
                     title: t.text,
-                    isChecked: t.isChecked))).toList()));
+                    isChecked: t.isChecked,
+                    isActive: t.isActive))).toList()));
           }
         }
         if (root != null) childNodes.add(root);

@@ -221,14 +221,14 @@ class DatabaseHelper {
     Database db = await database;
     var batch = db.batch();
     aimIds.forEach((aimId) {
-      batch.update("tasks", {'isActive': 1,}, where: "id = ? AND moonId = ?", whereArgs: [aimId, moonid]);
+      batch.update("tasks", {'isActive': 1}, where: "id = ? AND moonId = ?", whereArgs: [aimId, moonid]);
     });
     await batch.commit();
   }
 
   Future<int> updateTaskStatus(int aimId, bool status, int moonid) async {
     Database db = await database;
-    return await db.update("tasks", {'isChecked': status,}, where: "id = ? AND moonId = ?", whereArgs: [aimId, moonid]);
+    return await db.update("tasks", {'isChecked': status?1:0, 'isActive': 1}, where: "id = ? AND moonId = ?", whereArgs: [aimId, moonid]);
   }
 
   Future<int> deleteTask(int id, int moonid) async {
@@ -290,7 +290,7 @@ class DatabaseHelper {
 
   Future<int> updateAimStatus(int aimId, bool status, int moonid) async {
     Database db = await database;
-    return await db.update("aims", {'isChecked': status,}, where: "id = ? AND moonId = ?", whereArgs: [aimId, moonid]);
+    return await db.update("aims", {'isChecked': status?1:0, 'isActive': 1}, where: "id = ? AND moonId = ?", whereArgs: [aimId, moonid]);
   }
   Future<int> updateAimChildren(int aimId, List<int> childTasks, int moonid) async {
     Database db = await database;

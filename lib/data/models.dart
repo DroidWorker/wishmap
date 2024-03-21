@@ -94,6 +94,18 @@ class Circle {
   int nextId;
 
   Circle({required this.id, required this.parentId, required this.prevId, required this.nextId, required this.text, required this.color, this.radius=80, this.isActive = true, this.isChecked = true});
+
+  Map toJson() => {
+    'id': id,
+    'parentId': parentId,
+      'text': text,
+  'color': color,
+      'radius': radius,
+  'isActive': isActive,
+      'isChecked': isChecked,
+  'prevId': prevId,
+      'nextId': nextId,
+  };
 }
 
 class MainCircle {
@@ -109,6 +121,19 @@ class MainCircle {
   bool isChecked;
 
   MainCircle({required this.id, required this.coords, required this.text, this.substring = "", this.textSize = 24, required this.color, this.radius=52, this.isVisible = true, this.isActive = true, this.isChecked = false});
+
+  Map toJson() => {
+    'id': id,
+    'coords': coords,
+    'text': text,
+    'substring': substring,
+    'textSize': textSize,
+    'color': color,
+    'radius': radius,
+    'isVisible': isVisible,
+    'isActive': isActive,
+    'isChecked': isChecked,
+  };
 }
 
 class Pair{

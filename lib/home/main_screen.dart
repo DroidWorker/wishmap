@@ -85,13 +85,18 @@ class _MainScreenState extends State<MainScreen>{
                       children: [
                         Row(
                           children: [
-                            IconButton(
+                            InkWell(child:IconButton(
                               icon: const Icon(Icons.menu, size: 30,),
                               onPressed: () {
                                 appVM.mainCircles.clear();
                                 BlocProvider.of<NavigationBloc>(context)
                                     .add(NavigateToProfileScreenEvent());
                               },
+                            ),
+                            onLongPress: (){
+                              appVM.createReport();
+                              appVM.addError("Bug Report");
+                            },
                             )
                           ],
                         ),

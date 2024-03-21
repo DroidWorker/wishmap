@@ -153,6 +153,14 @@ class Repository{
     }
   }
 
+  Future addReport(String date, String json) async{
+    if(_auth.currentUser!=null){
+      userRef.child(_auth.currentUser!.uid).child("report").child(date).set(
+          json
+      );
+    }
+  }
+
   Future updateMoonSync(int moonId, int timestamp)async {
     if (_auth.currentUser != null) {
       (await userRef.child(_auth.currentUser!.uid).child("moonlist").child(moonId.toString()).child("lastSyncDate").set(
