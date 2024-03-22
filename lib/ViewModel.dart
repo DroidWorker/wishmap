@@ -708,9 +708,8 @@ class AppViewModel with ChangeNotifier {
       if(sphereInAllCircles==-1){
         mainScreenState!.allCircles.add(CircleData(id: wd.id, prevId: wd.prevId, nextId: wd.nextId, text: wd.text, color: wd.color, parenId: wd.parentId)..shuffle=wd.shuffle..lastShuffle=wd.lastShuffle);
         mainScreenState!.allCircles = sortList(mainScreenState!.allCircles);
-
-        //mainScreenState!.allCircles.sort((a,b)=>a.id.compareTo(b.id));
-        if(wd.id > 800)wishItems.add(WishItem(id: wd.id, text: wd.text, isChecked: wd.isChecked, isActive: wd.isActive, isHidden: wd.isHidden));
+        if(mainCircles.last.id==wd.parentId)currentCircles.add(Circle(id: wd.id, parentId: wd.parentId, prevId: wd.prevId, nextId: wd.nextId, text: wd.text, color: wd.color)..isChecked=false);
+        if(wd.parentId > 1)wishItems.add(WishItem(id: wd.id, text: wd.text, isChecked: wd.isChecked, isActive: wd.isActive, isHidden: wd.isHidden));
       }
       else{
         mainScreenState!.allCircles[sphereInAllCircles]

@@ -15,5 +15,7 @@ class AppColors {
   static const Color greyBackButton = Color(0xFFD9D9D9);
   static const Color blueButtonTextColor = Color(0xFF46C8FF);
   static const Color pinkButtonTextColor = Color(0xFFFFABCE);
-
+//redesign
+  static const Color lightGrey = Color(0xFFF1F1F1);
+  static const Color textLightGrey= Color(0x2C2C2C4D);
 }

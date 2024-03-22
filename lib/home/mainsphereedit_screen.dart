@@ -13,6 +13,7 @@ import '../ViewModel.dart';
 import '../common/collage.dart';
 import '../common/colorpicker_widget.dart';
 import '../common/treeview_widget.dart';
+import '../common/treeview_widget_v2.dart';
 import '../data/models.dart';
 import '../data/static.dart';
 import '../navigation/navigation_block.dart';
@@ -382,34 +383,8 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
                   child: Column(children: [
                     const Text("Цели и задачи", style: TextStyle(color: Colors.black54/*, decoration: TextDecoration.underline*/),),
                     const SizedBox(height: 5),
-                      MyTreeView(key: UniqueKey(),roots: root, onTap: (id, type){
-                        if(type=="m"){
-                          if(appViewModel.isChanged){showOnExit(appVM);}else{
-                          BlocProvider.of<NavigationBloc>(context).clearHistory();
-                          appVM.cachedImages.clear();
-                          appVM.startMainsphereeditScreen();
-                          BlocProvider.of<NavigationBloc>(context)
-                              .add(NavigateToMainSphereEditScreenEvent());
-                        }}else if(type=="w"||type=="s"){
-                          if(appViewModel.isChanged){showOnExit(appVM);}else{
-                          BlocProvider.of<NavigationBloc>(context).clearHistory();
-                          appVM.startWishScreen(id, 0);
-                          BlocProvider.of<NavigationBloc>(context)
-                              .add(NavigateToWishScreenEvent());
-                        }}else if(type=="a"){
-                          if(appViewModel.isChanged){showOnExit(appVM);}else{
-                          appVM.myNodes.clear();
-                          appVM.getAim(id);
-                          BlocProvider.of<NavigationBloc>(context)
-                              .add(NavigateToAimEditScreenEvent(id));
-                        }}else if(type=="t"){
-                          if(appViewModel.isChanged){showOnExit(appVM);}else{
-                          appVM.getTask(id);
-                          BlocProvider.of<NavigationBloc>(context)
-                              .add(NavigateToTaskEditScreenEvent(id));
-                        }}
-                      },),
-                    //),
+                    appVM.settings.treeView==0?MyTreeView(key: UniqueKey(),roots: root, onTap: (id, type) => onTreeItemTap(appVM, id, type)):
+                    TreeViewWidgetV2(key: UniqueKey(), root: root.firstOrNull??MyTreeNode(id: -1, type: "a", title: "title", isChecked: true), onTap: (id,type) => onTreeItemTap(appVM, id, type),),
                     const SizedBox(height: 5),
                     ElevatedButton(
                         style: ElevatedButton.styleFrom(
@@ -425,6 +400,28 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
                           }
                         },
                         child: const Text("Добавить", style: TextStyle(color: AppColors.greytextColor))
+                    ),
+                    if(curWd.isActive)ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.fieldFillColor,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10), // <-- Radius
+                          ),
+                        ),
+                        onPressed: () async {
+                          final childlastid = appViewModel.mainScreenState?.allCircles.where((element) => element.parenId==1&&element.nextId==-1).firstOrNull?.id??-1;
+                          int wishid = appViewModel.mainScreenState!.allCircles.isNotEmpty?appViewModel.mainScreenState!.allCircles.map((circle) => circle.id).reduce((value, element) => value > element ? value : element)+1:-101;
+                          await appViewModel.createNewSphereWish(WishData(id: wishid, prevId: childlastid, nextId: -1, parentId: curWd.id, text: "Новое сфера", description: "", affirmation: (defaultAffirmations.join("|").toString()), color: Colors.red), true).then((value) {
+                            BlocProvider.of<NavigationBloc>(context).clearHistory();
+                            appVM.cachedImages.clear();
+                            appVM.wishScreenState=null;
+                            appViewModel.startWishScreen(wishid, 1);
+                            BlocProvider.of<NavigationBloc>(context)
+                                .add(NavigateToWishScreenEvent());
+                          }
+                          );
+                        },
+                        child: const Text("Добавить желание", style: TextStyle(color: AppColors.greytextColor))
                     )
                   ],),
                 )]))),),
@@ -541,5 +538,31 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
       ),
     );
   }
-
+   void onTreeItemTap(AppViewModel appVM, int id, String type){
+     if(type=="m"){
+       if(appVM.isChanged){showOnExit(appVM);}else{
+         BlocProvider.of<NavigationBloc>(context).clearHistory();
+         appVM.cachedImages.clear();
+         appVM.startMainsphereeditScreen();
+         BlocProvider.of<NavigationBloc>(context)
+             .add(NavigateToMainSphereEditScreenEvent());
+       }}else if(type=="w"||type=="s"){
+       if(appVM.isChanged){showOnExit(appVM);}else{
+         BlocProvider.of<NavigationBloc>(context).clearHistory();
+         appVM.startWishScreen(id, 0);
+         BlocProvider.of<NavigationBloc>(context)
+             .add(NavigateToWishScreenEvent());
+       }}else if(type=="a"){
+       if(appVM.isChanged){showOnExit(appVM);}else{
+         appVM.myNodes.clear();
+         appVM.getAim(id);
+         BlocProvider.of<NavigationBloc>(context)
+             .add(NavigateToAimEditScreenEvent(id));
+       }}else if(type=="t"){
+       if(appVM.isChanged){showOnExit(appVM);}else{
+         appVM.getTask(id);
+         BlocProvider.of<NavigationBloc>(context)
+             .add(NavigateToTaskEditScreenEvent(id));
+       }}
+   }
 }

@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:wishmap/common/treeview_widget.dart';
 import '../ViewModel.dart';
 import '../common/EditTextOverlay.dart';
+import '../common/treeview_widget_v2.dart';
 import '../data/models.dart';
 import '../navigation/navigation_block.dart';
 import '../res/colors.dart';
@@ -374,37 +375,8 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                             ),
                           ),
                           const SizedBox(height: 15,),
-                          MyTreeView(key: UniqueKey(),roots: roots, onTap: (id,type) async {
-                            if(type=="m"){
-                              if(isChanged){if(await showOnExit(appVM, ai!)==false) return;}
-                              BlocProvider.of<NavigationBloc>(context).clearHistory();
-                              appVM.cachedImages.clear();
-                              appVM.startMainsphereeditScreen();
-                              BlocProvider.of<NavigationBloc>(context)
-                                  .add(NavigateToMainSphereEditScreenEvent());
-                            }else if(type=="w"||type=="s"){
-                              if(isChanged){if(await showOnExit(appVM, ai!)==false) return;}
-                              BlocProvider.of<NavigationBloc>(context).clearHistory();
-                              appVM.cachedImages.clear();
-                              appVM.wishScreenState=null;
-                              appVM.startWishScreen(id, 0);
-                              BlocProvider.of<NavigationBloc>(context)
-                                  .add(NavigateToWishScreenEvent());
-                            }else if(type=="a"){
-                              if(isChanged){if(await showOnExit(appVM, ai!)==false) return;}
-                              appVM.myNodes.clear();
-                              appVM.getAim(id);
-                              BlocProvider.of<NavigationBloc>(context).removeLastFromBS();
-                              BlocProvider.of<NavigationBloc>(context)
-                                  .add(NavigateToAimEditScreenEvent(id));
-                            }else if(type=="t"&&ai!.id!=id){
-                              if(isChanged){if(await showOnExit(appVM, ai!)==false) return;}
-                              appVM.getTask(id);
-                              BlocProvider.of<NavigationBloc>(context).removeLastFromBS();
-                              BlocProvider.of<NavigationBloc>(context)
-                                  .add(NavigateToTaskEditScreenEvent(id));
-                            }
-                          },),
+                          appVM.settings.treeView==0?MyTreeView(key: UniqueKey(),roots: roots, onTap: (id,type) => onTreeItemTap(appVM, id, type)):
+                          TreeViewWidgetV2(key: UniqueKey(), root: roots.firstOrNull??MyTreeNode(id: -1, type: "a", title: "title", isChecked: true), onTap: (id,type) => onTreeItemTap(appVM, id, type),)
                         ],
                       ),
                     ))
@@ -424,6 +396,7 @@ class TaskEditScreenState extends State<TaskEditScreen>{
     );
   });
   }
+
   Future<bool> onSaveClicked(AppViewModel appVM, TaskData ai) async {
     if(text.text.isEmpty){
       await showDialog(context: context,
@@ -576,5 +549,44 @@ class TaskEditScreenState extends State<TaskEditScreen>{
         ],
       ),
     );
+  }
+  Future onTreeItemTap(AppViewModel appVM, int id, String type)async {
+    if (type == "m") {
+      if (isChanged) {
+        if (await showOnExit(appVM, ai!) == false) return;
+      }
+      BlocProvider.of<NavigationBloc>(context).clearHistory();
+      appVM.cachedImages.clear();
+      appVM.startMainsphereeditScreen();
+      BlocProvider.of<NavigationBloc>(context)
+          .add(NavigateToMainSphereEditScreenEvent());
+    } else if (type == "w" || type == "s") {
+      if (isChanged) {
+        if (await showOnExit(appVM, ai!) == false) return;
+      }
+      BlocProvider.of<NavigationBloc>(context).clearHistory();
+      appVM.cachedImages.clear();
+      appVM.wishScreenState = null;
+      appVM.startWishScreen(id, 0);
+      BlocProvider.of<NavigationBloc>(context)
+          .add(NavigateToWishScreenEvent());
+    } else if (type == "a") {
+      if (isChanged) {
+        if (await showOnExit(appVM, ai!) == false) return;
+      }
+      appVM.myNodes.clear();
+      appVM.getAim(id);
+      BlocProvider.of<NavigationBloc>(context).removeLastFromBS();
+      BlocProvider.of<NavigationBloc>(context)
+          .add(NavigateToAimEditScreenEvent(id));
+    } else if (type == "t" && ai!.id != id) {
+      if (isChanged) {
+        if (await showOnExit(appVM, ai!) == false) return;
+      }
+      appVM.getTask(id);
+      BlocProvider.of<NavigationBloc>(context).removeLastFromBS();
+      BlocProvider.of<NavigationBloc>(context)
+          .add(NavigateToTaskEditScreenEvent(id));
+    }
   }
 }

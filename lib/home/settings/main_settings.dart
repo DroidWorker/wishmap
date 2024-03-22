@@ -137,6 +137,27 @@ class MainSettingsState extends State<MainSettings>{
                 appViewModel.settings.quoteupdateFreq=changed?5:20;
                 appViewModel.saveSettings();
               });}),
+              const SizedBox(height: 10,),
+              const Divider(
+                height: 3,
+                color: AppColors.dividerGreyColor,
+                indent: 5,
+                endIndent: 5,
+              ),
+              const SizedBox(height: 10,),
+              const Center(child: Text("Вид дерева объектов", style: TextStyle(fontSize: 18, color: AppColors.greytextColor),),),
+              const SizedBox(height: 8,),
+              const Center(child: Text("описание", style: TextStyle(fontSize: 14, color: AppColors.greytextColor),),),
+              const SizedBox(height: 10,),
+              buildSettingItem("Старый", "", appViewModel.settings.treeView==0, (changed){setState(() {
+                appViewModel.settings.treeView=changed?0:1;
+                appViewModel.saveSettings();
+              });}),
+              const Center(child: Text("или")),
+              buildSettingItem("Новый", "", appViewModel.settings.treeView==1, (changed){setState(() {
+                appViewModel.settings.treeView=changed?1:0;
+                appViewModel.saveSettings();
+              });}),
               const SizedBox(height: 5,),
             ],
           ),

@@ -35,6 +35,10 @@ class ActualizingSettingData{
   ActualizingSettingData({this.sphereActualizingMode = 0, this.wishActualizingMode = 0, this.taskActualizingMode = 0});
 
   int quoteupdateFreq=10;
+
+  int treeView = 0;
+  //0-old
+  //1-new
 }
 
 class CircleData{

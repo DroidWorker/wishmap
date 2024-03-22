@@ -15,6 +15,7 @@ import '../common/affirmationOverlay.dart';
 import '../common/collage.dart';
 import '../common/colorpicker_widget.dart';
 import '../common/treeview_widget.dart';
+import '../common/treeview_widget_v2.dart';
 import '../data/static.dart';
 import '../data/static_affirmations_women.dart';
 import '../navigation/navigation_block.dart';
@@ -714,32 +715,8 @@ class _WishScreenState extends State<WishScreen>{
                                 child: Column(children: [
                                   const Text("Цели и задачи", style: TextStyle(color: Colors.black54),),
                                   const SizedBox(height: 5),
-                                  MyTreeView(key: UniqueKey(),roots: root, onTap: (id, type) async {
-                                    if(type=="m"){
-                                      if(appViewModel.isChanged){if(await showOnExit(appVM, _title, _description, _affirmation)==false) return;}
-                                      BlocProvider.of<NavigationBloc>(context).clearHistory();
-                                      appVM.cachedImages.clear();
-                                      appVM.startMainsphereeditScreen();
-                                      BlocProvider.of<NavigationBloc>(context)
-                                          .add(NavigateToMainSphereEditScreenEvent());
-                                    }else if(type=="w"||type=="s"){
-                                      if(appViewModel.isChanged){if(await showOnExit(appVM, _title, _description, _affirmation)==false) return;}
-                                      curwish=WishData(id: -1, prevId: -1, nextId: -1, parentId: -1, text: "text", description: "description", affirmation: "affirmation", color: Colors.transparent);
-                                      appVM.startWishScreen(id, 0);
-                                    }else if(type=="a"){
-                                      if(appViewModel.isChanged){if(await showOnExit(appVM, _title, _description, _affirmation)==false) return;}
-                                      appVM.getAim(id);
-                                      appVM.myNodes.clear();
-                                      BlocProvider.of<NavigationBloc>(context).add(NavigateToAimEditScreenEvent(id));
-                                    }else if(type=="t"){
-                                      if(appViewModel.isChanged){if(await showOnExit(appVM, _title, _description, _affirmation)==false) return;}
-                                      appVM.myNodes.clear();
-                                      appVM.currentAim = null;
-                                      appVM.currentTask = null;
-                                      appVM.getTask(id);
-                                      BlocProvider.of<NavigationBloc>(context).add(NavigateToTaskEditScreenEvent(id));
-                                    }
-                                  },),
+                                  appVM.settings.treeView==0?MyTreeView(key: UniqueKey(),roots: root, onTap: (id, type) => onTreeItemTap(appVM, id, type, _title, _description, _affirmation)):
+                                  TreeViewWidgetV2(key: UniqueKey(), root: root.firstOrNull??MyTreeNode(id: -1, type: "a", title: "title", isChecked: true), onTap: (id,type) => onTreeItemTap(appVM, id, type, _title, _description, _affirmation)),
                                   const SizedBox(height: 5),
                                   if(curwish.parentId > 1)
                                     ElevatedButton(
@@ -776,6 +753,22 @@ class _WishScreenState extends State<WishScreen>{
                                         },
                                         child: const Text("Добавить", style: TextStyle(color: AppColors.greytextColor))
                                     ),
+                                  if(curwish.isActive&&!curwish.isChecked)ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: AppColors.fieldFillColor,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(10), // <-- Radius
+                                        ),
+                                      ),
+                                      onPressed: () async {
+                                    final childlastid = appViewModel.mainScreenState?.allCircles.where((element) => element.parenId==curwish.id&&element.nextId==-1).firstOrNull?.id??-1;
+                                    int wishid = appViewModel.mainScreenState!.allCircles.isNotEmpty?appViewModel.mainScreenState!.allCircles.map((circle) => circle.id).reduce((value, element) => value > element ? value : element)+1:-101;
+                                    await appViewModel.createNewSphereWish(WishData(id: wishid, prevId: childlastid, nextId: -1, parentId: curwish.id, text: "Новое желание", description: "", affirmation: (defaultAffirmations.join("|").toString()), color: Colors.red), true);
+                                    root.clear();
+                                    appVM.convertToMyTreeNodeFullBranch(curwish.id);
+                                  },
+                                      child: const Text("Добавить желание", style: TextStyle(color: AppColors.greytextColor))
+                                  )
                                 ],),
                               )                ],
                         ),),
@@ -1070,5 +1063,31 @@ class _WishScreenState extends State<WishScreen>{
         ],
       ),
     );
+  }
+  Future onTreeItemTap(AppViewModel appVM, int id, String type, TextEditingController title, TextEditingController description, TextEditingController affirmation) async {
+    if(type=="m"){
+      if(appVM.isChanged){if(await showOnExit(appVM, title, description, affirmation)==false) return;}
+      BlocProvider.of<NavigationBloc>(context).clearHistory();
+      appVM.cachedImages.clear();
+      appVM.startMainsphereeditScreen();
+      BlocProvider.of<NavigationBloc>(context)
+          .add(NavigateToMainSphereEditScreenEvent());
+    }else if(type=="w"||type=="s"){
+      if(appVM.isChanged){if(await showOnExit(appVM, title, description, affirmation)==false) return;}
+      curwish=WishData(id: -1, prevId: -1, nextId: -1, parentId: -1, text: "text", description: "description", affirmation: "affirmation", color: Colors.transparent);
+      appVM.startWishScreen(id, 0);
+    }else if(type=="a"){
+      if(appVM.isChanged){if(await showOnExit(appVM, title, description, affirmation)==false) return;}
+      appVM.getAim(id);
+      appVM.myNodes.clear();
+      BlocProvider.of<NavigationBloc>(context).add(NavigateToAimEditScreenEvent(id));
+    }else if(type=="t"){
+      if(appVM.isChanged){if(await showOnExit(appVM, title, description, affirmation)==false) return;}
+      appVM.myNodes.clear();
+      appVM.currentAim = null;
+      appVM.currentTask = null;
+      appVM.getTask(id);
+      BlocProvider.of<NavigationBloc>(context).add(NavigateToTaskEditScreenEvent(id));
+    }
   }
 }

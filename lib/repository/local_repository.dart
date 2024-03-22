@@ -63,6 +63,7 @@ class LocalRepository{
     _prefs!.setInt("sphereActualizingMode", settings.sphereActualizingMode);
     _prefs!.setBool("fastActualizingSphere", settings.fastActSphere);
     _prefs!.setInt("quoteUpdateFreq", settings.quoteupdateFreq);
+    _prefs!.setInt("treeView", settings.treeView);
   }
 
   Future<ActualizingSettingData> getActSetting() async {
@@ -77,6 +78,7 @@ class LocalRepository{
     settings.fastActWish = _prefs!.getBool("fastActualizingWish")??false;
     settings.taskActualizingMode = _prefs!.getInt("taskActualizingMode")??0;
     settings.quoteupdateFreq = _prefs!.getInt("quoteUpdateFreq")??10;
+    settings.treeView = _prefs!.getInt("treeView")??0;
     return settings;
   }
 
