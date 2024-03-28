@@ -384,7 +384,7 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
                     const Text("Цели и задачи", style: TextStyle(color: Colors.black54/*, decoration: TextDecoration.underline*/),),
                     const SizedBox(height: 5),
                     appVM.settings.treeView==0?MyTreeView(key: UniqueKey(),roots: root, onTap: (id, type) => onTreeItemTap(appVM, id, type)):
-                    TreeViewWidgetV2(key: UniqueKey(), root: root.firstOrNull??MyTreeNode(id: -1, type: "a", title: "title", isChecked: true), onTap: (id,type) => onTreeItemTap(appVM, id, type),),
+                    TreeViewWidgetV2(key: UniqueKey(), root: root.firstOrNull??MyTreeNode(id: -1, type: "a", title: "title", isChecked: true), idToOpen: 0, onTap: (id,type) => onTreeItemTap(appVM, id, type),),
                     const SizedBox(height: 5),
                     ElevatedButton(
                         style: ElevatedButton.styleFrom(
@@ -409,19 +409,45 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
                           ),
                         ),
                         onPressed: () async {
-                          final childlastid = appViewModel.mainScreenState?.allCircles.where((element) => element.parenId==1&&element.nextId==-1).firstOrNull?.id??-1;
-                          int wishid = appViewModel.mainScreenState!.allCircles.isNotEmpty?appViewModel.mainScreenState!.allCircles.map((circle) => circle.id).reduce((value, element) => value > element ? value : element)+1:-101;
-                          await appViewModel.createNewSphereWish(WishData(id: wishid, prevId: childlastid, nextId: -1, parentId: curWd.id, text: "Новое сфера", description: "", affirmation: (defaultAffirmations.join("|").toString()), color: Colors.red), true).then((value) {
-                            BlocProvider.of<NavigationBloc>(context).clearHistory();
-                            appVM.cachedImages.clear();
-                            appVM.wishScreenState=null;
-                            appViewModel.startWishScreen(wishid, 1);
-                            BlocProvider.of<NavigationBloc>(context)
-                                .add(NavigateToWishScreenEvent());
+                          if(appVM.mainScreenState?.allCircles.where((element) => element.parenId==0).toList().length==12){
+                            showDialog(context: context,
+                              builder: (BuildContext context) => AlertDialog(
+                                contentPadding: EdgeInsets.zero,
+                                shape: const RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.all(Radius.circular(32.0))),
+                                content: const Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text("Достигнуто максимальноке количество сфер на орбите. Вы можете скрть или удалить другие сферы, чтобы освободить место для демонстрации данной сферы на орбите", maxLines: 5, textAlign: TextAlign.center,),
+                                    SizedBox(height: 4,),
+                                    Divider(color: AppColors.dividerGreyColor,),
+                                  ],
+                                ),
+                                actions: <Widget>[
+                                  TextButton(
+                                    onPressed: () async { Navigator.pop(context, 'OK'); },
+                                    child: const Text('Ok'),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }else {
+                            final childlastid = appViewModel.mainScreenState?.allCircles.where((element) =>
+                            element.parenId == 1 && element.nextId == -1).firstOrNull?.id ?? -1;
+                            int wishid = appViewModel.mainScreenState!.allCircles.isNotEmpty ? appViewModel.mainScreenState!.allCircles.map((circle) => circle.id).reduce((value, element) => value > element ? value : element) + 1 : -101;
+                            await appViewModel.createNewSphereWish(WishData(id: wishid, prevId: childlastid, nextId: -1, parentId: curWd.id, text: "Новое сфера", description: "", affirmation: (defaultAffirmations.join("|").toString()), color: Colors.red), true).then((value) {
+                              BlocProvider.of<NavigationBloc>(context)
+                                  .clearHistory();
+                              appVM.cachedImages.clear();
+                              appVM.wishScreenState = null;
+                              appViewModel.startWishScreen(wishid, 1, false);
+                              BlocProvider.of<NavigationBloc>(context)
+                                  .add(NavigateToWishScreenEvent());
+                            }
+                            );
                           }
-                          );
                         },
-                        child: const Text("Добавить желание", style: TextStyle(color: AppColors.greytextColor))
+                        child: const Text("Добавить сферу", style: TextStyle(color: AppColors.greytextColor))
                     )
                   ],),
                 )]))),),
@@ -549,7 +575,7 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
        }}else if(type=="w"||type=="s"){
        if(appVM.isChanged){showOnExit(appVM);}else{
          BlocProvider.of<NavigationBloc>(context).clearHistory();
-         appVM.startWishScreen(id, 0);
+         appVM.startWishScreen(id, 0, true);
          BlocProvider.of<NavigationBloc>(context)
              .add(NavigateToWishScreenEvent());
        }}else if(type=="a"){

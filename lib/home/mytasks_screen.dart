@@ -36,7 +36,7 @@ class _TaskScreenState extends State{
           taskList = appVM.taskItems;
           page==1?filteredTaskList = taskList.where((element) => element.isChecked).toList():
           page==2?filteredTaskList = taskList.where((element) => !element.isChecked).toList():
-          page==3?filteredTaskList = taskList.where((element) => element.isActive).toList():filteredTaskList = taskList;
+          page==3?filteredTaskList = taskList.where((element) => element.isActive&&!element.isChecked).toList():filteredTaskList = taskList;
           isPBActive=appVM.isinLoading;
           return Scaffold(
               backgroundColor: AppColors.backgroundColor,

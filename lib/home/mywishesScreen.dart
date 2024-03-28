@@ -41,7 +41,7 @@ class _WishesScreenState extends State<WishesScreen>{
           }
           page==1?filteredWishList = allWishList.where((element) => element.isChecked).toList():
           page==2?filteredWishList = allWishList.where((element) => !element.isChecked).toList():
-          page==3?filteredWishList = allWishList.where((element) => element.isActive).toList():filteredWishList = allWishList;
+          page==3?filteredWishList = allWishList.where((element) => element.isActive&&!element.isChecked).toList():filteredWishList = allWishList;
           isPBActive=appVM.isinLoading;
           if(filteredWishList.isNotEmpty){
             roots = convertListToMyTreeNodes(filteredWishList);
@@ -148,7 +148,7 @@ class _WishesScreenState extends State<WishesScreen>{
                                 .add(NavigateToMainSphereEditScreenEvent());
                           }else if(type=="w"||type=="s"){
                             appVM.wishScreenState = null;
-                            appVM.startWishScreen(id, 0);
+                            appVM.startWishScreen(id, 0, false);
                             BlocProvider.of<NavigationBloc>(context)
                                 .add(NavigateToWishScreenEvent());
                           }else if(type=="a"){
@@ -286,7 +286,7 @@ class _WishesScreenState extends State<WishesScreen>{
   onItemClick(int id) {
     appViewModel?.cachedImages.clear();
     appViewModel?.wishScreenState=null;
-    appViewModel?.startWishScreen(id, 0);
+    appViewModel?.startWishScreen(id, 0, false);
     BlocProvider.of<NavigationBloc>(context)
         .add(NavigateToWishScreenEvent());
   }

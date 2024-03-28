@@ -751,7 +751,7 @@ class AimEditScreenState extends State<AimEditScreen>{
                         ),
                         const SizedBox(height: 15,),
                         appVM.settings.treeView==0?MyTreeView(key: UniqueKey(),roots: roots, onTap: (id, type) => onTreeItemTap(appVM, id, type)):
-                        TreeViewWidgetV2(key: UniqueKey(), root: roots.firstOrNull??MyTreeNode(id: -1, type: "a", title: "title", isChecked: true), onTap: (id,type) => onTreeItemTap(appVM, id, type),)
+                        TreeViewWidgetV2(key: UniqueKey(), root: roots.firstOrNull??MyTreeNode(id: -1, type: "a", title: "title", isChecked: true), idToOpen: ai?.id??0, onTap: (id,type) => onTreeItemTap(appVM, id, type),)
                       ]),
                     ))
 
@@ -937,7 +937,7 @@ class AimEditScreenState extends State<AimEditScreen>{
       if(isChanged){if(await showOnExit(appVM)==false) return;}
       BlocProvider.of<NavigationBloc>(context).clearHistory();
       appVM.wishScreenState = null;
-      appVM.startWishScreen(id, 0);
+      appVM.startWishScreen(id, 0, true);
       BlocProvider.of<NavigationBloc>(context)
           .add(NavigateToWishScreenEvent());
     }else if(type=="a"&&widget.aimId!=id){

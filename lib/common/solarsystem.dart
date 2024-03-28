@@ -709,7 +709,7 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
                                       appViewModel.cachedImages.clear();
                                       appViewModel.wishScreenState = null;
                                       appViewModel.startWishScreen(
-                                          entry.value.id, 0);
+                                          entry.value.id, 0, false);
                                       appViewModel.mainCircles = centralCircles;
                                       BlocProvider.of<NavigationBloc>(context)
                                           .add(NavigateToWishScreenEvent());
@@ -799,13 +799,13 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
                                   appViewModel.cachedImages.clear();
                                   appViewModel.wishScreenState = null;
                                   appViewModel.startWishScreen(
-                                      centralCircles[index].id, 0);
+                                      centralCircles[index].id, 0, false);
                                   appViewModel.mainCircles = centralCircles;
                                   BlocProvider.of<NavigationBloc>(context)
                                       .add(NavigateToWishScreenEvent());
                                 };
                               }else if(parentId!=0){
-                                if(centralCircles[index].isActive==false&&centralCircles[index].isChecked==false&&appViewModel.settings.fastActWish&&(centralCircles[centralCircles.length-2].isActive==true||(appViewModel.mainScreenState!.allCircles.firstWhereOrNull((element) => element.id==parentId)?.parenId==0&&appViewModel.settings.sphereActualizingMode==1)||appViewModel.settings.wishActualizingMode==1)){
+                                if(centralCircles[index].isActive==false&&centralCircles[index].isChecked==false&&appViewModel.settings.fastActWish&&(centralCircles[centralCircles.length-2].isActive==true||(appViewModel.mainScreenState!.allCircles.firstWhereOrNull((element) => element.id==parentId)?.parenId==0&&appViewModel.settings.sphereActualizingMode==1)||(appViewModel.settings.wishActualizingMode==1&&appViewModel.isParentSphereActive(id))||(appViewModel.settings.sphereActualizingMode==1&&appViewModel.settings.wishActualizingMode==1))){
                                   appViewModel.activateSphereWish(id, true);
                                   widget.circles.where((element) => element.id==id).firstOrNull?.isActive=true;
                                   centralCircles.forEach((element) {element.isActive=true;});
@@ -815,7 +815,7 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
                                   appViewModel.cachedImages.clear();
                                   appViewModel.wishScreenState = null;
                                   appViewModel.startWishScreen(
-                                      centralCircles[index].id, 0);
+                                      centralCircles[index].id, 0, false);
                                   appViewModel.mainCircles = centralCircles;
                                   BlocProvider.of<NavigationBloc>(context)
                                       .add(NavigateToWishScreenEvent());
@@ -883,7 +883,7 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
                               appViewModel.cachedImages.clear();
                               appViewModel.wishScreenState = null;
                               appViewModel.startWishScreen(
-                                  centralCircles[index].id, 0);
+                                  centralCircles[index].id, 0, false);
                               appViewModel.mainCircles = centralCircles;
                               BlocProvider.of<NavigationBloc>(context)
                                   .add(NavigateToWishScreenEvent());

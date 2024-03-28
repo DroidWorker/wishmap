@@ -8,9 +8,10 @@ import '../data/models.dart';
 
 class TreeViewWidgetV2 extends StatefulWidget {
   final MyTreeNode root;
+  final int idToOpen;
   final Function(int id, String type) onTap;
 
-  const TreeViewWidgetV2({super.key, required this.root, required this.onTap});
+  const TreeViewWidgetV2({super.key, required this.root, required this.idToOpen, required this.onTap});
 
   @override
   _TreeViewWidgetState createState() => _TreeViewWidgetState();
@@ -18,17 +19,37 @@ class TreeViewWidgetV2 extends StatefulWidget {
 
 class _TreeViewWidgetState extends State<TreeViewWidgetV2> {
   late MyTreeNode _currentNode;
-  List<String> _currentPath = [];
-  int currentLevel = 0;
+  Map<int, String> _currentPath = {};
+
+  ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
     _currentNode = widget.root;
-    _currentPath.add(widget.root.title);
+    _currentPath[widget.root.id] = widget.root.title;
+
+    MyTreeNode getChild(MyTreeNode n){
+      return n.children.firstOrNull??MyTreeNode(id: -1, type: 's', title: 'title', isChecked: false);
+    }
+    Map<int, String> path = {widget.root.id: widget.root.title};
+    MyTreeNode node = widget.root;
+    do {
+      node = getChild(node);
+      path[node.id] = node.title;
+    }while(node.id!=widget.idToOpen&&node.children.isNotEmpty);
+
+    _onNodePressed(node, path);
+
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.ease);
+    });
   }
 
-  void _onNodePressed( MyTreeNode root, List<String> path) {
+  void _onNodePressed( MyTreeNode root, Map<int, String> path) {
     setState(() {
       _currentNode = root;
       _currentPath = path;
@@ -40,14 +61,19 @@ class _TreeViewWidgetState extends State<TreeViewWidgetV2> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SingleChildScrollView(scrollDirection: Axis.horizontal, child: Row(children: _buildPathRow(_currentPath))),
+       Row(children: [InkWell(child: Image.asset('assets/icons/home.png', width: 18, height: 18,), onTap: (){
+           final initRoot = widget.root.children.firstOrNull;
+           if(initRoot!=null)widget.onTap(initRoot.id, initRoot.type);
+         },),
+         Expanded(child: SingleChildScrollView(controller: _scrollController, scrollDirection: Axis.horizontal, child: Row(children: _buildPathRow(_currentPath))))],
+       ),
         const SizedBox(height: 8,),
-        ..._buildNodes(_currentNode, _currentPath),
+        ..._buildNodes(_currentNode),
       ],
     );
   }
 
-  List<Widget> _buildNodes(MyTreeNode node, List<String> path) {
+  List<Widget> _buildNodes(MyTreeNode node) {
     return node.children.map((child) {
       String type = child.type == 'm' ? "Я" :
         child.type == 's' ? "Сфера" :
@@ -59,12 +85,8 @@ class _TreeViewWidgetState extends State<TreeViewWidgetV2> {
           children: [
             GestureDetector(
               onTap: () {
-                path.add(child.title);
-                _onNodePressed(child, path);
+                widget.onTap(child.id, child.type);
               },
-                onDoubleTap: (){
-                  widget.onTap(child.id, child.type);
-                },
               child: Container(
                 margin: const EdgeInsets.fromLTRB(0, 4, 0, 4),
                 padding: const EdgeInsets.all(7),
@@ -124,27 +146,30 @@ class _TreeViewWidgetState extends State<TreeViewWidgetV2> {
       }).toList();
   }
 
-  List<Widget> _buildPathRow(List<String> items){
-    List<Widget> widgets = [Image.asset('assets/icons/home.png', width: 18, height: 18,)];
-    widgets.addAll(items.mapIndexed((i, e) {
+  List<Widget> _buildPathRow(Map<int, String> items){
+    List<Widget> widgets = [];
+    widgets.addAll(items.entries.map((entry) {
       return GestureDetector(
         onTap: (){
-          List<String> pathToCurrent = items.take(i + 1).toList();
-          _onNodePressed(findNodeByTitle(widget.root, pathToCurrent.lastOrNull??"")??MyTreeNode(id: -1, type: "w", title: "title", isChecked: true), pathToCurrent);
+          //List<String> pathToCurrent = items.take(i + 1).toList();
+          //_onNodePressed(findNodeByTitle(widget.root, pathToCurrent.lastOrNull??"")??MyTreeNode(id: -1, type: "w", title: "title", isChecked: true), pathToCurrent);
+
+          final child = findNodeById(widget.root, entry.key);
+          if(child!=null)widget.onTap(child.id, child.type);
         },
-        child: Text("  ⟩  $e", style: const TextStyle(fontSize: 16),),
+        child: Text("  ⟩  ${entry.value}", style: const TextStyle(fontSize: 16),),
       );
     }));
     return widgets;
   }
 
-  MyTreeNode? findNodeByTitle(MyTreeNode node, String title) {
-    if (node.title == title) {
+  MyTreeNode? findNodeById(MyTreeNode node, int id) {
+    if (node.id == id) {
       return node;
     }
 
     for (var child in node.children) {
-      var result = findNodeByTitle(child, title);
+      var result = findNodeById(child, id);
       if (result != null) {
         return result;
       }

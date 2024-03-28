@@ -74,6 +74,7 @@ class AppViewModel with ChangeNotifier {
 
   //appcfg
   var isinLoading = false;
+  var needAutoScrollBottom = false;
 
   //settings
   ActualizingSettingData settings = ActualizingSettingData();
@@ -553,11 +554,12 @@ class AppViewModel with ChangeNotifier {
     return null;
   }
 
-  Future<WishData> startWishScreen(int wishId, int parentId, {isUpdateScreen = false}) async{
+  Future<WishData> startWishScreen(int wishId, int parentId, bool needToScrollDown, {isUpdateScreen = false}) async{
     try {
       var result = await Connectivity().checkConnectivity();
       if(result == ConnectivityResult.none)  connectivity = 'No Internet Connection';
       isChanged = false;
+      needAutoScrollBottom=needToScrollDown;
       if(!isUpdateScreen){
         cachedImages.clear();
         myNodes.clear();

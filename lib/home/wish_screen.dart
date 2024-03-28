@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:capped_progress_indicator/capped_progress_indicator.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:keyboard_attachable/keyboard_attachable.dart';
 import 'package:provider/provider.dart';
@@ -34,6 +35,9 @@ class _WishScreenState extends State<WishScreen>{
   Color? _color;
 
   bool isDataLoaded = false;
+  ScrollController _scrollController = ScrollController();
+  final GlobalKey _keyToScroll = GlobalKey();
+  late GlobalKey _treeViewKey;
 
   TaskItem? wishTasks;
   AimItem? wishAims;
@@ -49,8 +53,29 @@ class _WishScreenState extends State<WishScreen>{
 
   final descriptionText = "Синтез желаний самое невероятное чудо, которое есть в руках человека.Это буквально сила нашего сознания, сила самой вселенной, сила Бога, если хотите.\n\nИ может потому нас посещают страхи, что желания наши не исполнятся, что сила, которая связана с этим явлением соль великая и мощная, что управлять ей мы не всегда умеем.";
 
+  int prevHiddenTreeElements = 0;
+
+  @override
+  initState(){
+    super.initState();
+
+    _scrollController.addListener(() {
+      MyTreeViewState? treeViewState = _treeViewKey.currentState as MyTreeViewState;
+
+      RenderBox? renderBox = _keyToScroll.currentContext?.findRenderObject() as RenderBox?;
+      Offset? widgetOffset = renderBox?.localToGlobal(Offset.zero);
+
+      if(widgetOffset?.dy!=null&&widgetOffset!.dy<300){
+        if(prevHiddenTreeElements!=(prevHiddenTreeElements=(widgetOffset.dy-300) * -1 ~/ 20)) {
+          treeViewState.changePadding(prevHiddenTreeElements);
+        }
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    _treeViewKey = GlobalKey();
     final appViewModel = Provider.of<AppViewModel>(context);
     TextEditingController _title = TextEditingController(text: curwish.text);
     TextEditingController _description = TextEditingController(text: curwish.description);
@@ -98,6 +123,22 @@ class _WishScreenState extends State<WishScreen>{
           }
           root.clear();
           root.addAll(appVM.myNodes);
+
+          WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+            if (appVM.needAutoScrollBottom) {
+              final RenderObject? renderObject = _keyToScroll.currentContext?.findRenderObject();
+              if (renderObject != null) {
+                final RenderAbstractViewport viewport = RenderAbstractViewport.of(renderObject);
+                final double dy = viewport.getOffsetToReveal(renderObject, 0.0).offset;
+                _scrollController.animateTo(
+                  dy,
+                  duration: const Duration(milliseconds: 500),
+                  curve: Curves.ease,
+                );
+              }
+              if(root.isNotEmpty)appVM.needAutoScrollBottom=false;
+            }
+          });
 
           return Scaffold(
               backgroundColor: AppColors.backgroundColor,
@@ -202,7 +243,7 @@ class _WishScreenState extends State<WishScreen>{
                                             Navigator.pop(context, 'Cancel');
                                             final wishid = curwish.id;
                                             curwish=WishData(id: -1, prevId: -1, nextId: -1, parentId: -1, text: "", description: "", affirmation: "", color: Colors.red);
-                                            final retWish = await appVM.startWishScreen(wishid, curwish.parentId, isUpdateScreen: true);
+                                            final retWish = await appVM.startWishScreen(wishid, curwish.parentId, false, isUpdateScreen: true);
                                             curwish = retWish;
                                             changeStatus(appVM);
                                             },
@@ -494,6 +535,7 @@ class _WishScreenState extends State<WishScreen>{
                       const SizedBox(width: 15,)
                     ],),
                     Expanded(child:SingleChildScrollView(
+                      controller: _scrollController,
                       child: Padding(
                         padding: const EdgeInsets.all(15),
                         child: Column(
@@ -712,11 +754,12 @@ class _WishScreenState extends State<WishScreen>{
                             if(curwish.id > 0)
                               Align(
                                 alignment: Alignment.center,
-                                child: Column(children: [
-                                  const Text("Цели и задачи", style: TextStyle(color: Colors.black54),),
+                                child: Column(
+                                  children: [
+                                  Text(key: _keyToScroll, "Цели и задачи", style: const TextStyle(color: Colors.black54),),
                                   const SizedBox(height: 5),
-                                  appVM.settings.treeView==0?MyTreeView(key: UniqueKey(),roots: root, onTap: (id, type) => onTreeItemTap(appVM, id, type, _title, _description, _affirmation)):
-                                  TreeViewWidgetV2(key: UniqueKey(), root: root.firstOrNull??MyTreeNode(id: -1, type: "a", title: "title", isChecked: true), onTap: (id,type) => onTreeItemTap(appVM, id, type, _title, _description, _affirmation)),
+                                  appVM.settings.treeView==0?MyTreeView(key: _treeViewKey,roots: root, onTap: (id, type) => onTreeItemTap(appVM, id, type, _title, _description, _affirmation)):
+                                  TreeViewWidgetV2(key: UniqueKey(), root: root.firstOrNull??MyTreeNode(id: -1, type: "a", title: "title", isChecked: true), idToOpen: curwish.id, onTap: (id,type) => onTreeItemTap(appVM, id, type, _title, _description, _affirmation)),
                                   const SizedBox(height: 5),
                                   if(curwish.parentId > 1)
                                     ElevatedButton(
@@ -761,13 +804,25 @@ class _WishScreenState extends State<WishScreen>{
                                         ),
                                       ),
                                       onPressed: () async {
-                                    final childlastid = appViewModel.mainScreenState?.allCircles.where((element) => element.parenId==curwish.id&&element.nextId==-1).firstOrNull?.id??-1;
-                                    int wishid = appViewModel.mainScreenState!.allCircles.isNotEmpty?appViewModel.mainScreenState!.allCircles.map((circle) => circle.id).reduce((value, element) => value > element ? value : element)+1:-101;
-                                    await appViewModel.createNewSphereWish(WishData(id: wishid, prevId: childlastid, nextId: -1, parentId: curwish.id, text: "Новое желание", description: "", affirmation: (defaultAffirmations.join("|").toString()), color: Colors.red), true);
-                                    root.clear();
-                                    appVM.convertToMyTreeNodeFullBranch(curwish.id);
-                                  },
-                                      child: const Text("Добавить желание", style: TextStyle(color: AppColors.greytextColor))
+                                        if(appVM.mainScreenState!.allCircles.where((element) => element.parenId==curwish.id).toList().length>=12){
+                                          showUnavailable("Достигнуто максимальноке количество желаний на орбите. Вы можете скрть или удалить другие желания, чтобы освободить место для демонстрации данной желания на орбите");
+                                        }else{
+                                          final childlastid = appViewModel.mainScreenState?.allCircles.where((element) => element.parenId==curwish.id&&element.nextId==-1).firstOrNull?.id??-1;
+                                          int wishid = appViewModel.mainScreenState!.allCircles.isNotEmpty?appViewModel.mainScreenState!.allCircles.map((circle) => circle.id).reduce((value, element) => value > element ? value : element)+1:-101;
+                                          await appViewModel.createNewSphereWish(WishData(id: wishid, prevId: childlastid, nextId: -1, parentId: curwish.id, text: "Новое желание", description: "", affirmation: (defaultAffirmations.join("|").toString()), color: Colors.red), true);
+                                          BlocProvider.of<NavigationBloc>(context)
+                                              .clearHistory();
+                                          appVM.cachedImages.clear();
+                                          appVM.wishScreenState = null;
+                                          isDataLoaded=false;
+                                          final parentid = curwish.id;
+                                          curwish=WishData(id: -1, prevId: -1, nextId: -1, parentId: -1, text: "text", description: "description", affirmation: "affirmation", color: Colors.grey);
+                                          appViewModel.startWishScreen(wishid, parentid, false);
+                                          BlocProvider.of<NavigationBloc>(context)
+                                              .add(NavigateToWishScreenEvent());
+                                        }
+                                      },
+                                      child: Text(curwish.parentId==0?"Добавить желание":"Добавить поджелание", style: const TextStyle(color: AppColors.greytextColor))
                                   )
                                 ],),
                               )                ],
@@ -1075,7 +1130,7 @@ class _WishScreenState extends State<WishScreen>{
     }else if(type=="w"||type=="s"){
       if(appVM.isChanged){if(await showOnExit(appVM, title, description, affirmation)==false) return;}
       curwish=WishData(id: -1, prevId: -1, nextId: -1, parentId: -1, text: "text", description: "description", affirmation: "affirmation", color: Colors.transparent);
-      appVM.startWishScreen(id, 0);
+      appVM.startWishScreen(id, 0, true);
     }else if(type=="a"){
       if(appVM.isChanged){if(await showOnExit(appVM, title, description, affirmation)==false) return;}
       appVM.getAim(id);
