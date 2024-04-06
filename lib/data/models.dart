@@ -138,6 +138,11 @@ class MainCircle {
     'isActive': isActive,
     'isChecked': isChecked,
   };
+
+  @override
+  String toString(){
+    return "{MainCircle $id  $text}";
+  }
 }
 
 class Pair{
@@ -312,6 +317,7 @@ List<int> getRootsIds(MyTreeNode node){
 class MainScreenState {
   final MoonItem moon;
   List<CircleData> allCircles = [];
+  bool needToUpdateCoords = true;
   final int musicId;
 
   MainScreenState({required this.moon, required this.musicId});

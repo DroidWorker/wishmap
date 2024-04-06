@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:keyboard_attachable/keyboard_attachable.dart';
 import 'package:provider/provider.dart';
@@ -28,12 +29,36 @@ class AimEditScreenState extends State<AimEditScreen>{
   var isParentChecked = false;
   var isParentActive = false;
 
+  ScrollController _scrollController = ScrollController();
+  final GlobalKey _keyToScroll = GlobalKey();
+  late GlobalKey _treeViewKey;
+  int prevHiddenTreeElements = 0;
+
   bool isTextSetted = false;
 
   @override
+  void initState(){
+    super.initState();
+    _scrollController.addListener(() {
+      MyTreeViewState? treeViewState = _treeViewKey.currentState as MyTreeViewState;
+
+      RenderBox? renderBox = _keyToScroll.currentContext?.findRenderObject() as RenderBox?;
+      Offset? widgetOffset = renderBox?.localToGlobal(Offset.zero);
+
+      if(widgetOffset?.dy!=null&&widgetOffset!.dy<300){
+        if(prevHiddenTreeElements!=(prevHiddenTreeElements=(widgetOffset.dy-300) * -1 ~/ 20)) {
+          treeViewState.changePadding(prevHiddenTreeElements);
+        }
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    _treeViewKey = GlobalKey();
     text.addListener(() { if(ai?.text!=text.text)isChanged = true;});
     description.addListener(() { if(ai?.description!=description.text)isChanged = true;});
+
     return Consumer<AppViewModel>(
         builder: (context, appVM, child) {
           if(ai==null||ai!.id==-1)ai = appVM.currentAim??AimData(id: -1, parentId: -1, text: 'объект не найден', description: "", isChecked: false);
@@ -47,6 +72,23 @@ class AimEditScreenState extends State<AimEditScreen>{
             description.text = ai?.description??"";
             isTextSetted=true;
           }
+
+          WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+            if (appVM.needAutoScrollBottom) {
+              final RenderObject? renderObject = _keyToScroll.currentContext?.findRenderObject();
+              if (renderObject != null) {
+                final RenderAbstractViewport viewport = RenderAbstractViewport.of(renderObject);
+                final double dy = viewport.getOffsetToReveal(renderObject, 0.0).offset;
+                _scrollController.animateTo(
+                  dy,
+                  duration: const Duration(milliseconds: 500),
+                  curve: Curves.ease,
+                );
+              }
+              if(roots.isNotEmpty)appVM.needAutoScrollBottom=false;
+            }
+          });
+
           return Scaffold(
             backgroundColor: AppColors.backgroundColor,
             body: SafeArea(
@@ -639,6 +681,7 @@ class AimEditScreenState extends State<AimEditScreen>{
                       ],
                     ),
                     Expanded(child:SingleChildScrollView(
+                      controller: _scrollController,
                       child: Column(children:[
                         const SizedBox(height: 15,),
                         TextField(
@@ -749,8 +792,8 @@ class AimEditScreenState extends State<AimEditScreen>{
                                   fontSize: 10, color: AppColors.greytextColor),)
                           ],
                         ),
-                        const SizedBox(height: 15,),
-                        appVM.settings.treeView==0?MyTreeView(key: UniqueKey(),roots: roots, onTap: (id, type) => onTreeItemTap(appVM, id, type)):
+                        SizedBox(key: _keyToScroll, height: 15,),
+                        appVM.settings.treeView==0?MyTreeView(key: _treeViewKey = GlobalKey(),roots: roots, onTap: (id, type) => onTreeItemTap(appVM, id, type)):
                         TreeViewWidgetV2(key: UniqueKey(), root: roots.firstOrNull??MyTreeNode(id: -1, type: "a", title: "title", isChecked: true), idToOpen: ai?.id??0, onTap: (id,type) => onTreeItemTap(appVM, id, type),)
                       ]),
                     ))
@@ -768,7 +811,25 @@ class AimEditScreenState extends State<AimEditScreen>{
                         ,),
                     ),)
                       ])
-            ));
+            ),
+            floatingActionButton: FloatingActionButton(
+              onPressed: (){
+                if(ai!=null) {
+                  appVM.createMainScreenSpherePath(ai!.parentId, MediaQuery.of(context).size.width);
+                  BlocProvider.of<NavigationBloc>(context).clearHistory();
+                  BlocProvider.of<NavigationBloc>(context)
+                      .add(NavigateToMainScreenEvent());
+                }
+              },
+              backgroundColor: parentObj?.isActive==true?parentObj?.color:const Color.fromARGB(255, 217, 217, 217),
+              shape: const CircleBorder(),
+              child: Stack(children: [
+                Center(child: Text(parentObj?.text??"", style: const TextStyle(color: Colors.white),)),
+                if(parentObj?.isChecked==true)Align(alignment: Alignment.topRight, child: Image.asset('assets/icons/wish_done.png', width: 20, height: 20),)
+              ],),
+            ),
+            floatingActionButtonLocation: FloatingActionButtonLocation.miniStartFloat,
+          );
     });
   }
 

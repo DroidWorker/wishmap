@@ -32,6 +32,8 @@ class TaskEditScreenState extends State<TaskEditScreen>{
 
   bool isTextSetted = false;
 
+  CircleData? parentSphere;
+
   @override
   Widget build(BuildContext context) {
     text.addListener(() { if(ai?.text!=text.text)isChanged = true;});
@@ -46,6 +48,7 @@ class TaskEditScreenState extends State<TaskEditScreen>{
           ai = appVM.currentTask??TaskData(id: -1, parentId: -1, text: 'объект не найден', description: "", isChecked: false);
           if(appVM.currentAim!=null) {
             AimData ad = appVM.currentAim!;
+            parentSphere = ad.id!=-1?appVM.mainScreenState!.allCircles.where((element) => element.id ==ad.parentId).firstOrNull:null;
             isParentChecked = ad.isChecked;
             isParentActive = ad.isActive;
             var childNodes = MyTreeNode(id: ad.id, type: 'a', title: ad.text, isChecked: ad.isChecked, isActive: ad.isActive , children: []);
@@ -392,7 +395,24 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                       )
                         ,),
                     ),)
-            ]))
+            ])),
+            floatingActionButton: FloatingActionButton(
+              onPressed: (){
+                if(parentSphere!=null) {
+                  appVM.createMainScreenSpherePath(parentSphere?.id??0, MediaQuery.of(context).size.width);
+                  BlocProvider.of<NavigationBloc>(context).clearHistory();
+                  BlocProvider.of<NavigationBloc>(context)
+                      .add(NavigateToMainScreenEvent());
+                }
+              },
+              backgroundColor: parentSphere?.isActive==true?parentSphere?.color:const Color.fromARGB(255, 217, 217, 217),
+              shape: const CircleBorder(),
+              child: Stack(children: [
+                Center(child: Text(parentSphere?.text??"", style: const TextStyle(color: Colors.white),)),
+                if(parentSphere?.isChecked==true)Align(alignment: Alignment.topRight, child: Image.asset('assets/icons/wish_done.png', width: 20, height: 20),)
+              ],),
+            ),
+            floatingActionButtonLocation: FloatingActionButtonLocation.miniStartFloat,
     );
   });
   }

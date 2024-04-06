@@ -139,7 +139,7 @@ class _WishesScreenState extends State<WishesScreen>{
                         return Align(
                       alignment: Alignment.centerLeft,
                       child: SizedBox(
-                        child: MyTreeView(key: UniqueKey(), roots: roots, applyColorChangibg: false, onTap: (id, type){
+                        child: MyTreeView(key: UniqueKey(), roots: roots, applyColorChangibg: false, fillWidth: true, onTap: (id, type){
                           if(type=="m"){
                             BlocProvider.of<NavigationBloc>(context).clearHistory();
                             appVM.cachedImages.clear();

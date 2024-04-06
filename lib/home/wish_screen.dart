@@ -837,8 +837,25 @@ class _WishScreenState extends State<WishScreen>{
                         )
                           ,),
                       ),)
-                  ]))
-          );});
+                  ])),
+            floatingActionButton: FloatingActionButton(
+              onPressed: (){
+                appViewModel.createMainScreenSpherePath(curwish.id, MediaQuery.of(context).size.width);
+                BlocProvider.of<NavigationBloc>(context).clearHistory();
+                BlocProvider.of<NavigationBloc>(context)
+                    .add(NavigateToMainScreenEvent());
+                },
+              backgroundColor: curwish.isActive?curwish.color:const Color.fromARGB(255, 217, 217, 217),
+              shape: const CircleBorder(),
+              child: Stack(children: [
+                Center(child: Text(curwish.text??"", style: const TextStyle(color: Colors.white),)),
+                if(curwish.isChecked)Align(alignment: Alignment.topRight, child: Image.asset('assets/icons/wish_done.png', width: 20, height: 20),)
+              ],),
+            ),
+            floatingActionButtonLocation: FloatingActionButtonLocation.miniStartFloat,
+          );
+        }
+        );
   }
 
   void changeStatus(AppViewModel appVM){

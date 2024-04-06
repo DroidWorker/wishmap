@@ -6,6 +6,7 @@ import 'package:connectivity/connectivity.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:wishmap/data/static_affirmations_women.dart';
+import 'package:wishmap/main.dart';
 import 'package:wishmap/repository/Repository.dart';
 import 'package:wishmap/repository/photosSearch.dart';
 import 'package:wishmap/repository/local_repository.dart';
@@ -485,6 +486,21 @@ class AppViewModel with ChangeNotifier {
     }
   }
 
+  void createMainScreenSpherePath(int sphereId, double screenWidth){
+    if(mainScreenState==null)return;
+    final List<CircleData> revercecentralPath = [];
+    revercecentralPath.add(mainScreenState!.allCircles.firstWhere((element) => element.id==sphereId));
+    if(revercecentralPath.isEmpty)return;
+    while(revercecentralPath.last.id!=0){
+      revercecentralPath.add(mainScreenState!.allCircles.firstWhere((element) => element.id==revercecentralPath.last.parenId));
+    }
+    const radius = 80.0;
+    mainCircles = revercecentralPath.reversed.map((e) => MainCircle(id: e.id, coords: Pair(key: screenWidth-radius, value: radius*-0.5), text: e.text, color: e.color, isActive: e.isActive, isChecked: e.isChecked)).toList();
+    mainCircles.removeLast();
+    mainScreenState?.needToUpdateCoords=true;
+    openSphere(sphereId);
+  }
+
   Future<void> startMainScreen(MoonItem mi) async {
     if (mainScreenState == null) {
       isinLoading = true;
@@ -530,6 +546,7 @@ class AppViewModel with ChangeNotifier {
         addError("#578${ex.toString()}");
       }
     }
+    mainScreenState?.needToUpdateCoords=true;
   }
   int getShowedCirclesCount(int parentId){
     var cc = mainScreenState!.allCircles.where((element) => (element.parenId == parentId)&&element.isHidden==false).toList();

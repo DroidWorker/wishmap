@@ -9,8 +9,9 @@ import '../data/models.dart';
 class MyTreeView extends StatefulWidget {
   final List<MyTreeNode> roots;
   final bool applyColorChangibg;
+  bool fillWidth = false;
   final Function(int id, String type) onTap;
-  const MyTreeView({super.key, required this.roots, required this.onTap, this.applyColorChangibg = true});
+  MyTreeView({super.key, required this.roots, required this.onTap, this.applyColorChangibg = true, this.fillWidth=false});
 
   @override
   State<MyTreeView> createState() => MyTreeViewState();
@@ -57,42 +58,19 @@ class MyTreeViewState extends State<MyTreeView> {
 
   @override
   Widget build(BuildContext context) {
-    //return _buildTree(widget.roots.firstOrNull??MyTreeNode(id: -1, type: 'm', title: "", isChecked: false));
-    /*return SizedBox(
-      width: MediaQuery.of(context).size.width,
-      child: Expanded(child:
-      SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: SizedBox(width: MediaQuery.of(context).size.width,
-        child: TreeView<MyTreeNode>(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          treeController: treeController,
-          nodeBuilder: (BuildContext context, TreeEntry<MyTreeNode> entry) {
-            return MyTreeTile(
-              // Add a key to your tiles to avoid syncing descendant animations.
-              key: ValueKey(entry.node),
-              applyColorChanging: widget.applyColorChangibg,
-              entry: entry,
-              onTap: () {widget.onTap(entry.node.id, entry.node.type);},
-            );
-          },
-        ),
-        ),
-      )
-      ),
-    );*/
-
 
     return SizedBox(
-        width: MediaQuery.of(context).size.width ,
-        child: SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: buildTree(),
-          ),
-        )
+      width: MediaQuery.of(context).size.width ,
+      child: !widget.fillWidth?SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: buildTree(),
+        ),
+      ): Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: buildTree(),
+      ),
     );
   }
 
@@ -111,21 +89,6 @@ class MyTreeViewState extends State<MyTreeView> {
     }
   }
 
-  /*List<Widget> buildTree(){
-    List<Widget> items = [];
-    treeEntries.forEach((element) {
-      items.add(MyTreeTile(
-        // Add a key to your tiles to avoid syncing descendant animations.
-        key: ValueKey(element),
-        controller: scontroller,
-        countHidden: countHidden,
-        applyColorChanging: widget.applyColorChangibg,
-        entry: element,
-        onTap: () {widget.onTap(element.node.id, element.node.type);},
-      ));
-    });
-    return items;
-  }*/
   List<Widget> buildTree() {
     List<Widget> items = [];
     for (int i = 0; i < treeEntries.length; i++) {
@@ -136,6 +99,7 @@ class MyTreeViewState extends State<MyTreeView> {
             return MyTreeTile(
               padding: padding,
               controller: scontroller,
+              fillWidth: widget.fillWidth,
               entry: treeEntries[i],
               applyColorChanging: widget.applyColorChangibg,
               onTap: () {
@@ -149,11 +113,6 @@ class MyTreeViewState extends State<MyTreeView> {
     return items;
   }
 
-  /*void changePadding(int countHid){
-    setState(() {
-      countHidden = countHid;
-    });
-  }*/
   void changePadding(int countHid) {
     if(countHid<countHidden){
       paddingNotifiers[countHidden].value = 8;
@@ -166,77 +125,13 @@ class MyTreeViewState extends State<MyTreeView> {
   }
 }
 
-/*
-class MyTreeTile extends StatelessWidget {
-  const MyTreeTile({
-    super.key,
-    required this.padding,
-    required this.applyColorChanging,
-    required this.entry,
-    required this.onTap,
-  });
-
-  final bool applyColorChanging;
-  final double padding;
-  final TreeEntry<MyTreeNode> entry;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      child: Ink(
-        child: TreeIndentation(
-          entry: entry,
-          guide: const IndentGuide.connectingLines(indent: 20, roundCorners: true),
-          child: Padding(
-            padding: EdgeInsets.fromLTRB(2, padding, 8, padding),
-              child: Row(
-                children: [
-                  Expanded(
-                    flex: 5,
-                    child: Text(
-                      entry.node.title,
-                      maxLines: 5,
-                      style: entry.node.noClickable
-                          ? const TextStyle()
-                          : applyColorChanging
-                          ? const TextStyle(decoration: TextDecoration.underline, color: Colors.black12)
-                          : const TextStyle(decoration: TextDecoration.underline),
-                    ),
-                  ),
-                  const Spacer(),
-                  entry.node.type == "w"
-                      ? (entry.node.isHidden
-                      ? Image.asset('assets/icons/love5110868.png', width: 20, height: 20,)
-                      : entry.node.isChecked? Image.asset('assets/icons/wish_done.png', width: 20, height: 20,)
-                      : !entry.node.isActive? Image.asset('assets/icons/wish_unactive.png', width: 20, height: 20)
-                      :Image.asset('assets/icons/wish_active.png', width: 20, height: 20))
-                      : (entry.node.type == "a"
-                      ? (entry.node.isChecked
-                      ? Image.asset('assets/icons/target_done.png', width: 20, height: 30)
-                      : entry.node.isActive ? Image.asset('assets/icons/target_active.png', width: 20, height: 30)
-                      : Image.asset('assets/icons/target_unactive.png', width: 20, height: 30))
-                      : (entry.node.type == "t"
-                      ? (entry.node.isChecked
-                      ? Image.asset('assets/icons/task_done.png', width: 20, height: 30)
-                      : entry.node.isActive ? Image.asset('assets/icons/task_active.png', width: 20, height: 30)
-                      : Image.asset('assets/icons/task_unactive.png', width: 20, height: 30))
-                      : Container())),
-                ],
-              ),
-            ),
-          ),
-        ),
-    );
-  }
-}*/
 
 class MyTreeTile extends StatelessWidget {
   const MyTreeTile({
     Key? key,
     required this.controller,
     required this.padding,
+    required this.fillWidth,
     required this.applyColorChanging,
     required this.entry,
     required this.onTap,
@@ -244,6 +139,7 @@ class MyTreeTile extends StatelessWidget {
 
   final bool applyColorChanging;
   final ScrollController controller;
+  final bool fillWidth;
   final double padding;
   final TreeEntry<MyTreeNode> entry;
   final VoidCallback onTap;
@@ -262,17 +158,21 @@ class MyTreeTile extends StatelessWidget {
                               duration: const Duration(milliseconds: 300), // Продолжительность анимации
                               padding: EdgeInsets.fromLTRB(0, padding, 4, padding),
                               curve: Curves.easeInOut, // Кривая анимации
-                              child: Text(
-                                entry.node.title,
-                                maxLines: 2,
-                                style: entry.node.noClickable
-                                            ? const TextStyle()
-                                            : applyColorChanging
-                                            ? const TextStyle(decoration: TextDecoration.underline, color: Colors.black12)
-                                            : const TextStyle(decoration: TextDecoration.underline),
+                              child: SizedBox(
+                                width: 110,
+                                child: Text(
+                                  entry.node.title,
+                                  maxLines: 1,
+                                  style: entry.node.noClickable
+                                      ? const TextStyle()
+                                      : applyColorChanging
+                                      ? const TextStyle(decoration: TextDecoration.underline, color: Colors.black12)
+                                      : const TextStyle(decoration: TextDecoration.underline),
+                                ),
                               )
                           ),
                         ),
+                        if(fillWidth)const Spacer(),
                         Center(
                           child: entry.node.type == "w"
                               ? (entry.node.isHidden

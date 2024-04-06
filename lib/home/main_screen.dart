@@ -7,7 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:wishmap/data/static.dart';
 import 'package:wishmap/navigation/navigation_block.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:wishmap/common/solarsystem.dart';
+import 'package:wishmap/common/solarsystem_redesign.dart';
 import 'package:wishmap/res/colors.dart';
 import 'package:wishmap/data/models.dart';
 
