@@ -759,7 +759,7 @@ class AimEditScreenState extends State<AimEditScreen>{
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            ElevatedButton(
+                            if(!ai!.isActive&&ai!.isChecked)const SizedBox() else ElevatedButton(
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: AppColors.fieldFillColor,
                                   shape: RoundedRectangleBorder(

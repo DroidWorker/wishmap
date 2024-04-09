@@ -139,7 +139,7 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
                         if(appViewModel.isChanged){
                           onSaveClicked(appVM);
                         }else {
-                          /*await appViewModel.updateSphereWish(WishData(
+                          await appViewModel.updateSphereWish(WishData(
                               id: curWd.id,
                               prevId: curWd.prevId,
                               nextId: curWd.nextId,
@@ -147,7 +147,7 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
                               text: curWd.text,
                               description: curWd.subText,
                               affirmation: curWd.affirmation,
-                              color: curWd.color));*/
+                              color: curWd.color));
                           if (appViewModel.mainScreenState != null) await appViewModel.startMainScreen(appViewModel.mainScreenState!.moon);
                           appViewModel.hint =
                           "Отлично! Теперь пришло время заполнить все сферы жизни. Ты можешь настроить состав и название сфер так, как считаешь нужным. И помни, что максимальное количество сфер ограничено и равно 1.";

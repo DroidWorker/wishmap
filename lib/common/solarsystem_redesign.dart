@@ -160,7 +160,6 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
     var firstCercle = vm?.mainScreenState?.allCircles.firstWhere((element) => element.id==0);
     if(firstCercle!=null)vm?.mainCircles=[MainCircle(id: 0, coords: Pair(key:0.0,value:0.0), text: firstCercle.text, color: firstCercle.color)];
     ctrl = AnimationController.unbounded(vsync: this);
-    afterMovingController = AnimationController.unbounded(vsync: this);
     showHideController = AnimationController.unbounded(vsync: this);
     //screenSize = getScreenSize(this as BuildContext);
     ctrl.addListener(() {
@@ -226,7 +225,7 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
       }
     });
 
-    lineStart=Offset((widget.center.key - 50 + (widget.size/2) * cos(1)), (widget.center.value - 50 + (widget.size/2) * sin(1)));
+    lineStart=Offset((widget.center.key - 50 + (widget.size/2) * cos(1)), (widget.center.value - 100 + (widget.size/2) * sin(1)));
   }
   @override
   void dispose() {
@@ -418,6 +417,176 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
     return Container(
         child: Stack(
           children: [
+            Stack(
+              children: [
+                if(centralCircles.length>1)AnimatedBuilder(
+                  animation: movingController,
+                  child: CustomPaint(
+                    painter: LinePainter(),
+                  ),
+                  builder: (context, child){
+                    return Stack(children:[ Positioned(
+                      left: lineStart.dx,
+                      bottom: lineStart.dy,
+                      width: (_cTOa.value.dx-widget.center.key)*0.75,
+                      height: (widget.center.value-_cTOa.value.dy)*0.31,
+                      child: child!,
+                    ),
+                      Positioned(
+                          left: _cTOa.value.dx-(widget.size-80)/2+60,
+                          top: _cTOa.value.dy-(widget.size-80)/2+40,
+                          child: Container(
+                              width: widget.size-80,
+                              height: widget.size-80,
+                              decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Colors.transparent,
+                                  border: Border.all(color: Colors.grey, width: 2))
+                          )
+                      ),]);
+                  },
+                ),
+                ...centralCircles.asMap().entries.where((entry) {
+                  return entry.value.isVisible; // Фильтруем элементы по условию isVisible
+                }).map((entry) {
+                  final index = entry.key;
+                  final value = entry.value;
+                  return AnimatedBuilder(
+                      animation: movingController,
+                      child: Stack(
+                        children: [
+                          Center(
+                            child:Text(
+                              value.text,
+                              maxLines: 1,
+                              style: const TextStyle(color: Colors.black, fontSize: 20),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                          if(value.isChecked)Align(
+                            alignment: Alignment.topRight,
+                            child: Image.asset('assets/icons/wish_done.png', width: 25, height: 25),
+                          )
+                        ],
+                      ),
+                      builder: (context, child){
+                        final top = value.id!=0?(centralCircles.length-1==index?_rTOc.value.dy:_cTOa.value.dy):centralCircles.length-1==index?_rTOc.value.dy-65:_cTOa.value.dy-65;
+                        return Positioned(
+                            key: ccKeys[index],
+                            left: centralCircles.length-1==index?_rTOc.value.dx:_cTOa.value.dx,
+                            top: top,
+                            child: GestureDetector(
+                              child: value.id!=0?AnimatedContainer(
+                                  curve: Curves.linear,
+                                  duration: const Duration(milliseconds: 200),
+                                  width: value.radius * 2,
+                                  height: value.radius * 2,
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    shape: BoxShape.circle,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: value.isActive?value.color:const Color.fromARGB(255, 217, 217, 217).withOpacity(0.3), // Цвет тени
+                                        spreadRadius: 1, // Радиус распространения тени
+                                        blurRadius: 2, // Радиус размытия тени
+                                      ),
+                                    ],
+                                    border: Border.all(
+                                      color: value.isActive?value.color:const Color.fromARGB(255, 217, 217, 217),
+                                      width: 1.0,
+                                    ),
+                                  ),
+                                  child: child!
+                              ):ColorFiltered(colorFilter: ColorFilter.mode(value.color, BlendMode.srcATop),child: Image.asset('assets/icons/people.png', width: 110),),
+                              onTap: () {
+                                print("oncentralcircletap - $allowClick");
+                                _timer?.cancel();
+                                touchCount++;
+                                if (touchCount>1) {
+                                  if(allowClick){
+                                    final id = centralCircles[index].id;
+                                    final parentId = appViewModel.mainScreenState!.allCircles.firstWhereOrNull((element) => element.id==id)?.parenId;
+                                    if(id==0){
+                                      if(appViewModel.settings.fastActMainSphere&&centralCircles[index].isActive==false){
+                                        appViewModel.activateSphereWish(id, true);
+                                        widget.circles.where((element) => element.id==id).firstOrNull?.isActive=true;
+                                        centralCircles.firstOrNull?.isActive=true;
+                                        appViewModel.mainCircles = centralCircles;
+                                        setState(() { });
+                                      }else {
+                                        appViewModel.cachedImages.clear();
+                                        appViewModel.startMainsphereeditScreen();
+                                        BlocProvider.of<NavigationBloc>(context)
+                                            .add(NavigateToMainSphereEditScreenEvent());
+                                      }
+                                    }else if(parentId==0){
+                                      if(appViewModel.settings.fastActSphere&&centralCircles[index].isActive==false){
+                                        appViewModel.activateSphereWish(id, true);
+                                        centralCircles.forEach((element) {element.isActive=true;});
+                                        appViewModel.mainCircles = centralCircles;
+                                        setState(() { });
+                                      }else {
+                                        appViewModel.cachedImages.clear();
+                                        appViewModel.wishScreenState = null;
+                                        appViewModel.startWishScreen(
+                                            centralCircles[index].id, 0, false);
+                                        appViewModel.mainCircles = centralCircles;
+                                        BlocProvider.of<NavigationBloc>(context)
+                                            .add(NavigateToWishScreenEvent());
+                                      };
+                                    }else if(parentId!=0){
+                                      if(centralCircles[index].isActive==false&&centralCircles[index].isChecked==false&&appViewModel.settings.fastActWish&&(centralCircles[centralCircles.length-2].isActive==true||(appViewModel.mainScreenState!.allCircles.firstWhereOrNull((element) => element.id==parentId)?.parenId==0&&appViewModel.settings.sphereActualizingMode==1)||(appViewModel.settings.wishActualizingMode==1&&appViewModel.isParentSphereActive(id))||(appViewModel.settings.sphereActualizingMode==1&&appViewModel.settings.wishActualizingMode==1))){
+                                        appViewModel.activateSphereWish(id, true);
+                                        widget.circles.where((element) => element.id==id).firstOrNull?.isActive=true;
+                                        centralCircles.forEach((element) {element.isActive=true;});
+                                        appViewModel.mainCircles = centralCircles;
+                                        setState(() { });
+                                      }else {
+                                        appViewModel.cachedImages.clear();
+                                        appViewModel.wishScreenState = null;
+                                        appViewModel.startWishScreen(
+                                            centralCircles[index].id, 0, false);
+                                        appViewModel.mainCircles = centralCircles;
+                                        BlocProvider.of<NavigationBloc>(context)
+                                            .add(NavigateToWishScreenEvent());
+                                      }
+                                    }
+                                  }
+                                  touchCount=0;
+                                } else {
+                                  _timer=Timer(const Duration(milliseconds: 150), () {
+                                    if(allowClick) {
+                                      print("allow stat change false - central circle tap");
+                                      allowClick = false;
+                                      if (centralCircles.length - 1 != index) {
+                                        animationDirectionForward = false;
+                                        widget.circles = vm?.openSphere(value.id) ?? [];
+                                        initAnim(centralCircles.last.id, widget.circles.indexWhere((element) => element.id == centralCircles.last.id));
+                                      } else if (centralCircles[index].id == 0) {
+                                        appViewModel.cachedImages.clear();
+                                        appViewModel.startMainsphereeditScreen();
+                                        BlocProvider.of<NavigationBloc>(context)
+                                            .add(NavigateToMainSphereEditScreenEvent());
+                                      } else {
+                                        appViewModel.cachedImages.clear();
+                                        appViewModel.wishScreenState = null;
+                                        appViewModel.startWishScreen(
+                                            centralCircles[index].id, 0, false);
+                                        appViewModel.mainCircles = centralCircles;
+                                        BlocProvider.of<NavigationBloc>(context)
+                                            .add(NavigateToWishScreenEvent());
+                                      }
+                                    }
+                                    touchCount=0;
+                                  });
+                                }
+                              },
+                            )
+                        );}
+                  );
+                }).toList()
+              ],
+            ),
             GestureDetector(
               onPanEnd: (details){
                 startInertia(
@@ -439,6 +608,7 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
                 lastRotation.value += lastdirection;
               },
               onPanStart: (details){
+                print("pasttttaaaaaaaaaart");
                 final centerX = widget.center.key;
                 final centerY = widget.center.value;
                 startAngle = atan2(details.globalPosition.dy - centerY, details.globalPosition.dx - centerX);
@@ -447,9 +617,10 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
                   valueListenable: lastRotation,
                   builder: (context, rotation, _) {
                     return Transform.rotate(
-                        origin: const Offset(0, 17),
+                        origin: const Offset(0, 40),
                         angle: rotation,
                         child: Stack(
+                          alignment: Alignment.center,
                           children: [
                             Positioned(
                               left: lcent,
@@ -610,167 +781,37 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
                                   )
                               );
                             }),
+                            Positioned(
+                              left: widget.center.key-50,
+                                top: widget.center.value-50,
+                                child: GestureDetector(
+                                  onTap: (){
+                                    if (centralCircles.last.id == 0) {
+                                      appViewModel.cachedImages.clear();
+                                      appViewModel.startMainsphereeditScreen();
+                                      BlocProvider.of<NavigationBloc>(context)
+                                          .add(NavigateToMainSphereEditScreenEvent());
+                                    } else {
+                                      appViewModel.cachedImages.clear();
+                                      appViewModel.wishScreenState = null;
+                                      appViewModel.startWishScreen(
+                                          centralCircles.last.id, 0, false);
+                                      appViewModel.mainCircles = centralCircles;
+                                      BlocProvider.of<NavigationBloc>(context)
+                                          .add(NavigateToWishScreenEvent());
+                                    }
+                                  },
+                                  onDoubleTap: (){
+
+                                  },
+                                  child: Container(color: Colors.transparent, width: 100,
+                                    height: 100,),
+                                )
+                            )
                           ],
                         )
                     );
                   }),
-            ),
-            Stack(
-              children: [
-                if(centralCircles.length>1)AnimatedBuilder(
-                  animation: movingController,
-                  child: CustomPaint(
-                    painter: LinePainter(),
-                  ),
-                  builder: (context, child){
-                    return Positioned(
-                      left: lineStart.dx,
-                      bottom: lineStart.dy,
-                      width:_cTOa.value.dx-widget.center.key+50,
-                      height: widget.center.value-_cTOa.value.dy-50,
-                      child: child!,
-                    );
-                  },
-                ),
-                ...centralCircles.asMap().entries.where((entry) {
-                  return entry.value.isVisible; // Фильтруем элементы по условию isVisible
-                }).map((entry) {
-                  final index = entry.key;
-                  final value = entry.value;
-                  return AnimatedBuilder(
-                    animation: movingController,
-                          child: Stack(
-                            children: [
-                              Center(
-                                child:Text(
-                                  value.text,
-                                  maxLines: 1,
-                                  style: const TextStyle(color: Colors.black, fontSize: 20),
-                                  textAlign: TextAlign.center,
-                                ),
-                              ),
-                              if(value.isChecked)Align(
-                                alignment: Alignment.topRight,
-                                child: Image.asset('assets/icons/wish_done.png', width: 25, height: 25),
-                              )
-                            ],
-                          ),
-                          builder: (context, child){
-                      return Positioned(
-                          key: ccKeys[index],
-                            left: centralCircles.length-1==index?_rTOc.value.dx:_cTOa.value.dx,
-                            top: centralCircles.length-1==index?_rTOc.value.dy:_cTOa.value.dy,
-                            child: GestureDetector(
-                              child: AnimatedContainer(
-                                  curve: Curves.linear,
-                                  duration: const Duration(milliseconds: 200),
-                                  width: value.radius * 2,
-                                  height: value.radius * 2,
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    shape: BoxShape.circle,
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: value.isActive?value.color:const Color.fromARGB(255, 217, 217, 217).withOpacity(0.3), // Цвет тени
-                                        spreadRadius: 1, // Радиус распространения тени
-                                        blurRadius: 2, // Радиус размытия тени
-                                      ),
-                                    ],
-                                    border: Border.all(
-                                      color: value.isActive?value.color:const Color.fromARGB(255, 217, 217, 217),
-                                      width: 1.0,
-                                    ),
-                                  ),
-                                  child: child!
-                              ),
-                              onTap: () {
-                                print("oncentralcircletap - $allowClick");
-                                _timer?.cancel();
-                                touchCount++;
-                                if (touchCount>1) {
-                                  if(allowClick){
-                                    final id = centralCircles[index].id;
-                                    final parentId = appViewModel.mainScreenState!.allCircles.firstWhereOrNull((element) => element.id==id)?.parenId;
-                                    if(id==0){
-                                      if(appViewModel.settings.fastActMainSphere&&centralCircles[index].isActive==false){
-                                        appViewModel.activateSphereWish(id, true);
-                                        widget.circles.where((element) => element.id==id).firstOrNull?.isActive=true;
-                                        centralCircles.firstOrNull?.isActive=true;
-                                        appViewModel.mainCircles = centralCircles;
-                                        setState(() { });
-                                      }else {
-                                        appViewModel.cachedImages.clear();
-                                        appViewModel.startMainsphereeditScreen();
-                                        BlocProvider.of<NavigationBloc>(context)
-                                            .add(NavigateToMainSphereEditScreenEvent());
-                                      }
-                                    }else if(parentId==0){
-                                      if(appViewModel.settings.fastActSphere&&centralCircles[index].isActive==false){
-                                        appViewModel.activateSphereWish(id, true);
-                                        centralCircles.forEach((element) {element.isActive=true;});
-                                        appViewModel.mainCircles = centralCircles;
-                                        setState(() { });
-                                      }else {
-                                        appViewModel.cachedImages.clear();
-                                        appViewModel.wishScreenState = null;
-                                        appViewModel.startWishScreen(
-                                            centralCircles[index].id, 0, false);
-                                        appViewModel.mainCircles = centralCircles;
-                                        BlocProvider.of<NavigationBloc>(context)
-                                            .add(NavigateToWishScreenEvent());
-                                      };
-                                    }else if(parentId!=0){
-                                      if(centralCircles[index].isActive==false&&centralCircles[index].isChecked==false&&appViewModel.settings.fastActWish&&(centralCircles[centralCircles.length-2].isActive==true||(appViewModel.mainScreenState!.allCircles.firstWhereOrNull((element) => element.id==parentId)?.parenId==0&&appViewModel.settings.sphereActualizingMode==1)||(appViewModel.settings.wishActualizingMode==1&&appViewModel.isParentSphereActive(id))||(appViewModel.settings.sphereActualizingMode==1&&appViewModel.settings.wishActualizingMode==1))){
-                                        appViewModel.activateSphereWish(id, true);
-                                        widget.circles.where((element) => element.id==id).firstOrNull?.isActive=true;
-                                        centralCircles.forEach((element) {element.isActive=true;});
-                                        appViewModel.mainCircles = centralCircles;
-                                        setState(() { });
-                                      }else {
-                                        appViewModel.cachedImages.clear();
-                                        appViewModel.wishScreenState = null;
-                                        appViewModel.startWishScreen(
-                                            centralCircles[index].id, 0, false);
-                                        appViewModel.mainCircles = centralCircles;
-                                        BlocProvider.of<NavigationBloc>(context)
-                                            .add(NavigateToWishScreenEvent());
-                                      }
-                                    }
-                                  }
-                                  touchCount=0;
-                                } else {
-                                  _timer=Timer(const Duration(milliseconds: 150), () {
-                                    if(allowClick) {
-                                      print("allow stat change false - central circle tap");
-                                      allowClick = false;
-                                      if (centralCircles.length - 1 != index) {
-                                        animationDirectionForward = false;
-                                        widget.circles = vm?.openSphere(value.id) ?? [];
-                                        initAnim(centralCircles.last.id, widget.circles.indexWhere((element) => element.id == centralCircles.last.id));
-                                      } else if (centralCircles[index].id == 0) {
-                                        appViewModel.cachedImages.clear();
-                                        appViewModel.startMainsphereeditScreen();
-                                        BlocProvider.of<NavigationBloc>(context)
-                                            .add(NavigateToMainSphereEditScreenEvent());
-                                      } else {
-                                        appViewModel.cachedImages.clear();
-                                        appViewModel.wishScreenState = null;
-                                        appViewModel.startWishScreen(
-                                            centralCircles[index].id, 0, false);
-                                        appViewModel.mainCircles = centralCircles;
-                                        BlocProvider.of<NavigationBloc>(context)
-                                            .add(NavigateToWishScreenEvent());
-                                      }
-                                    }
-                                    touchCount=0;
-                                  });
-                                }
-                              },
-                            )
-                          );}
-                        );
-                }).toList()
-              ],
             )
           ],
         )

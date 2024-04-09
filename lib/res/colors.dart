@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  static const Color backgroundColor = Color(0xFFFEE0D6);
+  static const Color backgroundColor = Color(0xFFF4F4F9);
   static const Color moonColor = Color(0xFFD6DADD);
   static const Color fieldFillColor = Color(0xFFECECEC);
   static const Color fieldInactive = Color(0x3CFF00CC);
@@ -18,4 +18,6 @@ class AppColors {
 //redesign
   static const Color lightGrey = Color(0xFFF1F1F1);
   static const Color textLightGrey= Color(0x2C2C2C4D);
+  static const Color gradientStart= Color(0xFF1A4EFF);
+  static const Color gradientEnd= Color(0xFFC522FF);
 }

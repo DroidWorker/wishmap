@@ -762,7 +762,7 @@ class _WishScreenState extends State<WishScreen>{
                                   TreeViewWidgetV2(key: UniqueKey(), root: root.firstOrNull??MyTreeNode(id: -1, type: "a", title: "title", isChecked: true), idToOpen: curwish.id, onTap: (id,type) => onTreeItemTap(appVM, id, type, _title, _description, _affirmation)),
                                   const SizedBox(height: 5),
                                   if(curwish.parentId > 1)
-                                    ElevatedButton(
+                                    if(!curwish.isActive&&curwish.isChecked)const SizedBox(height: 20) else ElevatedButton(
                                         style: ElevatedButton.styleFrom(
                                           backgroundColor: AppColors.fieldFillColor,
                                           shape: RoundedRectangleBorder(
