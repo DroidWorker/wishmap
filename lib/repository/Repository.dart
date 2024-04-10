@@ -10,6 +10,7 @@ import 'package:wishmap/data/models.dart';
 import '../firebase_options.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 class Repository{
   final DatabaseReference userRef = FirebaseDatabase.instance.refFromURL('https://wishmap-c3e06-default-rtdb.europe-west1.firebasedatabase.app/').child('users');
@@ -132,6 +133,18 @@ class Repository{
       }
     }
     return -1;
+  }
+
+  Future<Map<String, String>> getAudios() async{
+    Map<String, String> urls = {};
+    final storage = FirebaseStorage.instanceFor(bucket: "gs://wishmap-c3e06.appspot.com");
+    final storageRef = FirebaseStorage.instance.ref();
+    final result = await storageRef.listAll();
+    for(var element in result.items) {
+        final url = await element.getDownloadURL();
+        urls[element.name]=url;
+    }
+    return urls;
   }
 
   Future<Uint8List?> getImage(int id) async{

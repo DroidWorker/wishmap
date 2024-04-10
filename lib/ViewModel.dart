@@ -1,12 +1,19 @@
+import 'dart:io';
+import 'dart:isolate';
 import 'dart:math';
 import 'dart:typed_data';
+import 'dart:ui';
 
 import 'package:collection/collection.dart';
 import 'package:connectivity/connectivity.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_downloader/flutter_downloader.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:wishmap/data/static_affirmations_women.dart';
-import 'package:wishmap/main.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:wishmap/provider/file_loader.dart';
 import 'package:wishmap/repository/Repository.dart';
 import 'package:wishmap/repository/photosSearch.dart';
 import 'package:wishmap/repository/local_repository.dart';
@@ -76,6 +83,8 @@ class AppViewModel with ChangeNotifier {
   //appcfg
   var isinLoading = false;
   var needAutoScrollBottom = false;
+  Map<String, String> audios = {};
+  int audioNum = 0;
 
   //settings
   ActualizingSettingData settings = ActualizingSettingData();
@@ -146,6 +155,45 @@ class AppViewModel with ChangeNotifier {
   }
   saveSettings(){
     localRep.saveActSetting(settings);
+  }
+
+  Future<Map<String, String>> getAudio() async{
+    audios = localRep.getTracks();
+    if(audios.isEmpty){
+      hint="загрузка трека...";
+      final tracks = await repository.getAudios();
+      cacheTrack(tracks.keys.first,tracks[tracks.keys.first]??"");
+    }
+    return audios;
+  }
+
+  Future cacheTrack(String name, String url) async {
+    if(url=="")return;
+    final directory = await getTemporaryDirectory();
+    Future<bool> _checkPermission() async {
+      if (Platform.isIOS) {
+        return true;
+      }
+
+      if (Platform.isAndroid) {
+        final info = await DeviceInfoPlugin().androidInfo;
+        if (info.version.sdkInt > 28) {
+          return true;
+        }
+
+        final status = await Permission.storage.status;
+        if (status == PermissionStatus.granted) {
+          return true;
+        }
+
+        final result = await Permission.storage.request();
+        return result == PermissionStatus.granted;
+      }
+
+      throw StateError('unknown platform');
+    }
+    _checkPermission();
+    FileDownloader.downloadFile(url, directory.path);
   }
 
   Future searchImages(String query) async{

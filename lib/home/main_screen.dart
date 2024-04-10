@@ -1,8 +1,11 @@
+import 'dart:isolate';
 import 'dart:math';
+import 'dart:ui';
 
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:capped_progress_indicator/capped_progress_indicator.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:provider/provider.dart';
 import 'package:wishmap/common/bottombar.dart';
 import 'package:wishmap/common/detailsOverlay.dart';
@@ -11,6 +14,8 @@ import 'package:wishmap/data/static.dart';
 import 'package:wishmap/navigation/navigation_block.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:wishmap/common/solarsystem_redesign.dart';
+import 'package:wishmap/provider/audio_manager.dart';
+import 'package:wishmap/provider/file_loader.dart';
 import 'package:wishmap/res/colors.dart';
 import 'package:wishmap/data/models.dart';
 
@@ -28,6 +33,9 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen>{
+  ReceivePort _port = ReceivePort();
+  AppViewModel? vm;
+
   bool isPauseIcon = true;
   bool clearData = true;
   int hintId = 0;
@@ -38,9 +46,28 @@ class _MainScreenState extends State<MainScreen>{
   final GlobalKey<CircularDraggableCirclesState> _CDWidgetKey = GlobalKey();
 
   @override
+  void initState() {
+    super.initState();
+    IsolateNameServer.registerPortWithName(_port.sendPort, 'downloader_send_port');
+    _port.listen((dynamic data) {
+      print("daaaaaaaaattttttttaaaaaaaaaaaa"+data);
+      final elements = data.split(",");
+      String id = elements[0];
+      DownloadTaskStatus status = DownloadTaskStatus.values[int.parse(elements[1])];
+      int progress = int.parse(elements[2]);
+      if(progress>99) {
+        vm?.hint = "файл загружен, для загрузки дополнительных треков перейдите в настройки";
+        //localRep.saveTrack(name, "${directory.path}/$name");
+      }
+    });
+    FlutterDownloader.registerCallback(FileDownloader.downloadCallback);
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Consumer<AppViewModel>(
         builder: (context, appVM, child){
+          vm=appVM;
           final hintStates = appVM.getHintStates();
           if(hintStates["firstOpenSphere"]==1&&appVM.mainScreenState!.allCircles.first.isActive){
             appVM.hint="Создай свою карту желаний. Сначала заполни область своего “Я”. Потом последовательно заполни все сферы, и лишь потом приступай к синтезу желаний.";
@@ -191,7 +218,14 @@ class _MainScreenState extends State<MainScreen>{
                               const SizedBox(width: 5),
                               IconButton(
                                 icon: isPauseIcon?Image.asset('assets/icons/plau.png', height: 35, width: 35):Image.asset('assets/icons/pause.png', height: 35, width: 35),
-                                onPressed: () {
+                                onPressed: () async {
+                                  if(!isPauseIcon){
+                                    AudioPlayerManager().pause();
+                                  }else {
+                                    final audioUrl = await appVM.getAudio();
+                                    if(audioUrl.isEmpty)return;
+                                    AudioPlayerManager().streamAudio(audioUrl.values.toList()[appVM.audioNum]);
+                                  }
                                   setState((){
                                     ppPressCount++;
                                     if(ppPressCount==5){
@@ -209,7 +243,6 @@ class _MainScreenState extends State<MainScreen>{
                                     isPauseIcon=!isPauseIcon;
                                     clearData=false;
                                   });
-
                                 },
                               ),
                               const SizedBox(width: 5),

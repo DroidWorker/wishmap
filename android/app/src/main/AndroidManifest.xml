@@ -3,6 +3,7 @@
     <!-- Read storage permission for Android 12 and lower -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     <application
 

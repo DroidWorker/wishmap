@@ -98,6 +98,28 @@ class LocalRepository{
     return settings;
   }
 
+  //music
+  Future<void> saveTrack(String name, String path) async {
+    if (_prefs == null) {
+      await init(); // Дождитесь завершения инициализации
+    }
+    String resstr = _prefs!.getString("music")??"";
+    resstr!=""?"<<$name|$path":"$name|$path";
+    _prefs!.setString("music", resstr);
+  }
+
+  Map<String, String> getTracks() {
+    Map<String, String> tracks = {};
+    final tracksStr = _prefs!.getString("music")??"";
+    tracksStr.split("<<").forEach((element) {
+      if (element.isNotEmpty) {
+        final musicEntry = element.split("|");
+        tracks[musicEntry[0]] = musicEntry[1];
+      }
+    });
+    return tracks;
+  }
+
   Future<void> saveProfile(ProfileData pd) async {
     if (_prefs == null) {
       await init(); // Дождитесь завершения инициализации
