@@ -59,7 +59,7 @@ class NavigateToQRScreenEvent extends NavigationEvent {}
 
 class NavigateToPersonalSettingsScreenEvent extends NavigationEvent {}
 class NavigateToMainSettingsScreenEvent extends NavigationEvent {}
-
+class NavigateToSoundsSettingsScreenEvent extends NavigationEvent {}
 
 abstract class NavigationState {}
 
@@ -116,6 +116,7 @@ class NavigationQRScreenState extends NavigationState {}
 
 class NavigationPersonalSettingsScreenState extends NavigationState {}
 class NavigationMainSettingsScreenState extends NavigationState {}
+class NavigationSoundsSettingsScreenState extends NavigationState {}
 
 
 class NavigationBloc extends Bloc<NavigationEvent, NavigationState> {
@@ -223,6 +224,11 @@ class NavigationBloc extends Bloc<NavigationEvent, NavigationState> {
       emit(_navigationHistory.last);
     });
 
+    on<NavigateToSoundsSettingsScreenEvent>((event, emit) {
+      _navigationHistory.add(NavigationSoundsSettingsScreenState());
+      emit(_navigationHistory.last);
+    });
+
     on<NavigateBackEvent>((event, emit) {
       emit(_navigationHistory.last);
     });
@@ -312,6 +318,8 @@ class NavigationBloc extends Bloc<NavigationEvent, NavigationState> {
       _navigationHistory.add(NavigationPersonalSettingsScreenState());
     } else if (event is NavigateToMainSettingsScreenEvent) {
       _navigationHistory.add(NavigationMainSettingsScreenState());
+    } else if (event is NavigateToSoundsSettingsScreenEvent) {
+      _navigationHistory.add(NavigationSoundsSettingsScreenState());
     }
     else if(event is NavigateBackEvent) {
       yield _navigationHistory.last;

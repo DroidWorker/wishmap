@@ -85,6 +85,16 @@ class AppViewModel with ChangeNotifier {
   var needAutoScrollBottom = false;
   Map<String, String> audios = {};
   int audioNum = 0;
+  Map<String, String> audioList = {};//used for show list of all tracks in settings
+  Map<String, int> inProgress = {};
+  void setInProgress(String k, int v){
+    if(v<100) {
+      inProgress[k]=v;
+    } else {
+      inProgress.remove(k);
+    }
+    notifyListeners();
+  }
 
   //settings
   ActualizingSettingData settings = ActualizingSettingData();
@@ -157,7 +167,7 @@ class AppViewModel with ChangeNotifier {
     localRep.saveActSetting(settings);
   }
 
-  Future<Map<String, String>> getAudio() async{
+  Future<Map<String, String>> getAudio() async{//returns local track name and path
     audios = localRep.getTracks();
     if(audios.isEmpty){
       hint="загрузка трека...";
@@ -167,33 +177,25 @@ class AppViewModel with ChangeNotifier {
     return audios;
   }
 
-  Future cacheTrack(String name, String url) async {
-    if(url=="")return;
+  Map<String, String> loadCachedTrackNames() {
+    audioList = localRep.getCachedTrackNames();
+    return audioList;
+  }
+
+  Future<Map<String, String>> getAudioList() async{//returns track name and url
+    audioList = await repository.getAudios();
+    notifyListeners();
+    localRep.cacheTrackNames(audioList);
+    return audioList;
+  }
+
+  Future<String?> cacheTrack(String name, String url) async {
+    if(url=="")return null;
     final directory = await getTemporaryDirectory();
-    Future<bool> _checkPermission() async {
-      if (Platform.isIOS) {
-        return true;
-      }
-
-      if (Platform.isAndroid) {
-        final info = await DeviceInfoPlugin().androidInfo;
-        if (info.version.sdkInt > 28) {
-          return true;
-        }
-
-        final status = await Permission.storage.status;
-        if (status == PermissionStatus.granted) {
-          return true;
-        }
-
-        final result = await Permission.storage.request();
-        return result == PermissionStatus.granted;
-      }
-
-      throw StateError('unknown platform');
-    }
-    _checkPermission();
-    FileDownloader.downloadFile(url, directory.path);
+    final loadId = await FileDownloader.downloadFile(url, directory.path);
+    localRep.saveTrack(name, "${directory.path}/$name");
+    audios[name]="${directory.path}/$name";
+    return loadId;
   }
 
   Future searchImages(String query) async{

@@ -57,8 +57,9 @@ class _MainScreenState extends State<MainScreen>{
       int progress = int.parse(elements[2]);
       if(progress>99) {
         vm?.hint = "файл загружен, для загрузки дополнительных треков перейдите в настройки";
-        //localRep.saveTrack(name, "${directory.path}/$name");
       }
+      final key = vm?.inProgress.keys.firstWhere((element) => element.contains(id), orElse: ()=>"");
+      if(key!="")vm?.setInProgress(key!,progress);
     });
     FlutterDownloader.registerCallback(FileDownloader.downloadCallback);
   }
@@ -199,7 +200,14 @@ class _MainScreenState extends State<MainScreen>{
                             children: [
                               IconButton(
                                 icon: Image.asset('assets/icons/prev.png', height: 35, width: 35),
-                                onPressed: () {
+                                onPressed: () async {
+                                  final audioUrl = await appVM.getAudio();
+                                  if(audioUrl.isEmpty)return;
+                                  if(audioUrl.length>1){
+                                    final num = appVM.audioNum;
+                                    appVM.audioNum = num-1<0?audioUrl.length-1:num-1;
+                                    AudioPlayerManager().playLocal(audioUrl.keys.toList()[appVM.audioNum]);
+                                  }
                                   pnPressCount++;
                                   if(pnPressCount==5){
                                     pnPressCount=0;
@@ -224,7 +232,7 @@ class _MainScreenState extends State<MainScreen>{
                                   }else {
                                     final audioUrl = await appVM.getAudio();
                                     if(audioUrl.isEmpty)return;
-                                    AudioPlayerManager().streamAudio(audioUrl.values.toList()[appVM.audioNum]);
+                                    AudioPlayerManager().playLocal(audioUrl.keys.toList()[appVM.audioNum]);
                                   }
                                   setState((){
                                     ppPressCount++;
@@ -248,7 +256,14 @@ class _MainScreenState extends State<MainScreen>{
                               const SizedBox(width: 5),
                               IconButton(
                                 icon: Image.asset('assets/icons/next.png', height: 35, width: 35),
-                                onPressed: () {
+                                onPressed: () async {
+                                  final audioUrl = await appVM.getAudio();
+                                  if(audioUrl.isEmpty)return;
+                                  if(audioUrl.length>1){
+                                    final num = appVM.audioNum;
+                                    appVM.audioNum = num+1>audioUrl.length-1?0:num+1;
+                                    AudioPlayerManager().playLocal(audioUrl.keys.toList()[appVM.audioNum]);
+                                  }
                                   pnPressCount++;
                                   if(pnPressCount==5){
                                     pnPressCount=0;

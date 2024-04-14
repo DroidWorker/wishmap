@@ -30,7 +30,7 @@ class AudioPlayerManager {
     void pause(){
       _audioPlayer.pause();
     }
-  void stop(){
-    _audioPlayer.stop();
-  }
+    void stop(){
+      _audioPlayer.stop();
+    }
 }

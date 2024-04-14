@@ -104,7 +104,7 @@ class LocalRepository{
       await init(); // Дождитесь завершения инициализации
     }
     String resstr = _prefs!.getString("music")??"";
-    resstr!=""?"<<$name|$path":"$name|$path";
+    resstr+=resstr!=""?"<<$name|$path":"$name|$path";
     _prefs!.setString("music", resstr);
   }
 
@@ -119,6 +119,31 @@ class LocalRepository{
     });
     return tracks;
   }
+
+  Future<void> cacheTrackNames(Map<String, String> trackDatas) async {
+    if (_prefs == null) {
+      await init(); // Дождитесь завершения инициализации
+    }
+    String data = "";
+    trackDatas.forEach((key, value) {
+      if(data!="")data+="<<";
+      data+="$key|$value";
+    });
+    _prefs!.setString("trackDatas", data);
+  }
+
+  Map<String, String> getCachedTrackNames() {
+    Map<String, String> tracksNames = {};
+    final tracksStr = _prefs!.getString("trackDatas")??"";
+    tracksStr.split("<<").forEach((element) {
+      if (element.isNotEmpty) {
+        final musicEntry = element.split("|");
+        tracksNames[musicEntry[0]] = musicEntry[1];
+      }
+    });
+    return tracksNames;
+  }
+
 
   Future<void> saveProfile(ProfileData pd) async {
     if (_prefs == null) {

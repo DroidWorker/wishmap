@@ -2,6 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:wishmap/home/aim_create.dart';
 import 'package:wishmap/home/aimedit_screen.dart';
@@ -22,6 +23,7 @@ import 'firebase_options.dart';
 import 'home/myaims_screen.dart';
 import 'home/mywishesScreen.dart';
 import 'home/profile_screen.dart';
+import 'home/settings/sounds_setting.dart';
 import 'home/taskedit_screen.dart';
 import 'navigation/navigation_block.dart';
 import 'home/main_screen.dart';
@@ -32,6 +34,11 @@ void main() async{
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  await Permission.notification.isDenied.then((value) {
+    if (value) {
+      Permission.notification.request();
+    }
+  });
   // Инициализация плагина загрузки
   await FlutterDownloader.initialize(debug: true);
   final appViewModel = AppViewModel();
@@ -127,6 +134,8 @@ class MyApp extends StatelessWidget {
       return MainSettings();
     } else if (state is NavigationPersonalSettingsScreenState) {
       return PersonalSettings();
+    }else if (state is NavigationSoundsSettingsScreenState) {
+      return SoundsSettings();
     } else {
       return Container(); // По умолчанию или для других состояний.
     }

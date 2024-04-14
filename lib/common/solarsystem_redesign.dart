@@ -15,6 +15,7 @@ import 'package:flutter/physics.dart';
 import '../data/static.dart';
 import '../data/static_affirmations_women.dart';
 import '../navigation/navigation_block.dart';
+import 'customAutoSizeText.dart';
 
 class CircleWidget extends StatefulWidget {
   final itemId;
@@ -74,11 +75,8 @@ class _CircleWidgetState extends State<CircleWidget>{
           child: Stack(
             children: [
               Center( // Используйте Center, чтобы разместить текст по центру
-                  child: AutoSizeText(
-                    widget.circle.text,
-                    maxLines: 1,
-                    style: const TextStyle(color: Colors.black, fontSize: 16),
-                    textAlign: TextAlign.center,
+                  child: WordWrapWidget(
+                    text: widget.circle.text
                   )
               ),
               if(widget.circle.isChecked)Align(
@@ -428,8 +426,10 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
                     return Stack(children:[ Positioned(
                       left: lineStart.dx,
                       bottom: lineStart.dy,
-                      width: (_cTOa.value.dx-widget.center.key)*0.75,
-                      height: (widget.center.value-_cTOa.value.dy)*0.31,
+                      top: _cTOa.value.dy+(widget.size-80)/2+35,
+                      right: widget.size-_cTOa.value.dx,
+                      //width: (_cTOa.value.dx-widget.center.key)*0.75,
+                      //height: (widget.center.value-_cTOa.value.dy)*0.31,
                       child: child!,
                     ),
                       Positioned(

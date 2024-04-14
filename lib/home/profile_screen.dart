@@ -50,6 +50,7 @@ class _ProfileScreenState extends State<ProfileScreen>{
             children: [
               IconButton(onPressed: (){
                 appViewModel.backPressedCount++;
+                appViewModel.mainCircles.clear();
                 if(appViewModel.mainScreenState!=null)appViewModel.startMainScreen(appViewModel.mainScreenState!.moon);
                 if(appViewModel.backPressedCount==appViewModel.settings.quoteupdateFreq){
                   appViewModel.backPressedCount=0;
@@ -134,7 +135,10 @@ class _ProfileScreenState extends State<ProfileScreen>{
                 ],),
               ),
               InkWell(
-                onTap: (){},
+                onTap: (){
+                  BlocProvider.of<NavigationBloc>(context)
+                      .add(NavigateToSoundsSettingsScreenEvent());
+                },
                 child: const Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                   Text("Звуки"),
