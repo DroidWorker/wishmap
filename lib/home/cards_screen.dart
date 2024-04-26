@@ -1,6 +1,7 @@
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:wishmap/common/card_item.dart';
 import 'package:wishmap/common/connectivity.dart';
 import 'package:wishmap/common/speedTest_Overlay.dart';
 import 'package:wishmap/data/models.dart';
@@ -43,9 +44,9 @@ class CardsScreenState extends State<CardsScreen>{
               ]
           )
         ,
-        if(isInSync) Row(children: [
-          const Text("синхронизация"),
-          const CircularProgressIndicator(),
+        if(isInSync) const Row(children: [
+          Text("синхронизация"),
+          CircularProgressIndicator(),
         ],)
       ],
       body: Consumer<AppViewModel>(
@@ -58,88 +59,38 @@ class CardsScreenState extends State<CardsScreen>{
           return SafeArea(child:ListView.builder(
             itemCount: items.length,
             itemBuilder: (context, index) {
-              DateTime date = parseDateString(items[index].date)??DateTime.now();
-              return Padding(
-                  padding: const EdgeInsets.all(15),
-                  child: InkWell(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        if(items[index].id!=-1)MoonWidget(
-                          date: date,
-                          size: 90,
-                          resolution: 900,
-                        )else IconButton(onPressed: (){
-                          showDialog(context: context, builder: (contest){
-                            return ActualizeMoonDialog(onActualizeClick: (){
-                              Navigator.pop(contest);
-                              BlocProvider.of<NavigationBloc>(context)
-                                  .add(NavigateToQRScreenEvent());
-                            }, onCloseDialogClick: (){Navigator.pop(contest);}, onCreateNew: () async {
-                              await appViewModel.createNewMoon("${now.day.toString().padLeft(2, '0')}.${now.month.toString().padLeft(2, '0')}.${now.year}");
-                              final moonId = appVM.moonItems.last;
-                              setState(() {
-                                isInSync = true;
-                              });
-                              appViewModel.startMainScreen(moonId);
-                              Navigator.pop(contest);
-                              BlocProvider.of<NavigationBloc>(context)
-                                  .add(NavigateToMainScreenEvent());
-                            });
-                          });
-                        }, iconSize:70, icon: const Icon(Icons.add, color: AppColors.moonColor,size: 70,)),
-                        Text(items[index].date)
-                      ],
-                    ),
-                    onTap: () async {
-                      try {
-                        var result = await Connectivity().checkConnectivity();
-                        if (result == ConnectivityResult.none) appViewModel
-                            .connectivity = 'No Internet Connection';
-                        if (items[index].id != -1 &&
-                            appViewModel.moonItems.isNotEmpty) {
-                          final moonId = appVM.moonItems
-                              .where((e) => e.id == items[index].id)
-                              .first;
-                          setState(() {
-                            isInSync = true;
-                          });
-                          await appViewModel.fetchDatas(moonId.id);
-                          appViewModel.startMainScreen(moonId);
-                          appViewModel.hint =
-                          "Отлично! Теперь пришло время заполнить все сферы жизни. Ты можешь настроить состав и название сфер так, как считаешь нужным. И помни, что максимальное количество сфер ограничено и равно 13.";
-                          BlocProvider.of<NavigationBloc>(context)
-                              .add(NavigateToMainScreenEvent());
-                        } else {
-                          appViewModel.addError(
-                              "Ошибка! нет соединения с сервером");
-                        }
-                      }catch(ex, s){print("eeeeeeeeeeeeeeeeeeeeeeeeeeee $ex --- $s");}
-                      },
-                  )
-              );
+              return CardItem(items[index], () async {
+                try {
+                  var result = await Connectivity().checkConnectivity();
+                  if (result == ConnectivityResult.none) appViewModel
+                      .connectivity = 'No Internet Connection';
+                  if (items[index].id != -1 &&
+                      appViewModel.moonItems.isNotEmpty) {
+                    final moonId = appVM.moonItems
+                        .where((e) => e.id == items[index].id)
+                        .first;
+                    setState(() {
+                      isInSync = true;
+                    });
+                    await appViewModel.fetchDatas(moonId.id);
+                    appViewModel.startMainScreen(moonId);
+                    appViewModel.hint =
+                    "Отлично! Теперь пришло время заполнить все сферы жизни. Ты можешь настроить состав и название сфер так, как считаешь нужным. И помни, что максимальное количество сфер ограничено и равно 13.";
+                    BlocProvider.of<NavigationBloc>(context)
+                        .add(NavigateToMainScreenEvent());
+                  } else {
+                    appViewModel.addError(
+                        "Ошибка! нет соединения с сервером");
+                  }
+                }catch(ex, s){print("eeeeeeeeeeeeeeeeeeeeeeeeeeee $ex --- $s");}
+              }, (){setState(() {
+                isInSync = true;
+              });});
             },
           ),
           );
         },
       )
     );
-  }
-
-  DateTime? parseDateString(String dateString) {
-    List<String> parts = dateString.split('.');
-    if (parts.length == 3) {
-      int? day = int.tryParse(parts[0]);
-      int? month = int.tryParse(parts[1]);
-      int? year = int.tryParse(parts[2]);
-
-      if (day != null && month != null && year != null) {
-        return DateTime(year, month, day);
-      }
-    }
-
-    // Вернуть null в случае некорректного формата строки
-    return null;
   }
 }

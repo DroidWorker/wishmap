@@ -33,7 +33,7 @@ class BottomBar extends StatelessWidget{
               icon: Image.asset('assets/icons/bot_aim.png', height: 24, width: 24),
               label: "Цели"
           ),
-          IconButton(onPressed: ()=>onMapTap(), icon: Image.asset('assets/icons/bot_center.png')),
+          IconButton(onPressed: ()=>onMapTap(), padding: EdgeInsets.zero, constraints: const BoxConstraints(), icon: Image.asset('assets/icons/bot_center.png',  width: 58, height: 50,)),
           CustomBottomButton(
               onPressed: ()=>onWishesTap(),
               icon: Image.asset('assets/icons/bot_wishes.png', height: 24, width: 24),

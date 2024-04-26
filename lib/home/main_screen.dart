@@ -50,7 +50,6 @@ class _MainScreenState extends State<MainScreen>{
     super.initState();
     IsolateNameServer.registerPortWithName(_port.sendPort, 'downloader_send_port');
     _port.listen((dynamic data) {
-      print("daaaaaaaaattttttttaaaaaaaaaaaa"+data);
       final elements = data.split(",");
       String id = elements[0];
       DownloadTaskStatus status = DownloadTaskStatus.values[int.parse(elements[1])];

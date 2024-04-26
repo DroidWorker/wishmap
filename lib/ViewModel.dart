@@ -1,16 +1,11 @@
-import 'dart:io';
-import 'dart:isolate';
 import 'dart:math';
 import 'dart:typed_data';
 import 'dart:ui';
 
 import 'package:collection/collection.dart';
 import 'package:connectivity/connectivity.dart';
-import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_downloader/flutter_downloader.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:wishmap/data/static_affirmations_women.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:wishmap/provider/file_loader.dart';
@@ -172,7 +167,8 @@ class AppViewModel with ChangeNotifier {
     if(audios.isEmpty){
       hint="загрузка трека...";
       final tracks = await repository.getAudios();
-      cacheTrack(tracks.keys.first,tracks[tracks.keys.first]??"");
+      final loadId = await cacheTrack(tracks.keys.first,tracks[tracks.keys.first]??"");
+      if(loadId!=null)inProgress[tracks.keys.first+loadId] = 0;
     }
     return audios;
   }

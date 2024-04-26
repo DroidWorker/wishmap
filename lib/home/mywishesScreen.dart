@@ -6,9 +6,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:wishmap/common/custom_bottom_button.dart';
 import '../ViewModel.dart';
+import '../common/bottombar.dart';
 import '../common/treeview_widget.dart';
 import '../data/models.dart';
 import '../data/static.dart';
+import '../interface_widgets/colorButton.dart';
 import '../navigation/navigation_block.dart';
 import '../res/colors.dart';
 
@@ -20,7 +22,7 @@ class WishesScreen extends StatefulWidget {
 }
 
 class _WishesScreenState extends State<WishesScreen>{
-  int page = 0;//2 - не исполнено 1 - Исполнено 0 - Все желания
+  int page = 0;//2 - не исполнено 1 - Исполнено 0 - Все желания 3 - актуальные
   List<WishItem> allWishList = [];
   List<WishItem> filteredWishList = [];
   List<MyTreeNode> roots = [];
@@ -56,84 +58,119 @@ class _WishesScreenState extends State<WishesScreen>{
                 children: [
                   Row(children: [
                     IconButton(
-                      icon: const Icon(Icons.keyboard_arrow_left, size: 30,),
+                      icon: const Icon(Icons.keyboard_arrow_left, size: 30, color: AppColors.gradientStart),
                       onPressed: () {
                         BlocProvider.of<NavigationBloc>(context)
                             .add(NavigateToMainScreenEvent());
                       },
                     ),
                     const Spacer(),
-                    const Text("Мои желания", style: TextStyle(fontSize: 18),),
+                    const Text("Мои желания", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),),
                     const Spacer(),
+                    const SizedBox(width: 35)
                   ],
                   ),
-                  const SizedBox(height: 20),
-                  Row(children: [
-                    GestureDetector(
-                      child: Container(
-                        height: 30,
-                        child: page==3
-                            ? const Text("Актуальные",
-                            style: TextStyle(decoration: TextDecoration.underline))
-                            : const Text("Актуальные"),
-                      ),
-                      onTap: () {
-                        setState(() {
-                          page = 3;
-                          filterAims(page);
-                        });
-                      },
+                  const SizedBox(height: 15),
+                  Container(
+                    height: 34,
+                    decoration: const BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.all(Radius.circular(5))
                     ),
-                    const SizedBox(width: 5),
-                    GestureDetector(
-                      child: Container(
-                        height: 30,
-                        child:page==2
-                            ? const Text("не исполнено",
-                            style: TextStyle(decoration: TextDecoration.underline))
-                            : const Text("не исполнено"),
-                      ),
-                      onTap: () {
-                        setState(() {
-                          page = 2;
-                          filterAims(page);
-                        });
-                      },
+                    child: Row(
+                      mainAxisSize: MainAxisSize.max,
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        Expanded(
+                          flex: 3,
+                          child: GestureDetector(
+                            child: page==0
+                                ? Container(
+                                margin: const EdgeInsets.all(1),
+                                height: 34,
+                                decoration:  const BoxDecoration(
+                                    borderRadius: BorderRadius.all(Radius.circular(5)),
+                                    gradient: LinearGradient(
+                                        colors: [AppColors.gradientStart, AppColors.gradientEnd]
+                                    )
+                                ), child: const Center(child: Text("Все", style: TextStyle(color: Colors.white)))): const SizedBox(height:34, child: Center(child: Text("Все", style: TextStyle(color: AppColors.greytextColor)))),
+                            onTap: () {
+                              setState(() {
+                                page = 0;
+                                filterAims(page);
+                              });
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 3, child: VerticalDivider(color: AppColors.backgroundColor, indent: 3, endIndent: 3)),
+                        Expanded(
+                          flex: 8,
+                          child: GestureDetector(
+                              child: page==3
+                                  ? Container(
+                                  margin: const EdgeInsets.all(1),
+                                  height: 34,
+                                  decoration:  const BoxDecoration(
+                                      borderRadius: BorderRadius.all(Radius.circular(5)),
+                                      gradient: LinearGradient(
+                                          colors: [AppColors.gradientStart, AppColors.gradientEnd]
+                                      )
+                                  ), child: const Center(child: Text("Актуальные", style: TextStyle(color: Colors.white)))): const SizedBox(height:34, child: Center(child: Text("Актуальные", style: TextStyle(color: AppColors.greytextColor)))),
+                              onTap: () {
+                                setState(() {
+                                  page = 3;
+                                  filterAims(page);
+                                });
+                              }
+                          ),
+                        ),
+                        const SizedBox(width: 3, child: VerticalDivider(color: AppColors.backgroundColor, indent: 3, endIndent: 3)),
+                        Expanded(
+                          flex: 10,
+                          child: GestureDetector(
+                              child: page==2
+                                  ? Container(
+                                  margin: const EdgeInsets.all(1),
+                                  height: 34,
+                                  decoration:  const BoxDecoration(
+                                      borderRadius: BorderRadius.all(Radius.circular(5)),
+                                      gradient: LinearGradient(
+                                          colors: [AppColors.gradientStart, AppColors.gradientEnd]
+                                      )
+                                  ), child: const Center(child: Text("Не исполнены", style: TextStyle(color: Colors.white)))): const SizedBox(height: 34, child: Center(child: Text("Не достигнуты", style: TextStyle(color: AppColors.greytextColor)))),
+                              onTap: () {
+                                setState(() {
+                                  page = 2;
+                                  filterAims(page);
+                                });
+                              }
+                          ),
+                        ),
+                        const SizedBox(width: 3, child: VerticalDivider(color: AppColors.backgroundColor, indent: 3, endIndent: 3)),
+                        Expanded(
+                          flex: 8,
+                          child: GestureDetector(
+                              child: page==1
+                                  ? Container(
+                                  margin: const EdgeInsets.all(1),
+                                  height: 34,
+                                  decoration:  const BoxDecoration(
+                                      borderRadius: BorderRadius.all(Radius.circular(5)),
+                                      gradient: LinearGradient(
+                                          colors: [AppColors.gradientStart, AppColors.gradientEnd]
+                                      )
+                                  ), child: const Center(child: Text("Исполнены", style: TextStyle(color: Colors.white)))): const SizedBox(height: 34, child: Center(child: Text("Достигнуты", style: TextStyle(color: AppColors.greytextColor)))),
+                              onTap: () {
+                                setState(() {
+                                  page = 1;
+                                  filterAims(page);
+                                });
+                              }
+                          ),
+                        ),
+                      ]
                     ),
-                    const SizedBox(width: 5),
-                    GestureDetector(
-                      child: Container(
-                        height: 30,
-                        child: page==1
-                            ? const Text("Исполнено",
-                            style: TextStyle(decoration: TextDecoration.underline))
-                            : const Text("Исполнено"),
-                      ),
-                      onTap: () {
-                        setState(() {
-                          page = 1;
-                          filterAims(page);
-                        });
-                      },
-                    ),
-                    const SizedBox(width: 5),
-                    GestureDetector(
-                      child: Container(
-                        height: 30,
-                        child: page==0
-                            ? const Text("Все желания",
-                            style: TextStyle(decoration: TextDecoration.underline))
-                            : const Text("Все желания"),
-                      ),
-                      onTap: () {
-                        setState(() {
-                          page = 0;
-                          filterAims(page);
-                        });
-                      },
-                    ),
-
-                  ],),
+                  ),
                   Expanded(child: SingleChildScrollView(child: LayoutBuilder(
                       builder: (context, constraints) {
                         return Align(
@@ -163,116 +200,63 @@ class _WishesScreenState extends State<WishesScreen>{
                         },),
                       )
                   );}))),
-                  /*Expanded(child:
-                  ListView.builder(
-                      itemCount: filteredWishList.length,
-                      itemBuilder: (context, index) {
-                        return WishItemWidget(ti: filteredWishList[index],
-                          onItemSelect: onItemClick,
-                          onClick: onItemClick,
-                          onDelete: onItemDelete,);
-                      }
-                  ),),*/
-                  const SizedBox(height: 10),
-                  ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.fieldFillColor,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10), // <-- Radius
-                        ),
-                      ),
-                      onPressed: () {
-                        if(appVM.mainScreenState!=null)appVM.startMainScreen(appVM.mainScreenState!.moon);
-                        appVM.hint="Добавление ЖЕЛАНИЙ происходит из карты сферы. Определи нужную сферу и создай желание, поставь цели и выполняй задачи. Твои желания обязательно сбудутся";
-                        BlocProvider.of<NavigationBloc>(context)
-                            .add(NavigateToMainScreenEvent());
-                      },
-                      child: const Text("Добавить",
-                          style: TextStyle(color: AppColors.greytextColor))
-                  ),
-                  const SizedBox(height: 20),
-                  !isPBActive?const Divider(
-                    height: 2,
-                    thickness: 1,
-                    indent: 0,
-                    endIndent: 0,
-                    color: Colors.black,
-                  ):const LinearCappedProgressIndicator(
+                  const SizedBox(height: 3),
+                  ColorRoundedButton("Добавить желание", (){
+                    if(appVM.mainScreenState!=null)appVM.startMainScreen(appVM.mainScreenState!.moon);
+                    appVM.hint="Добавление ЖЕЛАНИЙ происходит из карты сферы. Определи нужную сферу и создай желание, поставь цели и выполняй задачи. Твои желания обязательно сбудутся";
+                    BlocProvider.of<NavigationBloc>(context)
+                        .add(NavigateToMainScreenEvent());
+                  }),
+                  const SizedBox(height: 11),
+                  !isPBActive?const SizedBox(height: 4,):const LinearCappedProgressIndicator(
                     backgroundColor: Colors.black26,
                     color: Colors.black,
                     cornerRadius: 0,
                   ),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(0, 3, 0, 0),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        CustomBottomButton(
-                          onPressed: () {
-                            appVM.startMyTasksScreen();
-                            BlocProvider.of<NavigationBloc>(context)
-                                .add(NavigateToTasksScreenEvent());
-                          },
-                          icon: Image.asset('assets/icons/checklist2665651.png', height: 30, width: 30),
-                          label: "Задачи"
-                        ),
-                        CustomBottomButton(
-                            onPressed: () {
-                              appVM.startMyAimsScreen();
-                              BlocProvider.of<NavigationBloc>(context)
-                                  .add(NavigateToAimsScreenEvent());
-                            },
-                            icon:  Image.asset('assets/icons/goal6002764.png', height: 30, width: 30),
-                            label:  "Цели"
-                        ),
-                        CustomBottomButton(
-                            onPressed: () {
-                              if(appVM.mainScreenState!=null){
-                                appVM.mainCircles.clear();
-                                appVM.startMainScreen(appVM.mainScreenState!.moon);
-                              }
-                              final pressNum = appVM.getHintStates()["wheelClickNum"]??0;
-                              if(pressNum>5){
-                                appVM.backPressedCount++;
-                                if(appVM.backPressedCount==appVM.settings.quoteupdateFreq){
-                                  appVM.backPressedCount=0;
-                                  appVM.hint=quoteBack[Random().nextInt(367)];
-                                }
-                              }else{
-                                appVM.hint = "Кнопка “карта” возвращает вас на верхний уровень карты “желаний”. Сейчас вы уже здесь!";
-                              }
-                              appVM.setHintState("wheelClickNum", (pressNum+1));
-                              BlocProvider.of<NavigationBloc>(context)
-                                  .add(NavigateToMainScreenEvent());
-                            },
-                             icon: Image.asset('assets/icons/wheel2526426.png', height: 35, width: 35),
-                            label: "Карта"
-                        ),
-                        CustomBottomButton(
-                            onPressed: () {
-                              appVM.startMyWishesScreen();
-                              BlocProvider.of<NavigationBloc>(context)
-                                  .add(NavigateToWishesScreenEvent());
-                            },
-                            icon:  Image.asset('assets/icons/notelove1648387.png', height: 30, width: 30),
-                            label:  "Желания"
-                        ),
-                        CustomBottomButton(
-                            onPressed: () {
-                              appVM.getDiary();
-                              BlocProvider.of<NavigationBloc>(context)
-                                  .add(NavigateToDiaryScreenEvent());
-                            },
-                            icon:  Image.asset('assets/icons/notepad2725914.png', height: 30, width: 30),
-                            label:  "Дневник"
-                        ),
-                      ],
-                    ),)
                 ],
               ),
             )
-            ));
+            ),
+            bottomNavigationBar: BottomBar(
+              onAimsTap: (){
+                appVM.startMyAimsScreen();
+                BlocProvider.of<NavigationBloc>(context)
+                    .add(NavigateToAimsScreenEvent());
+              },
+              onTasksTap: (){
+                appVM.startMyTasksScreen();
+                BlocProvider.of<NavigationBloc>(context)
+                    .add(NavigateToTasksScreenEvent());
+              },
+              onMapTap: (){
+                if(appVM.mainScreenState!=null){
+                  appVM.mainCircles.clear();
+                  appVM.startMainScreen(appVM.mainScreenState!.moon);
+                }
+                final pressNum = appVM.getHintStates()["wheelClickNum"]??0;
+                if(pressNum>5){
+                  appVM.backPressedCount++;
+                  if(appVM.backPressedCount==appVM.settings.quoteupdateFreq){
+                    appVM.backPressedCount=0;
+                    appVM.hint=quoteBack[Random().nextInt(367)];
+                  }
+                }else{
+                  appVM.hint = "Кнопка “карта” возвращает вас на верхний уровень карты “желаний”. Сейчас вы уже здесь!";
+                }
+                appVM.setHintState("wheelClickNum", (pressNum+1));
+                BlocProvider.of<NavigationBloc>(context)
+                    .add(NavigateToMainScreenEvent());
+              },
+              onWishesTap: (){
+
+              },
+              onDiaryTap: (){
+                appVM.getDiary();
+                BlocProvider.of<NavigationBloc>(context)
+                    .add(NavigateToDiaryScreenEvent());
+              },
+            ),
+          );
     });
   }
   filterAims(int type){

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:wishmap/res/colors.dart';
 import 'dart:math';
+import 'dart:ui' as ui;
 
 /*class MoonWidget extends StatelessWidget {
   final double fillPercentage; // Процентное заполнение Луны
@@ -77,11 +78,15 @@ class MoonWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
+    return Container(
       width: size,
       height: size,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(size/2),
+        gradient: const LinearGradient(colors: [AppColors.gradientEnd, AppColors.gradientStart])
+      ),
       child: Transform.scale(
-        scale: size / (resolution * 2),
+        scale: (size-4) / (resolution * 2),
         child: CustomPaint(
           size: Size(size,size),
           painter: MoonPainter(moonWidget: this),
@@ -108,10 +113,11 @@ class MoonPainter extends CustomPainter {
     double phaseAngle = moon.getPhaseAngle(moonWidget.date);
 
     double xcenter = 0;
-    double ycenter = 0;
+    double ycenter = 30;
 
     try {
-      paintLight.color = moonWidget.moonColor;
+      paintLight.shader=ui.Gradient.linear(Offset(-width.toDouble(),0.0), Offset(width.toDouble(), 0.0), [AppColors.gradientEnd, AppColors.gradientStart]);
+      //paintLight.color = moonWidget.moonColor;
       //달의 색깔로 전체 원을 그린다
       canvas.drawCircle(const Offset(0, 1), radius, paintLight);
     } catch (e) {
@@ -143,7 +149,7 @@ class MoonPainter extends CustomPainter {
       double rrf = sqrt(rsquared - j * j);
       double rr = rrf;
       double xx = rrf * cosTerm;
-      double x1 = xcenter - (whichQuarter < 2 ? rr : xx);
+      double x1 = xcenter + 50 - (whichQuarter < 2 ? rr : xx);
       double w = rr + xx;
       canvas.drawRect(
           Rect.fromLTRB(x1, ycenter - j, w + x1, ycenter - j + 2), paintDark);
