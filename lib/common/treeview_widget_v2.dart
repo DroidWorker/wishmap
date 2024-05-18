@@ -21,7 +21,7 @@ class _TreeViewWidgetState extends State<TreeViewWidgetV2> {
   late MyTreeNode _currentNode;
   Map<int, String> _currentPath = {};
 
-  ScrollController _scrollController = ScrollController();
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {

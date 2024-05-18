@@ -22,14 +22,16 @@ class WishesScreen extends StatefulWidget {
 }
 
 class _WishesScreenState extends State<WishesScreen>{
-  int page = 0;//2 - не исполнено 1 - Исполнено 0 - Все желания 3 - актуальные
+  int page = 3;//2 - не исполнено 1 - Исполнено 0 - Все желания 3 - актуальные
   List<WishItem> allWishList = [];
   List<WishItem> filteredWishList = [];
   List<MyTreeNode> roots = [];
+  List<int> deleteQueue = [];
   AppViewModel? appViewModel;
   bool isWishesRequested = false;
 
   var isPBActive = false;
+  var trashModeActive = false;
 
   @override
   Widget build(BuildContext context) {
@@ -58,6 +60,11 @@ class _WishesScreenState extends State<WishesScreen>{
                 children: [
                   Row(children: [
                     IconButton(
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      style: const ButtonStyle(
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap, // the '2023' part
+                      ),
                       icon: const Icon(Icons.keyboard_arrow_left, size: 30, color: AppColors.gradientStart),
                       onPressed: () {
                         BlocProvider.of<NavigationBloc>(context)
@@ -65,9 +72,18 @@ class _WishesScreenState extends State<WishesScreen>{
                       },
                     ),
                     const Spacer(),
-                    const Text("Мои желания", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),),
+                    const Text("Мои желания", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                     const Spacer(),
-                    const SizedBox(width: 35)
+                    const SizedBox(width: 32)
+                    /*IconButton(
+                      icon: Image.asset("assets/icons/trash.png"),
+                      onPressed: () {
+                        setState(() {
+                          trashModeActive = !trashModeActive;
+                          deleteQueue.clear();
+                        });
+                      },
+                    ),*/
                   ],
                   ),
                   const SizedBox(height: 15),
@@ -81,28 +97,6 @@ class _WishesScreenState extends State<WishesScreen>{
                       mainAxisSize: MainAxisSize.max,
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        Expanded(
-                          flex: 3,
-                          child: GestureDetector(
-                            child: page==0
-                                ? Container(
-                                margin: const EdgeInsets.all(1),
-                                height: 34,
-                                decoration:  const BoxDecoration(
-                                    borderRadius: BorderRadius.all(Radius.circular(5)),
-                                    gradient: LinearGradient(
-                                        colors: [AppColors.gradientStart, AppColors.gradientEnd]
-                                    )
-                                ), child: const Center(child: Text("Все", style: TextStyle(color: Colors.white)))): const SizedBox(height:34, child: Center(child: Text("Все", style: TextStyle(color: AppColors.greytextColor)))),
-                            onTap: () {
-                              setState(() {
-                                page = 0;
-                                filterAims(page);
-                              });
-                            },
-                          ),
-                        ),
-                        const SizedBox(width: 3, child: VerticalDivider(color: AppColors.backgroundColor, indent: 3, endIndent: 3)),
                         Expanded(
                           flex: 8,
                           child: GestureDetector(
@@ -168,6 +162,28 @@ class _WishesScreenState extends State<WishesScreen>{
                               }
                           ),
                         ),
+                        const SizedBox(width: 3, child: VerticalDivider(color: AppColors.backgroundColor, indent: 3, endIndent: 3)),
+                        Expanded(
+                          flex: 3,
+                          child: GestureDetector(
+                            child: page==0
+                                ? Container(
+                                margin: const EdgeInsets.all(1),
+                                height: 34,
+                                decoration:  const BoxDecoration(
+                                    borderRadius: BorderRadius.all(Radius.circular(5)),
+                                    gradient: LinearGradient(
+                                        colors: [AppColors.gradientStart, AppColors.gradientEnd]
+                                    )
+                                ), child: const Center(child: Text("Все", style: TextStyle(color: Colors.white)))): const SizedBox(height:34, child: Center(child: Text("Все", style: TextStyle(color: AppColors.greytextColor)))),
+                            onTap: () {
+                              setState(() {
+                                page = 0;
+                                filterAims(page);
+                              });
+                            },
+                          ),
+                        ),
                       ]
                     ),
                   ),
@@ -197,15 +213,29 @@ class _WishesScreenState extends State<WishesScreen>{
                             BlocProvider.of<NavigationBloc>(context)
                                 .add(NavigateToTaskEditScreenEvent(id));
                           }
+                        },
+                        onDoubleTap: (id, type){
+                          onDoubleClick(id);
                         },),
                       )
                   );}))),
                   const SizedBox(height: 3),
-                  ColorRoundedButton("Добавить желание", (){
+                  !trashModeActive?ColorRoundedButton("Добавить желание", (){
                     if(appVM.mainScreenState!=null)appVM.startMainScreen(appVM.mainScreenState!.moon);
                     appVM.hint="Добавление ЖЕЛАНИЙ происходит из карты сферы. Определи нужную сферу и создай желание, поставь цели и выполняй задачи. Твои желания обязательно сбудутся";
                     BlocProvider.of<NavigationBloc>(context)
                         .add(NavigateToMainScreenEvent());
+                  }):
+                  ColorRoundedButton("Удалить", c: AppColors.buttonBackRed, (){
+                    setState(() async {
+                      trashModeActive=false;
+                      for (var id in deleteQueue) {
+                        final wish = await appVM.getSphereNow(id);
+                        if(wish==null)return;
+                        appVM.deleteSphereWish(id, wish.prevId, wish.nextId);
+                        appVM.wishItems.removeWhere((element) => element.id==id);
+                      }
+                    });
                   }),
                   const SizedBox(height: 11),
                   !isPBActive?const SizedBox(height: 4,):const LinearCappedProgressIndicator(
@@ -274,10 +304,65 @@ class _WishesScreenState extends State<WishesScreen>{
     BlocProvider.of<NavigationBloc>(context)
         .add(NavigateToWishScreenEvent());
   }
-  onItemDelete(int id){
-    setState(() {
-      filteredWishList.removeWhere((element) => element.id==id);
-    });
-    appViewModel?.deleteSphereWish(id, -1, -1);
+  onDoubleClick(int id) async {
+    final wish = await appViewModel?.getSphereNow(id);
+    final parentWish = await appViewModel?.getSphereNow(id);
+    if (wish == null|| parentWish==null) return;
+    if ((!wish.isActive && !wish.isChecked) && ((appViewModel?.settings.wishActualizingMode==1&&appViewModel?.settings.sphereActualizingMode==1) || (parentWish.isActive))) { //активировать
+      if (parentWish.isActive) {
+        appViewModel?.activateSphereWish(id, true);
+        setState(() {
+          appViewModel?.wishItems
+              .firstWhere((element) => element.id == id)
+              .isActive = true;
+        });
+      }
+    } else if (!wish.isChecked) { //выполнить
+      appViewModel?.activateSphereWish(id, true);
+      setState(() {
+        appViewModel?.wishItems
+            .firstWhere((element) => element.id == id)
+            .isChecked = true;
+      });
+    } else { //удалить
+      showDialog(context: context,
+        builder: (BuildContext c) =>
+            AlertDialog(
+              contentPadding: EdgeInsets.zero,
+              shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(32.0))),
+              title: const Text('Внимание', textAlign: TextAlign.center,),
+              content: const Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text("Желание будет удалена", maxLines: 4,
+                    textAlign: TextAlign.center,),
+                  SizedBox(height: 4,),
+                  Divider(color: AppColors.dividerGreyColor,),
+                  SizedBox(height: 4,),
+                  Text("Удалить?", style: TextStyle(
+                      fontWeight: FontWeight.bold, fontSize: 18),)
+                ],
+              ),
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context, 'OK');
+                    appViewModel?.deleteSphereWish(
+                        id, wish.prevId, wish.nextId);
+                    allWishList.removeWhere((element) => element.id == id);
+                  },
+                  child: const Text('Да'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context, 'Cancel');
+                  },
+                  child: const Text('Нет'),
+                ),
+              ],
+            ),
+      );
+    }
   }
 }

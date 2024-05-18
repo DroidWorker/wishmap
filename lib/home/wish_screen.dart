@@ -3,22 +3,31 @@ import 'dart:typed_data';
 
 import 'package:capped_progress_indicator/capped_progress_indicator.dart';
 import 'package:collection/collection.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/painting.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:keyboard_attachable/keyboard_attachable.dart';
 import 'package:provider/provider.dart';
+import 'package:wishmap/common/animation_overlay.dart';
+import 'package:wishmap/common/gradientText.dart';
 import 'package:wishmap/data/models.dart';
+import 'package:wishmap/dialog/bottom_sheet_colorpicker.dart';
 
 import '../ViewModel.dart';
 import '../common/EditTextOverlay.dart';
 import '../common/affirmationOverlay.dart';
+import '../common/bottombar.dart';
 import '../common/collage.dart';
 import '../common/colorpicker_widget.dart';
 import '../common/treeview_widget.dart';
 import '../common/treeview_widget_v2.dart';
 import '../data/static.dart';
 import '../data/static_affirmations_women.dart';
+import '../interface_widgets/colorButton.dart';
+import '../interface_widgets/outlined_button.dart';
 import '../navigation/navigation_block.dart';
 import '../res/colors.dart';
 
@@ -33,6 +42,9 @@ class WishScreen extends StatefulWidget {
 class _WishScreenState extends State<WishScreen>{
   Color circleColor = Colors.redAccent;
   Color? _color;
+
+  static const defaultColorList = [Color(0xFF3FA600),Color(0xFFFE0000),Color(0xFFFF006A),Color(0xFFFF5C00),Color(0xFFFEE600),Color(0xFF0029FF),Color(0xFF46C7FE),Color(0xFFFEE600),Color(0xFF0029FF),Color(0xFF009989)];
+  var myColors = [];
 
   bool isDataLoaded = false;
   ScrollController _scrollController = ScrollController();
@@ -71,6 +83,10 @@ class _WishScreenState extends State<WishScreen>{
         }
       }
     });
+
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      showOverlayedAnimations(context);
+    });
   }
 
   @override
@@ -83,6 +99,8 @@ class _WishScreenState extends State<WishScreen>{
     _title.addListener(() { if(_title.text!=appViewModel.wishScreenState!.wish.text)appViewModel.isChanged = true;curwish.text=_title.text;});
     _description.addListener(() { if(_description.text!=appViewModel.wishScreenState!.wish.description)appViewModel.isChanged = true;curwish.description=_description.text;});
     _affirmation.addListener(() { });
+    myColors = appViewModel.getUserColors();
+    myColors.add(Colors.transparent);
 
     return  Consumer<AppViewModel>(
         builder: (context, appVM, child){
@@ -93,7 +111,6 @@ class _WishScreenState extends State<WishScreen>{
             _affirmation.text = appVM.wishScreenState!.wish.affirmation;
             _color = appVM.wishScreenState!.wish.color;
             isDataLoaded = appVM.wishScreenState!.isDataloaded;
-            //appViewModel.getAimsForCircles(appVM.wishScreenState!.wish.id);
             appVM.convertToMyTreeNodeFullBranch(curwish.id);
             final parentObj = appVM.mainScreenState!.allCircles.where((element) => element.id==curwish.parentId).firstOrNull;
             isParentChecked = parentObj?.isChecked??true;
@@ -145,402 +162,340 @@ class _WishScreenState extends State<WishScreen>{
               body: SafeArea(
                   maintainBottomViewPadding: true,
                   child:Column(children:[
-                    Row(children: [
-                      IconButton(
-                          icon: const Icon(Icons.keyboard_arrow_left, size: 30,),
-                          onPressed: () {
-                            if(curwish.isHidden){
-                              appVM.mainCircles.clear();
-                              appViewModel.startMainScreen(appVM.mainScreenState!.moon);
-                              BlocProvider.of<NavigationBloc>(context).add(NavigateToMainScreenEvent());
-                            }
-                            if(!curwish.isChecked&&appViewModel.isChanged){showDialog(context: context,
-                              builder: (BuildContext c) => AlertDialog(
-                                contentPadding: EdgeInsets.zero,
-                                shape: const RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.all(Radius.circular(32.0))),
-                                title: const Text('Внимание', textAlign: TextAlign.center,),
-                                content: const Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text("Вы изменили поля но не нажали 'Сохранить'", maxLines: 6, textAlign: TextAlign.center,),
-                                    SizedBox(height: 4,),
-                                    Divider(color: AppColors.dividerGreyColor,),
-                                    SizedBox(height: 4,),
-                                    Text("Сохранить изменения?", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),)
-                                  ],
-                                ),
-                                actions: <Widget>[
-                                  TextButton(
-                                    onPressed: () async { Navigator.pop(context, 'OK');
-                                    onSaveClicked(appVM, true, _title, _description, _affirmation);
-                                    },
-                                    child: const Text('Да'),
-                                  ),
-                                  TextButton(
-                                    onPressed: () { Navigator.pop(context, 'Cancel');
-                                    BlocProvider.of<NavigationBloc>(context)
-                                        .handleBackPress();
-                                    },
-                                    child: const Text('Нет'),
-                                  ),
-                                ],
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(8, 8, 10, 0),
+                      child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          IconButton(
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
+                              style: const ButtonStyle(
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap, // the '2023' part
                               ),
-                            );
-                            }else{
-                              BlocProvider.of<NavigationBloc>(context)
-                                  .handleBackPress();
-                            }
-                            appViewModel.backPressedCount++;
-                            if(appViewModel.backPressedCount==appViewModel.settings.quoteupdateFreq){
-                              appViewModel.backPressedCount=0;
-                              appViewModel.hint=quoteBack[Random().nextInt(367)];
-                            }
-                          }
-                      ),
-                      const Expanded(child: SizedBox(),),
-                      if(curwish.parentId > 1&&curwish.isActive)
-                        TextButton(
-                            style: TextButton.styleFrom(
-                              backgroundColor: curwish.isChecked?AppColors.pinkButtonTextColor:AppColors.greyBackButton,
-                              shape: const RoundedRectangleBorder(
-                                borderRadius: BorderRadius.all(Radius.circular(10)),
-                              ),
-                            ),
-                            onPressed: () async {
-                              if(isParentChecked) {
-                                showCantChangeStatus();
-                              } else if(curwish.isHidden){
-                                showUnavailable("Чтобы изменить статус 'исполнено' необходимо отменить статус 'скрыто'");
-                              } else {
-                                if(appVM.isChanged) {
-                                  showDialog(context: context,
-                                    builder: (BuildContext context) => AlertDialog(
-                                      contentPadding: EdgeInsets.zero,
-                                      shape: const RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.all(Radius.circular(32.0))),
-                                      title: const Text('Внимание', textAlign: TextAlign.center,),
-                                      content: const Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Text("Вы изменили поля но не нажали 'Сохранить'", maxLines: 6, textAlign: TextAlign.center,),
-                                          SizedBox(height: 4,),
-                                          Divider(color: AppColors.dividerGreyColor,),
-                                          SizedBox(height: 4,),
-                                          Text("Сохранить изменения?", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),)
-                                        ],
-                                      ),
-                                      actions: <Widget>[
-                                        TextButton(
-                                          onPressed: () async { Navigator.pop(context, 'OK');
-                                          final result = await onSaveClicked(appVM, false, _title, _description, _affirmation);
-                                          if(result)changeStatus(appVM);
-                                          },
-                                          child: const Text('Да'),
-                                        ),
-                                        TextButton(
-                                          onPressed: () async {
-                                            Navigator.pop(context, 'Cancel');
-                                            final wishid = curwish.id;
-                                            curwish=WishData(id: -1, prevId: -1, nextId: -1, parentId: -1, text: "", description: "", affirmation: "", color: Colors.red);
-                                            final retWish = await appVM.startWishScreen(wishid, curwish.parentId, false, isUpdateScreen: true);
-                                            curwish = retWish;
-                                            changeStatus(appVM);
-                                            },
-                                          child: const Text('Нет'),
-                                        ),
+                              icon: const Icon(Icons.keyboard_arrow_left, size: 32, color: AppColors.gradientStart),
+                              onPressed: () {
+                                if(curwish.isHidden){
+                                  appVM.mainCircles.clear();
+                                  appViewModel.startMainScreen(appVM.mainScreenState!.moon);
+                                  BlocProvider.of<NavigationBloc>(context).add(NavigateToMainScreenEvent());
+                                }
+                                if(!curwish.isChecked&&appViewModel.isChanged){showDialog(context: context,
+                                  builder: (BuildContext c) => AlertDialog(
+                                    contentPadding: EdgeInsets.zero,
+                                    shape: const RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.all(Radius.circular(32.0))),
+                                    title: const Text('Внимание', textAlign: TextAlign.center,),
+                                    content: const Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text("Вы изменили поля но не нажали 'Сохранить'", maxLines: 6, textAlign: TextAlign.center,),
+                                        SizedBox(height: 4,),
+                                        Divider(color: AppColors.dividerGreyColor,),
+                                        SizedBox(height: 4,),
+                                        Text("Сохранить изменения?", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),)
                                       ],
                                     ),
-                                  );
-                                }
-                                else {
-                                  changeStatus(appVM);
-                                }
-                              }
-                            },
-                            child: const Text("Исполнено",style: TextStyle(color: Colors.black, fontSize: 12))
-                        ),
-                      const SizedBox(width: 3,),
-                      TextButton(
-                          style: TextButton.styleFrom(
-                            backgroundColor: AppColors.greyBackButton,
-                            shape: const RoundedRectangleBorder(
-                              borderRadius: BorderRadius.all(Radius.circular(10)),
-                            ),
-                          ),
-                          onPressed: () async {
-                            showDialog(context: context,
-                              builder: (BuildContext c) => AlertDialog(
-                                contentPadding: EdgeInsets.zero,
-                                shape: const RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.all(Radius.circular(32.0))),
-                                title: const Text('Внимание', textAlign: TextAlign.center,),
-                                content: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    (curwish.childAims.isEmpty&&!appVM.hasChildWishes(curwish.id))?const Text("Объект будет удален"):(curwish.parentId > 1)?const Text("Если в данном желании создавались желания, цели и задачи, то они также будут удалены", maxLines: 4, textAlign: TextAlign.center,):
-                                    const Text("Если в данной сфере\n создавались желания,\n цели и задачи, то они\n также будут удалены", maxLines: 4, textAlign: TextAlign.center,),
-                                    const SizedBox(height: 4,),
-                                    const Divider(color: AppColors.dividerGreyColor,),
-                                    const SizedBox(height: 4,),
-                                    const Text("Удалить?", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),)
-                                  ],
-                                ),
-                                actions: <Widget>[
-                                  TextButton(
-                                    onPressed: () { Navigator.pop(context, 'OK');
-                                    appViewModel.deleteSphereWish(appVM.wishScreenState!.wish.id, curwish.prevId, curwish.nextId);
-                                    showDialog(context: context,
-                                      builder: (BuildContext context) => AlertDialog(
-                                        title: const Text('Удалено'),
-                                        shape: const RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.all(Radius.circular(32.0))),
-                                        actions: <Widget>[
-                                          TextButton(
-                                            onPressed: () { Navigator.pop(context, 'OK');
-                                            var moon = appVM.mainScreenState!.moon;
-                                            appViewModel.mainScreenState = null;
-                                            appViewModel.mainCircles.clear();
-                                            appViewModel.startMainScreen(moon);},
-                                            child: const Text('OK'),
-                                          ),
-                                        ],
-                                      ),
-                                    ).then((value) {
-                                      var moon = appVM.mainScreenState!.moon;
-                                      appViewModel.mainScreenState = null;
-                                      appViewModel.mainCircles.clear();
-                                      appViewModel.startMainScreen(moon);
-                                      BlocProvider.of<NavigationBloc>(context).handleBackPress();
-                                    });
-                                    },
-                                    child: const Text('Да'),
-                                  ),
-                                  TextButton(
-                                    onPressed: () { Navigator.pop(context, 'Cancel');},
-                                    child: const Text('Нет'),
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                          child: const Text("Удалить",style: TextStyle(color: Colors.black, fontSize: 12))
-                      ),
-                      const SizedBox(width: 3,),
-                      if(curwish.isActive&&!curwish.isChecked)TextButton(
-                          style: TextButton.styleFrom(
-                            backgroundColor: AppColors.greyBackButton,
-                            shape: const RoundedRectangleBorder(
-                              borderRadius: BorderRadius.all(Radius.circular(10)),
-                            ),
-                          ),
-                          onPressed: () async {
-                            if(_title.text.isEmpty||_affirmation.text.isEmpty){
-                              await showDialog(context: context,
-                                builder: (BuildContext context) => AlertDialog(
-                                  title: const Text('Необходимо заполнить все поля со знаком *'),
-                                  shape: const RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.all(Radius.circular(32.0))),
-                                  actions: <Widget>[
-                                    TextButton(
-                                      onPressed: () => Navigator.pop(context, 'OK'),
-                                      child: const Text('OK'),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            }else {
-                              appVM.wishScreenState!.wish
-                                ..text = _title.text
-                                ..description = _description.text
-                                ..affirmation = curwish.affirmation
-                                ..color = _color!;
-                              await appViewModel.createNewSphereWish(
-                                  appVM.wishScreenState!.wish, false);
-                              appViewModel.isChanged = false;
-                              showDialog(
-                                context: context,
-                                builder: (BuildContext context) {
-                                  return AlertDialog(
-                                    title: const Text('сохранено'),
                                     actions: <Widget>[
                                       TextButton(
-                                        onPressed: () {
-                                          Navigator.pop(context, 'OK');
-                                          setState(() {
-                                            appVM.convertToMyTreeNodeFullBranch(
-                                                curwish.id);
-                                          });
+                                        onPressed: () async { Navigator.pop(context, 'OK');
+                                        onSaveClicked(appVM, true, _title, _description, _affirmation);
                                         },
-                                        child: const Text('OK'),
+                                        child: const Text('Да'),
+                                      ),
+                                      TextButton(
+                                        onPressed: () { Navigator.pop(context, 'Cancel');
+                                        BlocProvider.of<NavigationBloc>(context)
+                                            .handleBackPress();
+                                        },
+                                        child: const Text('Нет'),
                                       ),
                                     ],
-                                  );
-                                },
-                              );
-                            }
-                          },
-                          child: const Text("Cохранить",
-                            style: TextStyle(color: AppColors.blueTextColor, fontSize: 12),)
-                      )else if(!curwish.isActive&&!curwish.isChecked)
-                      TextButton(
-                          style: TextButton.styleFrom(
-                            backgroundColor: AppColors.greyBackButton,
-                            shape: const RoundedRectangleBorder(
-                              borderRadius: BorderRadius.all(Radius.circular(10)),
-                            ),
-                          ),
-                          onPressed: () {
-                            if(isParentActive||appVM.settings.wishActualizingMode==1||parentIsSphere) {
-                              if(appVM.settings.sphereActualizingMode==1||appVM.isParentSphereActive(curwish.id)||curwish.parentId==0){
-                                appViewModel.activateSphereWish(curwish.id, true);
-                                setState(() {
-                                  appViewModel.mainCircles.where((element) =>
-                                  element.id == curwish.id).firstOrNull?.isActive = true;
-                                  curwish.isActive = true;
-                                });
-                              } else{
-                                showUnavailable("Чтобы представить это желание необходимо сначала представить вышестоящиую сферу");
+                                  ),
+                                );
+                                }else{
+                                  BlocProvider.of<NavigationBloc>(context)
+                                      .handleBackPress();
+                                }
+                                appViewModel.backPressedCount++;
+                                if(appViewModel.backPressedCount==appViewModel.settings.quoteupdateFreq){
+                                  appViewModel.backPressedCount=0;
+                                  appViewModel.hint=quoteBack[Random().nextInt(367)];
+                                }
                               }
-                            } else{
-                              showUnavailable("Чтобы представить это желание необходимо сначала представить вышестоящий объект");
-                            }
-                          },
-                          child: const Text("Представить",
-                            style: TextStyle(color: AppColors.redTextColor),)
-                      )
-                      else if(curwish.isChecked&&curwish.parentId > 1)
-                          TextButton(
+                          ),
+                          Text(curwish.text, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+                          IconButton(
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
                               style: TextButton.styleFrom(
-                                backgroundColor: curwish.isHidden?AppColors.pinkButtonTextColor:AppColors.greyBackButton,
-                                shape: const RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.all(Radius.circular(10)),
-                                ),
+                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap
                               ),
                               onPressed: () async {
-                                if(isParentHidden){
-                                showUnavailable("Чтобы изменить статус необходимо отменить статус 'скрыто' для вышестоящего желания");
-                                } else if(curwish.isHidden&&appVM.getShowedCirclesCount(curwish.parentId)>=12){
-                                  showDialog(context: context, builder: (BuildContext context) =>
-                                    AlertDialog(
-                                        contentPadding: EdgeInsets.zero,
-                                        shape: const RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.all(
-                                                Radius.circular(32.0))),
-                                        title: const Text('Внимание',
-                                          textAlign: TextAlign.center,),
-                                        content: const Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            SizedBox(height: 10,),
-                                            Text("Превышено количество 'Желаний на орбите'. Максимальное количество желаний на орбите 12 шт. Вы можете скрть или удалитьдругие желания, чтобы освободить место для демонстрации данного желания на орбите")
-                                          ],
-                                        ),
-                                      actions: <Widget>[
-                                        TextButton(
-                                          onPressed: () {Navigator.pop(context, 'OK');},
-                                          child: const Text('Ок'),
-                                        )
+                                showDialog(context: context,
+                                  builder: (BuildContext c) => AlertDialog(
+                                    contentPadding: EdgeInsets.zero,
+                                    shape: const RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.all(Radius.circular(32.0))),
+                                    title: const Text('Внимание', textAlign: TextAlign.center,),
+                                    content: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        (curwish.childAims.isEmpty&&!appVM.hasChildWishes(curwish.id))?const Text("Объект будет удален"):(curwish.parentId > 1)?const Text("Если в данном желании создавались желания, цели и задачи, то они также будут удалены", maxLines: 4, textAlign: TextAlign.center,):
+                                        const Text("Если в данной сфере\n создавались желания,\n цели и задачи, то они\n также будут удалены", maxLines: 4, textAlign: TextAlign.center,),
+                                        const SizedBox(height: 4,),
+                                        const Divider(color: AppColors.dividerGreyColor,),
+                                        const SizedBox(height: 4,),
+                                        const Text("Удалить?", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),)
                                       ],
-                                    )
-                                  );
-                                }else {
-                                  showDialog(context: context,
-                                    builder: (BuildContext context) =>
-                                        AlertDialog(
+                                    ),
+                                    actions: <Widget>[
+                                      TextButton(
+                                        onPressed: () { Navigator.pop(context, 'OK');
+                                        appViewModel.deleteSphereWish(appVM.wishScreenState!.wish.id, curwish.prevId, curwish.nextId);
+                                        showDialog(context: context,
+                                          builder: (BuildContext context) => AlertDialog(
+                                            title: const Text('Удалено'),
+                                            shape: const RoundedRectangleBorder(
+                                                borderRadius: BorderRadius.all(Radius.circular(32.0))),
+                                            actions: <Widget>[
+                                              TextButton(
+                                                onPressed: () { Navigator.pop(context, 'OK');
+                                                var moon = appVM.mainScreenState!.moon;
+                                                appViewModel.mainScreenState = null;
+                                                appViewModel.mainCircles.clear();
+                                                appViewModel.startMainScreen(moon);},
+                                                child: const Text('OK'),
+                                              ),
+                                            ],
+                                          ),
+                                        ).then((value) {
+                                          var moon = appVM.mainScreenState!.moon;
+                                          appViewModel.mainScreenState = null;
+                                          appViewModel.mainCircles.clear();
+                                          appViewModel.startMainScreen(moon);
+                                          BlocProvider.of<NavigationBloc>(context).handleBackPress();
+                                        });
+                                        },
+                                        child: const Text('Да'),
+                                      ),
+                                      TextButton(
+                                        onPressed: () { Navigator.pop(context, 'Cancel');},
+                                        child: const Text('Нет'),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            icon: Image.asset("assets/icons/trash.png", width: 28, height: 28),
+                          )
+                      ],),
+                    ),
+                    Expanded(child:SingleChildScrollView(
+                      controller: _scrollController,
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          children: [
+                            !curwish.isActive&&!curwish.isChecked?ColorRoundedButton("Представить", () {
+                              if(isParentActive||appVM.settings.wishActualizingMode==1||parentIsSphere) {
+                                if(appVM.settings.sphereActualizingMode==1||appVM.isParentSphereActive(curwish.id)||curwish.parentId==0){
+                                  appViewModel.activateSphereWish(curwish.id, true);
+                                  setState(() {
+                                    appViewModel.mainCircles.where((element) =>
+                                    element.id == curwish.id).firstOrNull?.isActive = true;
+                                    curwish.isActive = true;
+                                  });
+                                } else{
+                                  showUnavailable("Чтобы представить это желание необходимо сначала представить вышестоящиую сферу");
+                                }
+                              } else{
+                                showUnavailable("Чтобы представить это желание необходимо сначала представить вышестоящий объект");
+                              }
+                            },
+                            ):const SizedBox(),
+                            if(curwish.parentId > 1&&curwish.isActive)Row(children: [
+                              Expanded(
+                                child: OutlinedGradientButton("Исполнено", filledButtonColor: curwish.isChecked?AppColors.greenButtonBack:null, () async {
+                                  if(isParentChecked) {
+                                    showCantChangeStatus();
+                                  } else if(curwish.isHidden){
+                                    showUnavailable("Чтобы изменить статус 'исполнено' необходимо отменить статус 'скрыто'");
+                                  } else {
+                                    if(appVM.isChanged) {
+                                      showDialog(context: context,
+                                        builder: (BuildContext context) => AlertDialog(
                                           contentPadding: EdgeInsets.zero,
                                           shape: const RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.all(
-                                                  Radius.circular(32.0))),
-                                          title: const Text('Внимание',
-                                            textAlign: TextAlign.center,),
-                                          content: Column(
+                                              borderRadius: BorderRadius.all(Radius.circular(32.0))),
+                                          title: const Text('Внимание', textAlign: TextAlign.center,),
+                                          content: const Column(
                                             mainAxisSize: MainAxisSize.min,
                                             children: [
-                                              curwish.childAims.isEmpty&&appVM.mainScreenState!.allCircles.where((element) => element.parenId==curwish.id).isEmpty
-                                                  ? const Text("")
-                                                  : curwish.isHidden ? const Text("Если в данном желании создавались другие желания то они не будут отображены", maxLines: 6, textAlign: TextAlign.center,)
-                                                  : const Text(
-                                                "Если в данном желании создавались другие желания, цели и задачи, то они также будут скрыты",
-                                                maxLines: 6,
-                                                textAlign: TextAlign.center,),
-                                              const SizedBox(height: 4,),
-                                              const Divider(color: AppColors
-                                                  .dividerGreyColor,),
-                                              const SizedBox(height: 4,),
-                                              Text(curwish.isHidden
-                                                  ? "Отобразить?"
-                                                  : "Скрыть?",
-                                                style: const TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 18),)
+                                              Text("Вы изменили поля но не нажали 'Сохранить'", maxLines: 6, textAlign: TextAlign.center,),
+                                              SizedBox(height: 4,),
+                                              Divider(color: AppColors.dividerGreyColor,),
+                                              SizedBox(height: 4,),
+                                              Text("Сохранить изменения?", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),)
                                             ],
                                           ),
                                           actions: <Widget>[
                                             TextButton(
-                                              onPressed: () {
-                                                Navigator.pop(context, 'OK');
-                                                setState(() {
-                                                  curwish.isHidden =
-                                                  !curwish.isHidden;
-                                                  appViewModel.hideSphereWish(
-                                                      curwish.id,
-                                                      curwish.isHidden, true);
-                                                });
-                                                showDialog(context: context,
-                                                  builder: (
-                                                      BuildContext context) =>
-                                                      AlertDialog(
-                                                        title: curwish.isHidden
-                                                            ? const Text(
-                                                            'скрыто')
-                                                            : const Text(
-                                                            'не скрыто'),
-                                                        shape: const RoundedRectangleBorder(
-                                                            borderRadius: BorderRadius
-                                                                .all(
-                                                                Radius.circular(
-                                                                    32.0))),
-                                                        actions: <Widget>[
-                                                          TextButton(
-                                                            onPressed: () {
-                                                              Navigator.pop(
-                                                                  context,
-                                                                  'OK');
-                                                            },
-                                                            child: const Text(
-                                                                'OK'),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                );
+                                              onPressed: () async { Navigator.pop(context, 'OK');
+                                              final result = await onSaveClicked(appVM, false, _title, _description, _affirmation);
+                                              if(result)changeStatus(appVM);
                                               },
                                               child: const Text('Да'),
                                             ),
                                             TextButton(
-                                              onPressed: () {
-                                                Navigator.pop(
-                                                    context, 'Cancel');
+                                              onPressed: () async {
+                                                Navigator.pop(context, 'Cancel');
+                                                final wishid = curwish.id;
+                                                curwish=WishData(id: -1, prevId: -1, nextId: -1, parentId: -1, text: "", description: "", affirmation: "", color: Colors.red);
+                                                final retWish = await appVM.startWishScreen(wishid, curwish.parentId, false, isUpdateScreen: true);
+                                                curwish = retWish;
+                                                changeStatus(appVM);
                                               },
                                               child: const Text('Нет'),
                                             ),
                                           ],
                                         ),
-                                  );
-                                }
-                              },
-                              child: const Text("Скрыть",
-                                style: TextStyle(color: AppColors.redTextColor),)
-                          ),
-                      const SizedBox(width: 15,)
-                    ],),
-                    Expanded(child:SingleChildScrollView(
-                      controller: _scrollController,
-                      child: Padding(
-                        padding: const EdgeInsets.all(15),
-                        child: Column(
-                          children: [
-                            const SizedBox(height: 5),
+                                      );
+                                    }
+                                    else {
+                                      changeStatus(appVM);
+                                    }
+                                  }
+                                }),
+                              ),
+                              if(curwish.isChecked)const SizedBox(width: 16),
+                              if(curwish.isChecked)Container(
+                                width: 45,
+                                height: 45,
+                                decoration:  const BoxDecoration(
+                                    borderRadius: BorderRadius.all(Radius.circular(22)),
+                                    gradient: LinearGradient(
+                                        colors: [AppColors.gradientStart, AppColors.gradientEnd]
+                                    )
+                                ),
+                                child: Center(
+                                  child: IconButton(
+                                    icon: const Icon(Icons.remove_red_eye_outlined, color: Colors.white), onPressed: () async {
+                                    if(isParentHidden){
+                                      showUnavailable("Чтобы изменить статус необходимо отменить статус 'скрыто' для вышестоящего желания");
+                                    } else if(curwish.isHidden&&appVM.getShowedCirclesCount(curwish.parentId)>=12){
+                                      showDialog(context: context, builder: (BuildContext context) =>
+                                          AlertDialog(
+                                            contentPadding: EdgeInsets.zero,
+                                            shape: const RoundedRectangleBorder(
+                                                borderRadius: BorderRadius.all(
+                                                    Radius.circular(32.0))),
+                                            title: const Text('Внимание',
+                                              textAlign: TextAlign.center,),
+                                            content: const Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                SizedBox(height: 10,),
+                                                Text("Превышено количество 'Желаний на орбите'. Максимальное количество желаний на орбите 12 шт. Вы можете скрть или удалитьдругие желания, чтобы освободить место для демонстрации данного желания на орбите")
+                                              ],
+                                            ),
+                                            actions: <Widget>[
+                                              TextButton(
+                                                onPressed: () {Navigator.pop(context, 'OK');},
+                                                child: const Text('Ок'),
+                                              )
+                                            ],
+                                          )
+                                      );
+                                    }else {
+                                      showDialog(context: context,
+                                        builder: (BuildContext context) =>
+                                            AlertDialog(
+                                              contentPadding: EdgeInsets.zero,
+                                              shape: const RoundedRectangleBorder(
+                                                  borderRadius: BorderRadius.all(
+                                                      Radius.circular(32.0))),
+                                              title: const Text('Внимание',
+                                                textAlign: TextAlign.center,),
+                                              content: Column(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  curwish.childAims.isEmpty&&appVM.mainScreenState!.allCircles.where((element) => element.parenId==curwish.id).isEmpty
+                                                      ? const Text("")
+                                                      : curwish.isHidden ? const Text("Если в данном желании создавались другие желания то они не будут отображены", maxLines: 6, textAlign: TextAlign.center,)
+                                                      : const Text(
+                                                    "Если в данном желании создавались другие желания, цели и задачи, то они также будут скрыты",
+                                                    maxLines: 6,
+                                                    textAlign: TextAlign.center,),
+                                                  const SizedBox(height: 4,),
+                                                  const Divider(color: AppColors
+                                                      .dividerGreyColor,),
+                                                  const SizedBox(height: 4,),
+                                                  Text(curwish.isHidden
+                                                      ? "Отобразить?"
+                                                      : "Скрыть?",
+                                                    style: const TextStyle(
+                                                        fontWeight: FontWeight.bold,
+                                                        fontSize: 18),)
+                                                ],
+                                              ),
+                                              actions: <Widget>[
+                                                TextButton(
+                                                  onPressed: () {
+                                                    Navigator.pop(context, 'OK');
+                                                    setState(() {
+                                                      curwish.isHidden =
+                                                      !curwish.isHidden;
+                                                      appViewModel.hideSphereWish(
+                                                          curwish.id,
+                                                          curwish.isHidden, true);
+                                                    });
+                                                    showDialog(context: context,
+                                                      builder: (
+                                                          BuildContext context) =>
+                                                          AlertDialog(
+                                                            title: curwish.isHidden
+                                                                ? const Text(
+                                                                'скрыто')
+                                                                : const Text(
+                                                                'не скрыто'),
+                                                            shape: const RoundedRectangleBorder(
+                                                                borderRadius: BorderRadius
+                                                                    .all(
+                                                                    Radius.circular(
+                                                                        32.0))),
+                                                            actions: <Widget>[
+                                                              TextButton(
+                                                                onPressed: () {
+                                                                  Navigator.pop(
+                                                                      context,
+                                                                      'OK');
+                                                                },
+                                                                child: const Text(
+                                                                    'OK'),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                    );
+                                                  },
+                                                  child: const Text('Да'),
+                                                ),
+                                                TextButton(
+                                                  onPressed: () {
+                                                    Navigator.pop(
+                                                        context, 'Cancel');
+                                                  },
+                                                  child: const Text('Нет'),
+                                                ),
+                                              ],
+                                            ),
+                                      );
+                                    }
+                                  },
+                                  ),
+                                ),
+                              )
+                            ]),
+                            const SizedBox(height: 16),
                             TextField(
                               controller: _title,
                               onTap: (){
@@ -552,6 +507,16 @@ class _WishScreenState extends State<WishScreen>{
                               readOnly: curwish.isChecked||!curwish.isActive?true:false,
                               style: const TextStyle(color: Colors.black), // Черный текст ввода
                               decoration: InputDecoration(
+                                contentPadding: const EdgeInsets.fromLTRB(16, 16, 16, 19),
+                                filled: true,
+                                suffixIconConstraints: const BoxConstraints(
+                                  minWidth: 32,
+                                  minHeight: 2,
+                                ),
+                                suffixIcon: const Text("*", style: TextStyle(fontSize: 30, color: AppColors.greytextColor)),
+                                fillColor: curwish.isChecked?AppColors.fieldLockColor:!curwish.isActive?AppColors.fieldLockColor:Colors.white,
+                                hintText: 'Название',
+                                hintStyle: TextStyle(color: Colors.black.withOpacity(0.3)),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(10.0),
                                   borderSide: const BorderSide(
@@ -559,37 +524,32 @@ class _WishScreenState extends State<WishScreen>{
                                     style: BorderStyle.none,
                                   ),
                                 ),
-                                filled: true, // Заливка фона
-                                suffixIconConstraints: const BoxConstraints(
-                                  minWidth: 7,
-                                  minHeight: 2,
-                                ),
-                                suffixIcon: const Text("*"),
-                                fillColor: curwish.isActive?AppColors.fieldFillColor:AppColors.fieldInactive, // Серый фон с полупрозрачностью
-                                hintText: 'Запиши желание', // Базовый текст
-                                hintStyle: TextStyle(color: Colors.black.withOpacity(0.3)), // Полупрозрачный черный базовый текст
                               ),
                             ),
-                            const SizedBox(height: 10),
+                            const SizedBox(height: 8),
                             TextField(
-                              minLines: 4,
-                              maxLines: 7,
-                              controller: _description,
-                              onTap: () async {
-                                if(curwish.isChecked)
-                                {
-                                    if(curwish.isChecked&&!curwish.isActive) {showUnavailable("Желание исполнено в прошлой карте. Изменению не подлежит. Вы можете видеть ее в журнале желаний в разделах 'исполненные' и 'все цели', а также в иерархии желания.\n\nВы можете удалить желание. Если вам нужна подобная, просто создайте новую.");}
-                                    else if(curwish.isChecked)showUnavailable("Чтобы редактировать желание необходимо перевести в статус \nна 'не исполнено'");else if(!curwish.isActive)showUneditable();
-                                }
-                                else if(!curwish.isActive){showUneditable();}
-                                else {
-                                  final newText = await showOverlayedEdittext(context, _description.text, (curwish.isActive&&!curwish.isChecked))??"";
-                                  if(newText!=_description.text)appViewModel.isChanged= true;
-                                  _description.text = newText;
-                                }
-                                },
-                              showCursor: false,
+                              controller: _affirmation,
                               readOnly: true,
+                              onTap: () async {
+                                if(curwish.isChecked){
+                                  showUnavailable("Чтобы редактировать желание необходимо сменить статус \nна 'не выполнено'");
+                                  return;
+                                }else if(!curwish.isActive){
+                                  showUneditable();
+                                }else{
+                                  final affirmationsStr = curwish.affirmation==""?
+                                  await showOverlayedAffirmations(context, defaultAffirmations, false, curwish.shuffle, onShuffleClick: (value){
+                                    curwish.shuffle=value;
+                                  }):
+                                  await showOverlayedAffirmations(context, appVM.wishScreenState!.wish.affirmation.split("|"), true, curwish.shuffle, onShuffleClick: (value){
+                                    curwish.shuffle=value;
+                                  });
+                                  if(curwish.shuffle) curwish.lastShuffle = "|${DateTime.now().weekday.toString()}";
+                                  _affirmation.text=affirmationsStr?.split("|")[0]??"";
+                                  if(affirmationsStr!=curwish.affirmation)appViewModel.isChanged =true;
+                                  curwish.affirmation=affirmationsStr??"";
+                                }
+                              },
                               style: const TextStyle(color: Colors.black), // Черный текст ввода
                               decoration: InputDecoration(
                                 border: OutlineInputBorder(
@@ -599,28 +559,114 @@ class _WishScreenState extends State<WishScreen>{
                                     style: BorderStyle.none,
                                   ),
                                 ),
+                                suffixIcon: const Icon(Icons.keyboard_arrow_down_sharp, color: Colors.black45),
                                 filled: true, // Заливка фона
-                                fillColor: curwish.isActive?AppColors.fieldFillColor:AppColors.fieldInactive, // Серый фон с полупрозрачностью
-                                hintText: descriptionText, // Базовый текст
-                                hintStyle: TextStyle(color: Colors.black.withOpacity(0.3), fontSize: 10), // Полупрозрачный черный базовый текст
+                                fillColor: curwish.isChecked?AppColors.fieldLockColor:!curwish.isActive?AppColors.fieldLockColor:Colors.white,
+                                hintText: 'Выбери аффирмацию', // Базовый текст
+                                hintStyle: TextStyle(color: Colors.black.withOpacity(0.3)), // Полупрозрачный черный базовый текст
                               ),
                             ),
-                            const SizedBox(height: 10),
+                            const SizedBox(height: 8),
+                            TextField(
+                              minLines: 4,
+                              maxLines: 7,
+                              controller: _description,
+                              showCursor: false,
+                              readOnly: true,
+                              style: const TextStyle(color: Colors.black), // Черный текст ввода
+                              decoration: InputDecoration(
+                                contentPadding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                                border: const OutlineInputBorder(
+                                  borderRadius: BorderRadius.only(topLeft: Radius.circular(10), topRight: Radius.circular(10)),
+                                  borderSide: BorderSide(
+                                    width: 0,
+                                    style: BorderStyle.none,
+                                  ),
+                                ),
+                                filled: true, // Заливка фона
+                                fillColor: curwish.isChecked?AppColors.fieldLockColor:!curwish.isActive?AppColors.fieldLockColor:Colors.white,
+                                hintText: 'Описание', // Базовый текст
+                                hintStyle: TextStyle(color: Colors.black.withOpacity(0.3)), // Полупрозрачный черный базовый текст
+                              ),
+                            ),
+                            Container(
+                              height: 40,
+                              width: double.infinity,
+                              decoration: const BoxDecoration(
+                                borderRadius: BorderRadius.only(bottomLeft: Radius.circular(10), bottomRight: Radius.circular(10)),
+                                color: Colors.white,
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 16),
+                                child: Container(
+                                  width: double.infinity,
+                                  decoration: const BoxDecoration(
+                                    borderRadius: BorderRadius.only(bottomLeft: Radius.circular(10), bottomRight: Radius.circular(10)),
+                                    border: Border(
+                                      top: BorderSide(width: 1.0, color: AppColors.grey),
+                                    ),
+                                  ),
+                                  child: InkWell(
+                                    onTap: () async {
+                                      if(curwish.isChecked)
+                                      {
+                                        if(curwish.isChecked&&!curwish.isActive) {showUnavailable("Желание исполнено в прошлой карте. Изменению не подлежит. Вы можете видеть ее в журнале желаний в разделах 'исполненные' и 'все цели', а также в иерархии желания.\n\nВы можете удалить желание. Если вам нужна подобная, просто создайте новую.");}
+                                        else if(curwish.isChecked)showUnavailable("Чтобы редактировать желание необходимо перевести в статус \nна 'не исполнено'");else if(!curwish.isActive)showUneditable();
+                                      }
+                                      else if(!curwish.isActive){showUneditable();}
+                                      else {
+                                        final newText = await showOverlayedEdittext(context, _description.text, (curwish.isActive&&!curwish.isChecked))??"";
+                                        if(newText!=_description.text)appViewModel.isChanged= true;
+                                        _description.text = newText;
+                                      }
+                                    },
+                                    child: const Row(
+                                      children: [
+                                        GradientText("Показать все", gradient: LinearGradient(
+                                            colors: [AppColors.gradientStart, AppColors.gradientEnd]
+                                        ),
+                                        style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14),),
+                                        Spacer(),
+                                        Icon(Icons.arrow_forward_ios, color: AppColors.gradientEnd, size: 18,)
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+                            const Divider(color: AppColors.grey, height: 2,),
+                            const SizedBox(height: 16),
+                            if(curwish.parentId > 1)OutlinedGradientButton(" Добавить фото", () {
+                                appViewModel.photoUrls.clear();
+                                curwish.isChecked?showUnavailable("Чтобы редактировать желание необходимо сменить статус \nна 'не выполнено'"):!curwish.isActive?showUneditable():BlocProvider.of<NavigationBloc>(context)
+                                    .add(NavigateToGalleryScreenEvent());
+                              },
+                              widgetBeforeText: const Icon(Icons.add_circle_outline_sharp, size: 20,)
+                            ),
+                            const SizedBox(height: 16),
+                            const Text("Добавьте образы вашего желания - это важно!", style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500)),
+                            const Text("Чем ближе будут образы вашему представлению, тем сильнее будет визуализация вашего желания.", textAlign: TextAlign.center, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w400, color: AppColors.greyTransparent)),
+                            const SizedBox(height: 16),
                             if(curwish.parentId > 1)
                               LayoutBuilder(
                                 builder: (context, constraints) {
-                                  double fullWidth = constraints.maxWidth-4;
-                                  double leftWidth = (constraints.maxWidth * 4 /7)-2;
-                                  double rightWidth = constraints.maxWidth - leftWidth - 2;
+                                  double fullWidth = constraints.maxWidth-9;
+                                  double leftWidth = (constraints.maxWidth /2)-9;
+                                  double rightWidth = constraints.maxWidth - leftWidth - 9;
                                   List<List<Uint8List>> imagesSet = [];
-                                  appViewModel.cachedImages.forEach((element) {if(imagesSet.isNotEmpty&&imagesSet.last.length<3){imagesSet.last.add(element);}else{imagesSet.add([element]);}});
+                                  for (var element in appViewModel.cachedImages) {if(imagesSet.isNotEmpty&&imagesSet.last.length<3){imagesSet.last.add(element);}else{imagesSet.add([element]);}}
                                   if(imagesSet.isNotEmpty)imagesSet.removeAt(0);
                                   return Column(
                                       mainAxisSize: MainAxisSize.min,
                                       children:[
                                         Row(
                                           children: [
-                                            Container(width: leftWidth, height: leftWidth, color: curwish.isActive?AppColors.fieldFillColor:AppColors.fieldInactive,
+                                            Container(width: leftWidth, height: leftWidth*1.5,
+                                              decoration: BoxDecoration(
+                                                color: curwish.isActive?AppColors.fieldFillColor:AppColors.fieldInactive,
+                                                borderRadius: const BorderRadius.all(Radius.circular(10)),
+                                              ),
                                               child: appViewModel.isinLoading? const Align(alignment: Alignment.bottomCenter,
                                                 child: LinearCappedProgressIndicator(
                                                   backgroundColor: Colors.black26,
@@ -628,9 +674,12 @@ class _WishScreenState extends State<WishScreen>{
                                                   cornerRadius: 0,
                                                 ),): appViewModel.cachedImages.isNotEmpty?Image.memory(appViewModel.cachedImages.first, fit: BoxFit.cover):Stack(children: [Container(padding: const EdgeInsets.all(8), child: const Center(child: Text("Добавьте образы вашего 'Я' - это важно!\n Чем ближе будут образы вашему представлению, тем сильнее будет визуализация вашего желания.", style: TextStyle(color: AppColors.greytextColor),))), const Align(alignment: Alignment.topRight, child: Text("*  "),)],),
                                             ),
-                                            const SizedBox(width: 2),
+                                            const SizedBox(width: 9),
                                             Column(children: [
-                                              Container(width: rightWidth, height: leftWidth/2-2, color: curwish.isActive?AppColors.fieldFillColor:AppColors.fieldInactive,
+                                              Container(width: rightWidth, height: leftWidth*1.5/2-9, decoration: BoxDecoration(
+                                                color: curwish.isActive?AppColors.fieldFillColor:AppColors.fieldInactive,
+                                                borderRadius: const BorderRadius.all(Radius.circular(10)),
+                                              ),
                                                 child: appViewModel.isinLoading? const Align(alignment: Alignment.bottomCenter,
                                                   child: LinearCappedProgressIndicator(
                                                     backgroundColor: Colors.black26,
@@ -638,8 +687,11 @@ class _WishScreenState extends State<WishScreen>{
                                                     cornerRadius: 0,
                                                   ),): appViewModel.cachedImages.length>1?Image.memory(appViewModel.cachedImages[1], fit: BoxFit.cover):Container(),
                                               ),
-                                              const SizedBox(height: 2),
-                                              Container(width: rightWidth, height: leftWidth/2-1, color: curwish.isActive?AppColors.fieldFillColor:AppColors.fieldInactive,
+                                              const SizedBox(height: 9),
+                                              Container(width: rightWidth, height: leftWidth*1.5/2-1,decoration: BoxDecoration(
+                                                color: curwish.isActive?AppColors.fieldFillColor:AppColors.fieldInactive,
+                                                borderRadius: const BorderRadius.all(Radius.circular(10)),
+                                              ),
                                                 child: appViewModel.isinLoading? const Align(alignment: Alignment.bottomCenter,
                                                   child: LinearCappedProgressIndicator(
                                                     backgroundColor: Colors.black26,
@@ -661,169 +713,167 @@ class _WishScreenState extends State<WishScreen>{
                                       ]);
                                 },
                               ),
-                            const SizedBox(height: 5),
-                            if(curwish.parentId > 1)
-                              ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: AppColors.fieldFillColor,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(10), // <-- Radius
-                                    ),
-                                  ),
-                                  onPressed: (){
-                                    //appViewModel.isChanged = true;
-                                    appViewModel.photoUrls.clear();
-                                    curwish.isChecked?showUnavailable("Чтобы редактировать желание необходимо сменить статус \nна 'не выполнено'"):!curwish.isActive?showUneditable():BlocProvider.of<NavigationBloc>(context)
-                                        .add(NavigateToGalleryScreenEvent());
-                                  },
-                                  child: const Text("Добавить", style: TextStyle(color: AppColors.greytextColor),)
-                              ),
-                            const SizedBox(height: 10),
-                            TextField(
-                              controller: _affirmation,
-                              readOnly: true,
-                              onTap: () async {
-                                if(curwish.isChecked){
-                                  showUnavailable("Чтобы редактировать желание необходимо сменить статус \nна 'не выполнено'");
-                                  return;
-                                }else if(!curwish.isActive){
-                                  showUneditable();
-                                }else{
-                                final affirmationsStr = curwish.affirmation==""?
-                                await showOverlayedAffirmations(context, defaultAffirmations, false, curwish.shuffle, onShuffleClick: (value){
-                                  curwish.shuffle=value;
-                                }):
-                                await showOverlayedAffirmations(context, appVM.wishScreenState!.wish.affirmation.split("|"), true, curwish.shuffle, onShuffleClick: (value){
-                                  curwish.shuffle=value;
-                                });
-                                if(curwish.shuffle) curwish.lastShuffle = "|${DateTime.now().weekday.toString()}";
-                                _affirmation.text=affirmationsStr?.split("|")[0]??"";
-                                if(affirmationsStr!=curwish.affirmation)appViewModel.isChanged =true;
-                                curwish.affirmation=affirmationsStr??"";
-                                }
-                              },
-                              style: const TextStyle(color: Colors.black), // Черный текст ввода
-                              decoration: InputDecoration(
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(10.0),
-                                  borderSide: const BorderSide(
-                                    width: 0,
-                                    style: BorderStyle.none,
-                                  ),
-                                ),
-                                suffixIcon: const Icon(Icons.keyboard_arrow_down_sharp, color: Colors.black),
-                                filled: true, // Заливка фона
-                                fillColor: curwish.isActive?AppColors.fieldFillColor:AppColors.fieldInactive, // Серый фон с полупрозрачностью
-                                hintText: 'Выбери аффирмацию', // Базовый текст
-                                helperText: "Выберите аффирмацию или напишите свою",
-                                hintStyle: TextStyle(color: Colors.black.withOpacity(0.3)), // Полупрозрачный черный базовый текст
-                              ),
-                            ),
-                            const SizedBox(height: 10),
+                            const SizedBox(height: 24),
+                            const Divider(color: AppColors.grey, height: 2,),
+                            const SizedBox(height: 24),
                             Align(
                                 alignment: Alignment.center,
                                 child:
-                                GestureDetector(child:
                                 Column(children: [
-                                  const Text("Выбери цвет", style: TextStyle(color: Colors.black54),),
+                                  const Text("Выберите цвет", style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),),
                                   const SizedBox(height: 10),
                                   Container(
-                                    width: 100.0, // Ширина круга
-                                    height: 100.0, // Высота круга
+                                    width: 64.0, // Ширина круга
+                                    height: 64.0, // Высота круга
                                     decoration: BoxDecoration(
-                                      shape: BoxShape.circle, // Задаем форму круга
-                                      color: _color, // Устанавливаем цвет
-                                    ),
+                                      border: Border.all(color: _color??Colors.white, width: 2),
+                                      shape: BoxShape.circle,
+                                      color: Colors.white
+                                    )
                                   )
                                 ],),
-                                  onTap: () {
-                                  final shotColor = _color?.value;
-                                    curwish.isChecked?showUnavailable("Чтобы редактировать желание необходимо сменить статус \nна 'не выполнено'"):!curwish.isActive?showUneditable():showDialog(
-                                      context: context,
-                                      builder: (context) {
-                                        return ColorPickerWidget(initColor: _color, onColorSelected: (Color c){setState(() {
-                                          if(shotColor!=c.value)appViewModel.isChanged=true;
-                                          _color=c;
-                                          curwish.color=c;
-                                        });
+                            ),
+                            const SizedBox(height: 24),
+                            const Align(alignment: Alignment.centerLeft, child: Text("По умолчанию", style: TextStyle(fontWeight: FontWeight.w500))),
+                            const SizedBox(height: 13),
+                            SizedBox(
+                              height: 40.0,
+                              child: ListView(
+                                scrollDirection: Axis.horizontal,
+                                children: List.generate(10, (int index) {
+                                  return Card(
+                                    color: defaultColorList[index],
+                                    child: InkWell(
+                                      onTap: (){
+                                        setState(() {
+                                          if(_color!=defaultColorList[index])appViewModel.isChanged=true;
+                                          _color=defaultColorList[index];
+                                          curwish.color=defaultColorList[index];
                                         });
                                       },
-                                    );
-                                  },
-                                )),
+                                      child: SizedBox(
+                                        width: 34.0,
+                                        height: 34.0,
+                                        child: _color==defaultColorList[index]?const Icon(Icons.check, color: Colors.white, size: 20,):const SizedBox(),
+                                      ),
+                                    ),
+                                  );
+                                }),
+                              ),
+                            ),
+                            const SizedBox(height: 21),
+                            const Align(alignment: Alignment.centerLeft, child: Text("Свой цвет", style: TextStyle(fontWeight: FontWeight.w500))),
+                            const SizedBox(height: 13),
+                            SizedBox(
+                              height: 40.0,
+                              child: ListView(
+                                scrollDirection: Axis.horizontal,
+                                children: List.generate(myColors.length, (int index) {
+                                  return myColors[index]!=Colors.transparent?Card(
+                                    color: myColors[index],
+                                    child: InkWell(
+                                      onTap: (){
+                                        setState(() {
+                                          if(_color!=myColors[index])appViewModel.isChanged=true;
+                                          _color=myColors[index];
+                                          curwish.color=myColors[index];
+                                        });
+                                      },
+                                      child: SizedBox(
+                                        width: 34.0,
+                                        height: 34.0,
+                                        child: _color==myColors[index]?const Icon(Icons.check, color: Colors.white, size: 20,):const SizedBox(),
+                                      ),
+                                    ),
+                                  ):InkWell(
+                                    onTap: (){
+                                     final shotColor = _color?.value;
+                                      curwish.isChecked?showUnavailable("Чтобы редактировать желание необходимо сменить статус \nна 'не выполнено'"):!curwish.isActive?showUneditable():showModalBottomSheet(context: context, isScrollControlled: true, builder: (BuildContext context){
+                                        return ColorPickerBS(_color??Colors.white, (c){
+                                          setState(() {
+                                            if(shotColor!=c.value)appViewModel.isChanged=true;
+                                            _color=c;
+                                            curwish.color=c;
+                                            appViewModel.saveUserColor(c);
+                                          });
+                                          Navigator.pop(context);
+                                        });
+                                      });
+                                    },
+                                    child: Center(
+                                      child: Container(
+                                        width: 34.0,
+                                        height: 34.0,
+                                        decoration: BoxDecoration(
+                                          borderRadius: const BorderRadius.all(Radius.circular(12)),
+                                          border: Border.all(color: AppColors.darkGrey)
+                                        ),
+                                        child: const Icon(Icons.add, color: AppColors.darkGrey, size: 14),
+                                      ),
+                                    ),
+                                  );
+                                }),
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+                            const Divider(color: AppColors.grey, height: 2,),
+                            const SizedBox(height: 24),
+                            if(curwish.parentId > 1&&curwish.isActive&&!curwish.isChecked)OutlinedGradientButton("Добавить цель", () {
+                              if(curwish.isChecked&&!curwish.isActive) {showUnavailable("Желание исполнено в прошлой карте. Изменению не подлежит. Вы можете видеть ее в журнале желаний в разделах 'исполненные' и 'все цели', а также в иерархии желания.\n\nВы можете удалить желание. Если вам нужна подобная, просто создайте новую.");}
+                              else if(curwish.isChecked)showUnavailable("Чтобы редактировать желание необходимо перевести в статус \nна 'не исполнено'");
+                              else if(!curwish.isActive)showUneditable();
+                              else{
+                                if(appVM.mainScreenState!.allCircles.where((element) => element.id==appVM.wishScreenState!.wish.id).isNotEmpty) {
+                                  BlocProvider.of<NavigationBloc>(context)
+                                      .add(NavigateToAimCreateScreenEvent(
+                                      appVM.wishScreenState!.wish.id));
+                                }else{
+                                  showDialog(context: context,
+                                    builder: (BuildContext context) => AlertDialog(
+                                      title: const Text('Необходимо сохранить желание'),
+                                      shape: const RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.all(Radius.circular(32.0))),
+                                      actions: <Widget>[
+                                        TextButton(
+                                          onPressed: () => Navigator.pop(context, 'OK'),
+                                          child: const Text('OK'),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }}
+                            }),
+                            const SizedBox(height: 8),
+                            if(curwish.isActive&&!curwish.isChecked)OutlinedGradientButton(curwish.parentId==0?"Добавить желание":"Добавить поджелание", ()async {
+                              if(appVM.mainScreenState!.allCircles.where((element) => element.parenId==curwish.id).toList().length>=12){
+                                showUnavailable("Достигнуто максимальноке количество желаний на орбите. Вы можете скрть или удалить другие желания, чтобы освободить место для демонстрации данной желания на орбите");
+                              }else{
+                                final childlastid = appViewModel.mainScreenState?.allCircles.where((element) => element.parenId==curwish.id&&element.nextId==-1).firstOrNull?.id??-1;
+                                int wishid = appViewModel.mainScreenState!.allCircles.isNotEmpty?appViewModel.mainScreenState!.allCircles.map((circle) => circle.id).reduce((value, element) => value > element ? value : element)+1:-101;
+                                await appViewModel.createNewSphereWish(WishData(id: wishid, prevId: childlastid, nextId: -1, parentId: curwish.id, text: "Новое желание", description: "", affirmation: (defaultAffirmations.join("|").toString()), color: Colors.red), true);
+                                BlocProvider.of<NavigationBloc>(context)
+                                    .clearHistory();
+                                appVM.cachedImages.clear();
+                                appVM.wishScreenState = null;
+                                isDataLoaded=false;
+                                final parentid = curwish.id;
+                                curwish=WishData(id: -1, prevId: -1, nextId: -1, parentId: -1, text: "text", description: "description", affirmation: "affirmation", color: Colors.grey);
+                                appViewModel.startWishScreen(wishid, parentid, false);
+                                BlocProvider.of<NavigationBloc>(context)
+                                    .add(NavigateToWishScreenEvent());
+                              }
+                            },
+                            ),
+                            const SizedBox(height: 24),
                             if(curwish.id > 0)
                               Align(
                                 alignment: Alignment.center,
                                 child: Column(
                                   children: [
-                                  Text(key: _keyToScroll, "Цели и задачи", style: const TextStyle(color: Colors.black54),),
-                                  const SizedBox(height: 5),
+                                  SizedBox(key: _keyToScroll, height: 5),
                                   appVM.settings.treeView==0?MyTreeView(key: _treeViewKey,roots: root, onTap: (id, type) => onTreeItemTap(appVM, id, type, _title, _description, _affirmation)):
                                   TreeViewWidgetV2(key: UniqueKey(), root: root.firstOrNull??MyTreeNode(id: -1, type: "a", title: "title", isChecked: true), idToOpen: curwish.id, onTap: (id,type) => onTreeItemTap(appVM, id, type, _title, _description, _affirmation)),
-                                  const SizedBox(height: 5),
-                                  if(curwish.parentId > 1)
-                                    if(!curwish.isActive&&curwish.isChecked)const SizedBox(height: 20) else ElevatedButton(
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: AppColors.fieldFillColor,
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(10), // <-- Radius
-                                          ),
-                                        ),
-                                        onPressed: (){
-                                          if(curwish.isChecked&&!curwish.isActive) {showUnavailable("Желание исполнено в прошлой карте. Изменению не подлежит. Вы можете видеть ее в журнале желаний в разделах 'исполненные' и 'все цели', а также в иерархии желания.\n\nВы можете удалить желание. Если вам нужна подобная, просто создайте новую.");}
-                                          else if(curwish.isChecked)showUnavailable("Чтобы редактировать желание необходимо перевести в статус \nна 'не исполнено'");
-                                          else if(!curwish.isActive)showUneditable();
-                                          else{
-                                          if(appVM.mainScreenState!.allCircles.where((element) => element.id==appVM.wishScreenState!.wish.id).isNotEmpty) {
-                                            BlocProvider.of<NavigationBloc>(context)
-                                                .add(NavigateToAimCreateScreenEvent(
-                                                appVM.wishScreenState!.wish.id));
-                                          }else{
-                                            showDialog(context: context,
-                                              builder: (BuildContext context) => AlertDialog(
-                                                title: const Text('Необходимо сохранить желание'),
-                                                shape: const RoundedRectangleBorder(
-                                                    borderRadius: BorderRadius.all(Radius.circular(32.0))),
-                                                actions: <Widget>[
-                                                  TextButton(
-                                                    onPressed: () => Navigator.pop(context, 'OK'),
-                                                    child: const Text('OK'),
-                                                  ),
-                                                ],
-                                              ),
-                                            );
-                                          }}
-                                        },
-                                        child: const Text("Добавить", style: TextStyle(color: AppColors.greytextColor))
-                                    ),
-                                  if(curwish.isActive&&!curwish.isChecked)ElevatedButton(
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: AppColors.fieldFillColor,
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(10), // <-- Radius
-                                        ),
-                                      ),
-                                      onPressed: () async {
-                                        if(appVM.mainScreenState!.allCircles.where((element) => element.parenId==curwish.id).toList().length>=12){
-                                          showUnavailable("Достигнуто максимальноке количество желаний на орбите. Вы можете скрть или удалить другие желания, чтобы освободить место для демонстрации данной желания на орбите");
-                                        }else{
-                                          final childlastid = appViewModel.mainScreenState?.allCircles.where((element) => element.parenId==curwish.id&&element.nextId==-1).firstOrNull?.id??-1;
-                                          int wishid = appViewModel.mainScreenState!.allCircles.isNotEmpty?appViewModel.mainScreenState!.allCircles.map((circle) => circle.id).reduce((value, element) => value > element ? value : element)+1:-101;
-                                          await appViewModel.createNewSphereWish(WishData(id: wishid, prevId: childlastid, nextId: -1, parentId: curwish.id, text: "Новое желание", description: "", affirmation: (defaultAffirmations.join("|").toString()), color: Colors.red), true);
-                                          BlocProvider.of<NavigationBloc>(context)
-                                              .clearHistory();
-                                          appVM.cachedImages.clear();
-                                          appVM.wishScreenState = null;
-                                          isDataLoaded=false;
-                                          final parentid = curwish.id;
-                                          curwish=WishData(id: -1, prevId: -1, nextId: -1, parentId: -1, text: "text", description: "description", affirmation: "affirmation", color: Colors.grey);
-                                          appViewModel.startWishScreen(wishid, parentid, false);
-                                          BlocProvider.of<NavigationBloc>(context)
-                                              .add(NavigateToWishScreenEvent());
-                                        }
-                                      },
-                                      child: Text(curwish.parentId==0?"Добавить желание":"Добавить поджелание", style: const TextStyle(color: AppColors.greytextColor))
-                                  )
+                                  const SizedBox(height: 62),
                                 ],),
                               )                ],
                         ),),
@@ -838,21 +888,118 @@ class _WishScreenState extends State<WishScreen>{
                           ,),
                       ),)
                   ])),
-            floatingActionButton: FloatingActionButton(
-              onPressed: (){
-                appViewModel.createMainScreenSpherePath(curwish.id, MediaQuery.of(context).size.width);
-                BlocProvider.of<NavigationBloc>(context).clearHistory();
+            bottomSheet: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  FloatingActionButton(
+                    onPressed: (){
+                      appViewModel.createMainScreenSpherePath(curwish.id, MediaQuery.of(context).size.width);
+                      BlocProvider.of<NavigationBloc>(context).clearHistory();
+                      BlocProvider.of<NavigationBloc>(context)
+                          .add(NavigateToMainScreenEvent());
+                    },
+                    backgroundColor: curwish.isActive?curwish.color:const Color.fromARGB(255, 217, 217, 217),
+                    shape: const CircleBorder(),
+                    child: Stack(children: [
+                      Center(child: Text(curwish.text??"", style: const TextStyle(color: Colors.white),)),
+                      if(curwish.isChecked)Align(alignment: Alignment.topRight, child: Image.asset('assets/icons/wish_done.png', width: 20, height: 20),)
+                    ],),
+                  ),
+                  const SizedBox(width: 16),
+                  !curwish.isActive&&curwish.isChecked?const SizedBox():Expanded(
+                    child: ColorRoundedButton("Сохранить", () async {
+                      if(_title.text.isEmpty||_affirmation.text.isEmpty){
+                        await showDialog(context: context,
+                          builder: (BuildContext context) => AlertDialog(
+                            title: const Text('Необходимо заполнить все поля со знаком *'),
+                            shape: const RoundedRectangleBorder(
+                                borderRadius: BorderRadius.all(Radius.circular(32.0))),
+                            actions: <Widget>[
+                              TextButton(
+                                onPressed: () => Navigator.pop(context, 'OK'),
+                                child: const Text('OK'),
+                              ),
+                            ],
+                          ),
+                        );
+                      }else {
+                        appVM.wishScreenState!.wish
+                          ..text = _title.text
+                          ..description = _description.text
+                          ..affirmation = curwish.affirmation
+                          ..color = _color!;
+                        await appViewModel.createNewSphereWish(
+                            appVM.wishScreenState!.wish, false);
+                        appViewModel.isChanged = false;
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: const Text('сохранено'),
+                              actions: <Widget>[
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.pop(context, 'OK');
+                                    setState(() {
+                                      appVM.convertToMyTreeNodeFullBranch(
+                                          curwish.id);
+                                    });
+                                  },
+                                  child: const Text('OK'),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      }
+                    },),
+                  ),
+                ],
+              ),
+            ),
+            bottomNavigationBar: BottomBar(
+              onAimsTap: (){
+                appVM.startMyAimsScreen();
+                BlocProvider.of<NavigationBloc>(context)
+                    .add(NavigateToAimsScreenEvent());
+              },
+              onTasksTap: (){
+                appVM.startMyTasksScreen();
+                BlocProvider.of<NavigationBloc>(context)
+                    .add(NavigateToTasksScreenEvent());
+              },
+              onMapTap: (){
+                if(appVM.mainScreenState!=null){
+                  appVM.mainCircles.clear();
+                  appVM.startMainScreen(appVM.mainScreenState!.moon);
+                }
+                final pressNum = appVM.getHintStates()["wheelClickNum"]??0;
+                if(pressNum>5){
+                  appVM.backPressedCount++;
+                  if(appVM.backPressedCount==appVM.settings.quoteupdateFreq){
+                    appVM.backPressedCount=0;
+                    appVM.hint=quoteBack[Random().nextInt(367)];
+                  }
+                }else{
+                  appVM.hint = "Кнопка “карта” возвращает вас на верхний уровень карты “желаний”. Сейчас вы уже здесь!";
+                }
+                appVM.setHintState("wheelClickNum", (pressNum+1));
                 BlocProvider.of<NavigationBloc>(context)
                     .add(NavigateToMainScreenEvent());
-                },
-              backgroundColor: curwish.isActive?curwish.color:const Color.fromARGB(255, 217, 217, 217),
-              shape: const CircleBorder(),
-              child: Stack(children: [
-                Center(child: Text(curwish.text??"", style: const TextStyle(color: Colors.white),)),
-                if(curwish.isChecked)Align(alignment: Alignment.topRight, child: Image.asset('assets/icons/wish_done.png', width: 20, height: 20),)
-              ],),
+              },
+              onWishesTap: (){
+                appVM.startMyWishesScreen();
+                BlocProvider.of<NavigationBloc>(context)
+                    .add(NavigateToWishesScreenEvent());
+              },
+              onDiaryTap: (){
+                appVM.getDiary();
+                BlocProvider.of<NavigationBloc>(context)
+                    .add(NavigateToDiaryScreenEvent());
+              },
             ),
-            floatingActionButtonLocation: FloatingActionButtonLocation.miniStartFloat,
           );
         }
         );

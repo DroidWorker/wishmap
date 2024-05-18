@@ -11,7 +11,8 @@ class MyTreeView extends StatefulWidget {
   final bool applyColorChangibg;
   bool fillWidth = false;
   final Function(int id, String type) onTap;
-  MyTreeView({super.key, required this.roots, required this.onTap, this.applyColorChangibg = true, this.fillWidth=false});
+  final Function(int id, String type)? onDoubleTap;
+  MyTreeView({super.key, required this.roots, required this.onTap, this.onDoubleTap, this.applyColorChangibg = true, this.fillWidth=false});
 
   @override
   State<MyTreeView> createState() => MyTreeViewState();
@@ -105,6 +106,7 @@ class MyTreeViewState extends State<MyTreeView> {
               onTap: () {
                 widget.onTap(treeEntries[i].node.id, treeEntries[i].node.type);
               },
+              onDoubleTap: widget.onDoubleTap==null?null:(){widget.onDoubleTap!(treeEntries[i].node.id, treeEntries[i].node.type);},
             );
           },
         ),
@@ -135,6 +137,7 @@ class MyTreeTile extends StatelessWidget {
     required this.applyColorChanging,
     required this.entry,
     required this.onTap,
+    this.onDoubleTap
   }) : super(key: key);
 
   final bool applyColorChanging;
@@ -143,61 +146,69 @@ class MyTreeTile extends StatelessWidget {
   final double padding;
   final TreeEntry<MyTreeNode> entry;
   final VoidCallback onTap;
+  final VoidCallback? onDoubleTap;
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
         onTap: onTap,
+                  onDoubleTap: onDoubleTap,
                   child: Ink(
-                    child: Row(
-                      children: [
-                        TreeIndentation(
-                          entry: entry,
-                          guide: const IndentGuide.connectingLines(indent: 20, roundCorners: true),
-                          child: AnimatedPadding( // Используйте AnimatedPadding для анимации изменения отступа
-                              duration: const Duration(milliseconds: 300), // Продолжительность анимации
-                              padding: EdgeInsets.fromLTRB(0, padding, 4, padding),
-                              curve: Curves.easeInOut, // Кривая анимации
-                              child: SizedBox(
-                                width: 110,
-                                child: Text(
-                                  entry.node.title,
-                                  maxLines: 1,
-                                  style: entry.node.noClickable
-                                      ? const TextStyle()
-                                      : applyColorChanging
-                                      ? const TextStyle(decoration: TextDecoration.underline, color: Colors.black12)
-                                      : const TextStyle(decoration: TextDecoration.underline),
+                          child: TreeIndentation(
+                            entry: entry,
+                            guide: const IndentGuide.connectingLines(indent: 20, thickness: 1.0),
+                            child: AnimatedPadding( // Используйте AnimatedPadding для анимации изменения отступа
+                                duration: const Duration(milliseconds: 300), // Продолжительность анимации
+                                padding: EdgeInsets.fromLTRB(0, padding, 4, padding),
+                                curve: Curves.easeInOut, // Кривая анимации
+                                child: Container(
+                                  decoration: const BoxDecoration(
+                                      color: Colors.white,
+                                    borderRadius: BorderRadius.all(Radius.circular(6))
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const SizedBox(width: 8),
+                                      Center(
+                                        child: entry.node.type == "w"
+                                            ? (entry.node.isHidden
+                                            ? Image.asset('assets/icons/love5110868.png', width: 16, height: 16,)
+                                            : entry.node.isChecked
+                                            ? Image.asset('assets/icons/wish_done.png', width: 16, height: 16,)
+                                            : !entry.node.isActive
+                                            ? Image.asset('assets/icons/wish_unactive.png', width: 16, height: 16)
+                                            : Image.asset('assets/icons/wish_active.png', width: 16, height: 16))
+                                            : (entry.node.type == "a"
+                                            ? (entry.node.isChecked
+                                            ? Image.asset('assets/icons/target_done.png', width: 16, height: 16)
+                                            : entry.node.isActive
+                                            ? Image.asset('assets/icons/target_active.png', width: 16, height: 16)
+                                            : Image.asset('assets/icons/target_unactive.png', width: 16, height: 16))
+                                            : (entry.node.type == "t"
+                                            ? (entry.node.isChecked
+                                            ? Image.asset('assets/icons/task_done.png', width: 16, height: 16)
+                                            : entry.node.isActive
+                                            ? Image.asset('assets/icons/task_active.png', width: 16, height: 16)
+                                            : Image.asset('assets/icons/task_unactive.png', width: 16, height: 16))
+                                            : Container())),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                          entry.node.title,
+                                          maxLines: 1,
+                                          style: entry.node.noClickable
+                                              ? const TextStyle()
+                                              : applyColorChanging
+                                              ? const TextStyle(decoration: TextDecoration.underline, color: Colors.black12)
+                                              : const TextStyle(decoration: TextDecoration.underline),
+                                        ),
+                                      const SizedBox(width: 8)
+                                    ],
+                                  ),
                                 ),
-                              )
-                          ),
-                        ),
-                        if(fillWidth)const Spacer(),
-                        Center(
-                          child: entry.node.type == "w"
-                              ? (entry.node.isHidden
-                              ? Image.asset('assets/icons/love5110868.png', width: 20, height: 20,)
-                              : entry.node.isChecked
-                              ? Image.asset('assets/icons/wish_done.png', width: 20, height: 20,)
-                              : !entry.node.isActive
-                              ? Image.asset('assets/icons/wish_unactive.png', width: 20, height: 20)
-                              : Image.asset('assets/icons/wish_active.png', width: 20, height: 20))
-                              : (entry.node.type == "a"
-                              ? (entry.node.isChecked
-                              ? Image.asset('assets/icons/target_done.png', width: 20, height: 20)
-                              : entry.node.isActive
-                              ? Image.asset('assets/icons/target_active.png', width: 20, height: 20)
-                              : Image.asset('assets/icons/target_unactive.png', width: 20, height: 20))
-                              : (entry.node.type == "t"
-                              ? (entry.node.isChecked
-                              ? Image.asset('assets/icons/task_done.png', width: 20, height: 20)
-                              : entry.node.isActive
-                              ? Image.asset('assets/icons/task_active.png', width: 20, height: 20)
-                              : Image.asset('assets/icons/task_unactive.png', width: 20, height: 20))
-                              : Container())),
-                        )
-                      ]
-                    )
+                            ),
+                          )
                   )
     );
   }

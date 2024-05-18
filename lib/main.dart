@@ -62,6 +62,9 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
           return MaterialApp(
+            theme: ThemeData(
+              fontFamily: 'Gilroy'
+            ),
             title: 'wishMap',
               builder: (BuildContext context, Widget? widget) {
                 ErrorWidget.builder = (FlutterErrorDetails errorDetails) {

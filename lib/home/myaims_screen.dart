@@ -23,13 +23,15 @@ class AimsScreen extends StatefulWidget {
 }
 
 class _AimsScreenState extends State<AimsScreen>{
-  int page = 0;//false - Исполнено true - Все желания
+  int page = 3;//false - Исполнено true - Все желания
   late List<AimItem> allAims;
   List<AimItem> filteredAimList = [];
+  List<int> deleteQueue = [];
 
   late AppViewModel appViewModel;
 
   var isPBActive = false;
+  var trashModeActive = false;
 
   @override
   Widget build(BuildContext context) {
@@ -49,6 +51,11 @@ class _AimsScreenState extends State<AimsScreen>{
                 children: [
                   Row(children: [
                     IconButton(
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      style: const ButtonStyle(
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap, // the '2023' part
+                      ),
                       icon: const Icon(Icons.keyboard_arrow_left, size: 30, color: AppColors.gradientStart),
                       onPressed: () {
                         BlocProvider.of<NavigationBloc>(context)
@@ -56,9 +63,22 @@ class _AimsScreenState extends State<AimsScreen>{
                       },
                     ),
                     const Spacer(),
-                    const Text("Мои цели", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500)),
+                    const Text("Мои цели", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                     const Spacer(),
-                    const SizedBox(width: 35)
+                    IconButton(
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      style: const ButtonStyle(
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap, // the '2023' part
+                      ),
+                      icon: Image.asset("assets/icons/trash.png"),
+                      onPressed: () {
+                        setState(() {
+                          trashModeActive = !trashModeActive;
+                          deleteQueue.clear();
+                        });
+                      },
+                    ),
                   ],
                   ),
                   const SizedBox(height: 15),
@@ -73,28 +93,6 @@ class _AimsScreenState extends State<AimsScreen>{
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
                       Expanded(
-                        flex: 3,
-                        child: GestureDetector(
-                            child: page==0
-                              ? Container(
-                              margin: const EdgeInsets.all(1),
-                                height: 34,
-                                decoration:  const BoxDecoration(
-                              borderRadius: BorderRadius.all(Radius.circular(5)),
-                              gradient: LinearGradient(
-                                colors: [AppColors.gradientStart, AppColors.gradientEnd]
-                              )
-                            ), child: const Center(child: Text("Все", style: TextStyle(color: Colors.white)))): Center(child: const Text("Все", style: TextStyle(color: AppColors.greytextColor))),
-                            onTap: () {
-                              setState(() {
-                                page = 0;
-                                filterAims(page);
-                              });
-                            },
-                          ),
-                      ),
-                        const SizedBox(width: 3, child: VerticalDivider(color: AppColors.backgroundColor, indent: 3, endIndent: 3)),
-                      Expanded(
                         flex: 8,
                         child: GestureDetector(
                               child: page==3
@@ -106,7 +104,7 @@ class _AimsScreenState extends State<AimsScreen>{
                                       gradient: LinearGradient(
                                           colors: [AppColors.gradientStart, AppColors.gradientEnd]
                                       )
-                                  ), child: const Center(child: Text("Актуальные", style: TextStyle(color: Colors.white)))): Center(child: const Text("Актуальные", style: TextStyle(color: AppColors.greytextColor))),
+                                  ), child: const Center(child: Text("Актуальные", style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600)))): const Center(child: Text("Актуальные", style: TextStyle(color: AppColors.greytextColor, fontSize: 11, fontWeight: FontWeight.w600))),
                               onTap: () {
                                 setState(() {
                                   page = 3;
@@ -128,7 +126,7 @@ class _AimsScreenState extends State<AimsScreen>{
                                     gradient: LinearGradient(
                                         colors: [AppColors.gradientStart, AppColors.gradientEnd]
                                     )
-                                ), child: const Center(child: Text("Не достигнуты", style: TextStyle(color: Colors.white)))): const Center(child: Text("Не достигнуты", style: TextStyle(color: AppColors.greytextColor))),
+                                ), child: const Center(child: Text("Не достигнуты", style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600)))): const Center(child: Text("Не достигнуты", style: TextStyle(color: AppColors.greytextColor, fontSize: 11, fontWeight: FontWeight.w600))),
                             onTap: () {
                               setState(() {
                                 page = 2;
@@ -150,7 +148,7 @@ class _AimsScreenState extends State<AimsScreen>{
                                     gradient: LinearGradient(
                                         colors: [AppColors.gradientStart, AppColors.gradientEnd]
                                     )
-                                ), child: const Center(child: Text("Достигнуты", style: TextStyle(color: Colors.white)))): Center(child: const Text("Достигнуты", style: TextStyle(color: AppColors.greytextColor))),
+                                ), child: const Center(child: Text("Достигнуты", style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600)))): const Center(child: Text("Достигнуты", style: TextStyle(color: AppColors.greytextColor, fontSize: 11, fontWeight: FontWeight.w600))),
                             onTap: () {
                               setState(() {
                                 page = 1;
@@ -159,7 +157,29 @@ class _AimsScreenState extends State<AimsScreen>{
                             }
                             ),
                       ),
-                    ],)
+                        const SizedBox(width: 3, child: VerticalDivider(color: AppColors.backgroundColor, indent: 3, endIndent: 3)),
+                        Expanded(
+                          flex: 3,
+                          child: GestureDetector(
+                            child: page==0
+                                ? Container(
+                                margin: const EdgeInsets.all(1),
+                                height: 34,
+                                decoration:  const BoxDecoration(
+                                    borderRadius: BorderRadius.all(Radius.circular(5)),
+                                    gradient: LinearGradient(
+                                        colors: [AppColors.gradientStart, AppColors.gradientEnd]
+                                    )
+                                ), child: const Center(child: Text("Все", style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600)))): const Center(child: Text("Все", style: TextStyle(color: AppColors.greytextColor, fontSize: 11, fontWeight: FontWeight.w600))),
+                            onTap: () {
+                              setState(() {
+                                page = 0;
+                                filterAims(page);
+                              });
+                            },
+                          ),
+                        ),
+                      ],)
                   ),
                   const SizedBox(height: 10,),
                   Expanded(child:
@@ -168,18 +188,28 @@ class _AimsScreenState extends State<AimsScreen>{
                       itemBuilder: (context, index) {
                         return AimItemWidget(ai: filteredAimList[index],
                             onItemSelect: onItemSelect,
-                            onClick: onItemClick,
-                            onDelete: onItemDelete);
+                            onDoubleClick: onDoubleClick,
+                            outlined: deleteQueue.contains(filteredAimList[index].id));
                       }
                   ),),
                   const SizedBox(height: 3),
-                  ColorRoundedButton("Добавить цель", (){
+                  !trashModeActive?ColorRoundedButton("Добавить цель", (){
                     BlocProvider.of<NavigationBloc>(context).removeLastFromBS();
                     appViewModel.hint="Добавление ЦЕЛЕЙ происходит  из желания, а желания из сферы. Определяй сферу, создавай желания, ставь цели и выполняй задачи. Твои желания обязательно сбудутся";
                     appViewModel.mainCircles.clear();
                     if(appViewModel.mainScreenState!=null)appViewModel.startMainScreen(appViewModel.mainScreenState!.moon);
                     BlocProvider.of<NavigationBloc>(context)
                         .add(NavigateToMainScreenEvent());
+                  }):
+                  ColorRoundedButton("Удалить", c: AppColors.buttonBackRed, (){
+                    setState(() {
+                      trashModeActive=false;
+                      for (var id in deleteQueue) {
+                        final aim = appVM.aimItems.firstWhere((element) => element.id==id);
+                        appVM.deleteAim(id, aim.parentId);
+                        appVM.aimItems.removeWhere((element) => element.id==id);
+                      }
+                    });
                   }),
                   const SizedBox(height: 12),
                   !isPBActive?const SizedBox(height: 3):const LinearCappedProgressIndicator(
@@ -242,16 +272,64 @@ class _AimsScreenState extends State<AimsScreen>{
     });
   }
   onItemSelect(int id) async {
-    await appViewModel.getAim(id);
-    BlocProvider.of<NavigationBloc>(context)
-        .add(NavigateToAimEditScreenEvent(id));
+    if(!trashModeActive) {
+      await appViewModel.getAim(id);
+      BlocProvider.of<NavigationBloc>(context)
+          .add(NavigateToAimEditScreenEvent(id));
+    }else{
+      setState(() {
+        deleteQueue.contains(id)?deleteQueue.remove(id):deleteQueue.add(id);
+      });
+    }
   }
-  onItemClick(int id){
-  }
-  onItemDelete(int id){
-    setState(() {
-      filteredAimList.removeWhere((element) => element.id==id);
-    });
-    //appViewModel.deleteAim(id);
+  onDoubleClick(int id) async {
+    final aim = allAims.firstWhere((element) => element.id==id);
+    if(!aim.isActive&&!aim.isChecked){//активировать
+      final parentWish = await appViewModel.getSphereNow(aim.parentId);
+      if(parentWish!=null&&parentWish.isActive){
+        appViewModel.activateAim(id, true);
+        setState(() {
+          appViewModel.aimItems.firstWhere((element) => element.id==id).isActive=true;
+        });
+      }
+    }else if(!aim.isChecked){//выполнить
+      appViewModel.updateAimStatus(id, true);
+      setState(() {
+        appViewModel.aimItems.firstWhere((element) => element.id==id).isChecked=true;
+      });
+    }else{//удалить
+      showDialog(context: context,
+        builder: (BuildContext c) => AlertDialog(
+          contentPadding: EdgeInsets.zero,
+          shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(32.0))),
+          title: const Text('Внимание', textAlign: TextAlign.center,),
+          content: const Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text("Цель будет удалена", maxLines: 4, textAlign: TextAlign.center,),
+              SizedBox(height: 4,),
+              Divider(color: AppColors.dividerGreyColor,),
+              SizedBox(height: 4,),
+              Text("Удалить?", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),)
+            ],
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context, 'OK');
+                appViewModel.deleteAim(id ,aim.parentId);
+                allAims.removeWhere((element) => element.id==id);
+              },
+              child: const Text('Да'),
+            ),
+            TextButton(
+              onPressed: () { Navigator.pop(context, 'Cancel');},
+              child: const Text('Нет'),
+            ),
+          ],
+        ),
+      );
+    }
   }
 }

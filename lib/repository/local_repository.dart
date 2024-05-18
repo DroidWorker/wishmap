@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:ffi';
 import 'dart:typed_data';
 import 'dart:ui';
 import 'package:flutter/cupertino.dart';
@@ -96,6 +97,21 @@ class LocalRepository{
     settings["wheelClickNum"] = _prefs!.getInt("wheelClickNum")??0;
     //settings[] = _prefs!.getBool("taskActualizingMode")??false;
     return settings;
+  }
+
+  Future<void> saveUserColor(Color value) async {
+    if (_prefs == null) {
+      await init();
+    }
+    final colors = _prefs?.getString("userColor")??"";
+    _prefs!.setString("userColor", colors.isEmpty?colors+value.value.toString():"$colors|${value.value}");
+  }
+
+  List<Color> getUserColors() {
+    List<Color> userColors = [];
+    final colorsStr = _prefs!.getString("userColor")??"";
+    userColors = colorsStr.isNotEmpty?colorsStr.split("|").map((e) => Color(int.parse(e))).toList():[];
+    return userColors;
   }
 
   //music

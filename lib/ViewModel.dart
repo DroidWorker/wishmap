@@ -194,6 +194,13 @@ class AppViewModel with ChangeNotifier {
     return loadId;
   }
 
+  saveUserColor(Color color) {
+    localRep.saveUserColor(color);
+  }
+  List<Color> getUserColors() {
+    return localRep.getUserColors();
+  }
+
   Future searchImages(String query) async{
     photoUrls = await GRepository.searchImages(query);
     notifyListeners();
@@ -796,6 +803,20 @@ class AppViewModel with ChangeNotifier {
       addError("сфера не была сохранена: $ex");
     }
   }
+
+  Future<WishData?> getSphereNow(int id) async{
+    try{
+      if(mainScreenState!=null) {
+        return await localRep.getSphere(id, mainScreenState?.moon.id ?? 0);
+      } else {
+        throw Exception("#2365 lost datas: mainScreen NULL");
+      }
+    }catch(ex){
+      addError("#764$ex");
+    }
+    return null;
+  }
+
   Future updateSphereNeighbours(int insertedSphere, int prevSphereId, int nextSphereId) async{
     if(mainScreenState?.allCircles!=null){
       if(prevSphereId!=-1){
@@ -1127,6 +1148,18 @@ class AppViewModel with ChangeNotifier {
       addError("#764$ex");
     }
   }
+  Future<AimData?> getAimNow(int id) async{
+    try{
+      if(mainScreenState!=null) {
+          return await localRep.getAim(id, mainScreenState?.moon.id ?? 0);
+      } else {
+        throw Exception("#2365 lost datas: mainScreen NULL");
+      }
+    }catch(ex){
+      addError("#764$ex");
+    }
+    return null;
+  }
   activateAim(int id, bool status, {needToCommit = true}) {
     try {
       if(connectivity != 'No Internet Connection') repository.activateAim(id, mainScreenState!.moon.id, status);
@@ -1248,11 +1281,12 @@ class AppViewModel with ChangeNotifier {
       }
       if(connectivity != 'No Internet Connection')await repository.changeTaskStatus(taskId, mainScreenState?.moon.id??0, status);
       await localRep.updateTaskStatus(taskId, status,mainScreenState?.moon.id??0);
-      toggleChecked(myNodes.first, 't', taskId, status);
+      if(myNodes.isNotEmpty)toggleChecked(myNodes.first, 't', taskId, status);
       updateMoonSync(mainScreenState?.moon.id??0);
       notifyListeners();
-    }catch(ex){
+    }catch(ex, s){
       addError("#528${ex.toString()}");
+      print("errrrrrr$s");
     }
   }
  activateTask(int id, bool status, {needToCommit = true}) {

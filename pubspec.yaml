@@ -47,7 +47,7 @@ dependencies:
   page_view_dot_indicator: ^2.3.0
   emoji_choose: ^0.0.4
   keyboard_attachable: ^2.2.0
-  photo_manager: ^3.0.0
+  photo_manager: ^3.1.0
   permission_handler: ^11.0.1
   device_info_plus: ^9.1.0
   flutter_image_compress: ^2.1.0
@@ -65,6 +65,7 @@ dependencies:
   audioplayers: ^6.0.0
   firebase_storage: ^11.7.1
   flutter_downloader: ^1.11.7
+  lottie: ^3.1.0
 
 
 dev_dependencies:
@@ -92,6 +93,7 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/icons/
+    - assets/lottie/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
@@ -104,11 +106,12 @@ flutter:
   # "family" key with the font family name, and a "fonts" key with a
   # list giving the asset and other descriptors for the font. For
   # example:
-  # fonts:
-  #   - family: Schyler
-  #     fonts:
-  #       - asset: fonts/Schyler-Regular.ttf
-  #       - asset: fonts/Schyler-Italic.ttf
+  fonts:
+     - family: Gilroy
+       fonts:
+         - asset: assets/fonts/Gilroy-Light.otf
+  #       - asset: assets/fonts/Gilroy-ExtraBold.otf
+  #         weight: 900
   #         style: italic
   #   - family: Trajan Pro
   #     fonts:

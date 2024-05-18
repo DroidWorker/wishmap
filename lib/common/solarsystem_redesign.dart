@@ -497,7 +497,7 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
                                     ),
                                   ),
                                   child: child!
-                              ):ColorFiltered(colorFilter: ColorFilter.mode(value.color, BlendMode.srcATop),child: Image.asset('assets/icons/people.png', width: 110),),
+                              ):ColorFiltered(colorFilter: ColorFilter.mode(value.color, BlendMode.srcATop),child: Image.asset('assets/icons/people.png', width: 110)),
                               onTap: () {
                                 print("oncentralcircletap - $allowClick");
                                 _timer?.cancel();
