@@ -1,10 +1,13 @@
 import 'dart:typed_data';
 
 import 'package:collection/collection.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_manager/photo_manager.dart';
+import 'package:wishmap/interface_widgets/galleriPhotoContainer.dart';
+import 'package:wishmap/res/colors.dart';
 
 class RoundedPhotoGallery extends StatefulWidget {
   @override
@@ -21,6 +24,7 @@ class _RoundedPhotoGalleryState extends State<RoundedPhotoGallery> {
   late Set<String> albumNames = {"загрузка..."};
 
   String selectedAlbum="загрузка...";
+  List<Uint8List> selectedItems = [];
 
   @override
   void initState() {
@@ -78,52 +82,47 @@ class _RoundedPhotoGalleryState extends State<RoundedPhotoGallery> {
     return Column(
       children: [
         Row(children: [
-          Text("Выберите альбом:"),
-          SizedBox(width: 15),
-          DropdownButton<String>(
-            value: selectedAlbum,
-            onChanged: (newValue) {
-              selectedAlbum = newValue??"";
-              _loadImages(albumName: selectedAlbum);
-            },
-            items: albumNames.map<DropdownMenuItem<String>>((albumName) {
-              return DropdownMenuItem<String>(
-                value: albumName,
-                child: Text(albumName),
-              );
-            }).toList(),
+          const Text("Альбом"),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                color: Colors.white
+              ),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<String>(
+                  icon: const Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.darkGrey),
+                  value: selectedAlbum,
+                  onChanged: (newValue) {
+                    selectedAlbum = newValue??"";
+                    _loadImages(albumName: selectedAlbum);
+                  },
+                  items: albumNames.map<DropdownMenuItem<String>>((albumName) {
+                    return DropdownMenuItem<String>(
+                      value: albumName,
+                      child: Text(albumName),
+                    );
+                  }).toList()
+                ),
+              ),
+            ),
           ),
         ],),
+        const SizedBox(height: 24),
         Expanded(child:
         GridView.builder(
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2, // количество элементов в строке
-            crossAxisSpacing: 8.0, // расстояние между элементами по горизонтали
-            mainAxisSpacing: 8.0, // расстояние между элементами по вертикали
+            crossAxisCount: 3, // количество элементов в строке
+            crossAxisSpacing: 4.0, // расстояние между элементами по горизонтали
+            mainAxisSpacing: 4.0, // расстояние между элементами по вертикали
           ),
           itemCount: _images.length,
           itemBuilder: (context, index) {
-            return GestureDetector(
-              onTap: () async {
-                final image = await compressImage(_images[index]);
-                if(image!=null) {
-                  widget.onClick(image);
-                }
-              },
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(10.0),
-                child: FutureBuilder<Uint8List?>(
-                  future: _images[index].thumbnailDataWithSize(const ThumbnailSize(200, 200)),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.done && snapshot.data != null) {
-                      return Image.memory(snapshot.data!, fit: BoxFit.cover);
-                    } else {
-                      return Container(); // Ваша заглушка или индикатор загрузки
-                    }
-                  },
-                ),
-              ),
-            );
+            return GalleryPhotoContainer(_images[index], (image) async {
+                widget.onClick(image);
+            });
           },
         ))
       ],

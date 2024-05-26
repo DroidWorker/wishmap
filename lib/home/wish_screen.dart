@@ -507,7 +507,7 @@ class _WishScreenState extends State<WishScreen>{
                               readOnly: curwish.isChecked||!curwish.isActive?true:false,
                               style: const TextStyle(color: Colors.black), // Черный текст ввода
                               decoration: InputDecoration(
-                                contentPadding: const EdgeInsets.fromLTRB(16, 16, 16, 19),
+                                contentPadding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
                                 filled: true,
                                 suffixIconConstraints: const BoxConstraints(
                                   minWidth: 32,
@@ -528,8 +528,10 @@ class _WishScreenState extends State<WishScreen>{
                             ),
                             const SizedBox(height: 8),
                             TextField(
+                              maxLines: null,
                               controller: _affirmation,
                               readOnly: true,
+                              showCursor: false,
                               onTap: () async {
                                 if(curwish.isChecked){
                                   showUnavailable("Чтобы редактировать желание необходимо сменить статус \nна 'не выполнено'");
@@ -552,6 +554,7 @@ class _WishScreenState extends State<WishScreen>{
                               },
                               style: const TextStyle(color: Colors.black), // Черный текст ввода
                               decoration: InputDecoration(
+                                contentPadding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(10.0),
                                   borderSide: const BorderSide(
@@ -559,7 +562,7 @@ class _WishScreenState extends State<WishScreen>{
                                     style: BorderStyle.none,
                                   ),
                                 ),
-                                suffixIcon: const Icon(Icons.keyboard_arrow_down_sharp, color: Colors.black45),
+                                suffix: const Icon(Icons.keyboard_arrow_down_sharp, color: Colors.black45),
                                 filled: true, // Заливка фона
                                 fillColor: curwish.isChecked?AppColors.fieldLockColor:!curwish.isActive?AppColors.fieldLockColor:Colors.white,
                                 hintText: 'Выбери аффирмацию', // Базовый текст
@@ -568,28 +571,42 @@ class _WishScreenState extends State<WishScreen>{
                             ),
                             const SizedBox(height: 8),
                             TextField(
-                              minLines: 4,
-                              maxLines: 7,
+                              maxLength: 260,
+                              maxLines: 5,
                               controller: _description,
                               showCursor: false,
                               readOnly: true,
+                              onTap: () async {
+                                if(curwish.isChecked)
+                                {
+                                  if(curwish.isChecked&&!curwish.isActive) {showUnavailable("Желание исполнено в прошлой карте. Изменению не подлежит. Вы можете видеть ее в журнале желаний в разделах 'исполненные' и 'все цели', а также в иерархии желания.\n\nВы можете удалить желание. Если вам нужна подобная, просто создайте новую.");}
+                                  else if(curwish.isChecked)showUnavailable("Чтобы редактировать желание необходимо перевести в статус \nна 'не исполнено'");else if(!curwish.isActive)showUneditable();
+                                }
+                                else if(!curwish.isActive){showUneditable();}
+                                else {
+                                  final newText = await showOverlayedEdittext(context, _description.text, (curwish.isActive&&!curwish.isChecked))??"";
+                                  if(newText!=_description.text)appViewModel.isChanged= true;
+                                  _description.text = newText;
+                                }
+                              },
                               style: const TextStyle(color: Colors.black), // Черный текст ввода
                               decoration: InputDecoration(
                                 contentPadding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
                                 border: const OutlineInputBorder(
-                                  borderRadius: BorderRadius.only(topLeft: Radius.circular(10), topRight: Radius.circular(10)),
+                                  borderRadius: BorderRadius.all(Radius.circular(10)),
                                   borderSide: BorderSide(
                                     width: 0,
                                     style: BorderStyle.none,
                                   ),
                                 ),
+                                counterText: "",
                                 filled: true, // Заливка фона
                                 fillColor: curwish.isChecked?AppColors.fieldLockColor:!curwish.isActive?AppColors.fieldLockColor:Colors.white,
                                 hintText: 'Описание', // Базовый текст
                                 hintStyle: TextStyle(color: Colors.black.withOpacity(0.3)), // Полупрозрачный черный базовый текст
                               ),
                             ),
-                            Container(
+                            if(_description.text.length>160)Container(
                               height: 40,
                               width: double.infinity,
                               decoration: const BoxDecoration(

@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:wishmap/res/colors.dart';
 
 class PhotoGalleryWidget extends StatelessWidget {
   final List<String> imageUrls;
@@ -12,10 +13,10 @@ class PhotoGalleryWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Expanded(child:
     GridView.builder(
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 8.0,
-        mainAxisSpacing: 8.0,
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3,
+        crossAxisSpacing: 4.0,
+        mainAxisSpacing: 4.0,
       ),
       itemCount: imageUrls.length,
       itemBuilder: (context, index) {
@@ -32,12 +33,14 @@ class PhotoGalleryWidget extends StatelessWidget {
       },
       child: Hero(
         tag: imageUrl,
-        child: CachedNetworkImage(
-          imageUrl: imageUrl,
-          placeholder: (context, url) => const CircularProgressIndicator(),
-          errorWidget: (context, url, error) => const Icon(Icons.error),
-          fit: BoxFit.cover,
-        ),
+        child: ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: CachedNetworkImage(
+              imageUrl: imageUrl,
+              placeholder: (context, url) => const CircularProgressIndicator(color: AppColors.darkGrey,),
+              errorWidget: (context, url, error) => const Icon(Icons.error),
+              fit: BoxFit.cover,
+            )),
       ),
     );
   }
@@ -49,8 +52,8 @@ class PhotoGalleryWidget extends StatelessWidget {
           tag: imageUrl,
           child: CachedNetworkImage(
             imageUrl: imageUrl,
-            placeholder: (context, url) => CircularProgressIndicator(),
-            errorWidget: (context, url, error) => Icon(Icons.error),
+            placeholder: (context, url) => const CircularProgressIndicator(color: AppColors.darkGrey,),
+            errorWidget: (context, url, error) => const Icon(Icons.error),
             fit: BoxFit.contain,
           ),
         ),

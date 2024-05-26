@@ -282,8 +282,9 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
   void initAnim(int id, int itemId){https://drive.google.com/file/d/1QdsM-FHXSbf8tl9zTUkETXqL6pscM7Mh/view?usp=drive_link
     final initialTop = animationDirectionForward?widget.center.value-centralCircles.last.radius:widget.circles[itemId].radius*-0.5;//centralCircles.last.coords.value;
     final initialLeft = animationDirectionForward?widget.center.key-centralCircles.last.radius:widget.center.key * 2 - centralCircles.last.radius*1.5;//centralCircles.last.coords.key;
-    final finalTop = animationDirectionForward?widget.circles[itemId].radius*-0.5:widget.center.value-centralCircles[centralCircles.length-2].radius;
-    final finalRight = animationDirectionForward?widget.center.key * 2 - centralCircles.last.radius*1.5:widget.center.key-centralCircles[centralCircles.length-2].radius;
+//    final finalTop = animationDirectionForward?widget.circles[itemId].radius*-0.5:widget.center.value-centralCircles[centralCircles.length-2].radius;
+  final finalTop = animationDirectionForward?0.0:widget.center.value-centralCircles[centralCircles.length-2].radius;
+  final finalRight = animationDirectionForward?widget.center.key * 2 - centralCircles.last.radius*1.5:widget.center.key-centralCircles[centralCircles.length-2].radius;
 
     final radiusToCenterInitialTop = animationDirectionForward?circlePositions[itemId].dy:widget.center.value - centralCircles[0].radius;
     final radiusToCenterInitialLeft = animationDirectionForward?circlePositions[itemId].dx:widget.center.key - centralCircles[0].radius;

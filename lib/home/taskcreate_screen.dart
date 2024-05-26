@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../ViewModel.dart';
 import '../common/EditTextOverlay.dart';
 import '../data/models.dart';
+import '../interface_widgets/colorButton.dart';
 import '../navigation/navigation_block.dart';
 import '../res/colors.dart';
 
@@ -23,109 +24,98 @@ class TaskScreenState extends State<TaskScreen>{
   @override
   Widget build(BuildContext context) {
     final appViewModel = Provider.of<AppViewModel>(context);
-
     return Scaffold(
         backgroundColor: AppColors.backgroundColor,
         body: SafeArea(
             maintainBottomViewPadding: true,
-            child:Column(children:[Expanded(child:SingleChildScrollView(
+            child:Column(children:[
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  IconButton(
+                    padding: const EdgeInsets.fromLTRB(8, 0, 0, 0),
+                    constraints: const BoxConstraints(),
+                    style: const ButtonStyle(
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap, // the '2023' part
+                    ),
+                    icon: const Icon(Icons.keyboard_arrow_left, size: 28, color: AppColors.gradientStart),
+                    onPressed: () {
+                      if(text.text.isNotEmpty&&!taskCreateClicked){
+                        showDialog(context: context,
+                          builder: (BuildContext context) => AlertDialog(
+                            contentPadding: EdgeInsets.zero,
+                            shape: const RoundedRectangleBorder(
+                                borderRadius: BorderRadius.all(Radius.circular(32.0))),
+                            title: const Text('Внимание', textAlign: TextAlign.center,),
+                            content: const Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text("Вы изменили поля но не нажали 'Сохранить'", maxLines: 6, textAlign: TextAlign.center,),
+                                SizedBox(height: 4,),
+                                Divider(color: AppColors.dividerGreyColor,),
+                                SizedBox(height: 4,),
+                                Text("Сохранить изменения?", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),)
+                              ],
+                            ),
+                            actions: <Widget>[
+                              TextButton(
+                                onPressed: () async { Navigator.pop(context, 'OK');
+                                await onSaveClicked(appViewModel);
+                                BlocProvider.of<NavigationBloc>(context)
+                                    .handleBackPress();
+                                },
+                                child: const Text('Да'),
+                              ),
+                              TextButton(
+                                onPressed: () { Navigator.pop(context, 'Cancel');
+                                BlocProvider.of<NavigationBloc>(context)
+                                    .handleBackPress();
+                                },
+                                child: const Text('Нет'),
+                              ),
+                            ],
+                          ),
+                        );}else{
+                        BlocProvider.of<NavigationBloc>(context)
+                            .handleBackPress();
+                      }
+                    },
+                  ),
+                  const Text("Новая задача", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+                  const SizedBox(width: 30, height: 40)
+                ],
+              ),
+              Expanded(child:SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(15),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.keyboard_arrow_left, size: 30,),
-                      onPressed: () {
-                        if(text.text.isNotEmpty&&!taskCreateClicked){
-                          showDialog(context: context,
-                            builder: (BuildContext context) => AlertDialog(
-                              contentPadding: EdgeInsets.zero,
-                              shape: const RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.all(Radius.circular(32.0))),
-                              title: const Text('Внимание', textAlign: TextAlign.center,),
-                              content: const Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text("Вы изменили поля но не нажали 'Сохранить'", maxLines: 6, textAlign: TextAlign.center,),
-                                  SizedBox(height: 4,),
-                                  Divider(color: AppColors.dividerGreyColor,),
-                                  SizedBox(height: 4,),
-                                  Text("Сохранить изменения?", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),)
-                                ],
-                              ),
-                              actions: <Widget>[
-                                TextButton(
-                                  onPressed: () async { Navigator.pop(context, 'OK');
-                                  await onSaveClicked(appViewModel);
-                                  BlocProvider.of<NavigationBloc>(context)
-                                      .handleBackPress();
-                                  },
-                                  child: const Text('Да'),
-                                ),
-                                TextButton(
-                                  onPressed: () { Navigator.pop(context, 'Cancel');
-                                  BlocProvider.of<NavigationBloc>(context)
-                                      .handleBackPress();
-                                  },
-                                  child: const Text('Нет'),
-                                ),
-                              ],
-                            ),
-                          );}else{
-                          BlocProvider.of<NavigationBloc>(context)
-                              .handleBackPress();
-                        }
-                      },
-                    ),
-                    const Spacer(),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: TextButton(
-                          style: TextButton.styleFrom(
-                            backgroundColor: AppColors.greyBackButton,
-                            shape: const RoundedRectangleBorder(
-                              borderRadius: BorderRadius.all(Radius.circular(10)),
-                            ),
-                          ),
-                          onPressed: () async {
-                            if(!taskCreateClicked){
-                              taskCreateClicked = true;
-                              await onSaveClicked(appViewModel);
-                            }
-                          },
-                          child: const Text("Сохранить задачу", style: TextStyle(color: AppColors.blueButtonTextColor),)
-                      ),
-                    ),
-                  ],
-                ),
-                const Divider(
-                  height: 3,
-                  color: AppColors.dividerGreyColor,
-                  indent: 5,
-                  endIndent: 5,
-                ),
-                const SizedBox(height: 10),
                 TextField(
                   controller: text,
                   style: const TextStyle(color: Colors.black), // Черный текст ввода
                   decoration: InputDecoration(
-                      filled: true,
-                      suffixIconConstraints: const BoxConstraints(
-                        minWidth: 7,
-                        minHeight: 2,
+                    contentPadding: const EdgeInsets.fromLTRB(16, 16, 16, 19),
+                    filled: true,
+                    suffixIconConstraints: const BoxConstraints(
+                      minWidth: 32,
+                      minHeight: 2,
+                    ),
+                    suffixIcon: const Text("*", style: TextStyle(fontSize: 30, color: AppColors.greytextColor)),
+                    fillColor: Colors.white,
+                    hintText: 'Название',
+                    hintStyle: TextStyle(color: Colors.black.withOpacity(0.3)),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10.0),
+                      borderSide: const BorderSide(
+                        width: 0,
+                        style: BorderStyle.none,
                       ),
-                      suffixIcon: const Text("*"),
-                      fillColor: AppColors.fieldFillColor,
-                      hintText: 'Название задачи',
-                      hintStyle: TextStyle(color: Colors.black.withOpacity(0.3)),
-                      border: InputBorder.none
-                  ),
+                    ),
+                  )
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 8),
                 TextField(
                   controller: description,
                   minLines: 4,
@@ -140,25 +130,50 @@ class TaskScreenState extends State<TaskScreen>{
                   readOnly: true,
                   style: const TextStyle(color: Colors.black), // Черный текст ввода
                   decoration: InputDecoration(
-                      filled: true,
-                      fillColor: AppColors.fieldFillColor,
-                      hintText: 'Опиши подробно свою задачу',
-                      hintStyle: TextStyle(color: Colors.black.withOpacity(0.3)),
-                      border: InputBorder.none
+                    contentPadding: const EdgeInsets.fromLTRB(16, 16, 16, 19),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10.0),
+                      borderSide: const BorderSide(
+                        width: 0,
+                        style: BorderStyle.none,
+                      ),
+                    ),
+                    filled: true, // Заливка фона
+                    fillColor: Colors.white,
+                    hintText: 'Описание', // Базовый текст
+                    hintStyle: TextStyle(color: Colors.black.withOpacity(0.3)), // Полупрозрачный черный базовый текст
                   ),
                 ),
                 ],
             ),),
         )),
-              if(MediaQuery.of(context).viewInsets.bottom!=0) SizedBox(height: 30,
-                child: FooterLayout(
-                  footer: Container(height: 30,color: Colors.white,alignment: Alignment.centerRight, child:
-                  GestureDetector(
-                    onTap: (){FocusManager.instance.primaryFocus?.unfocus();},
-                    child: const Text("готово", style: TextStyle(fontSize: 20),),
-                  )
-                    ,),
-                ),)]))
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: ColorRoundedButton("Сохранить", () async {
+                  if(!taskCreateClicked){
+                    taskCreateClicked = true;
+                    await onSaveClicked(appViewModel);
+                  }
+                }
+                ),
+              ),
+              if(MediaQuery.of(context).viewInsets.bottom!=0) Align(
+                alignment: Alignment.topRight,
+                child: Container(height: 50, width: 50,
+                    margin: const EdgeInsets.fromLTRB(0, 16, 16, 16),
+                    alignment: Alignment.center,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white,
+                    ), child:
+                    GestureDetector(
+                      onTap: (){FocusManager.instance.primaryFocus?.unfocus();},
+                      child: const Icon(Icons.keyboard_hide_sharp, size: 30, color: AppColors.darkGrey,),
+                    )
+                ),
+              )
+            ])
+        ),
     );
   }
 

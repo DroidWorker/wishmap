@@ -76,8 +76,6 @@ class TaskEditScreenState extends State<TaskEditScreen>{
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Column(
-                      children: [
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -132,7 +130,7 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                                 }
                               },
                             ),
-                            Text(ai?.text??"", style: const TextStyle(fontWeight: FontWeight.w600)),
+                            Text(ai?.text??"", style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
                             IconButton(
                               padding: EdgeInsets.zero,
                               constraints: const BoxConstraints(),
@@ -191,8 +189,6 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                             )
                           ],
                         ),
-                      ],
-                    ),
                     Expanded(child: SingleChildScrollView(
                       child: Column(
                         children: [

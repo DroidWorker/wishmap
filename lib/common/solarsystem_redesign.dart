@@ -222,8 +222,8 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
         showHideController.reverse();
       }
     });
-
-    lineStart=Offset((widget.center.key - 50 + (widget.size/2) * cos(1)), (widget.center.value - 100 + (widget.size/2) * sin(1)));
+    final centerBottomOffset = widget.center.value-((widget.center.value/0.53)*0.03);
+    lineStart=Offset((widget.center.key + (widget.size*0.25) * cos(1)), (centerBottomOffset + widget.size*0.06 * sin(1)));
   }
   @override
   void dispose() {
@@ -268,10 +268,14 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
       final py = centerY + (widget.size/2-40) * sin(plusesRotations[i]);
       if(centralCircles.isNotEmpty&&!centralCircles.last.isChecked&&centralCircles.last.isActive)plusesPositions.add(Offset(px, py));
     }
-    final initialTop = animationDirectionForward?widget.center.value-centralCircles.last.radius:widget.circles[itemId].radius*-0.5;//centralCircles.last.coords.value;
-    final initialLeft = animationDirectionForward?widget.center.key-centralCircles.last.radius:widget.center.key * 2 - centralCircles.last.radius*1.5;//centralCircles.last.coords.key;
-    final finalTop = animationDirectionForward?widget.circles[itemId].radius*-0.5:widget.center.value-centralCircles[centralCircles.length-2].radius;
-    final finalRight = animationDirectionForward?widget.center.key * 2 - centralCircles.last.radius*1.5:widget.center.key-centralCircles[centralCircles.length-2].radius;
+    //final initialTop = animationDirectionForward?widget.center.value-centralCircles.last.radius:widget.circles[itemId].radius*-0.5;//centralCircles.last.coords.value;
+    //final initialLeft = animationDirectionForward?widget.center.key-centralCircles.last.radius:widget.center.key * 2 - centralCircles.last.radius*1.5;//centralCircles.last.coords.key;
+    //final finalTop = animationDirectionForward?widget.circles[itemId].radius*-0.5:widget.center.value-centralCircles[centralCircles.length-2].radius;
+    //final finalRight = animationDirectionForward?widget.center.key * 2 - centralCircles.last.radius*1.5:widget.center.key-centralCircles[centralCircles.length-2].radius;
+    final initialTop = animationDirectionForward?widget.center.value-centralCircles.last.radius:centerY-(widget.size/2)-80;//centralCircles.last.coords.value;
+    final initialLeft = animationDirectionForward?widget.center.key-centralCircles.last.radius:(widget.center.key-60) * 2;//centralCircles.last.coords.key;
+    final finalTop = animationDirectionForward?centerY-(widget.size/2)-80:widget.center.value-centralCircles[centralCircles.length-2].radius;
+    final finalRight = animationDirectionForward?(widget.center.key-60) * 2:widget.center.key-centralCircles[centralCircles.length-2].radius;
 
     final radiusToCenterInitialTop = animationDirectionForward?circlePositions[itemId].dy:widget.center.value - centralCircles[0].radius;
     final radiusToCenterInitialLeft = animationDirectionForward?circlePositions[itemId].dx:widget.center.key - centralCircles[0].radius;
@@ -423,25 +427,25 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
                     painter: LinePainter(),
                   ),
                   builder: (context, child){
+                    final top = _cTOa.value.dy+(widget.size)*0.36;
+                    final right = _cTOa.value.dx-(widget.size*0.40);
                     return Stack(children:[ Positioned(
                       left: lineStart.dx,
                       bottom: lineStart.dy,
-                      top: _cTOa.value.dy+(widget.size-80)/2+35,
-                      right: widget.size-_cTOa.value.dx,
-                      //width: (_cTOa.value.dx-widget.center.key)*0.75,
-                      //height: (widget.center.value-_cTOa.value.dy)*0.31,
-                      child: child!,
+                      top: top,
+                      right: right,
+                      child: allowClick?child!:const SizedBox(),
                     ),
                       Positioned(
-                          left: _cTOa.value.dx-(widget.size-80)/2+60,
-                          top: _cTOa.value.dy-(widget.size-80)/2+40,
+                          left: _cTOa.value.dx-centralCircles.last.radius*0.4,
+                          top: _cTOa.value.dy-centralCircles.last.radius*0.4,
                           child: Container(
-                              width: widget.size-80,
-                              height: widget.size-80,
+                              width: centralCircles.last.radius*2.8,
+                              height: centralCircles.last.radius*2.8,
                               decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   color: Colors.transparent,
-                                  border: Border.all(color: Colors.grey, width: 2))
+                                  border: Border.all(color: allowClick?Colors.grey:Colors.transparent, width: 2))
                           )
                       ),]);
                   },
@@ -617,7 +621,7 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
                   valueListenable: lastRotation,
                   builder: (context, rotation, _) {
                     return Transform.rotate(
-                        origin: const Offset(0, 40),
+                        origin: const Offset(0, 65),
                         angle: rotation,
                         child: Stack(
                           alignment: Alignment.center,

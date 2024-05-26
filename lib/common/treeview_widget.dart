@@ -3,8 +3,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_fancy_tree_view/flutter_fancy_tree_view.dart';
+import 'package:wishmap/res/colors.dart';
 
 import '../data/models.dart';
+import '../import_extension/fancy_tree_tools.dart';
 
 class MyTreeView extends StatefulWidget {
   final List<MyTreeNode> roots;
@@ -156,12 +158,27 @@ class MyTreeTile extends StatelessWidget {
                   child: Ink(
                           child: TreeIndentation(
                             entry: entry,
-                            guide: const IndentGuide.connectingLines(indent: 20, thickness: 1.0),
-                            child: AnimatedPadding( // Используйте AnimatedPadding для анимации изменения отступа
-                                duration: const Duration(milliseconds: 300), // Продолжительность анимации
-                                padding: EdgeInsets.fromLTRB(0, padding, 4, padding),
+                            guide: const IndentGuide.connectingLines(indent: 20, thickness: 1.0, origin: 1.0, color: AppColors.linesColor),
+                            child: AnimatedPadding(
+                                duration: const Duration(milliseconds: 300),
+                                padding: EdgeInsets.fromLTRB(entry.node.id==0?0:entry.node.type=='s'?0:10, padding, 4, 0),
                                 curve: Curves.easeInOut, // Кривая анимации
-                                child: Container(
+                                child: entry.node.id==0?Container(
+                                  width: 40, height: 40,
+                                  decoration: const BoxDecoration(
+                                      shape: BoxShape.circle,
+                                    color: AppColors.gradientEnd
+                                  ),
+                                ):entry.node.type=='s'?Container(
+                                  width: 40, height: 40,
+                                  decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: Colors.white,
+                                      border: Border.all(color: AppColors.buttonBackRed)
+                                  ),
+                                  child: Center(child: Text(entry.node.title, maxLines: 2, style: const TextStyle(fontSize: 10))),
+                                ):Container(
+                                  height: 25,
                                   decoration: const BoxDecoration(
                                       color: Colors.white,
                                     borderRadius: BorderRadius.all(Radius.circular(6))
@@ -169,6 +186,20 @@ class MyTreeTile extends StatelessWidget {
                                   child: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
+                                      const SizedBox(width: 8),
+                                      Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          //Text("data"),
+                                          Text(
+                                              entry.node.title,
+                                              maxLines: 1,
+                                              style: entry.node.noClickable
+                                                  ? const TextStyle()
+                                                  : const TextStyle( color: Colors.black12),
+                                            ),
+                                        ],
+                                      ),
                                       const SizedBox(width: 8),
                                       Center(
                                         child: entry.node.type == "w"
@@ -194,16 +225,6 @@ class MyTreeTile extends StatelessWidget {
                                             : Container())),
                                       ),
                                       const SizedBox(width: 8),
-                                      Text(
-                                          entry.node.title,
-                                          maxLines: 1,
-                                          style: entry.node.noClickable
-                                              ? const TextStyle()
-                                              : applyColorChanging
-                                              ? const TextStyle(decoration: TextDecoration.underline, color: Colors.black12)
-                                              : const TextStyle(decoration: TextDecoration.underline),
-                                        ),
-                                      const SizedBox(width: 8)
                                     ],
                                   ),
                                 ),

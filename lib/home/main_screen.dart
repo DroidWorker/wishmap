@@ -2,8 +2,7 @@ import 'dart:isolate';
 import 'dart:math';
 import 'dart:ui';
 
-import 'package:animated_text_kit/animated_text_kit.dart';
-import 'package:capped_progress_indicator/capped_progress_indicator.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:provider/provider.dart';
@@ -20,8 +19,8 @@ import 'package:wishmap/res/colors.dart';
 import 'package:wishmap/data/models.dart';
 
 import '../ViewModel.dart';
-import '../common/custom_bottom_button.dart';
 import '../common/moon_widget.dart';
+import '../common/selector_text_widget.dart';
 
 class MainScreen extends StatefulWidget {
   MainScreen({super.key});
@@ -117,63 +116,6 @@ class _MainScreenState extends State<MainScreen>{
                   Center(
                     child: Column(
                       children: [
-                        const SizedBox(height: 15.0),
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(
-                                flex: 1,
-                                child: Column(
-                                  children: [
-                                    InkWell(child:IconButton(
-                                      style: ButtonStyle(
-                                          backgroundColor: MaterialStateProperty.all(Colors.white),
-                                          shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                                              RoundedRectangleBorder(
-                                                borderRadius: BorderRadius.circular(8.0),
-                                              )
-                                          )),
-                                      icon: const Icon(Icons.menu, size: 30,),
-                                      onPressed: () {
-                                        appVM.mainCircles.clear();
-                                        BlocProvider.of<NavigationBloc>(context)
-                                            .add(NavigateToProfileScreenEvent());
-                                      },
-                                    ),
-                                      onLongPress: (){
-                                        appVM.createReport();
-                                        appVM.addError("Bug Report");
-                                      },
-                                    ),
-                                    const SizedBox(height: 10),
-                                    InkWell(
-                                      onTap: (){
-                                        appVM.mainScreenState = null;
-                                        appVM.mainCircles.clear();
-                                        appVM.currentCircles.clear();
-                                        BlocProvider.of<NavigationBloc>(context)
-                                            .add(NavigateToCardsScreenEvent());
-                                      },
-                                      child: Container(
-                                        height: (MediaQuery.of(context).size.height-MediaQuery.of(context).size.width)*0.1,
-                                        width: (MediaQuery.of(context).size.height-MediaQuery.of(context).size.width)*0.1,
-                                        child: MoonWidget(
-                                          date: parseDateString(appVM.mainScreenState?.moon.date??"01.01.2020")??DateTime.now(),
-                                          size: (MediaQuery.of(context).size.height-MediaQuery.of(context).size.width)*0.1,
-                                          resolution: ((MediaQuery.of(context).size.height-MediaQuery.of(context).size.width)*0.1)*100,
-                                        ),
-                                      ),
-                                    )
-                                  ],
-                                )
-                            ),
-                            Expanded(
-                                flex: 5,
-                                child: SelectorTextWidget(appViewModel: appVM, maxHeight: maxHeight,)//Text("${appVM.hint}")
-                            )
-                          ],
-                        ),
-                        const SizedBox(height: 10),
                         Expanded(child:
                         LayoutBuilder(
                           builder: (BuildContext context, BoxConstraints constraints) {
@@ -367,7 +309,70 @@ class _MainScreenState extends State<MainScreen>{
                       ],
                     ),
                   ),
-                  CircularDraggableCircles(key: _CDWidgetKey,circles: appVM.currentCircles, size: MediaQuery.of(context).size.width-20, center: Pair(key: MediaQuery.of(context).size.width/2, value: MediaQuery.of(context).size.height*0.50), clearData: clearData,),
+                  CircularDraggableCircles(key: _CDWidgetKey,circles: appVM.currentCircles, size: MediaQuery.of(context).size.width-20, center: Pair(key: MediaQuery.of(context).size.width/2, value: MediaQuery.of(context).size.height*0.53), clearData: clearData,),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(0, 16.0, 8, 16),
+                    child: SizedBox(
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(width: 16),
+                          Expanded(
+                              flex: 5,
+                              child: SelectorTextWidget(appViewModel: appVM, maxHeight: maxHeight,)//Text("${appVM.hint}")
+                          ),
+                          const SizedBox(width: 32),
+                          Expanded(
+                              flex: 1,
+                              child: Column(
+                                children: [
+                                  InkWell(child:IconButton(
+                                    style: ButtonStyle(
+                                        backgroundColor: MaterialStateProperty.all(Colors.white),
+                                        shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                                            RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(8.0),
+                                            )
+                                        )),
+                                    icon: const Icon(Icons.menu, size: 30,),
+                                    onPressed: () {
+                                      appVM.mainCircles.clear();
+                                      BlocProvider.of<NavigationBloc>(context)
+                                          .add(NavigateToProfileScreenEvent());
+                                    },
+                                  ),
+                                    onLongPress: (){
+                                      appVM.createReport();
+                                      appVM.addError("Bug Report");
+                                    },
+                                  ),
+                                  const SizedBox(height: 10),
+                                  InkWell(
+                                    onTap: (){
+                                      appVM.mainScreenState = null;
+                                      appVM.mainCircles.clear();
+                                      appVM.currentCircles.clear();
+                                      BlocProvider.of<NavigationBloc>(context)
+                                          .add(NavigateToCardsScreenEvent());
+                                    },
+                                    child: Container(
+                                      height: (MediaQuery.of(context).size.height-MediaQuery.of(context).size.width)*0.1,
+                                      width: (MediaQuery.of(context).size.height-MediaQuery.of(context).size.width)*0.1,
+                                      child: MoonWidget(
+                                        date: parseDateString(appVM.mainScreenState?.moon.date??"01.01.2020")??DateTime.now(),
+                                        size: (MediaQuery.of(context).size.height-MediaQuery.of(context).size.width)*0.1,
+                                        resolution: ((MediaQuery.of(context).size.height-MediaQuery.of(context).size.width)*0.1)*100,
+                                      ),
+                                    ),
+                                  )
+                                ],
+                              )
+                          ),
+                          const SizedBox(width: 16)
+                        ],
+                      ),
+                    ),
+                  ),
                 ],)),
               bottomNavigationBar: BottomBar(
                 onAimsTap: (){
@@ -434,66 +439,5 @@ class _MainScreenState extends State<MainScreen>{
 
     // Вернуть null в случае некорректного формата строки
     return null;
-  }
-}
-
-class SelectorTextWidget extends StatefulWidget {
-  final AppViewModel appViewModel;
-  final double maxHeight;
-
-  SelectorTextWidget({required this.appViewModel, required this.maxHeight});
-
-  @override
-  _SelectorTextWidgetState createState() => _SelectorTextWidgetState();
-}
-
-class _SelectorTextWidgetState extends State<SelectorTextWidget> {
-  bool disposed = true;
-  @override
-  void initState() {
-    super.initState();
-    widget.appViewModel.onChange = () {
-      if(!disposed)setState(() {}); // Вызываем setState для перестройки виджета
-    };
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    disposed = false;
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: const BorderRadius.all(Radius.circular(10.0)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.5),
-            spreadRadius: 3,
-            blurRadius: 7, // changes position of shadow
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Padding(padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
-          child: Text(widget.appViewModel.hint, maxLines: widget.maxHeight~/22)),
-          const Divider(color: AppColors.backgroundColor, height: 8,),
-          TextButton(onPressed: (){
-            showOverlayedDetails(context, widget.appViewModel.hint);
-          }, child: const Row(
-            children: [
-              GradientText("Показать всё", gradient: LinearGradient(colors: [AppColors.gradientStart, AppColors.gradientEnd]),),
-              Spacer(),
-              GradientText(">", gradient: LinearGradient(colors: [AppColors.gradientStart, AppColors.gradientEnd]),)
-            ],
-          ))
-        ],
-      ),
-    );
-  }
-
-  @override
-  void dispose() {
-    disposed=true;
-    super.dispose();
   }
 }

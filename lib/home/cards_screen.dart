@@ -6,12 +6,10 @@ import 'package:wishmap/common/connectivity.dart';
 import 'package:wishmap/common/speedTest_Overlay.dart';
 import 'package:wishmap/data/models.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:wishmap/dialog/actualizeMoonDialog.dart';
 import 'package:wishmap/navigation/navigation_block.dart';
 import 'package:wishmap/res/colors.dart';
 
 import '../ViewModel.dart';
-import '../common/moon_widget.dart';
 
 class CardsScreen extends StatefulWidget {
   const CardsScreen({super.key});

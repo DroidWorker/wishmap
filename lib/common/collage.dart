@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:capped_progress_indicator/capped_progress_indicator.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:wishmap/interface_widgets/galleriPhotoContainer.dart';
 
 import '../res/colors.dart';
 
@@ -131,7 +132,7 @@ Widget buildTripleReverce(double leftwidth, double rightwidth, Map<Uint8List, in
               cornerRadius: 0,
             ),): Image.memory(images.keys.toList()[0], fit: BoxFit.cover, color: !filtered?null:Colors.redAccent),
         ),
-      )
+      ),
     ],
   );
 }

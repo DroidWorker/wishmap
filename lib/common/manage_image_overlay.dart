@@ -3,8 +3,10 @@ import 'dart:typed_data';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:wishmap/interface_widgets/colorButton.dart';
 import 'package:wishmap/repository/photosSearch.dart';
 
+import '../interface_widgets/outlined_button.dart';
 import '../res/colors.dart';
 
 Future<Uint8List?> showOverlayedImageManager(BuildContext context, String url, {int mode = 0, Uint8List? image}) {
@@ -17,6 +19,7 @@ Future<Uint8List?> showOverlayedImageManager(BuildContext context, String url, {
   });
 
   overlayEntry = OverlayEntry(
+    opaque: true,
     builder: (context) => myOverlay,
   );
 
@@ -40,56 +43,46 @@ class _MyOverlayState extends State<MyImageManageOverlay> {
   @override
   Widget build(BuildContext context) {
     return Positioned.fill(
-      child: Material(
-          color: Color.fromARGB(180, 22, 22, 22),
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                widget.image==null?CachedNetworkImage(
-                  imageUrl: widget.url,
-                  placeholder: (context, url) => const CircularProgressIndicator(),
-                  errorWidget: (context, url, error) => const Icon(Icons.error),
-                  fit: BoxFit.cover,
-                ):Image.memory(widget.image!, fit: BoxFit.cover),
-                const SizedBox(height: 10),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    TextButton(onPressed: (){widget.onClose(null);},
-                        style: TextButton.styleFrom(
-                          backgroundColor: AppColors.greyBackButton,
-                          shape: const RoundedRectangleBorder(
-                            borderRadius: BorderRadius.all(Radius.circular(10)),
-                          ),
-                        ),
-                        child: const Text("Отменить", textAlign: TextAlign.center, style: TextStyle(fontSize:10, color: Colors.black))),
-                    widget.mode==0?TextButton(onPressed: () async {
-                      final result = await GRepository.loadImage(widget.url);
-                      widget.onClose(result);
-                    },
-                        style: TextButton.styleFrom(
-                          backgroundColor: AppColors.greyBackButton,
-                          shape: const RoundedRectangleBorder(
-                            borderRadius: BorderRadius.all(Radius.circular(10)),
-                          ),
-                        ),
-                        child: const Text("Добавить в мои образы", textAlign: TextAlign.center, style: TextStyle(fontSize:10, color: Colors.black))):
-                    TextButton(onPressed: () async {
-                      widget.onClose(Uint8List(0));
-                    },
-                        style: TextButton.styleFrom(
-                          backgroundColor: AppColors.greyBackButton,
-                          shape: const RoundedRectangleBorder(
-                            borderRadius: BorderRadius.all(Radius.circular(10)),
-                          ),
-                        ),
-                        child: const Text("Удалить", textAlign: TextAlign.center, style: TextStyle(fontSize:10, color: Colors.black)))
-                  ],
-                )
-              ],
-            ),
-          )
+      child: SafeArea(
+        child: Material(
+            color: AppColors.backgroundColor,
+            child: Center(
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.keyboard_arrow_left, size: 24,),
+                        onPressed: () => widget.onClose(null),
+                      ),
+                      const Text("Добавить образ", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),),
+                      const SizedBox(width: 24)
+                    ],
+                  ),
+                  const Spacer(),
+                  widget.image==null?ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: CachedNetworkImage(
+                    imageUrl: widget.url,
+                    placeholder: (context, url) => const CircularProgressIndicator(color: AppColors.darkGrey,),
+                    errorWidget: (context, url, error) => const Icon(Icons.error),
+                    fit: BoxFit.cover,
+                  )):ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: Image.memory(widget.image!, fit: BoxFit.cover)),
+                  const SizedBox(height: 16),
+                  const Spacer(),
+                  ColorRoundedButton(widget.mode==0?"Добавить":"Удалить", c: widget.mode==1?AppColors.buttonBackRed:null, () async {
+                    final result = widget.image ?? await GRepository.loadImage(widget.url);
+                    widget.onClose(result);
+                  }),
+                  const SizedBox(height: 8),
+                  OutlinedGradientButton("Отмена", () => widget.onClose(null)),
+                ],
+              ),
+            )
+        ),
       ),
     );
   }
