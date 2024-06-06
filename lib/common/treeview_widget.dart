@@ -12,9 +12,10 @@ class MyTreeView extends StatefulWidget {
   final List<MyTreeNode> roots;
   final bool applyColorChangibg;
   bool fillWidth = false;
+  final bool alignRight;
   final Function(int id, String type) onTap;
   final Function(int id, String type)? onDoubleTap;
-  MyTreeView({super.key, required this.roots, required this.onTap, this.onDoubleTap, this.applyColorChangibg = true, this.fillWidth=false});
+  MyTreeView({super.key, required this.roots, required this.onTap, this.onDoubleTap, this.applyColorChangibg = true, this.fillWidth=false, this.alignRight=false});
 
   @override
   State<MyTreeView> createState() => MyTreeViewState();
@@ -94,12 +95,29 @@ class MyTreeViewState extends State<MyTreeView> {
 
   List<Widget> buildTree() {
     List<Widget> items = [];
+    List<String> path = [];
+    int curLvl = -1;
     for (int i = 0; i < treeEntries.length; i++) {
       items.add(
         ValueListenableBuilder<double>(
           valueListenable: paddingNotifiers[i],
           builder: (context, padding, _) {
+            String curPath = treeEntries[i].level!=0?path.join(">"):"";
+            curLvl = treeEntries[i].level;
+            if(treeEntries.length>i+1) {
+              if (curLvl < treeEntries[i + 1].level&&curLvl!=0) {
+                path.add(treeEntries[i].node.title);
+              } else if (treeEntries[i+1].level < curLvl) {
+                final diff = curLvl - treeEntries[i+1].level;
+                for (var i = 0; i < diff; i++) {
+                  path.removeLast();
+                }
+              } else if (curLvl < 1) {
+                path = [treeEntries[i].node.title];
+              }
+            }
             return MyTreeTile(
+              path: curPath,
               padding: padding,
               controller: scontroller,
               fillWidth: widget.fillWidth,
@@ -133,6 +151,7 @@ class MyTreeViewState extends State<MyTreeView> {
 class MyTreeTile extends StatelessWidget {
   const MyTreeTile({
     Key? key,
+    required this.path,
     required this.controller,
     required this.padding,
     required this.fillWidth,
@@ -142,6 +161,7 @@ class MyTreeTile extends StatelessWidget {
     this.onDoubleTap
   }) : super(key: key);
 
+  final String path;
   final bool applyColorChanging;
   final ScrollController controller;
   final bool fillWidth;
@@ -178,7 +198,7 @@ class MyTreeTile extends StatelessWidget {
                                   ),
                                   child: Center(child: Text(entry.node.title, maxLines: 2, style: const TextStyle(fontSize: 10))),
                                 ):Container(
-                                  height: 25,
+                                  height: fillWidth?50:25,
                                   decoration: const BoxDecoration(
                                       color: Colors.white,
                                     borderRadius: BorderRadius.all(Radius.circular(6))
@@ -187,42 +207,65 @@ class MyTreeTile extends StatelessWidget {
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       const SizedBox(width: 8),
-                                      Column(
+                                      fillWidth?Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            path.isNotEmpty?SingleChildScrollView(scrollDirection: Axis.horizontal, reverse: true, child: Text(path, maxLines: 1, style: const TextStyle(color: AppColors.textLightGrey))):
+                                            const Text("Желание", style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
+                                            Text(
+                                                entry.node.title,
+                                                maxLines: 1,
+                                                style: entry.node.noClickable
+                                                    ? const TextStyle()
+                                                    : const TextStyle( color: Colors.black, fontWeight: FontWeight.w500),
+                                              ),
+                                          ],
+                                        ),
+                                      ):Column(
+                                        mainAxisAlignment: MainAxisAlignment.start,
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
-                                          //Text("data"),
                                           Text(
-                                              entry.node.title,
-                                              maxLines: 1,
-                                              style: entry.node.noClickable
-                                                  ? const TextStyle()
-                                                  : const TextStyle( color: Colors.black12),
-                                            ),
+                                            entry.node.title,
+                                            maxLines: 1,
+                                            style: entry.node.noClickable
+                                                ? const TextStyle()
+                                                : const TextStyle( color: Colors.black, fontWeight: FontWeight.w500),
+                                          ),
                                         ],
                                       ),
-                                      const SizedBox(width: 8),
-                                      Center(
-                                        child: entry.node.type == "w"
-                                            ? (entry.node.isHidden
-                                            ? Image.asset('assets/icons/love5110868.png', width: 16, height: 16,)
-                                            : entry.node.isChecked
-                                            ? Image.asset('assets/icons/wish_done.png', width: 16, height: 16,)
-                                            : !entry.node.isActive
-                                            ? Image.asset('assets/icons/wish_unactive.png', width: 16, height: 16)
-                                            : Image.asset('assets/icons/wish_active.png', width: 16, height: 16))
-                                            : (entry.node.type == "a"
-                                            ? (entry.node.isChecked
-                                            ? Image.asset('assets/icons/target_done.png', width: 16, height: 16)
-                                            : entry.node.isActive
-                                            ? Image.asset('assets/icons/target_active.png', width: 16, height: 16)
-                                            : Image.asset('assets/icons/target_unactive.png', width: 16, height: 16))
-                                            : (entry.node.type == "t"
-                                            ? (entry.node.isChecked
-                                            ? Image.asset('assets/icons/task_done.png', width: 16, height: 16)
-                                            : entry.node.isActive
-                                            ? Image.asset('assets/icons/task_active.png', width: 16, height: 16)
-                                            : Image.asset('assets/icons/task_unactive.png', width: 16, height: 16))
-                                            : Container())),
+                                      if(fillWidth)const SizedBox(width: 8),
+                                      Container(
+                                        height: fillWidth?38.0:null, width: fillWidth?38.0:null,
+                                        decoration: fillWidth?BoxDecoration(
+                                          color: AppColors.lightGrey, // Серый цвет фона
+                                          borderRadius: BorderRadius.circular(10), // Закругленные края
+                                        ):null,
+                                        child: Center(
+                                          child: entry.node.type == "w"
+                                              ? (entry.node.isHidden
+                                              ? Image.asset('assets/icons/love5110868.png', width: 16, height: 16,)
+                                              : entry.node.isChecked
+                                              ? Image.asset('assets/icons/wish_done.png', width: 16, height: 16,)
+                                              : !entry.node.isActive
+                                              ? Image.asset('assets/icons/wish_unactive.png', width: 16, height: 16)
+                                              : Image.asset('assets/icons/wish_active.png', width: 16, height: 16))
+                                              : (entry.node.type == "a"
+                                              ? (entry.node.isChecked
+                                              ? Image.asset('assets/icons/target_done.png', width: 16, height: 16)
+                                              : entry.node.isActive
+                                              ? Image.asset('assets/icons/target_active.png', width: 16, height: 16)
+                                              : Image.asset('assets/icons/target_unactive.png', width: 16, height: 16))
+                                              : (entry.node.type == "t"
+                                              ? (entry.node.isChecked
+                                              ? Image.asset('assets/icons/task_done.png', width: 16, height: 16)
+                                              : entry.node.isActive
+                                              ? Image.asset('assets/icons/task_active.png', width: 16, height: 16)
+                                              : Image.asset('assets/icons/task_unactive.png', width: 16, height: 16))
+                                              : Container())),
+                                        ),
                                       ),
                                       const SizedBox(width: 8),
                                     ],

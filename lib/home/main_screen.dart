@@ -5,6 +5,7 @@ import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
 import 'package:wishmap/common/bottombar.dart';
 import 'package:wishmap/common/detailsOverlay.dart';
@@ -140,7 +141,7 @@ class _MainScreenState extends State<MainScreen>{
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               IconButton(
-                                icon: Image.asset('assets/icons/prev.png', height: 35, width: 35),
+                                icon: SvgPicture.asset('assets/icons/prev.svg', height: 20, width: 20),
                                 onPressed: () async {
                                   final audioUrl = await appVM.getAudio();
                                   if(audioUrl.isEmpty)return;
@@ -166,7 +167,7 @@ class _MainScreenState extends State<MainScreen>{
                               ),
                               const SizedBox(width: 5),
                               IconButton(
-                                icon: isPauseIcon?Image.asset('assets/icons/plau.png', height: 35, width: 35):Image.asset('assets/icons/pause.png', height: 35, width: 35),
+                                icon: isPauseIcon?Image.asset('assets/icons/plau.png', height: 35, width: 35):SvgPicture.asset('assets/icons/pause.svg', height: 20, width: 20),
                                 onPressed: () async {
                                   if(!isPauseIcon){
                                     AudioPlayerManager().pause();
@@ -196,7 +197,7 @@ class _MainScreenState extends State<MainScreen>{
                               ),
                               const SizedBox(width: 5),
                               IconButton(
-                                icon: Image.asset('assets/icons/next.png', height: 35, width: 35),
+                                icon: SvgPicture.asset('assets/icons/next.svg', height: 20, width: 20),
                                 onPressed: () async {
                                   final audioUrl = await appVM.getAudio();
                                   if(audioUrl.isEmpty)return;

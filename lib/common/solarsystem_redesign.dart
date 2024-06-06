@@ -4,6 +4,7 @@ import 'dart:ui';
 
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:collection/collection.dart';
+import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
@@ -14,6 +15,7 @@ import 'package:flutter/physics.dart';
 
 import '../data/static.dart';
 import '../data/static_affirmations_women.dart';
+import '../interface_widgets/confetti_objs.dart';
 import '../navigation/navigation_block.dart';
 import 'customAutoSizeText.dart';
 
@@ -135,6 +137,10 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
   late AnimationController movingController;
   late AnimationController afterMovingController;
   late AnimationController showHideController;
+
+  late ConfettiController _controllerCenter;
+  List<ConfettiController> _radiusControllers = [];
+
   bool animationDirectionForward = true;
   //late Size screenSize;
   double startAngle = 0.0;
@@ -224,6 +230,7 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
     });
     final centerBottomOffset = widget.center.value-((widget.center.value/0.53)*0.03);
     lineStart=Offset((widget.center.key + (widget.size*0.25) * cos(1)), (centerBottomOffset + widget.size*0.06 * sin(1)));
+    _controllerCenter = ConfettiController(duration: const Duration(seconds: 4));
   }
   @override
   void dispose() {
@@ -232,6 +239,7 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
     movingController.dispose();
     afterMovingController.dispose();
     showHideController.dispose();
+    _controllerCenter.dispose();
     super.dispose();
   }
   void startInertia(double velocity) {
@@ -695,93 +703,113 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
                                 .map((entry) {
                               final index = entry.key;
                               final circle = entry.value;
+                              _radiusControllers.add(ConfettiController(duration: const Duration(seconds: 4)));
                               return Positioned(
                                   left: circlePositions[index].dx,
                                   top: circlePositions[index].dy,
-                                  child:  AnimatedBuilder(animation: movingController,
-                                      child: CircleWidget(
-                                        itemId: index,
-                                        circle: circle,
-                                        size: widget.size,
-                                        center: widget.center,
-                                        onRotate: (angle) {
-                                          print("oncircletap0");
-                                          lastdirection = angle;
-                                          lastRotation.value += lastdirection;
-                                        },
-                                        onEndRotate: (details) {
-                                          print("oncircletap1");
-                                          startInertia(
-                                              ((details.velocity.pixelsPerSecond.dx +
-                                                  details.velocity.pixelsPerSecond.dy)
-                                                  .abs() / 2) *
-                                                  (lastdirection < 0 ? (-1) : 1));
-                                        },
-                                        startMoving: (id, itemId) {
-                                          print("oncircletap2 - $allowClick");
-                                          if(allowClick) {
-                                            print(
-                                                "allow stat change false - start moving");
-                                            allowClick = false;
-                                            animationDirectionForward = true;
-                                            initAnim(id, itemId);
-                                            if (!widget.circles[itemId].isActive) {
-                                              itemId < 900
-                                                  ? appViewModel.hint =
-                                              textSphereActualize[Random().nextInt(5)]
-                                                  :
-                                              appViewModel.hint =
-                                              textWishActualize[Random().nextInt(15)];
-                                            } else {
-                                              appViewModel.hint =
-                                              "Ты в карте сферы. Сфера — это целая область жизни. Если ты хочешь развить данную сферу, задай себе вопрос: “что я хочу изменить в этой сфере, каковы мои желания?”. Отвечая на этот вопрос, создавай желания, исполнение которых качественно изменит данную сферу. Создавай, выбирай аффирмации и управляй своим будущим. Чтобы создать желание, просто нажми «+» на орбите, что вокруг сферы.";
-                                            }
-
-                                          }
-                                        },
-                                        doubleTap: (id, parentId){
-                                          print("oncircletap3");
-                                          appViewModel.mainCircles = centralCircles;
-                                          if(allowClick&&!entry.value.isActive&&!entry.value.isChecked&&(appViewModel.settings.fastActMainSphere||appViewModel.settings.fastActSphere||appViewModel.settings.fastActWish)){
-                                            if(id==0){
-                                              if(appViewModel.settings.fastActMainSphere){
-                                                appViewModel.activateSphereWish(id, true);
-                                                widget.circles.where((element) => element.id==id).firstOrNull?.isActive=true;
-                                                setState(() { });
-                                              }else appViewModel.addError("Режим быстрой актуализации отключен в настройках");
-                                            }else if(parentId==0){
-                                              if(appViewModel.settings.fastActSphere){
-                                                appViewModel.activateSphereWish(id, true);
-                                                widget.circles.where((element) => element.id==id).firstOrNull?.isActive=true;
-                                                setState(() { });
-                                              }else appViewModel.addError("Режим быстрой актуализации едоступен");
-                                            }else if(parentId!=0){
-                                              if(appViewModel.settings.fastActWish&&(centralCircles.lastOrNull?.isActive==true||(appViewModel.mainScreenState!.allCircles.firstWhereOrNull((element) => element.id==parentId)?.parenId==0&&appViewModel.settings.sphereActualizingMode==1)||(appViewModel.settings.wishActualizingMode==1&&(appViewModel.settings.sphereActualizingMode==1||appViewModel.isParentSphereActive(id))))){
-                                                appViewModel.activateSphereWish(id, true);
-                                                widget.circles.where((element) => element.id==id).firstOrNull?.isActive=true;
-                                                centralCircles.forEach((element) {element.isActive=true;});
-                                                appViewModel.mainCircles = centralCircles;
-                                                setState(() { });
-                                              }else appViewModel.addError("Актуализация невозможна");
-                                            }
-                                          }else{
-                                            appViewModel.cachedImages.clear();
-                                            appViewModel.wishScreenState = null;
-                                            appViewModel.startWishScreen(
-                                                entry.value.id, 0, false);
-                                            appViewModel.mainCircles = centralCircles;
-                                            BlocProvider.of<NavigationBloc>(context)
-                                                .add(NavigateToWishScreenEvent());
-                                          }
-                                        },
+                                  child: Stack(
+                                    children: [
+                                      ConfettiWidget(
+                                        confettiController: _radiusControllers[index],
+                                        blastDirectionality: BlastDirectionality
+                                            .explosive, // don't specify a direction, blast randomlyart again as soon as the animation is finished
+                                        colors: const [
+                                          Colors.green,
+                                          Colors.blue,
+                                          Colors.pink,
+                                          Colors.orange,
+                                          Colors.purple
+                                        ], // manually specify the colors to be used
+                                        createParticlePath: drawStar, // define a custom shape/path.
                                       ),
-                                      builder: (_, child){
-                                    return Opacity(
-                                        opacity: 1-movingController.value,
-                                        child: Transform.rotate(angle: -lastRotation.value,
-                                          child: child!)
-                                    );
-                                  }
+                                      AnimatedBuilder(animation: movingController,
+                                        child: CircleWidget(
+                                          itemId: index,
+                                          circle: circle,
+                                          size: widget.size,
+                                          center: widget.center,
+                                          onRotate: (angle) {
+                                            print("oncircletap0");
+                                            lastdirection = angle;
+                                            lastRotation.value += lastdirection;
+                                          },
+                                          onEndRotate: (details) {
+                                            print("oncircletap1");
+                                            startInertia(
+                                                ((details.velocity.pixelsPerSecond.dx +
+                                                    details.velocity.pixelsPerSecond.dy)
+                                                    .abs() / 2) *
+                                                    (lastdirection < 0 ? (-1) : 1));
+                                          },
+                                          startMoving: (id, itemId) {
+                                            print("oncircletap2 - $allowClick");
+                                            if(allowClick) {
+                                              print(
+                                                  "allow stat change false - start moving");
+                                              allowClick = false;
+                                              animationDirectionForward = true;
+                                              initAnim(id, itemId);
+                                              if (!widget.circles[itemId].isActive) {
+                                                itemId < 900
+                                                    ? appViewModel.hint =
+                                                textSphereActualize[Random().nextInt(5)]
+                                                    :
+                                                appViewModel.hint =
+                                                textWishActualize[Random().nextInt(15)];
+                                              } else {
+                                                appViewModel.hint =
+                                                "Ты в карте сферы. Сфера — это целая область жизни. Если ты хочешь развить данную сферу, задай себе вопрос: “что я хочу изменить в этой сфере, каковы мои желания?”. Отвечая на этот вопрос, создавай желания, исполнение которых качественно изменит данную сферу. Создавай, выбирай аффирмации и управляй своим будущим. Чтобы создать желание, просто нажми «+» на орбите, что вокруг сферы.";
+                                              }
+
+                                            }
+                                          },
+                                          doubleTap: (id, parentId){
+                                            print("oncircletap3");
+                                            appViewModel.mainCircles = centralCircles;
+                                            if(allowClick&&!entry.value.isActive&&!entry.value.isChecked&&(appViewModel.settings.fastActMainSphere||appViewModel.settings.fastActSphere||appViewModel.settings.fastActWish)){
+                                              if(id==0){
+                                                if(appViewModel.settings.fastActMainSphere){
+                                                  appViewModel.activateSphereWish(id, true);
+                                                  widget.circles.where((element) => element.id==id).firstOrNull?.isActive=true;
+                                                  setState(() { });
+                                                  _radiusControllers[index].play();
+                                                }else appViewModel.addError("Режим быстрой актуализации отключен в настройках");
+                                              }else if(parentId==0){
+                                                if(appViewModel.settings.fastActSphere){
+                                                  appViewModel.activateSphereWish(id, true);
+                                                  widget.circles.where((element) => element.id==id).firstOrNull?.isActive=true;
+                                                  _radiusControllers[index].play();
+                                                  setState(() { });
+                                                }else appViewModel.addError("Режим быстрой актуализации едоступен");
+                                              }else if(parentId!=0){
+                                                if(appViewModel.settings.fastActWish&&(centralCircles.lastOrNull?.isActive==true||(appViewModel.mainScreenState!.allCircles.firstWhereOrNull((element) => element.id==parentId)?.parenId==0&&appViewModel.settings.sphereActualizingMode==1)||(appViewModel.settings.wishActualizingMode==1&&(appViewModel.settings.sphereActualizingMode==1||appViewModel.isParentSphereActive(id))))){
+                                                  appViewModel.activateSphereWish(id, true);
+                                                  widget.circles.where((element) => element.id==id).firstOrNull?.isActive=true;
+                                                  centralCircles.forEach((element) {element.isActive=true;});
+                                                  appViewModel.mainCircles = centralCircles;
+                                                  _radiusControllers[index].play();
+                                                  setState(() { });
+                                                }else appViewModel.addError("Актуализация невозможна");
+                                              }
+                                            }else{
+                                              appViewModel.cachedImages.clear();
+                                              appViewModel.wishScreenState = null;
+                                              appViewModel.startWishScreen(
+                                                  entry.value.id, 0, false);
+                                              appViewModel.mainCircles = centralCircles;
+                                              BlocProvider.of<NavigationBloc>(context)
+                                                  .add(NavigateToWishScreenEvent());
+                                            }
+                                          },
+                                        ),
+                                        builder: (_, child){
+                                      return Opacity(
+                                          opacity: 1-movingController.value,
+                                          child: Transform.rotate(angle: -lastRotation.value,
+                                            child: child!)
+                                      );
+                                    }
+                                    ),]
                                   )
                               );
                             }),
@@ -790,28 +818,110 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
                                 top: widget.center.value-50,
                                 child: GestureDetector(
                                   onTap: (){
-                                    if (centralCircles.last.id == 0) {
-                                      appViewModel.cachedImages.clear();
-                                      appViewModel.startMainsphereeditScreen();
-                                      BlocProvider.of<NavigationBloc>(context)
-                                          .add(NavigateToMainSphereEditScreenEvent());
+                                    print("oncentertap");
+                                    _timer?.cancel();
+                                    touchCount++;
+                                    final index = centralCircles.length-1;
+                                    final id = centralCircles.last.id;
+                                    if (touchCount>1) {
+                                      if(allowClick){
+                                        final parentId = appViewModel.mainScreenState!.allCircles.firstWhereOrNull((element) => element.id==id)?.parenId;
+                                        if(id==0){
+                                          if(appViewModel.settings.fastActMainSphere&&centralCircles[index].isActive==false){
+                                            appViewModel.activateSphereWish(id, true);
+                                            widget.circles.where((element) => element.id==id).firstOrNull?.isActive=true;
+                                            centralCircles.firstOrNull?.isActive=true;
+                                            appViewModel.mainCircles = centralCircles;
+                                            setState(() { });
+                                          }else {
+                                            appViewModel.cachedImages.clear();
+                                            appViewModel.startMainsphereeditScreen();
+                                            BlocProvider.of<NavigationBloc>(context)
+                                                .add(NavigateToMainSphereEditScreenEvent());
+                                          }
+                                        }else if(parentId==0){
+                                          if(appViewModel.settings.fastActSphere&&centralCircles[index].isActive==false){
+                                            appViewModel.activateSphereWish(id, true);
+                                            centralCircles.forEach((element) {element.isActive=true;});
+                                            appViewModel.mainCircles = centralCircles;
+                                            setState(() { });
+                                          }else {
+                                            appViewModel.cachedImages.clear();
+                                            appViewModel.wishScreenState = null;
+                                            appViewModel.startWishScreen(
+                                                centralCircles[index].id, 0, false);
+                                            appViewModel.mainCircles = centralCircles;
+                                            BlocProvider.of<NavigationBloc>(context)
+                                                .add(NavigateToWishScreenEvent());
+                                          };
+                                        }else if(parentId!=0){
+                                          if(centralCircles[index].isActive==false&&centralCircles[index].isChecked==false&&appViewModel.settings.fastActWish&&(centralCircles[centralCircles.length-2].isActive==true||(appViewModel.mainScreenState!.allCircles.firstWhereOrNull((element) => element.id==parentId)?.parenId==0&&appViewModel.settings.sphereActualizingMode==1)||(appViewModel.settings.wishActualizingMode==1&&appViewModel.isParentSphereActive(id))||(appViewModel.settings.sphereActualizingMode==1&&appViewModel.settings.wishActualizingMode==1))){
+                                            appViewModel.activateSphereWish(id, true);
+                                            widget.circles.where((element) => element.id==id).firstOrNull?.isActive=true;
+                                            centralCircles.forEach((element) {element.isActive=true;});
+                                            appViewModel.mainCircles = centralCircles;
+                                            setState(() { });
+                                          }else {
+                                            appViewModel.cachedImages.clear();
+                                            appViewModel.wishScreenState = null;
+                                            appViewModel.startWishScreen(
+                                                centralCircles[index].id, 0, false);
+                                            appViewModel.mainCircles = centralCircles;
+                                            BlocProvider.of<NavigationBloc>(context)
+                                                .add(NavigateToWishScreenEvent());
+                                          }
+                                        }
+                                        _controllerCenter.play();
+                                      }
+                                      touchCount=0;
                                     } else {
-                                      appViewModel.cachedImages.clear();
-                                      appViewModel.wishScreenState = null;
-                                      appViewModel.startWishScreen(
-                                          centralCircles.last.id, 0, false);
-                                      appViewModel.mainCircles = centralCircles;
-                                      BlocProvider.of<NavigationBloc>(context)
-                                          .add(NavigateToWishScreenEvent());
+                                      _timer=Timer(const Duration(milliseconds: 150), () {
+                                        if(allowClick) {
+                                          print("allow stat change false - central circle tap");
+                                          allowClick = false;
+                                          if (centralCircles.length - 1 != index) {
+                                            animationDirectionForward = false;
+                                            widget.circles = vm?.openSphere(id) ?? [];
+                                            initAnim(centralCircles.last.id, widget.circles.indexWhere((element) => element.id == centralCircles.last.id));
+                                          } else if (centralCircles[index].id == 0) {
+                                            appViewModel.cachedImages.clear();
+                                            appViewModel.startMainsphereeditScreen();
+                                            BlocProvider.of<NavigationBloc>(context)
+                                                .add(NavigateToMainSphereEditScreenEvent());
+                                          } else {
+                                            appViewModel.cachedImages.clear();
+                                            appViewModel.wishScreenState = null;
+                                            appViewModel.startWishScreen(
+                                                centralCircles[index].id, 0, false);
+                                            appViewModel.mainCircles = centralCircles;
+                                            BlocProvider.of<NavigationBloc>(context)
+                                                .add(NavigateToWishScreenEvent());
+                                          }
+                                        }
+                                        touchCount=0;
+                                      });
                                     }
-                                  },
-                                  onDoubleTap: (){
-
                                   },
                                   child: Container(color: Colors.transparent, width: 100,
                                     height: 100,),
                                 )
-                            )
+                            ),
+                            Align(
+                              alignment: Alignment.center,
+                              child: ConfettiWidget(
+                                confettiController: _controllerCenter,
+                                blastDirectionality: BlastDirectionality
+                                    .explosive, // don't specify a direction, blast randomly
+                                colors: const [
+                                  Colors.green,
+                                  Colors.blue,
+                                  Colors.pink,
+                                  Colors.orange,
+                                  Colors.purple
+                                ], // manually specify the colors to be used
+                                createParticlePath: drawStar, // define a custom shape/path.
+                              ),
+                            ),
                           ],
                         )
                     );

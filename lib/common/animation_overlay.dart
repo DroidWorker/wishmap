@@ -6,10 +6,10 @@ import 'package:lottie/lottie.dart';
 
 import '../res/colors.dart';
 
-showOverlayedAnimations(BuildContext context) {
+showOverlayedAnimations(BuildContext context, String path, {bool fillBackground = false}) {
   OverlayEntry? overlayEntry;
 
-  var myOverlay = MyAnimationOverlay((){
+  var myOverlay = MyAnimationOverlay(path, fillBackground, (){
     overlayEntry?.remove();
   });
 
@@ -22,8 +22,10 @@ showOverlayedAnimations(BuildContext context) {
 
 class MyAnimationOverlay extends StatefulWidget{
   Function() onClose;
+  String path;
+  bool fillBackground;
 
-  MyAnimationOverlay(this.onClose, {super.key});
+  MyAnimationOverlay(this.path, this.fillBackground, this.onClose, {super.key});
 
   @override
   MyAnimationOverlayState createState() => MyAnimationOverlayState();
@@ -54,18 +56,19 @@ class MyAnimationOverlayState extends State<MyAnimationOverlay> with TickerProvi
     return Positioned.fill(
       child:  Center(
             child: Container(
-              width: 100,
-              height: 100,
-              color: AppColors.backgroundColor,
+              width: 300,
+              height: 300,
+              decoration: widget.fillBackground?BoxDecoration(
+                shape: BoxShape.circle,
+                  gradient: RadialGradient(radius: 0.3, colors: [Colors.grey.shade700, Colors.grey.shade400.withOpacity(0.0)])
+              ):null,
               child: Lottie.asset(
-                  'assets/lottie/testanim.json',
-                  width: 100,
-                  height: 100,
+                  widget.path,
+                  width: 300,
+                  height: 300,
                   fit: BoxFit.fill,
                   controller: controller,
                 onLoaded: (composition) {
-                  // Configure the AnimationController with the duration of the
-                  // Lottie file and start the animation.
                   controller
                     ..duration = composition.duration
                     ..forward();

@@ -8,6 +8,7 @@ import 'package:flutter/painting.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:keyboard_attachable/keyboard_attachable.dart';
 import 'package:provider/provider.dart';
@@ -64,7 +65,7 @@ class GalleryScreenState extends State<GalleryScreen>{
                     },
                       child: Padding(
                         padding: const EdgeInsets.all(8.0),
-                        child: Image.asset("assets/icons/trash.png", width: 28, height: 28),
+                        child: SvgPicture.asset("assets/icons/trash.svg", width: 28, height: 28),
                       )
                   ):const SizedBox(width: 44),
                 ],
@@ -364,34 +365,26 @@ class GalleryScreenState extends State<GalleryScreen>{
                   ],
                 )
               ),
-              if(MediaQuery.of(context).viewInsets.bottom!=0) SizedBox(height: 30,
-                child: FooterLayout(
-                  footer: Container(height: 30,color: Colors.white,alignment: Alignment.centerRight, child:
-                  GestureDetector(
-                    onTap: (){FocusManager.instance.primaryFocus?.unfocus();},
-                    child: const Text("готово", style: TextStyle(fontSize: 20),),
-                  )
-                    ,),
-                ),)
+              if(MediaQuery.of(context).viewInsets.bottom!=0) Align(
+                alignment: Alignment.topRight,
+                child: Container(height: 50, width: 50,
+                    margin: const EdgeInsets.fromLTRB(0, 0, 16, 16),
+                    alignment: Alignment.center,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white,
+                    ), child:
+                    GestureDetector(
+                      onTap: (){FocusManager.instance.primaryFocus?.unfocus();},
+                      child: const Icon(Icons.keyboard_hide_sharp, size: 30, color: AppColors.darkGrey,),
+                    )
+                ),
+              )
             ],
           ),
       ),
     );
   }
-
- /* screenNumber==2?Center(
-  child: GestureDetector(
-  onTap: () async {
-  Uint8List? imageBytes = await getImageFromCamera();
-
-  if (imageBytes != null) {
-  appViewModel.cachedImages.add(imageBytes);
-  BlocProvider.of<NavigationBloc>(context).handleBackPress();
-  }
-  },
-  child: const Icon(Icons.photo_camera, size: 90, color: Colors.black,),
-  )
-  )*/
 
   Future<Uint8List?> getImageFromCamera() async {
     final picker = ImagePicker();

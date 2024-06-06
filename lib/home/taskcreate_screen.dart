@@ -5,6 +5,8 @@ import 'package:provider/provider.dart';
 import '../ViewModel.dart';
 import '../common/EditTextOverlay.dart';
 import '../data/models.dart';
+import '../dialog/bottom_sheet_action.dart';
+import '../dialog/bottom_sheet_notify.dart';
 import '../interface_widgets/colorButton.dart';
 import '../navigation/navigation_block.dart';
 import '../res/colors.dart';
@@ -42,41 +44,23 @@ class TaskScreenState extends State<TaskScreen>{
                     icon: const Icon(Icons.keyboard_arrow_left, size: 28, color: AppColors.gradientStart),
                     onPressed: () {
                       if(text.text.isNotEmpty&&!taskCreateClicked){
-                        showDialog(context: context,
-                          builder: (BuildContext context) => AlertDialog(
-                            contentPadding: EdgeInsets.zero,
-                            shape: const RoundedRectangleBorder(
-                                borderRadius: BorderRadius.all(Radius.circular(32.0))),
-                            title: const Text('Внимание', textAlign: TextAlign.center,),
-                            content: const Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text("Вы изменили поля но не нажали 'Сохранить'", maxLines: 6, textAlign: TextAlign.center,),
-                                SizedBox(height: 4,),
-                                Divider(color: AppColors.dividerGreyColor,),
-                                SizedBox(height: 4,),
-                                Text("Сохранить изменения?", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),)
-                              ],
-                            ),
-                            actions: <Widget>[
-                              TextButton(
-                                onPressed: () async { Navigator.pop(context, 'OK');
+                        showModalBottomSheet<void>(
+                          context: context,
+                          isScrollControlled: true,
+                          builder: (BuildContext context) {
+                            return ActionBS('Внимание', "Вы изменили поля но не нажали 'Сохранить'\nСохранить изменения?", "Да", 'Нет',
+                                onOk: () async { Navigator.pop(context, 'OK');
                                 await onSaveClicked(appViewModel);
                                 BlocProvider.of<NavigationBloc>(context)
                                     .handleBackPress();
                                 },
-                                child: const Text('Да'),
-                              ),
-                              TextButton(
-                                onPressed: () { Navigator.pop(context, 'Cancel');
+                                onCancel: () { Navigator.pop(context, 'Cancel');
                                 BlocProvider.of<NavigationBloc>(context)
                                     .handleBackPress();
-                                },
-                                child: const Text('Нет'),
-                              ),
-                            ],
-                          ),
-                        );}else{
+                                });
+                          },
+                        );
+                        }else{
                         BlocProvider.of<NavigationBloc>(context)
                             .handleBackPress();
                       }
@@ -180,21 +164,13 @@ class TaskScreenState extends State<TaskScreen>{
   Future<void> onSaveClicked(AppViewModel appViewModel) async {
     if (text.text.isEmpty) {
       taskCreateClicked=false;
-      showDialog(context: context,
-        builder: (BuildContext context) =>
-            AlertDialog(
-              title: const Text('Заполните поля', textAlign: TextAlign.center,),
-              shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(32.0))),
-              actions: <Widget>[
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(context, 'OK');
-                  },
-                  child: const Text('OK'),
-                ),
-              ],
-            ),
+      showModalBottomSheet<void>(
+        context: context,
+        isScrollControlled: true,
+        builder: (BuildContext context) {
+          return NotifyBS('Заполните поля', "", 'OK',
+              onOk: () => Navigator.pop(context, 'OK'));
+        },
       );
     }else {
       int? taskId = await appViewModel.createTask(TaskData(id: 999,
@@ -202,21 +178,13 @@ class TaskScreenState extends State<TaskScreen>{
           text: text.text,
           description: description.text), widget.parentAimId);
       if (taskId != null) {
-        showDialog(context: context,
-          builder: (BuildContext c) =>
-              AlertDialog(
-                title: const Text('сохранено'),
-                shape: const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(32.0))),
-                actions: <Widget>[
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pop(c, 'OK');
-                    },
-                    child: const Text('OK'),
-                  ),
-                ],
-              ),
+        showModalBottomSheet<void>(
+          context: context,
+          isScrollControlled: true,
+          builder: (BuildContext context) {
+            return NotifyBS('сохранено', "", 'OK',
+                onOk: () => Navigator.pop(context, 'OK'));
+          },
         ).then((value) {
           BlocProvider.of<NavigationBloc>(context).removeLastFromBS();
           BlocProvider.of<NavigationBloc>(context)

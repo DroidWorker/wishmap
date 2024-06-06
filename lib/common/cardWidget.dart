@@ -9,21 +9,30 @@ class CardWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15.0), // Установите желаемый радиус скругления
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12.0),
+        color: Colors.white
       ),
-      color: data.color,
       margin: const EdgeInsets.all(4.0),
-        child: Center(
-            child: Column(
-              children: [
-                const SizedBox(height: 3,),
-                Text(data.emoji,style: const TextStyle(fontSize: 36),),
-                Text(data.title,style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                Text(data.description,style: const TextStyle(fontSize: 13))
-              ],
-            )),
+        child: Padding(
+          padding: const EdgeInsets.all(10.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 3,),
+                  Container(
+                    width: 40, height: 40,
+                    decoration: BoxDecoration(borderRadius: const BorderRadius.all(Radius.circular(7)), color: data.color),
+                      child: Center(child: Text(data.emoji,style: const TextStyle(fontSize: 26),))
+                  ),
+                  const SizedBox(height: 8),
+                  Text(data.title,style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 4),
+                  Text(data.description, maxLines: 3, overflow: TextOverflow.ellipsis, softWrap: true, style: const TextStyle(fontSize: 12))
+                ],
+              ),
+        ),
     );
   }
 }

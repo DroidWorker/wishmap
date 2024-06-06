@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:keyboard_attachable/keyboard_attachable.dart';
 import 'package:provider/provider.dart';
 import 'package:wishmap/common/treeview_widget.dart';
@@ -13,6 +14,8 @@ import '../common/bottombar.dart';
 import '../common/treeview_widget_v2.dart';
 import '../data/models.dart';
 import '../data/static.dart';
+import '../dialog/bottom_sheet_action.dart';
+import '../dialog/bottom_sheet_notify.dart';
 import '../navigation/navigation_block.dart';
 import '../res/colors.dart';
 
@@ -88,43 +91,25 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                               icon: const Icon(Icons.keyboard_arrow_left, size: 28, color: AppColors.gradientStart),
                               onPressed: () {
                                 if(ai!=null&&!ai!.isChecked&&isChanged){
-                                  showDialog(context: context,
-                                    builder: (BuildContext context) => AlertDialog(
-                                      contentPadding: EdgeInsets.zero,
-                                      shape: const RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.all(Radius.circular(32.0))),
-                                      title: const Text('Внимание', textAlign: TextAlign.center,),
-                                      content: const Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Text("Вы изменили поля но не нажали 'Сохранить'", maxLines: 6, textAlign: TextAlign.center,),
-                                          SizedBox(height: 4,),
-                                          Divider(color: AppColors.dividerGreyColor,),
-                                          SizedBox(height: 4,),
-                                          Text("Сохранить изменения?", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),)
-                                        ],
-                                      ),
-                                      actions: <Widget>[
-                                        TextButton(
-                                          onPressed: () async { Navigator.pop(context, 'OK');
+                                  showModalBottomSheet<void>(
+                                    context: context,
+                                    isScrollControlled: true,
+                                    builder: (BuildContext context) {
+                                      return ActionBS('Внимание', "Вы изменили поля но не нажали 'Сохранить'\nСохранить изменения?", "Да", 'Нет',
+                                          onOk: () async { Navigator.pop(context, 'OK');
                                           onSaveClicked(appVM, ai!);
                                           if(text.text.isNotEmpty) {
                                             BlocProvider.of<NavigationBloc>(context)
-                                              .handleBackPress();
+                                                .handleBackPress();
                                           }
                                           },
-                                          child: const Text('Да'),
-                                        ),
-                                        TextButton(
-                                          onPressed: () { Navigator.pop(context, 'Cancel');
+                                          onCancel: () { Navigator.pop(context, 'Cancel');
                                           BlocProvider.of<NavigationBloc>(context)
                                               .handleBackPress();
-                                          },
-                                          child: const Text('Нет'),
-                                        ),
-                                      ],
-                                    ),
-                                  );}else{
+                                          });
+                                    },
+                                  );
+                                  }else{
                                   BlocProvider.of<NavigationBloc>(context)
                                       .handleBackPress();
                                 }
@@ -138,54 +123,32 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                                   tapTargetSize: MaterialTapTargetSize.shrinkWrap
                                 ),
                                 onPressed: () async {
-                                  showDialog(context: context,
-                                    builder: (BuildContext c) => AlertDialog(
-                                      contentPadding: EdgeInsets.zero,
-                                      shape: const RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.all(Radius.circular(32.0))),
-                                      title: const Text('Внимание', textAlign: TextAlign.center,),
-                                      content: const Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Text("Задача будет удалена", maxLines: 4, textAlign: TextAlign.center,),
-                                          SizedBox(height: 4,),
-                                          Divider(color: AppColors.dividerGreyColor,),
-                                          SizedBox(height: 4,),
-                                          Text("Удалить?", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),)
-                                        ],
-                                      ),
-                                      actions: <Widget>[
-                                        TextButton(
-                                          onPressed: () { Navigator.pop(context, 'OK');
+                                  showModalBottomSheet<void>(
+                                    context: context,
+                                    isScrollControlled: true,
+                                    builder: (BuildContext context) {
+                                      return ActionBS('Внимание', "Задача будет удалена\nУдалить?", "Да", 'Нет',
+                                          onOk: () { Navigator.pop(context, 'OK');
                                           appVM.deleteTask(ai!.id ,ai!.parentId);
-                                          showDialog(context: context,
-                                            builder: (BuildContext context) => AlertDialog(
-                                              title: const Text('Удалена'),
-                                              shape: const RoundedRectangleBorder(
-                                                  borderRadius: BorderRadius.all(Radius.circular(32.0))),
-                                              actions: <Widget>[
-                                                TextButton(
-                                                  onPressed: () { Navigator.pop(context, 'OK');
-                                                  BlocProvider.of<NavigationBloc>(context).handleBackPress();},
-                                                  child: const Text('OK'),
-                                                ),
-                                              ],
-                                            ),
+                                          showModalBottomSheet<void>(
+                                            context: context,
+                                            isScrollControlled: true,
+                                            builder: (BuildContext context) {
+                                              return NotifyBS('Удалена', "", 'OK',
+                                                  onOk: () { Navigator.pop(context, 'OK');
+                                                  BlocProvider.of<NavigationBloc>(context).handleBackPress();}
+                                              );
+                                            },
                                           ).then((value) {
                                             BlocProvider.of<NavigationBloc>(context).handleBackPress();
                                           });
                                           },
-                                          child: const Text('Да'),
-                                        ),
-                                        TextButton(
-                                          onPressed: () { Navigator.pop(context, 'Cancel');},
-                                          child: const Text('Нет'),
-                                        ),
-                                      ],
-                                    ),
+                                          onCancel: () { Navigator.pop(context, 'Cancel');
+                                          });
+                                    },
                                   );
                                 },
-                                icon: Image.asset("assets/icons/trash.png", width: 28, height: 28),
+                                icon: SvgPicture.asset("assets/icons/trash.svg", width: 28, height: 28),
                             )
                           ],
                         ),
@@ -209,148 +172,124 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                               showCantChangeStatus();
                             } else {
                               if(isChanged) {
-                                showDialog(context: context,
-                                  builder: (BuildContext context) => AlertDialog(
-                                    contentPadding: EdgeInsets.zero,
-                                    shape: const RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.all(Radius.circular(32.0))),
-                                    title: const Text('Внимание', textAlign: TextAlign.center,),
-                                    content: const Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Text("Вы изменили поля но не нажали 'Сохранить'", maxLines: 6, textAlign: TextAlign.center,),
-                                        SizedBox(height: 4,),
-                                        Divider(color: AppColors.dividerGreyColor,),
-                                        SizedBox(height: 4,),
-                                        Text("Сохранить изменения перед выполнением задачи?", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),)
-                                      ],
-                                    ),
-                                    actions: <Widget>[
-                                      TextButton(
-                                        onPressed: () async { Navigator.pop(context, 'OK');
+                                showModalBottomSheet<void>(
+                                  context: context,
+                                  isScrollControlled: true,
+                                  builder: (BuildContext context) {
+                                    return ActionBS('Внимание', "Вы изменили поля но не нажали 'Сохранить'\nСохранить изменения перед выполнением задачи?", "Да", 'Нет',
+                                        onOk: () async { Navigator.pop(context, 'OK');
                                         if(await onSaveClicked(appVM, ai!)) {
                                           appVM.updateTaskStatus(
                                               ai!.id, !ai!.isChecked);
                                         }
                                         },
-                                        child: const Text('Да'),
-                                      ),
-                                      TextButton(
-                                        onPressed: () async {
+                                        onCancel: () async {
                                           Navigator.pop(context, 'Cancel');
                                           await appVM.updateTaskStatus(
                                               ai!.id, !ai!.isChecked);
                                           await appVM.getTask(ai?.id??0);
                                           text.text=appVM.currentTask!.text;
                                           description.text=appVM.currentTask!.text;
-                                        },
-                                        child: const Text('Нет'),
-                                      ),
-                                    ],
-                                  ),
+                                        });
+                                  },
                                 );
-
                               }else {
                                 appVM.updateTaskStatus(
                                     ai!.id, !ai!.isChecked);
-                                showDialog(context: context,
-                                  builder: (BuildContext context) =>
-                                      AlertDialog(
-                                        title: ai!.isChecked ? const Text(
-                                            'выполнена') : const Text(
-                                            ' не выполнена'),
-                                        shape: const RoundedRectangleBorder(
-                                            borderRadius: BorderRadius
-                                                .all(
-                                                Radius.circular(32.0))),
-                                        actions: <Widget>[
-                                          TextButton(
-                                            onPressed: () {
-                                              Navigator.pop(
-                                                  context, 'OK');
-                                            },
-                                            child: const Text('OK'),
-                                          ),
-                                        ],
-                                      ),
+                                showModalBottomSheet<void>(
+                                  context: context,
+                                  isScrollControlled: true,
+                                  builder: (BuildContext context) {
+                                    return NotifyBS(ai!.isChecked?'выполнена':"не выполнена", "", 'OK',
+                                        onOk: () => Navigator.pop(context, 'OK'));
+                                  },
                                 );
                               }
                             }
                           }),
                           const SizedBox(height: 16),
-                          TextField(
-                            onTap: (){
-                              if(ai!.isChecked&&!ai!.isActive) showUnavailable(text : "3адача выполнена в прошлой карте. Изменению не подлежит. Вы можете видеть ее в журнале задач в разделах 'выполненные' и 'все задачи', а также в иерархии цели и желания.\n\nВы можете удалить задачу. Если вам нужна подобная, просто создайте новую задачу.");
-                              else if(ai!.isChecked) {showUnavailable();}
-                              else if(!ai!.isActive) {showUnavailable(text : "Невозможно изменить неактуализированную задачу");}
-                              },
-                            controller: text,
-                            showCursor: true,
-                            readOnly: ai!=null?(ai!.isChecked||!ai!.isActive?true:false):false,
-                            style: const TextStyle(color: Colors.black), // Черный текст ввода
-                            decoration: InputDecoration(
-                              contentPadding: const EdgeInsets.fromLTRB(16, 16, 16, 19),
-                              filled: true,
-                              suffixIconConstraints: const BoxConstraints(
-                                minWidth: 32,
-                                minHeight: 2,
-                              ),
-                              suffixIcon: const Text("*", style: TextStyle(fontSize: 30, color: AppColors.greytextColor)),
-                              fillColor: ai!=null?(ai!.isChecked?AppColors.fieldLockColor:!ai!.isActive?AppColors.fieldLockColor:Colors.white):Colors.white,
-                              hintText: 'Название',
-                              hintStyle: TextStyle(color: Colors.black.withOpacity(0.3)),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10.0),
-                                borderSide: const BorderSide(
-                                  width: 0,
-                                  style: BorderStyle.none,
+                          Stack(children: [
+                            Column(children: [
+                              TextField(
+                                onTap: (){
+                                  if(ai!.isChecked&&!ai!.isActive) showUnavailable(text : "3адача выполнена в прошлой карте. Изменению не подлежит. Вы можете видеть ее в журнале задач в разделах 'выполненные' и 'все задачи', а также в иерархии цели и желания.\n\nВы можете удалить задачу. Если вам нужна подобная, просто создайте новую задачу.");
+                                  else if(ai!.isChecked) {showUnavailable();}
+                                  else if(!ai!.isActive) {showUnavailable(text : "Невозможно изменить неактуализированную задачу");}
+                                },
+                                controller: text,
+                                showCursor: true,
+                                readOnly: ai!=null?(ai!.isChecked||!ai!.isActive?true:false):false,
+                                style: const TextStyle(color: Colors.black), // Черный текст ввода
+                                decoration: InputDecoration(
+                                  contentPadding: const EdgeInsets.fromLTRB(16, 16, 16, 19),
+                                  filled: true,
+                                  suffixIconConstraints: const BoxConstraints(
+                                    minWidth: 32,
+                                    minHeight: 2,
+                                  ),
+                                  suffixIcon: const Text("*", style: TextStyle(fontSize: 30, color: AppColors.greytextColor)),
+                                  fillColor: ai!=null?(ai!.isChecked?AppColors.fieldLockColor:!ai!.isActive?AppColors.fieldLockColor:Colors.white):Colors.white,
+                                  hintText: 'Название',
+                                  hintStyle: TextStyle(color: Colors.black.withOpacity(0.3)),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10.0),
+                                    borderSide: const BorderSide(
+                                      width: 0,
+                                      style: BorderStyle.none,
+                                    ),
+                                  ),
                                 ),
                               ),
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          TextField(
-                            minLines: 4,
-                            maxLines: 7,
-                            controller: description,
-                            onTap: () async {
-                              if(ai!.isChecked){
-                                if(ai!.isChecked&&!ai!.isActive) showUnavailable(text : "3адача выполнена в прошлой карте. Изменению не подлежит. Вы можете видеть ее в журнале задач в разделах 'выполненные' и 'все задачи', а также в иерархии цели и желания.\n\nВы можете удалить задачу. Если вам нужна подобная, просто создайте новую задачу.");
-                                else if(ai!.isChecked) {showUnavailable();}
-                                else if(!ai!.isActive) {showUnavailable(text : "Невозможно изменить неактуализированную задачу");}
-                              }
-                              else if(!ai!.isActive){showUneditable();}
-                              else {
-                                final returnedText = await showOverlayedEdittext(context, description.text, (ai!.isActive&&!ai!.isChecked))??"";
-                                if(returnedText!=description.text) {
-                                  description.text = returnedText;
-                                  isChanged = true;
-                                }
-                              }
-                            },
-                            showCursor: false,
-                            readOnly: true,
-                            style: const TextStyle(color: Colors.black), // Черный текст ввода
-                            decoration: InputDecoration(
-                              contentPadding: const EdgeInsets.fromLTRB(16, 16, 16, 19),
-                              suffixIconConstraints: const BoxConstraints(
-                                minWidth: 32,
-                                minHeight: 100
-                              ),
-                              suffixIcon: const Text("*", style: TextStyle(fontSize: 30, color: AppColors.greytextColor)),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10.0),
-                                borderSide: const BorderSide(
-                                  width: 0,
-                                  style: BorderStyle.none,
+                              const SizedBox(height: 8),
+                              TextField(
+                                maxLength: 260,
+                                maxLines: 5,
+                                controller: description,
+                                showCursor: false,
+                                readOnly: true,
+                                onTap: () async {
+                                  if(ai!.isChecked){
+                                    if(ai!.isChecked&&!ai!.isActive) showUnavailable(text : "3адача выполнена в прошлой карте. Изменению не подлежит. Вы можете видеть ее в журнале задач в разделах 'выполненные' и 'все задачи', а также в иерархии цели и желания.\n\nВы можете удалить задачу. Если вам нужна подобная, просто создайте новую задачу.");
+                                    else if(ai!.isChecked) {showUnavailable();}
+                                    else if(!ai!.isActive) {showUnavailable(text : "Невозможно изменить неактуализированную задачу");}
+                                  }
+                                  else if(!ai!.isActive){showUneditable();}
+                                  else {
+                                    final returnedText = await showOverlayedEdittext(context, description.text, (ai!.isActive&&!ai!.isChecked))??"";
+                                    if(returnedText!=description.text) {
+                                      description.text = returnedText;
+                                      isChanged = true;
+                                    }
+                                  }
+                                },
+                                style: const TextStyle(color: Colors.black), // Черный текст ввода
+                                decoration: InputDecoration(
+                                  contentPadding: const EdgeInsets.fromLTRB(16, 16, 16, 19),
+                                  suffixIconConstraints: const BoxConstraints(
+                                      minWidth: 32,
+                                      minHeight: 100
+                                  ),
+                                  suffixIcon: const Text("*", style: TextStyle(fontSize: 30, color: AppColors.greytextColor)),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10.0),
+                                    borderSide: const BorderSide(
+                                      width: 0,
+                                      style: BorderStyle.none,
+                                    ),
+                                  ),
+                                  filled: true, // Заливка фона
+                                  fillColor: ai!=null?(ai!.isChecked?AppColors.fieldLockColor:!ai!.isActive?AppColors.fieldLockColor:Colors.white):Colors.white,
+                                  hintText: 'Описание', // Базовый текст
+                                  hintStyle: TextStyle(color: Colors.black.withOpacity(0.3)), // Полупрозрачный черный базовый текст
                                 ),
                               ),
-                              filled: true, // Заливка фона
-                              fillColor: ai!=null?(ai!.isChecked?AppColors.fieldLockColor:!ai!.isActive?AppColors.fieldLockColor:Colors.white):Colors.white,
-                              hintText: 'Описание', // Базовый текст
-                              hintStyle: TextStyle(color: Colors.black.withOpacity(0.3)), // Полупрозрачный черный базовый текст
-                            ),
-                          ),
+                              if(ai?.isActive==false||ai?.isChecked==true)Positioned.fill(
+                                  child: Container(
+                                    color: AppColors.backgroundColor.withOpacity(0.8),
+                                  )
+                              )
+                            ],)
+                          ],),
                           const SizedBox(height: 24),
                           const Divider(color: AppColors.grey, height: 2,),
                           const SizedBox(height: 16),
@@ -362,15 +301,21 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                   ]
               ),
         )),
-                  if(MediaQuery.of(context).viewInsets.bottom!=0) SizedBox(height: 30,
-                    child: FooterLayout(
-                      footer: Container(height: 30,color: Colors.white,alignment: Alignment.centerRight, child:
-                      GestureDetector(
-                        onTap: (){FocusManager.instance.primaryFocus?.unfocus();},
-                        child: const Text("готово", style: TextStyle(fontSize: 20),),
-                      )
-                        ,),
-                    ),)
+                  if(MediaQuery.of(context).viewInsets.bottom!=0) Align(
+                    alignment: Alignment.topRight,
+                    child: Container(height: 50, width: 50,
+                        margin: const EdgeInsets.fromLTRB(0, 0, 16, 16),
+                        alignment: Alignment.center,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white,
+                        ), child:
+                        GestureDetector(
+                          onTap: (){FocusManager.instance.primaryFocus?.unfocus();},
+                          child: const Icon(Icons.keyboard_hide_sharp, size: 30, color: AppColors.darkGrey,),
+                        )
+                    ),
+                  )
             ])),
             bottomSheet: Padding(
               padding: const EdgeInsets.all(16.0),
@@ -450,18 +395,13 @@ class TaskEditScreenState extends State<TaskEditScreen>{
 
   Future<bool> onSaveClicked(AppViewModel appVM, TaskData ai) async {
     if(text.text.isEmpty){
-      await showDialog(context: context,
-        builder: (BuildContext context) => AlertDialog(
-          title: const Text('Необходимо заполнить все поля со знаком *'),
-          shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(Radius.circular(32.0))),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () => Navigator.pop(context, 'OK'),
-              child: const Text('OK'),
-            ),
-          ],
-        ),
+      await showModalBottomSheet<void>(
+        context: context,
+        isScrollControlled: true,
+        builder: (BuildContext context) {
+          return NotifyBS('Необходимо заполнить все поля со знаком *', "", 'OK',
+              onOk: () => Navigator.pop(context, 'OK'));
+        },
       );
       return false;
     }else{
@@ -473,132 +413,63 @@ class TaskEditScreenState extends State<TaskEditScreen>{
       roots.clear();
       isChanged = false;
     });
-    showDialog(context: context,
-      builder: (BuildContext context) => AlertDialog(
-        title: const Text('сохраненa'),
-        shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(32.0))),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () => Navigator.pop(context, 'OK'),
-            child: const Text('OK'),
-          ),
-        ],
-      ),
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (BuildContext context) {
+        return NotifyBS('сохраненa', "", 'OK',
+            onOk: () => Navigator.pop(context, 'OK'));
+      },
     );
     return true;
   }
 
-  Future<bool> showOnExit(AppViewModel appVM, TaskData ai) async {
-    return await showDialog(context: context,
-      builder: (BuildContext context) => AlertDialog(
-        contentPadding: EdgeInsets.zero,
-        shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(32.0))),
-        title: const Text('Внимание', textAlign: TextAlign.center,),
-        content: const Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text("Вы изменили поля но не нажали 'Сохранить'", maxLines: 6, textAlign: TextAlign.center,),
-            SizedBox(height: 4,),
-            Divider(color: AppColors.dividerGreyColor,),
-            SizedBox(height: 4,),
-            Text("Сохранить изменения?", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),)
-          ],
-        ),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () async {
+  Future<bool?> showOnExit(AppViewModel appVM, TaskData ai) async {
+    return await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      builder: (BuildContext context) {
+        return ActionBS('Внимание', "Вы изменили поля но не нажали 'Сохранить'\nСохранить изменения?", "Да", 'Нет',
+            onOk: () async {
               Navigator.pop(context, true);
               await onSaveClicked(appVM, ai);
             },
-            child: const Text('Да'),
-          ),
-          TextButton(
-            onPressed: () { Navigator.pop(context, true);
-            appVM.isChanged=false;},
-            child: const Text('Нет'),
-          ),
-        ],
-      ),
+            onCancel: () { Navigator.pop(context, true);
+            appVM.isChanged=false;});
+      },
     );
   }
 
   void showUneditable() {
-    showDialog(context: context,
-      builder: (BuildContext context) =>
-          AlertDialog(
-            contentPadding: EdgeInsets.zero,
-            shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.all(Radius.circular(32.0))),
-            content: const Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  "Чтобы редактировать необходимо изменить статус на 'актуальное' нажав кнопку 'осознать'",
-                  maxLines: 5, textAlign: TextAlign.center,),
-                SizedBox(height: 4,),
-                Divider(color: AppColors.dividerGreyColor,),
-              ],
-            ),
-            actions: <Widget>[
-              TextButton(
-                onPressed: () async {
-                  Navigator.pop(context, 'OK');
-                },
-                child: const Text('Ok'),
-              ),
-            ],
-          ),
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (BuildContext context) {
+        return NotifyBS("Чтобы редактировать необходимо изменить статус на 'актуальное' нажав кнопку 'осознать'", "", 'OK',
+            onOk: () => Navigator.pop(context, 'OK'));
+      },
     );
   }
 
   void showUnavailable({text = "Чтобы редактировать задачу необходимо сменить статус \nна 'не выполнена'"}){
-    showDialog(context: context,
-      builder: (BuildContext context) => AlertDialog(
-        contentPadding: EdgeInsets.zero,
-        shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(32.0))),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(text, maxLines: 10, textAlign: TextAlign.center,),
-            const SizedBox(height: 4,),
-            const Divider(color: AppColors.dividerGreyColor,),
-          ],
-        ),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () async { Navigator.pop(context, 'OK'); },
-            child: const Text('Ok'),
-          ),
-        ],
-      ),
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (BuildContext context) {
+        return NotifyBS("", text, 'OK',
+            onOk: () => Navigator.pop(context, 'OK'));
+      },
     );
   }
 
   void showCantChangeStatus(){
-    showDialog(context: context,
-      builder: (BuildContext context) => AlertDialog(
-        contentPadding: EdgeInsets.zero,
-        shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(32.0))),
-        title: const Text("Внимание", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22),),
-        content: const Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text("Статус задачи не может быть изменен на 'не выполнена' пока вышестоящая цель не будет переведена в статус 'не достигнута'", maxLines: 5, textAlign: TextAlign.center,),
-            SizedBox(height: 4,),
-            Divider(color: AppColors.dividerGreyColor,),
-          ],
-        ),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () async { Navigator.pop(context, 'OK'); },
-            child: const Text('Ok'),
-          ),
-        ],
-      ),
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (BuildContext context) {
+        return NotifyBS("", "Статус задачи не может быть изменен на 'не выполнена' пока вышестоящая цель не будет переведена в статус 'не достигнута'", 'OK',
+            onOk: () => Navigator.pop(context, 'OK'));
+      },
     );
   }
   Future onTreeItemTap(AppViewModel appVM, int id, String type)async {

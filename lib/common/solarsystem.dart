@@ -765,7 +765,7 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
                             )
                         ),
                         onDoubleTap: () async {
-                          print("oncentralcircletap");
+                          print("oncentralcircledoubletap");
                           if(allowClick){
                             /*if(appViewModel.settings.fastActMainSphere){
                               await appViewModel.activateSphereWish(0, true, updateScreen: true).then((value) {
@@ -960,4 +960,3 @@ class LinePainter extends CustomPainter {
     return false;
   }
 }
-

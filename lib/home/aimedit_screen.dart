@@ -3,11 +3,13 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:keyboard_attachable/keyboard_attachable.dart';
 import 'package:provider/provider.dart';
 import 'package:wishmap/common/treeview_widget.dart';
 import '../ViewModel.dart';
 import '../common/EditTextOverlay.dart';
+import '../common/animation_overlay.dart';
 import '../common/bottombar.dart';
 import '../common/treeview_widget_v2.dart';
 import '../data/models.dart';
@@ -175,7 +177,7 @@ class AimEditScreenState extends State<AimEditScreen>{
                                     },
                                   );
                                 },
-                                icon: Image.asset("assets/icons/trash.png", width: 28, height: 28),
+                                icon: SvgPicture.asset("assets/icons/trash.svg", width: 28, height: 28),
                             ),
                           ],
                         ),
@@ -220,6 +222,7 @@ class AimEditScreenState extends State<AimEditScreen>{
                                                         context, 'OK');
                                                     ai!.isChecked = !ai!.isChecked;
                                                     appVM.updateAimStatus(ai!.id, ai!.isChecked);
+                                                    showOverlayedAnimations(context,'assets/lottie/inaim.json', fillBackground: true);
                                                     showModalBottomSheet<void>(
                                                       context: context,
                                                       isScrollControlled: true,
@@ -238,6 +241,7 @@ class AimEditScreenState extends State<AimEditScreen>{
                                         }else {
                                           ai!.isChecked = !ai!.isChecked;
                                           appVM.updateAimStatus(ai!.id, ai!.isChecked);
+                                          showOverlayedAnimations(context,'assets/lottie/inaim.json', fillBackground: true);
                                         }
                                         },
                                         onCancel: () async {
@@ -262,6 +266,7 @@ class AimEditScreenState extends State<AimEditScreen>{
                                                           appVM.currentAim!
                                                               .description;
                                                       isChanged = false;
+                                                      showOverlayedAnimations(context,'assets/lottie/inaim.json', fillBackground: true);
                                                       showModalBottomSheet<void>(
                                                         context: context,
                                                         isScrollControlled: true,
@@ -287,6 +292,7 @@ class AimEditScreenState extends State<AimEditScreen>{
                                                 appVM.currentAim!
                                                     .description;
                                             isChanged = false;
+                                            showOverlayedAnimations(context,'assets/lottie/inaim.json', fillBackground: true);
                                           }
                                         });
                                   },
@@ -306,6 +312,7 @@ class AimEditScreenState extends State<AimEditScreen>{
                                           appVM.updateAimStatus(
                                               ai!.id,
                                               ai!.isChecked);
+                                          showOverlayedAnimations(context,'assets/lottie/inaim.json', fillBackground: true);
                                           showModalBottomSheet<void>(
                                             context: context,
                                             isScrollControlled: true,
@@ -324,6 +331,7 @@ class AimEditScreenState extends State<AimEditScreen>{
                                       .isChecked;
                                   appVM.updateAimStatus(
                                       ai!.id, ai!.isChecked);
+                                  showOverlayedAnimations(context,'assets/lottie/inaim.json', fillBackground: true);
                                   showModalBottomSheet<void>(
                                     context: context,
                                     isScrollControlled: true,
@@ -338,100 +346,109 @@ class AimEditScreenState extends State<AimEditScreen>{
                           }
                         }),
                         const SizedBox(height: 16),
-                        TextField(
-                          onTap: (){
-                            if(ai!.isChecked&&!ai!.isActive) {showUneditable(text: "3адача выполнена в прошлой карте. Изменению не подлежит. Вы можете видеть ее в журнале задач в разделах 'выполненные' и 'все задачи', а также в иерархии цели и желания.\n\nВы можете удалить задачу. Если вам нужна подобная, просто создайте новую задачу.");}
-                            else if(ai!.isChecked) {showUneditable(text: "Чтобы редактировать цель необходимо сменить статус \nна 'не выполнена'");}
-                            else if(!ai!.isActive) {showUneditable(text: "Невозможно изменить неактуализированную задачу");}
-                          },
-                          controller: text,
-                          showCursor: true,
-                          readOnly: ai!=null?(ai!.isChecked||!ai!.isActive?true:false):false,
-                          style: const TextStyle(color: Colors.black), // Черный текст ввода
-                          decoration: InputDecoration(
-                            contentPadding: const EdgeInsets.fromLTRB(16, 16, 16, 19),
-                            filled: true,
-                            suffixIconConstraints: const BoxConstraints(
-                              minWidth: 32,
-                              minHeight: 2,
-                            ),
-                            suffixIcon: const Text("*", style: TextStyle(fontSize: 30, color: AppColors.greytextColor)),
-                            fillColor: ai!=null?(ai!.isChecked?AppColors.fieldLockColor:!ai!.isActive?AppColors.fieldLockColor:Colors.white):Colors.white,
-                            hintText: 'Название',
-                            hintStyle: TextStyle(color: Colors.black.withOpacity(0.3)),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10.0),
-                              borderSide: const BorderSide(
-                                width: 0,
-                                style: BorderStyle.none,
+                        Stack(children: [
+                          Column(children: [
+                            TextField(
+                              onTap: (){
+                                if(ai!.isChecked&&!ai!.isActive) {showUneditable(text: "3адача выполнена в прошлой карте. Изменению не подлежит. Вы можете видеть ее в журнале задач в разделах 'выполненные' и 'все задачи', а также в иерархии цели и желания.\n\nВы можете удалить задачу. Если вам нужна подобная, просто создайте новую задачу.");}
+                                else if(ai!.isChecked) {showUneditable(text: "Чтобы редактировать цель необходимо сменить статус \nна 'не выполнена'");}
+                                else if(!ai!.isActive) {showUneditable(text: "Невозможно изменить неактуализированную задачу");}
+                              },
+                              controller: text,
+                              showCursor: true,
+                              readOnly: ai!=null?(ai!.isChecked||!ai!.isActive?true:false):false,
+                              style: const TextStyle(color: Colors.black), // Черный текст ввода
+                              decoration: InputDecoration(
+                                contentPadding: const EdgeInsets.fromLTRB(16, 16, 16, 19),
+                                filled: true,
+                                suffixIconConstraints: const BoxConstraints(
+                                  minWidth: 32,
+                                  minHeight: 2,
+                                ),
+                                suffixIcon: const Text("*", style: TextStyle(fontSize: 30, color: AppColors.greytextColor)),
+                                fillColor: ai!=null?(ai!.isChecked?AppColors.fieldLockColor:!ai!.isActive?AppColors.fieldLockColor:Colors.white):Colors.white,
+                                hintText: 'Название',
+                                hintStyle: TextStyle(color: Colors.black.withOpacity(0.3)),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10.0),
+                                  borderSide: const BorderSide(
+                                    width: 0,
+                                    style: BorderStyle.none,
+                                  ),
+                                ),
                               ),
                             ),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        TextField(
-                          minLines: 4,
-                          maxLines: 7,
-                          controller: description,
-                          onTap: () async {
-                            if(ai!.isChecked){
-                              if(ai!.isChecked&&!ai!.isActive) {showUneditable(text: "3адача выполнена в прошлой карте. Изменению не подлежит. Вы можете видеть ее в журнале задач в разделах 'выполненные' и 'все задачи', а также в иерархии цели и желания.\n\nВы можете удалить задачу. Если вам нужна подобная, просто создайте новую задачу.");}
-                              else if(ai!.isChecked) {showUneditable(text: "Чтобы редактировать цель необходимо сменить статус \nна 'не выполнена'");}
-                              else if(!ai!.isActive) {showUneditable(text: "Невозможно изменить неактуализированную задачу");}
-                            }
-                            else if(!ai!.isActive){showUneditable();}
-                            else {
-                              final returnedText = await showOverlayedEdittext(context, description.text, (ai!.isActive&&!ai!.isChecked))??"";
-                              if(returnedText!=description.text) {
-                                description.text = returnedText;
-                                isChanged = true;
-                              }
-                            }
-                          },
-                          showCursor: false,
-                          readOnly: true,
-                          style: const TextStyle(color: Colors.black), // Черный текст ввода
-                          decoration: InputDecoration(
-                            contentPadding: const EdgeInsets.fromLTRB(16, 16, 16, 19),
-                            suffixIconConstraints: const BoxConstraints(
-                                minWidth: 32,
-                                minHeight: 100
-                            ),
-                            suffixIcon: const Text("*", style: TextStyle(fontSize: 30, color: AppColors.greytextColor)),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10.0),
-                              borderSide: const BorderSide(
-                                width: 0,
-                                style: BorderStyle.none,
+                            const SizedBox(height: 8),
+                            TextField(
+                              maxLength: 260,
+                              maxLines: 5,
+                              showCursor: false,
+                              readOnly: true,
+                              onTap: () async {
+                                if(ai!.isChecked){
+                                  if(ai!.isChecked&&!ai!.isActive) {showUneditable(text: "3адача выполнена в прошлой карте. Изменению не подлежит. Вы можете видеть ее в журнале задач в разделах 'выполненные' и 'все задачи', а также в иерархии цели и желания.\n\nВы можете удалить задачу. Если вам нужна подобная, просто создайте новую задачу.");}
+                                  else if(ai!.isChecked) {showUneditable(text: "Чтобы редактировать цель необходимо сменить статус \nна 'не выполнена'");}
+                                  else if(!ai!.isActive) {showUneditable(text: "Невозможно изменить неактуализированную задачу");}
+                                }
+                                else if(!ai!.isActive){showUneditable();}
+                                else {
+                                  final returnedText = await showOverlayedEdittext(context, description.text, (ai!.isActive&&!ai!.isChecked))??"";
+                                  if(returnedText!=description.text) {
+                                    description.text = returnedText;
+                                    isChanged = true;
+                                  }
+                                }
+                              },
+                              style: const TextStyle(color: Colors.black), // Черный текст ввода
+                              decoration: InputDecoration(
+                                contentPadding: const EdgeInsets.fromLTRB(16, 16, 16, 19),
+                                suffixIconConstraints: const BoxConstraints(
+                                    minWidth: 32,
+                                    minHeight: 100
+                                ),
+                                suffixIcon: const Text("*", style: TextStyle(fontSize: 30, color: AppColors.greytextColor)),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10.0),
+                                  borderSide: const BorderSide(
+                                    width: 0,
+                                    style: BorderStyle.none,
+                                  ),
+                                ),
+                                filled: true, // Заливка фона
+                                fillColor: ai!=null?(ai!.isChecked?AppColors.fieldLockColor:!ai!.isActive?AppColors.fieldLockColor:Colors.white):Colors.white,
+                                hintText: 'Описание', // Базовый текст
+                                hintStyle: TextStyle(color: Colors.black.withOpacity(0.3)), // Полупрозрачный черный базовый текст
                               ),
                             ),
-                            filled: true, // Заливка фона
-                            fillColor: ai!=null?(ai!.isChecked?AppColors.fieldLockColor:!ai!.isActive?AppColors.fieldLockColor:Colors.white):Colors.white,
-                            hintText: 'Описание', // Базовый текст
-                            hintStyle: TextStyle(color: Colors.black.withOpacity(0.3)), // Полупрозрачный черный базовый текст
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        const Divider(color: AppColors.grey, height: 2,),
-                        const SizedBox(height: 16),
-                        if(!ai!.isActive&&ai!.isChecked)const SizedBox() else OutlinedGradientButton(
-                            "Создать задачу",
-                            () {
-                              if(ai!=null){
-                                if(!ai!.isActive){
-                                  showUneditable(text: "Чтобы создать задачу необходимо сменить статус на 'aктуальная'");
-                                  return;
-                                }
-                                else if(ai!.isChecked){
-                                  showUneditable(text: "Чтобы создать задачу необходимо сменить статус на 'не достигнута'");
-                                  return;
-                                }
+                            const SizedBox(height: 24),
+                            const Divider(color: AppColors.grey, height: 2,),
+                            const SizedBox(height: 16),
+                            if(!ai!.isActive&&ai!.isChecked)const SizedBox() else OutlinedGradientButton(
+                              "Создать задачу",
+                                  () {
+                                if(ai!=null){
+                                  if(!ai!.isActive){
+                                    showUneditable(text: "Чтобы создать задачу необходимо сменить статус на 'aктуальная'");
+                                    return;
+                                  }
+                                  else if(ai!.isChecked){
+                                    showUneditable(text: "Чтобы создать задачу необходимо сменить статус на 'не достигнута'");
+                                    return;
+                                  }
 
-                                BlocProvider.of<NavigationBloc>(context)
-                                    .add(NavigateToTaskCreateScreenEvent(ai!.id));
-                              }
-                            },
-                          widgetBeforeText: const Icon(Icons.add_circle_outline_rounded),
+                                  BlocProvider.of<NavigationBloc>(context)
+                                      .add(NavigateToTaskCreateScreenEvent(ai!.id));
+                                }
+                              },
+                              widgetBeforeText: const Icon(Icons.add_circle_outline_rounded),
+                            ),
+                          ],),
+                          if(ai?.isActive==false||ai?.isChecked==true)Positioned.fill(
+                              child: Container(
+                                color: AppColors.backgroundColor.withOpacity(0.8),
+                              )
+                          )
+                        ],
                         ),
                         const SizedBox(height: 24),
                         SizedBox(key: _keyToScroll, height: 15,),
@@ -443,15 +460,21 @@ class AimEditScreenState extends State<AimEditScreen>{
                   ]
               ),
             )),
-                  if(MediaQuery.of(context).viewInsets.bottom!=0) SizedBox(height: 30,
-                    child: FooterLayout(
-                      footer: Container(height: 30,color: Colors.white,alignment: Alignment.centerRight, child:
-                      GestureDetector(
-                        onTap: (){FocusManager.instance.primaryFocus?.unfocus();},
-                        child: const Text("готово", style: TextStyle(fontSize: 20),),
-                      )
-                        ,),
-                    ),)
+                  if(MediaQuery.of(context).viewInsets.bottom!=0) Align(
+                    alignment: Alignment.topRight,
+                    child: Container(height: 50, width: 50,
+                        margin: const EdgeInsets.fromLTRB(0, 0, 16, 16),
+                        alignment: Alignment.center,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white,
+                        ), child:
+                        GestureDetector(
+                          onTap: (){FocusManager.instance.primaryFocus?.unfocus();},
+                          child: const Icon(Icons.keyboard_hide_sharp, size: 30, color: AppColors.darkGrey,),
+                        )
+                    ),
+                  )
                       ])
             ),
             bottomSheet: Padding(

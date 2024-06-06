@@ -2,6 +2,7 @@ import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:capped_progress_indicator/capped_progress_indicator.dart';
+import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:keyboard_attachable/keyboard_attachable.dart';
@@ -16,6 +17,11 @@ import '../common/treeview_widget.dart';
 import '../common/treeview_widget_v2.dart';
 import '../data/models.dart';
 import '../data/static.dart';
+import '../dialog/bottom_sheet_action.dart';
+import '../dialog/bottom_sheet_colorpicker.dart';
+import '../dialog/bottom_sheet_notify.dart';
+import '../interface_widgets/colorButton.dart';
+import '../interface_widgets/outlined_button.dart';
 import '../navigation/navigation_block.dart';
 import '../res/colors.dart';
 
@@ -30,10 +36,16 @@ class MainSphereEditScreen extends StatefulWidget{
 class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
   Color circleColor = Colors.black12;
   CircleData curWd = CircleData(id: -1, prevId: -1, nextId: -1, text: "", color: Colors.black12, parenId: -1);
+  Color? shotColor;
+
+  static const defaultColorList = [Color(0xFF3FA600),Color(0xFFFE0000),Color(0xFFFF006A),Color(0xFFFF5C00),Color(0xFFFEE600),Color(0xFF0029FF),Color(0xFF46C7FE),Color(0xFFFEE600),Color(0xFF0029FF),Color(0xFF009989)];
+  var myColors = [];
 
   @override
   Widget build(BuildContext context) {
     final appViewModel = Provider.of<AppViewModel>(context);
+    myColors = appViewModel.getUserColors();
+    myColors.add(Colors.transparent);
     appViewModel.isChanged;
     if(curWd.id==-1){
       if(appViewModel.mainSphereEditCircle==null){
@@ -60,7 +72,9 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
     circleColor = curWd.color;
     text.addListener(() { if(text.text!=curWd.text)appViewModel.isChanged = true;curWd.text=text.text;});
     return Consumer<AppViewModel>(
+
         builder: (context, appVM, child){
+          shotColor = curWd.color;
           final aims = appVM.aimItems.where((element) => element.parentId==0).toList();
           List<int> aimsids = aims.map((e) => e.id).toList();
           final tasks = appVM.taskItems.where((element) => aimsids.contains(element.parentId)).toList();
@@ -76,66 +90,56 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
           maintainBottomViewPadding: true,
             child: Column(
               children: [
-                Row(children: [
-                  IconButton(
-                    icon: const Icon(Icons.keyboard_arrow_left,  size: 30,),
-                    onPressed: () {
-                      if(appViewModel.isChanged){
-                      showDialog(context: context,
-                        builder: (BuildContext c) => AlertDialog(
-                          contentPadding: EdgeInsets.zero,
-                          shape: const RoundedRectangleBorder(
-                              borderRadius: BorderRadius.all(Radius.circular(32.0))),
-                          title: const Text('Внимание', textAlign: TextAlign.center,),
-                          content: const Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text("Вы изменили поля но не нажали 'Сохранить'", maxLines: 6, textAlign: TextAlign.center,),
-                              SizedBox(height: 4,),
-                              Divider(color: AppColors.dividerGreyColor,),
-                              SizedBox(height: 4,),
-                              Text("Сохранить изменения?", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),)
-                            ],
+                Padding(
+                      padding: const EdgeInsets.fromLTRB(8, 8, 10, 0),
+                      child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          IconButton(
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
+                              style: const ButtonStyle(
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap, // the '2023' part
+                              ),
+                              icon: const Icon(Icons.keyboard_arrow_left, size: 32, color: AppColors.gradientStart),
+                              onPressed: () {
+                                if(appViewModel.isChanged){
+                                  showModalBottomSheet<void>(
+                                    context: context,
+                                    isScrollControlled: true,
+                                    builder: (BuildContext context) {
+                                      return ActionBS('Внимание', "Вы изменили поля но не нажали 'Сохранить'\nСохранить изменения?", "Да", 'Нет',
+                                          onOk: () async { Navigator.pop(context, 'OK');
+                                          onSaveClicked(appVM);
+                                          },
+                                          onCancel: () { Navigator.pop(context, 'Cancel');
+                                          appViewModel.mainCircles.clear();
+                                          appViewModel.startMainScreen(appViewModel.mainScreenState!.moon);
+                                          BlocProvider.of<NavigationBloc>(context)
+                                              .add(NavigateToMainScreenEvent());});
+                                    },
+                                  );
+                                }else{
+                                  appViewModel.mainCircles.clear();
+                                  appViewModel.startMainScreen(appViewModel.mainScreenState!.moon);
+                                  BlocProvider.of<NavigationBloc>(context)
+                                      .add(NavigateToMainScreenEvent());
+                                }
+                                appViewModel.backPressedCount++;
+                                if(appViewModel.backPressedCount==appViewModel.settings.quoteupdateFreq){
+                                  appViewModel.backPressedCount=0;
+                                  appViewModel.hint=quoteBack[Random().nextInt(367)];
+                                }
+                              }
                           ),
-                          actions: <Widget>[
-                            TextButton(
-                              onPressed: () async { Navigator.pop(c, 'OK');
-                                onSaveClicked(appVM);
-                              },
-                              child: const Text('Да'),
-                            ),
-                            TextButton(
-                              onPressed: () { Navigator.pop(context, 'Cancel');
-                                appViewModel.mainCircles.clear();
-                              appViewModel.startMainScreen(appViewModel.mainScreenState!.moon);
-                              BlocProvider.of<NavigationBloc>(context)
-                                  .add(NavigateToMainScreenEvent());},
-                              child: const Text('Нет'),
-                            ),
-                          ],
-                        ),
-                      );}else{
-                        appViewModel.mainCircles.clear();
-                        appViewModel.startMainScreen(appViewModel.mainScreenState!.moon);
-                        BlocProvider.of<NavigationBloc>(context)
-                            .add(NavigateToMainScreenEvent());
-                      }
-                      appViewModel.backPressedCount++;
-                      if(appViewModel.backPressedCount==appViewModel.settings.quoteupdateFreq){
-                        appViewModel.backPressedCount=0;
-                        appViewModel.hint=quoteBack[Random().nextInt(367)];
-                      }
-                    },
-                  ),
-                  const Spacer(),
-                  curWd.isActive?TextButton(
-                      style: TextButton.styleFrom(
-                        backgroundColor: AppColors.greyBackButton,
-                        shape: const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(10)),
-                        ),
-                      ),
-                      onPressed: () async {
+                          Text(curWd.text, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+                          const SizedBox(width: 30)
+                        ],),
+                    ),
+                Expanded(
+                  child: SingleChildScrollView(
+                      child:Padding(padding: const EdgeInsets.all(16), child: Column(
+                    children: [
+                      curWd.isActive?ColorRoundedButton("Cохранить", () async {
                         if(appViewModel.isChanged){
                           onSaveClicked(appVM);
                         }else {
@@ -152,51 +156,24 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
                           appViewModel.hint =
                           "Отлично! Теперь пришло время заполнить все сферы жизни. Ты можешь настроить состав и название сфер так, как считаешь нужным. И помни, что максимальное количество сфер ограничено и равно 1.";
                           appViewModel.isChanged = false;
-                          showDialog(context: context,
-                            builder: (BuildContext context) =>
-                                AlertDialog(
-                                  title: const Text('Сохранено'),
-                                  shape: const RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.all(
-                                          Radius.circular(32.0))),
-                                  actions: <Widget>[
-                                    TextButton(
-                                      onPressed: () =>
-                                          Navigator.pop(context, 'OK'),
-                                      child: const Text('OK'),
-                                    ),
-                                  ],
-                                ),
+                          showModalBottomSheet<void>(
+                            context: context,
+                            isScrollControlled: true,
+                            builder: (BuildContext context) {
+                              return NotifyBS('Сохранено', "", 'OK',
+                                  onOk: () => Navigator.pop(context, 'OK'));
+                            },
                           );
                         }
                       },
-                      child: const Text("Cохранить",
-                        style: TextStyle(color: AppColors.blueTextColor),)
-                  ):
-                  TextButton(
-                      style: TextButton.styleFrom(
-                        backgroundColor: AppColors.greyBackButton,
-                        shape: const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(10)),
-                        ),
-                      ),
-                      onPressed: () {
-                        setState(() async {
-                          await appViewModel.activateSphereWish(curWd.id, true);
-                          if(appVM.mainScreenState!=null)appViewModel.startMainScreen(appVM.mainScreenState!.moon);
-                          curWd.isActive = true;
-                          appVM.mainCircles.firstOrNull?.isActive=true;
-                        });
+                      ):ColorRoundedButton("Осознать", () async {
+                        await appViewModel.activateSphereWish(curWd.id, true);
+                        if(appVM.mainScreenState!=null)appViewModel.startMainScreen(appVM.mainScreenState!.moon);
+                        curWd.isActive = true;
+                        appVM.mainCircles.firstOrNull?.isActive=true;
                       },
-                      child: const Text("Осознать",
-                        style: TextStyle(color: AppColors.redTextColor),)
-                  ),
-                  const SizedBox(width: 15,)
-                ],),
-                const SizedBox(height: 5),
-                Expanded(child: SingleChildScrollView(child:Padding(
-                    padding: const EdgeInsets.all(15),
-                child: Column(children: [
+                      ),
+                const SizedBox(height: 16),
                 TextField(
                   controller: text,
                   style: const TextStyle(color: Colors.black), // Черный текст ввода
@@ -204,6 +181,16 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
                   showCursor: true,
                   readOnly: curWd.isActive?false:true,
                   decoration: InputDecoration(
+                    contentPadding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+                    filled: true,
+                    suffixIconConstraints: const BoxConstraints(
+                      minWidth: 32,
+                      minHeight: 2,
+                    ),
+                    suffixIcon: const Text("*", style: TextStyle(fontSize: 30, color: AppColors.greytextColor)),
+                    fillColor: Colors.white,
+                    hintText: 'Название',
+                    hintStyle: TextStyle(color: Colors.black.withOpacity(0.3)),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10.0),
                       borderSide: const BorderSide(
@@ -211,22 +198,14 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
                         style: BorderStyle.none,
                       ),
                     ),
-                    filled: true, // Заливка фона
-                    suffixIconConstraints: const BoxConstraints(
-                      minWidth: 7,
-                      minHeight: 2,
-                    ),
-                    suffixIcon: const Text("*"),
-                    fillColor: curWd.isActive?AppColors.fieldFillColor:AppColors.fieldInactive, // Серый фон с полупрозрачностью
-                    hintText: 'Запиши желание', // Базовый текст
-                    helperText: "Твое имя или то, с чем ты себя ассоциируешь",
-                    hintStyle: TextStyle(color: Colors.black.withOpacity(0.3)), // Полупрозрачный черный базовый текст
                   ),
                 ),
-                  const SizedBox(height: 15),
+                  const SizedBox(height: 8),
                   TextField(
+                    maxLines: null,
                     controller: affirmation,
                     readOnly: true,
+                    showCursor: false,
                     onTap: () async {
                       if(curWd.isActive) {
                         final affirmationsStr = curWd.affirmation==""?
@@ -242,6 +221,7 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
                       },
                     style: const TextStyle(color: Colors.black), // Черный текст ввода
                     decoration: InputDecoration(
+                      contentPadding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10.0),
                         borderSide: const BorderSide(
@@ -249,236 +229,266 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
                           style: BorderStyle.none,
                         ),
                       ),
-                      suffixIcon: const Icon(Icons.keyboard_arrow_down_sharp, color: Colors.black),
-                      suffixText: "*",
+                      suffix: const Icon(Icons.keyboard_arrow_down_sharp, color: Colors.black45),
                       filled: true, // Заливка фона
-                      fillColor: curWd.isActive?AppColors.fieldFillColor:AppColors.fieldInactive, // Серый фон с полупрозрачностью
+                      fillColor: !curWd.isActive?AppColors.fieldLockColor:Colors.white,
                       hintText: 'Выбери аффирмацию', // Базовый текст
-                      helperText: "Выберите аффирмацию или напишите свою",
                       hintStyle: TextStyle(color: Colors.black.withOpacity(0.3)), // Полупрозрачный черный базовый текст
                     ),
                   ),
-                const SizedBox(height: 15),
-                LayoutBuilder(
-                  builder: (context, constraints) {
-                    double fullWidth = constraints.maxWidth-4;
-                    double leftWidth = (constraints.maxWidth * 4 /7)-2;
-                    double rightWidth = constraints.maxWidth - leftWidth - 2;
-                    List<List<Uint8List>> imagesSet = [];
-                    appViewModel.cachedImages.forEach((element) {if(imagesSet.isNotEmpty&&imagesSet.last.length<3){imagesSet.last.add(element);}else{imagesSet.add([element]);}});
-                    if(imagesSet.isNotEmpty)imagesSet.removeAt(0);
-                    return InkWell(onTap: (){
-                      if(curWd.isActive) {
-                        appViewModel.isChanged = true;
-                        appViewModel.photoUrls.clear();
-                        BlocProvider.of<NavigationBloc>(context)
-                            .add(NavigateToGalleryScreenEvent());
-                      }else{
-                        showUneditable();
-                      }
-                    },
-                        child:
-                    Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children:[
-                          Row(
-                            children: [
-                              Container(width: leftWidth, height: leftWidth, color: curWd.isActive?AppColors.fieldFillColor:AppColors.fieldInactive,
-                                child: appViewModel.isinLoading? const Align(alignment: Alignment.bottomCenter,
-                                  child: LinearCappedProgressIndicator(
-                                    backgroundColor: Colors.black26,
-                                    color: Colors.black,
-                                    cornerRadius: 0,
-                                  ),): appViewModel.cachedImages.isNotEmpty?Image.memory(appViewModel.cachedImages.first, fit: BoxFit.cover, color: curWd.isActive?null:Colors.redAccent,):Stack(children: [Container(padding: const EdgeInsets.all(8), child: const Center(child: Text("Добавьте образы вашего 'Я' - это важно!\n Чем ближе будут образы вашему представлению, тем сильнее будет визуализация вашего желания.", style: TextStyle(color: AppColors.greytextColor),))), const Align(alignment: Alignment.topRight, child: Text("*  "),)]),
-                              ),
-                              const SizedBox(width: 2),
-                              Column(children: [
-                                Container(width: rightWidth, height: leftWidth/2-2, color: curWd.isActive?AppColors.fieldFillColor:AppColors.fieldInactive,
-                                  child: appViewModel.isinLoading? const Align(alignment: Alignment.bottomCenter,
-                                    child: LinearCappedProgressIndicator(
-                                      backgroundColor: Colors.black26,
-                                      color: Colors.black,
-                                      cornerRadius: 0,
-                                    ),): appViewModel.cachedImages.length>1?Image.memory(appViewModel.cachedImages[1], fit: BoxFit.cover, color: curWd.isActive?null:Colors.redAccent):Container(),
-                                ),
-                                const SizedBox(height: 2),
-                                Container(width: rightWidth, height: leftWidth/2-1, color: curWd.isActive?AppColors.fieldFillColor:AppColors.fieldInactive,
-                                  child: appViewModel.isinLoading? const Align(alignment: Alignment.bottomCenter,
-                                    child: LinearCappedProgressIndicator(
-                                      backgroundColor: Colors.black26,
-                                      color: Colors.black,
-                                      cornerRadius: 0,
-                                    ),): appViewModel.cachedImages.length>2?Image.memory(appViewModel.cachedImages[2], fit: BoxFit.cover, color: curWd.isActive?null:Colors.redAccent):Container(),
-                                ),
-                              ],)
-                            ],
-                          ),
-                          ...imagesSet.map((e) {
-                            Map<Uint8List, int?> em = Map.fromIterable(e, key: (v)=>v, value: (v)=>null);
-                            if(e.length==1) return buildSingle(fullWidth, e.first, appVM.isinLoading,!curWd.isActive);
-                            else if(e.length==2) return buildTwin(leftWidth, rightWidth, em, appVM.isinLoading,!curWd.isActive);
-                            else if(imagesSet.indexOf(e)%2!=0) return buildTriple(leftWidth, rightWidth, em, appVM.isinLoading,!curWd.isActive);
-                            else return buildTripleReverce(leftWidth, rightWidth, em, appVM.isinLoading,!curWd.isActive);
-                          }).toList()
-                        ])
-                    );
-                  },
-                ),
-                const SizedBox(height: 5),
-                ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.fieldFillColor,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10), // <-- Radius
-                      ),
-                    ),
-                    onPressed: (){
-                      if(curWd.isActive) {
-                        appViewModel.photoUrls.clear();
-                        BlocProvider.of<NavigationBloc>(context)
-                            .add(NavigateToGalleryScreenEvent());
-                      }else{
-                        showUneditable();
-                      }
-                    },
-                    child: const Text("Добавить", style: TextStyle(color: AppColors.greytextColor),)
-                ),
-                const SizedBox(height: 10),
-                Align(
-                    alignment: Alignment.center,
-                    child:
-                    GestureDetector(child:
-                    Column(children: [
-                      const Text("Выбери цвет", style: TextStyle(color: Colors.black54/*, decoration: TextDecoration.underline*/),),
-                      const SizedBox(height: 10),
-                      Container(
-                        width: 100.0, // Ширина круга
-                        height: 100.0, // Высота круга
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle, // Задаем форму круга
-                          color: circleColor, // Устанавливаем цвет
-                        ),
-                      )
-                    ],),
-                      onTap: () {
-                        final shotColor = circleColor.value;
-                        if(curWd.isActive){showDialog(
-                          context: context,
-                          builder: (context) {
-                            return ColorPickerWidget(initColor: circleColor ,onColorSelected: (Color c){
-                              setState(() {
-                                if(shotColor!=c.value)appViewModel.isChanged=true;
-                                curWd.color=c;
-                                circleColor = c;
-                              });
-                            });
-                          },
-                        );}else{
+                      const SizedBox(height: 24),
+                      const Divider(color: AppColors.grey, height: 2,),
+                      const SizedBox(height: 16),
+                      OutlinedGradientButton(" Добавить фото", (){
+                        if(curWd.isActive) {
+                          appViewModel.photoUrls.clear();
+                          BlocProvider.of<NavigationBloc>(context)
+                              .add(NavigateToGalleryScreenEvent());
+                        }else{
                           showUneditable();
                         }
                       },
-                    )),
-                Align(
-                  alignment: Alignment.center,
-                  child: Column(children: [
-                    const Text("Цели и задачи", style: TextStyle(color: Colors.black54/*, decoration: TextDecoration.underline*/),),
-                    const SizedBox(height: 5),
-                    appVM.settings.treeView==0?MyTreeView(key: UniqueKey(),roots: root, onTap: (id, type) => onTreeItemTap(appVM, id, type)):
-                    TreeViewWidgetV2(key: UniqueKey(), root: root.firstOrNull??MyTreeNode(id: -1, type: "a", title: "title", isChecked: true), idToOpen: 0, onTap: (id,type) => onTreeItemTap(appVM, id, type),),
-                    const SizedBox(height: 5),
-                    ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.fieldFillColor,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10), // <-- Radius
-                          ),
-                        ),
-                        onPressed: (){
-                          if(curWd.isActive){BlocProvider.of<NavigationBloc>(context)
-                              .add(NavigateToAimCreateScreenEvent(0));}else{
-                            showUneditable();
-                          }
-                        },
-                        child: const Text("Добавить", style: TextStyle(color: AppColors.greytextColor))
-                    ),
-                    if(curWd.isActive)ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.fieldFillColor,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10), // <-- Radius
-                          ),
-                        ),
-                        onPressed: () async {
-                          if(appVM.mainScreenState?.allCircles.where((element) => element.parenId==0).toList().length==12){
-                            showDialog(context: context,
-                              builder: (BuildContext context) => AlertDialog(
-                                contentPadding: EdgeInsets.zero,
-                                shape: const RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.all(Radius.circular(32.0))),
-                                content: const Column(
-                                  mainAxisSize: MainAxisSize.min,
+                          widgetBeforeText: const Icon(Icons.add_circle_outline_sharp, size: 20,)
+                      ),
+                      const SizedBox(height: 16),
+                      const Text("Добавьте образы вашего желания - это важно!", style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500)),
+                      const Text("Чем ближе будут образы вашему представлению, тем сильнее будет визуализация вашего желания.", textAlign: TextAlign.center, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w400, color: AppColors.greyTransparent)),
+                      const SizedBox(height: 16),
+                      LayoutBuilder(
+                        builder: (context, constraints) {
+                          double fullWidth = constraints.maxWidth-9;
+                          double leftWidth = (constraints.maxWidth /2)-9;
+                          double rightWidth = constraints.maxWidth - leftWidth - 9;
+                          List<List<Uint8List>> imagesSet = [];
+                          for (var element in appViewModel.cachedImages) {if(imagesSet.isNotEmpty&&imagesSet.last.length<3){imagesSet.last.add(element);}else{imagesSet.add([element]);}}
+                          if(imagesSet.isNotEmpty)imagesSet.removeAt(0);
+                          return Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children:[
+                                Row(
                                   children: [
-                                    Text("Достигнуто максимальноке количество сфер на орбите. Вы можете скрть или удалить другие сферы, чтобы освободить место для демонстрации данной сферы на орбите", maxLines: 5, textAlign: TextAlign.center,),
-                                    SizedBox(height: 4,),
-                                    Divider(color: AppColors.dividerGreyColor,),
+                                    SizedBox(width: leftWidth, height: leftWidth*1.5,
+                                      child: appViewModel.isinLoading? const Align(alignment: Alignment.bottomCenter,
+                                        child: LinearCappedProgressIndicator(
+                                          backgroundColor: Colors.black26,
+                                          color: Colors.black,
+                                          cornerRadius: 0,
+                                        ),): appViewModel.cachedImages.isNotEmpty?Image.memory(appViewModel.cachedImages.first, fit: BoxFit.cover):DottedBorder(color: AppColors.darkGrey, dashPattern: const [5, 3], borderType: BorderType.RRect, radius: const Radius.circular(10), child: const Center(child: Icon(Icons.photo_camera_outlined, size: 38, color: AppColors.darkGrey,))),
+                                    ),
+                                    const SizedBox(width: 9),
+                                    Column(children: [
+                                      SizedBox(width: rightWidth, height: leftWidth*1.5/2-9,
+                                        child: appViewModel.isinLoading? const Align(alignment: Alignment.bottomCenter,
+                                          child: LinearCappedProgressIndicator(
+                                            backgroundColor: Colors.black26,
+                                            color: Colors.black,
+                                            cornerRadius: 0,
+                                          ),): appViewModel.cachedImages.length>1?Image.memory(appViewModel.cachedImages[1], fit: BoxFit.cover):DottedBorder(color: AppColors.darkGrey, dashPattern: const [5, 3], borderType: BorderType.RRect, radius: const Radius.circular(10), child: const Center(child: Icon(Icons.photo_camera_outlined, size: 38, color: AppColors.darkGrey,))),
+                                      ),
+                                      const SizedBox(height: 9),
+                                      SizedBox(width: rightWidth, height: leftWidth*1.5/2-1,
+                                        child: appViewModel.isinLoading? const Align(alignment: Alignment.bottomCenter,
+                                          child: LinearCappedProgressIndicator(
+                                            backgroundColor: Colors.black26,
+                                            color: Colors.black,
+                                            cornerRadius: 0,
+                                          ),): appViewModel.cachedImages.length>2?Image.memory(appViewModel.cachedImages[2], fit: BoxFit.cover):DottedBorder(color: AppColors.darkGrey, dashPattern: const [5, 3], borderType: BorderType.RRect, radius: const Radius.circular(10), child: const Center(child: Icon(Icons.photo_camera_outlined, size: 38, color: AppColors.darkGrey,))),
+                                      ),
+                                    ],)
                                   ],
                                 ),
-                                actions: <Widget>[
-                                  TextButton(
-                                    onPressed: () async { Navigator.pop(context, 'OK'); },
-                                    child: const Text('Ok'),
-                                  ),
-                                ],
+                                ...imagesSet.map((e) {
+                                  Map<Uint8List, int?> em = Map.fromIterable(e, key: (v)=>v, value: (v)=>null);
+                                  if(e.length==1) {
+                                    return buildSingle(fullWidth, e.first, appVM.isinLoading, !curWd.isActive);
+                                  } else if(e.length==2) return buildTwin(leftWidth, rightWidth, em, appVM.isinLoading, !curWd.isActive);
+                                  else if(imagesSet.indexOf(e)%2!=0) return buildTriple(leftWidth, rightWidth, em, appVM.isinLoading, !curWd.isActive);
+                                  else return buildTripleReverce(leftWidth, rightWidth, em, appVM.isinLoading, !curWd.isActive);
+                                }).toList()
+                              ]);
+                        },
+                      ),
+                      const SizedBox(height: 24),
+                      const Divider(color: AppColors.grey, height: 2,),
+                      const SizedBox(height: 24),
+                      Align(
+                        alignment: Alignment.center,
+                        child:
+                        Column(children: [
+                          const Text("Выберите цвет", style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),),
+                          const SizedBox(height: 10),
+                          Container(
+                              width: 64.0, // Ширина круга
+                              height: 64.0, // Высота круга
+                              decoration: BoxDecoration(
+                                  border: Border.all(color: shotColor??Colors.white, width: 2),
+                                  shape: BoxShape.circle,
+                                  color: Colors.white
+                              )
+                          )
+                        ],),
+                      ),
+                      const SizedBox(height: 24),
+                      const Align(alignment: Alignment.centerLeft, child: Text("По умолчанию", style: TextStyle(fontWeight: FontWeight.w500))),
+                      const SizedBox(height: 13),
+                      SizedBox(
+                        height: 40.0,
+                        child: ListView(
+                          scrollDirection: Axis.horizontal,
+                          children: List.generate(10, (int index) {
+                            return Card(
+                              color: defaultColorList[index],
+                              child: InkWell(
+                                onTap: (){
+                                  setState(() {
+                                    if(shotColor!=defaultColorList[index])appViewModel.isChanged=true;
+                                    shotColor=defaultColorList[index];
+                                    curWd.color=defaultColorList[index];
+                                  });
+                                },
+                                child: SizedBox(
+                                  width: 34.0,
+                                  height: 34.0,
+                                  child: shotColor==defaultColorList[index]?const Icon(Icons.check, color: Colors.white, size: 20,):const SizedBox(),
+                                ),
                               ),
                             );
-                          }else {
-                            final childlastid = appViewModel.mainScreenState?.allCircles.where((element) =>
-                            element.parenId == 1 && element.nextId == -1).firstOrNull?.id ?? -1;
-                            int wishid = appViewModel.mainScreenState!.allCircles.isNotEmpty ? appViewModel.mainScreenState!.allCircles.map((circle) => circle.id).reduce((value, element) => value > element ? value : element) + 1 : -101;
-                            await appViewModel.createNewSphereWish(WishData(id: wishid, prevId: childlastid, nextId: -1, parentId: curWd.id, text: "Новое сфера", description: "", affirmation: (defaultAffirmations.join("|").toString()), color: Colors.red), true).then((value) {
-                              BlocProvider.of<NavigationBloc>(context)
-                                  .clearHistory();
-                              appVM.cachedImages.clear();
-                              appVM.wishScreenState = null;
-                              appViewModel.startWishScreen(wishid, 1, false);
-                              BlocProvider.of<NavigationBloc>(context)
-                                  .add(NavigateToWishScreenEvent());
-                            }
+                          }),
+                        ),
+                      ),
+                      const SizedBox(height: 21),
+                      const Align(alignment: Alignment.centerLeft, child: Text("Свой цвет", style: TextStyle(fontWeight: FontWeight.w500))),
+                      const SizedBox(height: 13),
+                      SizedBox(
+                        height: 40.0,
+                        child: ListView(
+                          scrollDirection: Axis.horizontal,
+                          children: List.generate(myColors.length, (int index) {
+                            return myColors[index]!=Colors.transparent?Card(
+                              color: myColors[index],
+                              child: InkWell(
+                                onTap: (){
+                                  setState(() {
+                                    if(shotColor!=myColors[index])appViewModel.isChanged=true;
+                                    shotColor=myColors[index];
+                                    curWd.color=myColors[index];
+                                  });
+                                },
+                                child: SizedBox(
+                                  width: 34.0,
+                                  height: 34.0,
+                                  child: shotColor==myColors[index]?const Icon(Icons.check, color: Colors.white, size: 20,):const SizedBox(),
+                                ),
+                              ),
+                            ):InkWell(
+                              onTap: (){
+                                final _color = shotColor?.value;
+                                !curWd.isActive?showUneditable():showModalBottomSheet(context: context, isScrollControlled: true, builder: (BuildContext context){
+                                  return ColorPickerBS(shotColor??Colors.white, (c){
+                                    setState(() {
+                                      if(_color!=c.value)appViewModel.isChanged=true;
+                                      shotColor=c;
+                                      curWd.color=c;
+                                      appViewModel.saveUserColor(c);
+                                    });
+                                    Navigator.pop(context);
+                                  });
+                                });
+                              },
+                              child: Center(
+                                child: Container(
+                                  width: 34.0,
+                                  height: 34.0,
+                                  decoration: BoxDecoration(
+                                      borderRadius: const BorderRadius.all(Radius.circular(12)),
+                                      border: Border.all(color: AppColors.darkGrey)
+                                  ),
+                                  child: const Icon(Icons.add, color: AppColors.darkGrey, size: 14),
+                                ),
+                              ),
                             );
+                          }),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      const Divider(color: AppColors.grey, height: 2,),
+                      const SizedBox(height: 24),
+                      Align(
+                          alignment: Alignment.center,
+                          child: Column(children: [
+                            appVM.settings.treeView==0?MyTreeView(key: UniqueKey(),roots: root, onTap: (id, type) => onTreeItemTap(appVM, id, type)):
+                            TreeViewWidgetV2(key: UniqueKey(), root: root.firstOrNull??MyTreeNode(id: -1, type: "a", title: "title", isChecked: true), idToOpen: 0, onTap: (id,type) => onTreeItemTap(appVM, id, type),),
+                            const SizedBox(height: 16)
+                          ])
+                      ),
+                      if(curWd.isActive)OutlinedGradientButton("Добавить цель", (){
+                        if(curWd.isActive){BlocProvider.of<NavigationBloc>(context)
+                            .add(NavigateToAimCreateScreenEvent(0));}else{
+                          showUneditable();
+                        }
+                      },),
+                      const SizedBox(height: 8),
+                      if(curWd.isActive)OutlinedGradientButton("Добавить сферу", () async {
+                        if(appVM.mainScreenState?.allCircles.where((element) => element.parenId==0).toList().length==12){
+                          showModalBottomSheet<void>(
+                            context: context,
+                            isScrollControlled: true,
+                            builder: (BuildContext context) {
+                              return NotifyBS('Достигнуто максимальноке количество сфер на орбите. Вы можете скрть или удалить другие сферы, чтобы освободить место для демонстрации данной сферы на орбите', "", 'OK',
+                                  onOk: () => Navigator.pop(context, 'OK'));
+                            },
+                          );
+                        }else {
+                          final childlastid = appViewModel.mainScreenState?.allCircles.where((element) =>
+                          element.parenId == 1 && element.nextId == -1).firstOrNull?.id ?? -1;
+                          int wishid = appViewModel.mainScreenState!.allCircles.isNotEmpty ? appViewModel.mainScreenState!.allCircles.map((circle) => circle.id).reduce((value, element) => value > element ? value : element) + 1 : -101;
+                          await appViewModel.createNewSphereWish(WishData(id: wishid, prevId: childlastid, nextId: -1, parentId: curWd.id, text: "Новое сфера", description: "", affirmation: (defaultAffirmations.join("|").toString()), color: Colors.red), true).then((value) {
+                            BlocProvider.of<NavigationBloc>(context)
+                                .clearHistory();
+                            appVM.cachedImages.clear();
+                            appVM.wishScreenState = null;
+                            appViewModel.startWishScreen(wishid, 1, false);
+                            BlocProvider.of<NavigationBloc>(context)
+                                .add(NavigateToWishScreenEvent());
                           }
-                        },
-                        child: const Text("Добавить сферу", style: TextStyle(color: AppColors.greytextColor))
-                    )
-                  ],),
-                )]))),),
-                if(MediaQuery.of(context).viewInsets.bottom!=0) SizedBox(height: 30,
-                  child: FooterLayout(
-                    footer: Container(height: 30,color: Colors.white,alignment: Alignment.centerRight, child:
-                    GestureDetector(
-                      onTap: (){FocusManager.instance.primaryFocus?.unfocus();},
-                      child: const Text("готово", style: TextStyle(fontSize: 20),),
-                    )
-                      ,),
-                  ),)
+                          );
+                        }
+                      },
+                      )]
+                      ))
+                  )
+                ),
+                if(MediaQuery.of(context).viewInsets.bottom!=0) Align(
+                  alignment: Alignment.topRight,
+                  child: Container(height: 50, width: 50,
+                      margin: const EdgeInsets.fromLTRB(0, 0, 16, 16),
+                      alignment: Alignment.center,
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white,
+                      ), child:
+                      GestureDetector(
+                        onTap: (){FocusManager.instance.primaryFocus?.unfocus();},
+                        child: const Icon(Icons.keyboard_hide_sharp, size: 30, color: AppColors.darkGrey,),
+                      )
+                  ),
+                )
               ],
             ),
-    ));});
+            )
+    );
+        });
   }
 
   Future<void> onSaveClicked(AppViewModel appViewModel) async {
     if(curWd.text.isEmpty||curWd.affirmation.isEmpty){
-      showDialog(context: context,
-        builder: (BuildContext context) => AlertDialog(
-          title: const Text('Необходимо заполнить все поля со знаком *'),
-          shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(Radius.circular(32.0))),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () => Navigator.pop(context, 'OK'),
-              child: const Text('OK'),
-            ),
-          ],
-        ),
+      showModalBottomSheet<void>(
+        context: context,
+        isScrollControlled: true,
+        builder: (BuildContext context) {
+          return NotifyBS('Необходимо заполнить все поля со знаком *', "", 'OK',
+              onOk: () => Navigator.pop(context, 'OK'));
+        },
       );
       return;
     }
@@ -486,82 +496,46 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
     if(appViewModel.mainScreenState!=null)appViewModel.startMainScreen(appViewModel.mainScreenState!.moon);
     appViewModel.hint="Отлично! Теперь пришло время заполнить все сферы жизни. Ты можешь настроить состав и название сфер так, как считаешь нужным. И помни, что максимальное количество сфер ограничено и равно 13.";
     appViewModel.isChanged = false;
-    showDialog(context: context,
-      builder: (BuildContext c) => AlertDialog(
-        title: const Text('Сохранено'),
-        shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(32.0))),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () {
-              Navigator.pop(c, 'OK');
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (BuildContext context) {
+        return NotifyBS('Сохранено', "", 'OK',
+            onOk: () {
+              Navigator.pop(context, 'OK');
               appViewModel.mainCircles.clear();
               appViewModel.startMainScreen(appViewModel.mainScreenState!.moon);
               BlocProvider.of<NavigationBloc>(context)
                   .add(NavigateToMainScreenEvent());
-              },
-            child: const Text('OK'),
-          ),
-        ],
-      ),
+            });
+      },
     );
   }
 
   showOnExit(AppViewModel appVM){
-      showDialog(context: context,
-        builder: (BuildContext c) => AlertDialog(
-          contentPadding: EdgeInsets.zero,
-          shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(Radius.circular(32.0))),
-          title: const Text('Внимание', textAlign: TextAlign.center,),
-          content: const Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text("Вы изменили поля но не нажали 'Сохранить'", maxLines: 6, textAlign: TextAlign.center,),
-              SizedBox(height: 4,),
-              Divider(color: AppColors.dividerGreyColor,),
-              SizedBox(height: 4,),
-              Text("Сохранить изменения?", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),)
-            ],
-          ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () async { Navigator.pop(c, 'OK');
-              onSaveClicked(appVM);
-              },
-              child: const Text('Да'),
-            ),
-            TextButton(
-              onPressed: () { Navigator.pop(context, 'Cancel');
-                appVM.isChanged=false;
-              },
-              child: const Text('Нет'),
-            ),
-          ],
-        ),
-      );
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (BuildContext context) {
+        return ActionBS('Внимание', "Вы изменили поля но не нажали 'Сохранить'\nСохранить изменения?", "Да", 'Нет',
+            onOk: () {
+            Navigator.pop(context, 'OK');
+            onSaveClicked(appVM);
+            },
+            onCancel: () { Navigator.pop(context, 'Cancel');
+            appVM.isChanged=false;
+            });
+      },
+    );
   }
   void showUneditable(){
-    showDialog(context: context,
-      builder: (BuildContext context) => AlertDialog(
-        contentPadding: EdgeInsets.zero,
-        shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(32.0))),
-        content: const Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text("Чтобы редактировать 'Я' необходимо изменить статус на 'актуальное' нажав кнопку 'осознать'", maxLines: 5, textAlign: TextAlign.center,),
-            SizedBox(height: 4,),
-            Divider(color: AppColors.dividerGreyColor,),
-          ],
-        ),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () async { Navigator.pop(context, 'OK'); },
-            child: const Text('Ok'),
-          ),
-        ],
-      ),
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (BuildContext context) {
+        return NotifyBS("Чтобы редактировать 'Я' необходимо изменить статус на 'актуальное' нажав кнопку 'осознать'", "", 'OK',
+            onOk: () => Navigator.pop(context, 'OK'));
+      },
     );
   }
    void onTreeItemTap(AppViewModel appVM, int id, String type){

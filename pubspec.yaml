@@ -65,6 +65,9 @@ dependencies:
   firebase_storage: ^11.7.1
   flutter_downloader: ^1.11.7
   lottie: ^3.1.0
+  dotted_border: ^2.1.0
+  flutter_svg: ^2.0.10+1
+  confetti: ^0.7.0
 
 
 dev_dependencies:

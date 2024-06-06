@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 
 import 'custom_bottom_button.dart';
 
@@ -25,23 +26,23 @@ class BottomBar extends StatelessWidget{
         children: [
           CustomBottomButton(
               onPressed: ()=>onTasksTap(),
-              icon: Image.asset('assets/icons/bot_task.png', height: 24, width: 24),
+              icon: SvgPicture.asset('assets/icons/tasks.svg', height: 24, width: 24),
               label: "Задачи"
           ),
           CustomBottomButton(
               onPressed: ()=>onAimsTap(),
-              icon: Image.asset('assets/icons/bot_aim.png', height: 24, width: 24),
+              icon: SvgPicture.asset('assets/icons/goals.svg', height: 24, width: 24),
               label: "Цели"
           ),
-          IconButton(onPressed: ()=>onMapTap(), padding: EdgeInsets.zero, constraints: const BoxConstraints(), icon: Image.asset('assets/icons/bot_center.png',  width: 58, height: 50,)),
+          IconButton(onPressed: ()=>onMapTap(), padding: EdgeInsets.zero, constraints: const BoxConstraints(), icon: SvgPicture.asset('assets/icons/map.svg',  width: 58, height: 47,)),
           CustomBottomButton(
               onPressed: ()=>onWishesTap(),
-              icon: Image.asset('assets/icons/bot_wishes.png', height: 24, width: 24),
+              icon: SvgPicture.asset('assets/icons/favourites.svg', height: 24, width: 24),
               label: "Желания"
           ),
           CustomBottomButton(
               onPressed: ()=>onDiaryTap(),
-              icon: Image.asset('assets/icons/bot_diary.png', height: 24, width: 24),
+              icon: SvgPicture.asset('assets/icons/diary.svg', height: 24, width: 24),
               label: "Дневник"
           ),
         ],

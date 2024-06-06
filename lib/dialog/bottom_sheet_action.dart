@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:wishmap/interface_widgets/colorButton.dart';
 import 'package:wishmap/interface_widgets/outlined_button.dart';
 
@@ -15,22 +16,25 @@ class ActionBS extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        const SizedBox(height: 22),
-        Text(title, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 20)),
-        Text(subtitle),
-        const SizedBox(height: 16),
-        Row(
-          children: [
-            OutlinedGradientButton(cancelText, () => onCancel()),
-            const SizedBox(width: 8),
-            ColorRoundedButton(cancelText, () => onOk())
-          ],
-        ),
-        const SizedBox(height: 40)
-      ],
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const SizedBox(height: 22),
+          Text(title, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 20)),
+          Text(subtitle),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(child: OutlinedGradientButton(cancelText, () => onCancel())),
+              const SizedBox(width: 8),
+              Expanded(child: ColorRoundedButton(okText, () => onOk()))
+            ],
+          ),
+          const SizedBox(height: 40)
+        ],
+      ),
     );
   }
 }

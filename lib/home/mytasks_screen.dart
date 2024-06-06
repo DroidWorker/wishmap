@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:capped_progress_indicator/capped_progress_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
 import '../ViewModel.dart';
 import '../common/bottombar.dart';
@@ -10,6 +11,7 @@ import '../common/custom_bottom_button.dart';
 import '../common/taskitem_widget.dart';
 import '../data/models.dart';
 import '../data/static.dart';
+import '../dialog/bottom_sheet_action.dart';
 import '../interface_widgets/colorButton.dart';
 import '../navigation/navigation_block.dart';
 import '../res/colors.dart';
@@ -70,7 +72,7 @@ class _TaskScreenState extends State{
                         style: const ButtonStyle(
                           tapTargetSize: MaterialTapTargetSize.shrinkWrap, // the '2023' part
                         ),
-                        icon: Image.asset("assets/icons/trash.png"),
+                        icon: SvgPicture.asset("assets/icons/trash.svg", width: 28, height: 28),
                         onPressed: () {
                           setState(() {
                             trashModeActive = !trashModeActive;
@@ -291,37 +293,19 @@ class _TaskScreenState extends State{
         appViewModel.taskItems.firstWhere((element) => element.id==id).isChecked=true;
       });
     }else{//удалить
-      showDialog(context: context,
-        builder: (BuildContext c) => AlertDialog(
-          contentPadding: EdgeInsets.zero,
-          shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(Radius.circular(32.0))),
-          title: const Text('Внимание', textAlign: TextAlign.center,),
-          content: const Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text("Задача будет удалена", maxLines: 4, textAlign: TextAlign.center,),
-              SizedBox(height: 4,),
-              Divider(color: AppColors.dividerGreyColor,),
-              SizedBox(height: 4,),
-              Text("Удалить?", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),)
-            ],
-          ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
+      showModalBottomSheet<void>(
+        context: context,
+        isScrollControlled: true,
+        builder: (BuildContext context) {
+          return ActionBS('Внимание', "Задача будет удалена\nУдалить?", "Да", 'Нет',
+              onOk: () {
                 Navigator.pop(context, 'OK');
                 appViewModel.deleteTask(id ,task.parentId);
                 taskList.removeWhere((element) => element.id==id);
               },
-              child: const Text('Да'),
-            ),
-            TextButton(
-              onPressed: () { Navigator.pop(context, 'Cancel');},
-              child: const Text('Нет'),
-            ),
-          ],
-        ),
+              onCancel: () { Navigator.pop(context, 'Cancel');
+              });
+        },
       );
     }
   }

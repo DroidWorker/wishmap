@@ -100,17 +100,17 @@ class AimScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 TextField(
+                  maxLength: 260,
+                  maxLines: 5,
                   controller: description,
-                  minLines: 4,
-                  maxLines: 15,
+                  showCursor: false,
+                  readOnly: true,
                   onTap: () async {
                       final returnedText = await showOverlayedEdittext(context, description.text, true)??"";
                       if(returnedText!=description.text) {
                         description.text = returnedText;
                       }
                   },
-                  showCursor: false,
-                  readOnly: true,
                   style: const TextStyle(color: Colors.black), // Черный текст ввода
                   decoration: InputDecoration(
                     contentPadding: const EdgeInsets.fromLTRB(16, 16, 16, 19),
@@ -153,7 +153,7 @@ class AimScreen extends StatelessWidget {
                   if(MediaQuery.of(context).viewInsets.bottom!=0) Align(
                     alignment: Alignment.topRight,
                     child: Container(height: 50, width: 50,
-                        margin: const EdgeInsets.fromLTRB(0, 16, 16, 16),
+                        margin: const EdgeInsets.fromLTRB(0, 0, 16, 16),
                         alignment: Alignment.center,
                         decoration: const BoxDecoration(
                           shape: BoxShape.circle,

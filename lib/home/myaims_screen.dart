@@ -5,6 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
 import 'package:wishmap/common/aimitem_widget.dart';
 import 'package:wishmap/interface_widgets/colorButton.dart';
@@ -12,6 +13,7 @@ import '../ViewModel.dart';
 import '../common/bottombar.dart';
 import '../data/models.dart';
 import '../data/static.dart';
+import '../dialog/bottom_sheet_action.dart';
 import '../navigation/navigation_block.dart';
 import '../res/colors.dart';
 
@@ -71,7 +73,7 @@ class _AimsScreenState extends State<AimsScreen>{
                       style: const ButtonStyle(
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap, // the '2023' part
                       ),
-                      icon: Image.asset("assets/icons/trash.png"),
+                      icon: SvgPicture.asset("assets/icons/trash.svg", width: 28, height: 28),
                       onPressed: () {
                         setState(() {
                           trashModeActive = !trashModeActive;
@@ -298,37 +300,19 @@ class _AimsScreenState extends State<AimsScreen>{
         appViewModel.aimItems.firstWhere((element) => element.id==id).isChecked=true;
       });
     }else{//удалить
-      showDialog(context: context,
-        builder: (BuildContext c) => AlertDialog(
-          contentPadding: EdgeInsets.zero,
-          shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(Radius.circular(32.0))),
-          title: const Text('Внимание', textAlign: TextAlign.center,),
-          content: const Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text("Цель будет удалена", maxLines: 4, textAlign: TextAlign.center,),
-              SizedBox(height: 4,),
-              Divider(color: AppColors.dividerGreyColor,),
-              SizedBox(height: 4,),
-              Text("Удалить?", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),)
-            ],
-          ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
+      showModalBottomSheet<void>(
+        context: context,
+        isScrollControlled: true,
+        builder: (BuildContext context) {
+          return ActionBS('Внимание', "Цель будет удалена. Удалить?", "Да", 'Нет',
+              onOk: () {
                 Navigator.pop(context, 'OK');
                 appViewModel.deleteAim(id ,aim.parentId);
                 allAims.removeWhere((element) => element.id==id);
               },
-              child: const Text('Да'),
-            ),
-            TextButton(
-              onPressed: () { Navigator.pop(context, 'Cancel');},
-              child: const Text('Нет'),
-            ),
-          ],
-        ),
+              onCancel: () { Navigator.pop(context, 'Cancel');
+              });
+        },
       );
     }
   }

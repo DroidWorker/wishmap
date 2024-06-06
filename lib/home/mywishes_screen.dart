@@ -10,6 +10,7 @@ import '../common/bottombar.dart';
 import '../common/treeview_widget.dart';
 import '../data/models.dart';
 import '../data/static.dart';
+import '../dialog/bottom_sheet_action.dart';
 import '../interface_widgets/colorButton.dart';
 import '../navigation/navigation_block.dart';
 import '../res/colors.dart';
@@ -75,15 +76,6 @@ class _WishesScreenState extends State<WishesScreen>{
                     const Text("Мои желания", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                     const Spacer(),
                     const SizedBox(width: 32)
-                    /*IconButton(
-                      icon: Image.asset("assets/icons/trash.png"),
-                      onPressed: () {
-                        setState(() {
-                          trashModeActive = !trashModeActive;
-                          deleteQueue.clear();
-                        });
-                      },
-                    ),*/
                   ],
                   ),
                   const SizedBox(height: 15),
@@ -192,7 +184,7 @@ class _WishesScreenState extends State<WishesScreen>{
                         return Align(
                       alignment: Alignment.centerLeft,
                       child: SizedBox(
-                        child: MyTreeView(key: UniqueKey(), roots: roots, applyColorChangibg: false, fillWidth: true, onTap: (id, type){
+                        child: MyTreeView(key: UniqueKey(), roots: roots, applyColorChangibg: false, fillWidth: true, alignRight: true, onTap: (id, type){
                           if(type=="m"){
                             BlocProvider.of<NavigationBloc>(context).clearHistory();
                             appVM.cachedImages.clear();
@@ -325,43 +317,20 @@ class _WishesScreenState extends State<WishesScreen>{
             .isChecked = true;
       });
     } else { //удалить
-      showDialog(context: context,
-        builder: (BuildContext c) =>
-            AlertDialog(
-              contentPadding: EdgeInsets.zero,
-              shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(32.0))),
-              title: const Text('Внимание', textAlign: TextAlign.center,),
-              content: const Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text("Желание будет удалена", maxLines: 4,
-                    textAlign: TextAlign.center,),
-                  SizedBox(height: 4,),
-                  Divider(color: AppColors.dividerGreyColor,),
-                  SizedBox(height: 4,),
-                  Text("Удалить?", style: TextStyle(
-                      fontWeight: FontWeight.bold, fontSize: 18),)
-                ],
-              ),
-              actions: <Widget>[
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(context, 'OK');
-                    appViewModel?.deleteSphereWish(
-                        id, wish.prevId, wish.nextId);
-                    allWishList.removeWhere((element) => element.id == id);
-                  },
-                  child: const Text('Да'),
-                ),
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(context, 'Cancel');
-                  },
-                  child: const Text('Нет'),
-                ),
-              ],
-            ),
+      showModalBottomSheet<void>(
+        context: context,
+        isScrollControlled: true,
+        builder: (BuildContext context) {
+          return ActionBS('Внимание', "Желание будет удалена\nУдалить?", "Да", 'Нет',
+              onOk: () {
+                Navigator.pop(context, 'OK');
+                appViewModel?.deleteSphereWish(
+                    id, wish.prevId, wish.nextId);
+                allWishList.removeWhere((element) => element.id == id);
+              },
+              onCancel: () { Navigator.pop(context, 'Cancel');
+              });
+        },
       );
     }
   }

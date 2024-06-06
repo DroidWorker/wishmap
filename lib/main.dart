@@ -21,7 +21,7 @@ import 'ViewModel.dart';
 import 'common/error_widget.dart';
 import 'firebase_options.dart';
 import 'home/myaims_screen.dart';
-import 'home/mywishesScreen.dart';
+import 'home/mywishes_screen.dart';
 import 'home/profile_screen.dart';
 import 'home/settings/sounds_setting.dart';
 import 'home/taskedit_screen.dart';
