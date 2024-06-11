@@ -47,29 +47,40 @@ class GalleryScreenState extends State<GalleryScreen>{
       body: SafeArea(
           child: Column(
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.keyboard_arrow_left, size: 24,),
-                    onPressed: () {
-                      BlocProvider.of<NavigationBloc>(context).handleBackPress();
-                    },
-                  ),
-                  const Text("Добавить образ", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),),
-                  (screenNumber==0&&!deleteMode)?GestureDetector(
-                    onTap: (){
-                      setState(() {
-                        deleteMode=true;
-                      });
-                    },
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: SvgPicture.asset("assets/icons/trash.svg", width: 28, height: 28),
-                      )
-                  ):const SizedBox(width: 44),
-                ],
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 2),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    IconButton(
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      style: const ButtonStyle(
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap, // the '2023' part
+                      ),
+                      icon: const Icon(Icons.keyboard_arrow_left, size: 32, color: AppColors.gradientStart),
+                      onPressed: () {
+                        BlocProvider.of<NavigationBloc>(context).handleBackPress();
+                      },
+                    ),
+                    const Text("Добавить образ", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),),
+                    (screenNumber==0&&!deleteMode)?GestureDetector(
+                      onTap: (){
+                        setState(() {
+                          deleteMode=true;
+                        });
+                      },
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: SvgPicture.asset("assets/icons/trash.svg", width: 28, height: 28),
+                        )
+                    ):const SizedBox(width: 44),
+                  ],
+                ),
               ),
+              const SizedBox(height: 8),
+              const Text("Добавьте образы вашего желания - это важно!", style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500)),
+              const Text("Чем ближе будут образы вашему представлению, тем сильнее будет визуализация вашего желания.", textAlign: TextAlign.center, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w400, color: AppColors.greyTransparent)),
               const SizedBox(height: 16),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,

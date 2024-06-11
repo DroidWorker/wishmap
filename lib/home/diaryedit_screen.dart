@@ -2,14 +2,15 @@ import 'package:emoji_choose/emoji_choose.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:keyboard_attachable/keyboard_attachable.dart';
 import 'package:provider/provider.dart';
 
 import '../ViewModel.dart';
 import '../common/bottombar.dart';
+import '../common/diary_article_item.dart';
 import '../common/diary_edittext_overlay.dart';
 import '../data/models.dart';
 import '../navigation/navigation_block.dart';
@@ -33,6 +34,9 @@ class DiaryEditScreenState extends State<DiaryEditScreen>{
   final tecsubtitle = TextEditingController();
   final tecdescription = TextEditingController();
   var isDescripttionOver = false;
+
+  var edittextActive = false;
+
   @override
   Widget build(BuildContext context) {
     tec.addListener(() { currentEmoji = tec.text; });
@@ -54,7 +58,13 @@ class DiaryEditScreenState extends State<DiaryEditScreen>{
           tectitle.text =currentTitle;
           tecsubtitle.text =currentSubtitle;
           tecdescription.text =currentdescription;
-          return Scaffold(
+          return edittextActive?
+          MyDETOverlay(isActive: true, text: "", onClose: (text, attachmentsList){
+            appVM.addDiaryArticle(text, attachmentsList, widget.diaryId);
+            setState(() {
+              edittextActive = false;
+            });
+          }):Scaffold(
             backgroundColor: AppColors.backgroundColor,
             body: SafeArea(maintainBottomViewPadding: true,
                 child:Padding(
@@ -75,10 +85,11 @@ class DiaryEditScreenState extends State<DiaryEditScreen>{
                               BlocProvider.of<NavigationBloc>(context).handleBackPress();
                             }
                         ),
-                        TextButton(onPressed: (){
-                          showDiaryOverlayedEdittext(context, currentTitle, true);
+                        TextButton(onPressed: () async {
+                          currentTitle = (await showDiaryOverlayedEdittext(context, currentTitle, false)).keys.firstOrNull??"";
+                          setState(() {});
                         },
-                            child: Text(currentTitle, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16))
+                            child: Text(currentTitle, style: const TextStyle(color: Colors.black, fontWeight: FontWeight.w600, fontSize: 16))
                         ),
                         IconButton(
                           padding: EdgeInsets.zero,
@@ -96,111 +107,119 @@ class DiaryEditScreenState extends State<DiaryEditScreen>{
                       ],
                     ),
                     const SizedBox(height: 16),
-                    Expanded(child:SingleChildScrollView(
-                        physics: const BouncingScrollPhysics(),
-                        child: Padding(
-                                padding: const EdgeInsets.all(5),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                                  children: [
-                                    GestureDetector(
-                                        onTap: () {
-                                          showModalBottomSheet<void>(
-                                            context: context,
-                                            builder: (BuildContext context) {
-                                              return EmojiChoose(
-                                                rows: 7,
-                                                columns: 7,
-                                                buttonMode: ButtonMode.MATERIAL,
-                                                recommendKeywords: const ["gratitude", "target", "laughter", "cup", "dream", "fear", "wish"],
-                                                numRecommended: 20,
-                                                onEmojiSelected: (emoji, category) {
-                                                  setState(() {
-                                                    currentEmoji=emoji.emoji;
-                                                  });
-                                                },
-                                              );
+                    Expanded(
+                      child: ListView.builder(
+                          shrinkWrap: true,
+                          itemCount: appVM.articles.length+1,
+                          itemBuilder: (context, index){
+                            return index==0? Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                GestureDetector(
+                                    onTap: () {
+                                      showModalBottomSheet<void>(
+                                        context: context,
+                                        builder: (BuildContext context) {
+                                          return EmojiChoose(
+                                            rows: 7,
+                                            columns: 7,
+                                            buttonMode: ButtonMode.MATERIAL,
+                                            recommendKeywords: const ["gratitude", "target", "laughter", "cup", "dream", "fear", "wish"],
+                                            numRecommended: 20,
+                                            onEmojiSelected: (emoji, category) {
+                                              setState(() {
+                                                currentEmoji=emoji.emoji;
+                                              });
                                             },
                                           );
                                         },
-                                        child: Stack(
-                                          children: [
-                                            Container(
-                                            height: 100,
-                                            width: 100,
-                                            margin: const EdgeInsets.all(5),
-                                            decoration: BoxDecoration(
-                                                color: diaryItem.color,
-                                                borderRadius: const BorderRadius.all(Radius.circular(16))
+                                      );
+                                    },
+                                    child: Stack(
+                                      children: [
+                                        Container(
+                                          height: 100,
+                                          width: 100,
+                                          margin: const EdgeInsets.all(5),
+                                          decoration: BoxDecoration(
+                                              color: diaryItem.color,
+                                              borderRadius: const BorderRadius.all(Radius.circular(16))
+                                          ),
+                                          alignment: Alignment.center,
+                                          child: Center(
+                                            child: Text(
+                                              currentEmoji,
+                                              style: const TextStyle(fontSize: 50),
                                             ),
-                                            alignment: Alignment.center,
-                                                child: Center(
-                                                  child: Text(
-                                                    currentEmoji,
-                                                    style: const TextStyle(fontSize: 50),
-                                                  ),
-                                                ),
-                                            ),
-                                            Positioned(
-                                                right: 0,
-                                                top: 0,
-                                                child: Container(
-                                                  height: 20, width: 20,
-                                                  decoration: BoxDecoration(
-                                                    borderRadius: BorderRadius.circular(4),
-                                                    color: Colors.white,
-                                                  ),
-                                                  child: const Icon(Icons.edit, size: 10,),
-                                                ))
-                                          ],
-                                        )
-                                    ),
-                                   const SizedBox(height: 24),
-                                    currentSubtitle.isNotEmpty?TextField(
-                                      controller: tecsubtitle,
-                                      maxLines: 3,
-                                      minLines: 3,
-                                      maxLength: 110,
-                                      decoration: isDescripttionOver?const InputDecoration(
-                                          errorText: 'максимальная длина текста 130 символов'
-                                      ):const InputDecoration(),
-                                      style: const TextStyle(color:  AppColors.greytextColor, fontSize: 16),
-                                      /*decoration: InputDecoration(
-                        hintText: currentTitle,
-                      ),*/
-                                    ):Container(
-                                      height: 60,
-                                      width: double.infinity,
-                                      padding: const EdgeInsets.all(14),
-                                      alignment: Alignment.centerLeft,
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(8),
-                                        border: Border.all(color: AppColors.etGrey)
-                                      ),
-                                      child: const Text("Описание", style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: AppColors.etGrey),),
-                                    ),
-
-                                  ],
+                                          ),
+                                        ),
+                                        Positioned(
+                                            right: 0,
+                                            top: 0,
+                                            child: Container(
+                                              height: 20, width: 20,
+                                              decoration: BoxDecoration(
+                                                borderRadius: BorderRadius.circular(4),
+                                                color: Colors.white,
+                                              ),
+                                              child: const Icon(Icons.edit, size: 10,),
+                                            ))
+                                      ],
+                                    )
                                 ),
-                              ))),
-                    if(MediaQuery.of(context).viewInsets.bottom!=0) SizedBox(height: 30,
-                      child: FooterLayout(
-                        footer: Container(height: 30,color: Colors.white,alignment: Alignment.centerRight, child:
-                        GestureDetector(
-                          onTap: (){FocusManager.instance.primaryFocus?.unfocus();},
-                          child: const Text("готово", style: TextStyle(fontSize: 20),),
-                        )
-                          ,),
-                      ),)]),
+                                const SizedBox(height: 24),
+                                currentSubtitle.isNotEmpty?TextField(
+                                  controller: tecsubtitle,
+                                  readOnly: true,
+                                  showCursor: false,
+                                  onTap: () async {
+                                    currentSubtitle = (await showDiaryOverlayedEdittext(context, currentSubtitle, false)).keys.firstOrNull??"";
+                                    setState(() {});
+                                  },
+                                  maxLines: 3,
+                                  minLines: 3,
+                                  maxLength: 110,
+                                  decoration: InputDecoration(
+                                    contentPadding: const EdgeInsets.fromLTRB(16,8,16,8),
+                                    enabledBorder: const OutlineInputBorder(borderSide: BorderSide(color: AppColors.etGrey)),
+                                    focusedBorder: const OutlineInputBorder(borderSide: BorderSide(color: AppColors.etGrey)),
+                                    errorText: isDescripttionOver? 'максимальная длина текста 130 символов':null,
+                                  ),
+                                  style: const TextStyle(color:  AppColors.greytextColor, fontSize: 16),
+                                ):Container(
+                                  height: 60,
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.all(14),
+                                  alignment: Alignment.centerLeft,
+                                  decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(color: AppColors.etGrey)
+                                  ),
+                                  child: const Text("Описание", style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: AppColors.etGrey),),
+                                ),
+                                const SizedBox(height: 14)
+                              ],
+                            ) :DiaryArticleItem(appVM.articles[index-1]);
+                          }
+                      ),
+                    )
+                    ]
+                  ),
                 )
             ),
             floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
             floatingActionButton: FloatingActionButton(
               backgroundColor: Colors.transparent,
               elevation: 0,
-              onPressed: (){
+              onPressed: () {
+                setState(() {
+                  edittextActive = true;
+                });
+                /*final initText = await showDiaryOverlayedEdittext(context, "", true)??"";
+                if(initText is Map<String?, List<String>>)appVM.addDiaryArticle(initText.keys.first??"неизвестная ошибка", initText.values.first, widget.diaryId);
 
+                 */
               },
               child: Container(
                 width: 60,

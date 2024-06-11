@@ -6,6 +6,7 @@ import 'package:collection/collection.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:wishmap/data/static_affirmations_women.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:wishmap/provider/file_loader.dart';
@@ -13,6 +14,7 @@ import 'package:wishmap/repository/Repository.dart';
 import 'package:wishmap/repository/photosSearch.dart';
 import 'package:wishmap/repository/local_repository.dart';
 
+import 'data/date_static.dart';
 import 'data/models.dart';
 
 class AppViewModel with ChangeNotifier {
@@ -115,6 +117,7 @@ class AppViewModel with ChangeNotifier {
     CardData(id: 4, emoji: "🌺", title: "Мои сны", description: "Если записывыать свои сны каждый день, ты обретешь суперспособности", text: "no text",color: const Color.fromARGB(255, 244, 205, 221)),
     CardData(id: 5, emoji: "🍔", title: "Мои страхи", description: "Выписывай все свои страхи и они начнут растворятся сами собой", text: "no text", color: const Color.fromARGB(255, 238, 255, 210)),
    ];
+  List<Article> articles = [];
 
   Future<void> init() async {
     authData = await localRep.getAuth();
@@ -482,8 +485,11 @@ class AppViewModel with ChangeNotifier {
 
   Future fetchDiary(int moonId) async{
     final diary = await repository.getDiaryList(moonId);
-    diary?.forEach((element) {
+    diary?.forEach((element, article) {
       localRep.addDiary(element,mainScreenState?.moon.id??-1);
+      articles.forEach((art) {
+        localRep.addDiaryArticle(art, moonId);
+      });
     });
     isDataFetched--;
   }
@@ -1326,6 +1332,15 @@ class AppViewModel with ChangeNotifier {
       addError("#532${ex.toString()}");
     }
   }
+  getDiaryArticles(int diaryId)async {
+    try{
+      articles = await localRep.getArticles(diaryId, mainScreenState?.moon.id??0);
+      notifyListeners();
+    }catch(ex, s){
+      addError(ex.toString());
+      print(ex.toString());
+    }
+  }
   Future<void> addDiary(CardData cd)async {
     try{
       diaryItems.add(cd);
@@ -1335,6 +1350,22 @@ class AppViewModel with ChangeNotifier {
       notifyListeners();
     }catch(ex){
       addError("#534${ex.toString()}");
+    }
+  }
+  Future addDiaryArticle(String title, List<String> attachmentsPaths, int parentId) async {
+    try{
+      final now = DateTime.now();
+      final date = "${now.day.toString().padLeft(2, '0')} ${monthOfYear[now.month]} ${now.year}г.";
+      final time = "${DateFormat('HH:mm').format(now)}, ${fullDayOfWeek[now.weekday]}";
+      final uniqueId = await localRep.addDiaryArticle(Article(articles.length, parentId, title, date, time, attachmentsPaths), mainScreenState!.moon.id);
+      final article = Article(uniqueId, parentId, title, date, time, attachmentsPaths);
+      if(connectivity != 'No Internet Connection')await repository.addDiaryArticle(article, mainScreenState!.moon.id);
+      articles.add(article);
+      updateMoonSync(mainScreenState?.moon.id??0);
+      notifyListeners();
+    }catch(ex, s){
+      addError("#5345${ex.toString()}");
+      print(s);
     }
   }
   Future<void> updateDiary(CardData cd)async{

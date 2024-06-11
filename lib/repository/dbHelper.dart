@@ -99,6 +99,18 @@ class DatabaseHelper {
         color INTEGER
       )
     ''');
+
+    await db.execute('''
+      CREATE TABLE articles(
+        rowId INTEGER  PRIMARY KEY AUTOINCREMENT,
+        moonId INTEGER,
+        text TEXT,
+        parentDiaryId INTEGER,
+        date TEXT,
+        time TEXT,
+        attacments TEXT
+      )
+    ''');
   }
 
   Future<void> clearDatabase(int moonId) async {
@@ -183,6 +195,12 @@ class DatabaseHelper {
     return await db.insert('diary', {'id': cd.id, 'moonId':moonid,  'title': cd.title, 'description': cd.description, 'text': cd.text, 'emoji': cd.emoji, 'color': cd.color.value});
   }
 
+  Future<int> insertDiaryArticle(Article article, int moonId) async {
+    Database db = await database;
+    await db.insert('articles', {'moonId':moonId,  'text': article.text, 'parentDiaryId': article.parentId, 'date': article.date, 'time': article.time, 'attacments': article.attachments.join("|")});
+    return (await db.query('articles', where: "time = ?", whereArgs: [article.time])).firstOrNull?['rowId'] as int;
+  }
+
   Future<int> updateDiary(CardData cd, int moonId) async {
     Database db = await database;
     return await db.update("diary", {'title': cd.title, 'description': cd.description, 'text': cd.text, 'emoji': cd.emoji, 'color': cd.color.value}, where: "id = ? AND moonId = ?", whereArgs: [cd.id, moonId]);
@@ -191,6 +209,11 @@ class DatabaseHelper {
   Future<List<Map<String, dynamic>>> getAllDiary(int moonid) async {
     Database db = await database;
     return await db.query('diary', where: "moonId = ?", whereArgs: [moonid]);
+  }
+
+  Future<List<Map<String, dynamic>>> getDiaryArticles(int diaryId, int moonId) async {
+    Database db = await database;
+    return await db.query('articles', where: "moonId = ? AND parentDiaryId = ?", whereArgs: [moonId, diaryId]);
   }
 
   Future<int> insertTask(TaskData td, int moonid) async {

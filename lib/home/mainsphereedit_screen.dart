@@ -71,6 +71,7 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
     TextEditingController affirmation = TextEditingController(text: curWd.affirmation.split("|")[0]);
     circleColor = curWd.color;
     text.addListener(() { if(text.text!=curWd.text)appViewModel.isChanged = true;curWd.text=text.text;});
+
     return Consumer<AppViewModel>(
 
         builder: (context, appVM, child){
@@ -239,21 +240,6 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
                       const SizedBox(height: 24),
                       const Divider(color: AppColors.grey, height: 2,),
                       const SizedBox(height: 16),
-                      OutlinedGradientButton(" Добавить фото", (){
-                        if(curWd.isActive) {
-                          appViewModel.photoUrls.clear();
-                          BlocProvider.of<NavigationBloc>(context)
-                              .add(NavigateToGalleryScreenEvent());
-                        }else{
-                          showUneditable();
-                        }
-                      },
-                          widgetBeforeText: const Icon(Icons.add_circle_outline_sharp, size: 20,)
-                      ),
-                      const SizedBox(height: 16),
-                      const Text("Добавьте образы вашего желания - это важно!", style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500)),
-                      const Text("Чем ближе будут образы вашему представлению, тем сильнее будет визуализация вашего желания.", textAlign: TextAlign.center, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w400, color: AppColors.greyTransparent)),
-                      const SizedBox(height: 16),
                       LayoutBuilder(
                         builder: (context, constraints) {
                           double fullWidth = constraints.maxWidth-9;
@@ -309,6 +295,18 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
                         },
                       ),
                       const SizedBox(height: 24),
+                      OutlinedGradientButton(" Добавить фото", (){
+                        if(curWd.isActive) {
+                          appViewModel.photoUrls.clear();
+                          BlocProvider.of<NavigationBloc>(context)
+                              .add(NavigateToGalleryScreenEvent());
+                        }else{
+                          showUneditable();
+                        }
+                      },
+                          widgetBeforeText: const Icon(Icons.add_circle_outline_sharp, size: 20,)
+                      ),
+                      const SizedBox(height: 16),
                       const Divider(color: AppColors.grey, height: 2,),
                       const SizedBox(height: 24),
                       Align(

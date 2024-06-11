@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'dart:typed_data';
 
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:capped_progress_indicator/capped_progress_indicator.dart';
 import 'package:collection/collection.dart';
 import 'package:dotted_border/dotted_border.dart';
@@ -101,6 +102,24 @@ class _WishScreenState extends State<WishScreen>{
     _affirmation.addListener(() { });
     myColors = appViewModel.getUserColors();
     myColors.add(Colors.transparent);
+
+    ///return true if lines count > maxLines
+    bool _checkLines(int maxlines){
+      final TextSpan textSpan = TextSpan(text: _description.text);
+      final TextPainter textPainter = TextPainter(
+        text: textSpan,
+        textDirection: TextDirection.ltr
+      );
+      textPainter.layout(maxWidth: MediaQuery.of(context).size.width - 64);
+      final int lines = textPainter.computeLineMetrics().length;
+      textPainter.computeLineMetrics().forEach((e){
+        print(e.lineNumber);
+      });
+      if(lines>maxlines){
+        return true;
+      }
+      return false;
+    }
 
     return  Consumer<AppViewModel>(
         builder: (context, appVM, child){
@@ -448,6 +467,7 @@ class _WishScreenState extends State<WishScreen>{
                                 const SizedBox(height: 8),
                                 TextField(
                                   maxLength: 260,
+                                  minLines: 1,
                                   maxLines: 5,
                                   controller: _description,
                                   showCursor: false,
@@ -462,7 +482,9 @@ class _WishScreenState extends State<WishScreen>{
                                     else {
                                       final newText = await showOverlayedEdittext(context, _description.text, (curwish.isActive&&!curwish.isChecked))??"";
                                       if(newText!=_description.text)appViewModel.isChanged= true;
-                                      _description.text = newText;
+                                      setState(() {
+                                        _description.text = newText;
+                                      });
                                     }
                                   },
                                   style: const TextStyle(color: Colors.black), // Черный текст ввода
@@ -482,7 +504,7 @@ class _WishScreenState extends State<WishScreen>{
                                     hintStyle: TextStyle(color: Colors.black.withOpacity(0.3)), // Полупрозрачный черный базовый текст
                                   ),
                                 ),
-                                if(_description.text.length>160)Container(
+                                if(_checkLines(5))Container(
                                   height: 40,
                                   width: double.infinity,
                                   decoration: const BoxDecoration(
@@ -529,17 +551,6 @@ class _WishScreenState extends State<WishScreen>{
                                 ),
                                 const SizedBox(height: 24),
                                 const Divider(color: AppColors.grey, height: 2,),
-                                const SizedBox(height: 16),
-                                if(curwish.parentId > 1)OutlinedGradientButton(" Добавить фото", () {
-                                  appViewModel.photoUrls.clear();
-                                  curwish.isChecked?showUnavailable("Чтобы редактировать желание необходимо сменить статус \nна 'не выполнено'"):!curwish.isActive?showUneditable():BlocProvider.of<NavigationBloc>(context)
-                                      .add(NavigateToGalleryScreenEvent());
-                                },
-                                    widgetBeforeText: const Icon(Icons.add_circle_outline_sharp, size: 20,)
-                                ),
-                                const SizedBox(height: 16),
-                                const Text("Добавьте образы вашего желания - это важно!", style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500)),
-                                const Text("Чем ближе будут образы вашему представлению, тем сильнее будет визуализация вашего желания.", textAlign: TextAlign.center, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w400, color: AppColors.greyTransparent)),
                                 const SizedBox(height: 16),
                                 if(curwish.parentId > 1)
                                   LayoutBuilder(
@@ -597,6 +608,14 @@ class _WishScreenState extends State<WishScreen>{
                                     },
                                   ),
                                 const SizedBox(height: 24),
+                                if(curwish.parentId > 1)OutlinedGradientButton(" Добавить фото", () {
+                                  appViewModel.photoUrls.clear();
+                                  curwish.isChecked?showUnavailable("Чтобы редактировать желание необходимо сменить статус \nна 'не выполнено'"):!curwish.isActive?showUneditable():BlocProvider.of<NavigationBloc>(context)
+                                      .add(NavigateToGalleryScreenEvent());
+                                },
+                                    widgetBeforeText: const Icon(Icons.add_circle_outline_sharp, size: 20,)
+                                ),
+                                const SizedBox(height: 16),
                                 const Divider(color: AppColors.grey, height: 2,),
                                 const SizedBox(height: 24),
                                 Align(
@@ -782,7 +801,7 @@ class _WishScreenState extends State<WishScreen>{
                         backgroundColor: curwish.isActive?curwish.color:const Color.fromARGB(255, 217, 217, 217),
                         shape: const CircleBorder(),
                         child: Stack(children: [
-                          Center(child: Text(curwish.text??"", style: const TextStyle(color: Colors.white),)),
+                          Center(child: AutoSizeText(curwish.text??"", textAlign: TextAlign.center ,style: const TextStyle(color: Colors.white, ),)),
                           if(curwish.isChecked)Align(alignment: Alignment.topRight, child: Image.asset('assets/icons/wish_done.png', width: 20, height: 20),)
                         ],),
                       ),

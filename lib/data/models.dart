@@ -349,6 +349,17 @@ class CardData{
   CardData({required this.id, required this.emoji, required this.title, required this.description, required this.text, required this.color});
 }
 
+class Article{
+  final int id;
+  final int parentId;
+  String text;
+  String date;
+  String time;
+  List<String> attachments;
+
+  Article(this.id, this.parentId, this.text, this.date, this.time, this.attachments);
+}
+
 List<CircleData> sortList(List<CircleData> inputList) {
   Map<int, CircleData> circleDataMap = {};
   List<CircleData> sortedList = [];

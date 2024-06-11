@@ -24,6 +24,8 @@
 	<string>????</string>
 	<key>NSCameraUsageDescription</key>
     <string>This app needs camera access to scan QR codes</string>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>Can We Use Your Microphone Please</string>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>

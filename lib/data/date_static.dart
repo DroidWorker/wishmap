@@ -8,6 +8,16 @@ Map<int, String> shortDayOfWeek = {
   7: "Вс"
 };
 
+Map<int, String> fullDayOfWeek = {
+  1: "Понедельник",
+  2: "Вторник",
+  3: "Среда",
+  4: "Четверг",
+  5: "Пятница",
+  6: "Суббота",
+  7: "Воскресенье"
+};
+
 Map<int, String> monthOfYear = {
   1: "Января",
   2: "Февраля",

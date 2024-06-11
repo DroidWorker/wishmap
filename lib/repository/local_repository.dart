@@ -411,8 +411,15 @@ class LocalRepository{
     final result = await dbHelper.getAllDiary(moonId);
     return result.map((e) => CardData(id: e['id'], emoji: e['emoji'], title: e['title'], description: e['description'], text: e['text'], color: Color(int.parse(e["color"].toString())))).toList();
   }
-  Future addDiary(CardData cd, int moonId) async{
+  Future<List<Article>> getArticles(int diaryId, int moonId) async {
+    final result = await dbHelper.getDiaryArticles(diaryId, moonId);
+    return result.map((e) => Article(e['rowId'], e['parentDiaryId'], e['text'], e['date'], e['time'], (e['attacments']!=null)?e['attacments'].toString().split("|"):[])).toList();
+  }
+  addDiary(CardData cd, int moonId) {
     dbHelper.insertDiary(cd, moonId);
+  }
+  Future<int> addDiaryArticle(Article article, int moonId) async {
+    return await dbHelper.insertDiaryArticle(article, moonId);
   }
   Future addAllDiary(List<CardData> cd, int moonId) async{
     for (var element in cd) {

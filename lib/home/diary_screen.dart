@@ -3,7 +3,6 @@ import 'dart:math';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:page_view_dot_indicator/page_view_dot_indicator.dart';
 import 'package:provider/provider.dart';
 
 import '../ViewModel.dart';
@@ -59,37 +58,6 @@ class DiaryScreen extends StatefulWidget {
                                 ),
                                 const Text("Мой дневник", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
                                 const SizedBox(width: 40, height: 40,)
-                                /*IconButton(
-                                  padding: EdgeInsets.zero,
-                                  constraints: const BoxConstraints(),
-                                  style: TextButton.styleFrom(
-                                      tapTargetSize: MaterialTapTargetSize.shrinkWrap
-                                  ),
-                                  onPressed: () async {
-                                    showModalBottomSheet<void>(
-                                      context: context,
-                                      isScrollControlled: true,
-                                      builder: (BuildContext context) {
-                                        return ActionBS('Внимание', ai!.childTasks.isNotEmpty?"Если в данной цели создавались задачи, то они также будут удалены":"Цель будет удалена", "Да", 'Нет',
-                                            onOk: () async { Navigator.pop(context, 'OK');
-                                            appVM.deleteAim(widget.aimId, ai!.parentId);
-                                            BlocProvider.of<NavigationBloc>(context).handleBackPress();
-                                            showModalBottomSheet<void>(
-                                              context: context,
-                                              isScrollControlled: true,
-                                              builder: (BuildContext context) {
-                                                return NotifyBS('Удалено', "", 'OK',
-                                                    onOk: () => Navigator.pop(context, 'OK'));
-                                              },
-                                            );
-                                            },
-                                            onCancel: () { Navigator.pop(context, 'Cancel');}
-                                        );
-                                      },
-                                    );
-                                  },
-                                  icon: SvgPicture.asset("assets/icons/trash.svg", width: 28, height: 28),
-                                ),*/
                               ],
                             ),
                             Flexible(
@@ -106,9 +74,10 @@ class DiaryScreen extends StatefulWidget {
                                     height: 150,
                                     child: GestureDetector(
                                       onTap: (){
-                                        appVM.addError("действие недоступно");
-                                        /*BlocProvider.of<NavigationBloc>(context)
-                                            .add(NavigateToDiaryEditScreenEvent(cardData[index].id));*/
+                                        appVM.articles.clear();
+                                        appVM.getDiaryArticles(cardData[index].id);
+                                        BlocProvider.of<NavigationBloc>(context)
+                                            .add(NavigateToDiaryEditScreenEvent(cardData[index].id));
                                       },
                                       child: CardWidget(data: cardData[index]),
                                     ),

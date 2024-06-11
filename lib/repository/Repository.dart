@@ -884,6 +884,18 @@ class Repository{
       //updateMoonSync(moonId);
     }
   }
+  addDiaryArticle(Article article, int moonId) {
+    if(_auth.currentUser!=null){
+        userRef.child(_auth.currentUser!.uid).child("moonlist").child(moonId.toString()).child("diary").child(article.parentId.toString()).child("articles").child(article.id.toString()).set(
+            {
+              "parentId": article.parentId,
+              "text": article.text,
+              "date": article.date,
+              "time": article.time
+            }
+        );
+    }
+  }
   Future updateDiary(CardData data, int moonId) async {
     if(_auth.currentUser!=null){
         Map<String, dynamic> dataMap ={
@@ -900,24 +912,38 @@ class Repository{
         //updateMoonSync(moonId);
     }
   }
-  Future<List<CardData>?> getDiaryList(int moonId) async{
+  Future<Map<CardData, List<Article>>?> getDiaryList(int moonId) async{
     if(_auth.currentUser!=null) {
-      List<CardData> diaryList = [];
+      Map<CardData, List<Article>> diaryList = {};
       DataSnapshot dataSnapshot = (await userRef.child(_auth.currentUser!.uid)
           .child("moonlist").child(moonId.toString()).child("diary")
           .once()).snapshot;
       if (dataSnapshot.children.isNotEmpty) {
         dataSnapshot.children.forEach((element) {
+          List<Article> articles = [];
           final Map<dynamic, dynamic> dataList = element.value as Map<dynamic,dynamic>;
-          diaryList.add(CardData(
+          if(dataList["articles"] is Map<dynamic, dynamic>) {
+            final Map<dynamic,
+                dynamic> articlesDataList = dataList["articles"] as Map<
+                dynamic,
+                dynamic>;
+            articlesDataList.forEach((key, value) {
+              articles.add(Article(
+                  articlesDataList["id"], articlesDataList["parentId"],
+                  articlesDataList["text"], articlesDataList["date"],
+                  articlesDataList["time"], []));
+            });
+          }
+          diaryList[CardData(
               id: int.parse(dataList['id'].toString()),
               emoji: dataList['emoji'],
               title: dataList['title'],
               description: dataList['description'],
               text: dataList['text'],
               color: Color(int.parse(dataList['color'].toString())),
-          ));
+          )]= articles;
         });
+
       }
       return diaryList;
     }
