@@ -206,6 +206,21 @@ class DatabaseHelper {
     return await db.update("diary", {'title': cd.title, 'description': cd.description, 'text': cd.text, 'emoji': cd.emoji, 'color': cd.color.value}, where: "id = ? AND moonId = ?", whereArgs: [cd.id, moonId]);
   }
 
+  Future updateArticle(String text, List<String> attachmentsList, int articleId, int moonId) async {
+    Database db = await database;
+    await db.update("articles", {'text': text, 'attacments': attachmentsList.join('|')}, where: "moonId == ? AND rowId == ?", whereArgs: [moonId, articleId]);
+  }
+
+  Future deleteDiary(int diaryId, int moonId) async{
+    Database db = await database;
+    await db.delete("diary", where: "id = ? AND moonId = ?", whereArgs: [diaryId,moonId]);
+  }
+
+  deleteArticle(int articleId, int moonId) async{
+    Database db = await database;
+    await db.delete("articles", where: "rowId = ? AND moonId = ?", whereArgs: [articleId,moonId]);
+  }
+
   Future<List<Map<String, dynamic>>> getAllDiary(int moonid) async {
     Database db = await database;
     return await db.query('diary', where: "moonId = ?", whereArgs: [moonid]);
@@ -456,4 +471,5 @@ class DatabaseHelper {
     Database db = await database;
     return await db.query('spheres', where: "moonId = ?", whereArgs: [moonId]);
   }
+
 }

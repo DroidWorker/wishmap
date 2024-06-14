@@ -57,6 +57,7 @@ class _RoundIconButtonState extends State<AnimatedRoundIconButton> {
   }
 
   Future<void> _onTapUp(TapUpDetails details) async {
+    if(!tapState)return;
     tapState=false;
     _nextAudioRecorder.cancelRecorderSubscriptions();
     String? outputFilePath = await _nextAudioRecorder.stopRecorder();

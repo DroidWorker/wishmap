@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:emoji_choose/emoji_choose.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -36,6 +37,7 @@ class DiaryEditScreenState extends State<DiaryEditScreen>{
   var isDescripttionOver = false;
 
   var edittextActive = false;
+  int? tappedArticleId;
 
   @override
   Widget build(BuildContext context) {
@@ -59,10 +61,13 @@ class DiaryEditScreenState extends State<DiaryEditScreen>{
           tecsubtitle.text =currentSubtitle;
           tecdescription.text =currentdescription;
           return edittextActive?
-          MyDETOverlay(isActive: true, text: "", onClose: (text, attachmentsList){
-            appVM.addDiaryArticle(text, attachmentsList, widget.diaryId);
+          MyDETOverlay(isActive: true, text: tappedArticleId==null?"":appVM.articles.firstWhere((article) => article.id==tappedArticleId).text, article: appVM.articles.firstWhereOrNull((article) => article.id==tappedArticleId), onClose: (text, attachmentsList, articleId){
+            if(text.isNotEmpty){
+              articleId==null?appVM.addDiaryArticle(text, attachmentsList, widget.diaryId):appVM.updateDiaryArticle(text, attachmentsList, articleId);
+            }
             setState(() {
               edittextActive = false;
+              tappedArticleId=null;
             });
           }):Scaffold(
             backgroundColor: AppColors.backgroundColor,
@@ -86,7 +91,7 @@ class DiaryEditScreenState extends State<DiaryEditScreen>{
                             }
                         ),
                         TextButton(onPressed: () async {
-                          currentTitle = (await showDiaryOverlayedEdittext(context, currentTitle, false)).keys.firstOrNull??"";
+                          currentTitle = (await showDiaryOverlayedEdittext(context, currentTitle, null, false)).keys.firstOrNull??"";
                           setState(() {});
                         },
                             child: Text(currentTitle, style: const TextStyle(color: Colors.black, fontWeight: FontWeight.w600, fontSize: 16))
@@ -99,9 +104,8 @@ class DiaryEditScreenState extends State<DiaryEditScreen>{
                           ),
                           icon: SvgPicture.asset("assets/icons/trash.svg", width: 24, height: 24),
                           onPressed: () {
-                            setState(() {
-
-                            });
+                              appVM.deleteDiary(widget.diaryId);
+                              BlocProvider.of<NavigationBloc>(context).handleBackPress();
                           },
                         ),
                       ],
@@ -174,7 +178,7 @@ class DiaryEditScreenState extends State<DiaryEditScreen>{
                                   readOnly: true,
                                   showCursor: false,
                                   onTap: () async {
-                                    currentSubtitle = (await showDiaryOverlayedEdittext(context, currentSubtitle, false)).keys.firstOrNull??"";
+                                    currentSubtitle = (await showDiaryOverlayedEdittext(context, currentSubtitle, null, false)).keys.firstOrNull??"";
                                     setState(() {});
                                   },
                                   maxLines: 3,
@@ -200,7 +204,15 @@ class DiaryEditScreenState extends State<DiaryEditScreen>{
                                 ),
                                 const SizedBox(height: 14)
                               ],
-                            ) :DiaryArticleItem(appVM.articles[index-1]);
+                            ) :GestureDetector(
+                              onTap: (){
+                                setState(() {
+                                  tappedArticleId = appVM.articles[index-1].id;
+                                  edittextActive = true;
+                                });
+                              },
+                                child: DiaryArticleItem(appVM.articles[index-1])
+                            );
                           }
                       ),
                     )
@@ -214,12 +226,9 @@ class DiaryEditScreenState extends State<DiaryEditScreen>{
               elevation: 0,
               onPressed: () {
                 setState(() {
+                  tappedArticleId=null;
                   edittextActive = true;
                 });
-                /*final initText = await showDiaryOverlayedEdittext(context, "", true)??"";
-                if(initText is Map<String?, List<String>>)appVM.addDiaryArticle(initText.keys.first??"неизвестная ошибка", initText.values.first, widget.diaryId);
-
-                 */
               },
               child: Container(
                 width: 60,

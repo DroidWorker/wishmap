@@ -7,19 +7,22 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:provider/provider.dart';
 import 'package:voice_message_package/voice_message_package.dart';
 import 'package:wechat_camera_picker/wechat_camera_picker.dart';
 import 'package:wishmap/common/gallery_widget.dart';
 import 'package:wishmap/interface_widgets/animated_rounded_button.dart';
 import 'package:wishmap/interface_widgets/custom_textfield.dart';
 
+import '../ViewModel.dart';
+import '../data/models.dart';
 import '../res/colors.dart';
 
-Future<Map<String?, List<String>>> showDiaryOverlayedEdittext(BuildContext context, String text, bool isAttachmentsBarActive, )async {
+Future<Map<String?, List<String>>> showDiaryOverlayedEdittext(BuildContext context, String text, Article? article, bool isAttachmentsBarActive, )async {
   Completer<Map<String?, List<String>>> completer = Completer<Map<String?, List<String>>>();
   OverlayEntry? overlayEntry;
 
-  var myOverlay = MyDETOverlay(isActive: isAttachmentsBarActive, text: text,  onClose: (text, paths) {
+  var myOverlay = MyDETOverlay(isActive: isAttachmentsBarActive, text: text, article: article, onClose: (text, paths, id) {
     overlayEntry?.remove();
     completer.complete({text: paths});
   });
@@ -33,12 +36,14 @@ Future<Map<String?, List<String>>> showDiaryOverlayedEdittext(BuildContext conte
 }
 
 class MyDETOverlay extends StatefulWidget {
-  Function(String value, List<String> attachmentsPath) onClose;
+  Function(String value, List<String> attachmentsPath, int? articleId) onClose;
 
   bool isActive;
   String text = "";
+  Article? article;
+  List<String> attachments = [];
 
-  MyDETOverlay({super.key, required this.isActive, required this.text, required this.onClose});
+  MyDETOverlay({super.key, required this.isActive, required this.text, this.article, required this.onClose});
 
 
   @override
@@ -52,14 +57,24 @@ class _MyOverlayState extends State<MyDETOverlay> {
   List<String> images = [];
   List<String> records = [];
 
+  bool isToolBarActive = true;
+
   var contentType = 0;
   //0-edittext
   //1-galleryPicker
   //3-voiceRecorder
 
+
   @override
   void initState() {
     controller.text=widget.text;
+    if(widget.article!=null) {
+      attachments = widget.article!.attachments;
+      for (var element in widget.article!.attachments) {
+        element.contains(".photo") || element.contains(".jpg") ? images.add(
+            element) : records.add(element);
+      }
+    }
     super.initState();
     _focusNode.requestFocus();
   }
@@ -70,9 +85,10 @@ class _MyOverlayState extends State<MyDETOverlay> {
       images.clear();
       records.clear();
       for (var element in attachments) {
-        element.contains(".photo")||element.contains(".jpg")?images.add(element):records.add(element);
+        if(element.isNotEmpty)element.contains(".photo")||element.contains(".jpg")?images.add(element):records.add(element);
       }
     }
+    final appVM = Provider.of<AppViewModel>(context);
     return Material(
       color: AppColors.backgroundColor,
       child: SafeArea(
@@ -85,7 +101,7 @@ class _MyOverlayState extends State<MyDETOverlay> {
                   IconButton(
                     icon: const Icon(Icons.keyboard_arrow_left),
                     onPressed: () {
-                      widget.onClose(controller.text, attachments);
+                      widget.onClose(controller.text, attachments, widget.article?.id);
                     },
                   ),
                   const Text("Создать запись", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
@@ -100,7 +116,14 @@ class _MyOverlayState extends State<MyDETOverlay> {
                       ),
                       icon: SvgPicture.asset("assets/icons/trash.svg", width: 24, height: 24),
                       onPressed: () {
-
+                        setState(() {
+                          if(widget.article!=null){
+                            appVM.deleteDiaryArticle(widget.article!.id);
+                            widget.onClose("", [], null);
+                          }else{
+                            widget.onClose("", [], null);
+                          }
+                        });
                       },
                     ),
                   ),
@@ -108,7 +131,7 @@ class _MyOverlayState extends State<MyDETOverlay> {
               ),
               Expanded(
                   child: widget.isActive?(
-                      contentType==0?CustomTextField(controller):contentType==1?Padding(
+                      contentType==0?CustomTextField(controller: controller, attachments: images,):contentType==1?Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: RoundedPhotoGallery(onClick: (image) async {
                           final String filename = "${DateTime.timestamp()}.photo";
@@ -116,6 +139,7 @@ class _MyOverlayState extends State<MyDETOverlay> {
                           final file = File(path);
                           await file.writeAsBytes(image);
                           attachments.add(path);
+                          controller.text+="_attach_";
                           setState(() {
                             contentType=0;
                           });
@@ -136,24 +160,7 @@ class _MyOverlayState extends State<MyDETOverlay> {
                     ),
                   )
               ),
-              SizedBox(
-                height: 66,
-                child: Expanded(
-                  child: ListView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      scrollDirection: Axis.horizontal,
-                        itemCount: images.length,
-                        itemBuilder: (BuildContext context, int index){
-                      return Padding(
-                          padding: const EdgeInsets.only(right: 4.0),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(8.0),
-                            child: Image.file(File(images[index]), fit: BoxFit.cover, width: 50, height: 50,),
-                          )
-                      );
-                    }),
-                ),
-              ),
+
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: ListView.builder(
@@ -188,10 +195,10 @@ class _MyOverlayState extends State<MyDETOverlay> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  widget.isActive?
+                  (widget.isActive&&isToolBarActive)?
                       Expanded(
                         child: Container(
-                          margin: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+                          margin: const EdgeInsets.fromLTRB(16, 0, 16, 8),
                           padding: const EdgeInsets.symmetric(horizontal: 8),
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(12),
@@ -200,6 +207,11 @@ class _MyOverlayState extends State<MyDETOverlay> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
+                              IconButton(onPressed: (){
+                                setState(() {
+                                  isToolBarActive = false;
+                                });
+                              }, icon: const Icon(Icons.close, color: AppColors.darkGrey,)),
                               IconButton(onPressed: (){
                                 setState(() {
                                   contentType=1;
@@ -268,7 +280,9 @@ class _MyOverlayState extends State<MyDETOverlay> {
                       backgroundColor: Colors.transparent,
                       elevation: 0,
                       onPressed: (){
-
+                        setState(() {
+                          isToolBarActive = true;
+                        });
                       },
                       child: Container(
                         width: 50,
@@ -285,7 +299,7 @@ class _MyOverlayState extends State<MyDETOverlay> {
                       ),
                     ),
                   ),
-                  if(MediaQuery.of(context).viewInsets.bottom!=0) Align(
+                  if(MediaQuery.of(context).viewInsets.bottom!=0&&Platform.isIOS) Align(
                     alignment: Alignment.topRight,
                     child: Container(height: 50, width: 50,
                         margin: const EdgeInsets.fromLTRB(0, 0, 16, 16),

@@ -429,4 +429,13 @@ class LocalRepository{
   Future updateDiary(CardData cd, int moonId) async{
     await dbHelper.updateDiary(cd, moonId);
   }
+  Future updateDiaryArticle(String text, List<String> attachmentsList, int articleId, int moonId) async{
+    await dbHelper.updateArticle(text, attachmentsList, articleId, moonId);
+  }
+  void deleteDiary(int diaryId, int moonId) async{
+    await dbHelper.deleteDiary(diaryId, moonId);
+  }
+  void deleteArticle(articleId, int moonId) async {
+    await dbHelper.deleteArticle(articleId, moonId);
+  }
 }

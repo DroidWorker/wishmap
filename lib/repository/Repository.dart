@@ -912,6 +912,11 @@ class Repository{
         //updateMoonSync(moonId);
     }
   }
+  void deleteDiary(int diaryId, int moonId) {
+    if(_auth.currentUser!=null){
+      userRef.child(_auth.currentUser!.uid).child("moonlist").child(moonId.toString()).child("diary").child(diaryId.toString()).remove();
+    }
+  }
   Future<Map<CardData, List<Article>>?> getDiaryList(int moonId) async{
     if(_auth.currentUser!=null) {
       Map<CardData, List<Article>> diaryList = {};

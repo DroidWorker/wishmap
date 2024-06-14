@@ -20,7 +20,7 @@ class DiaryArticleItem extends StatelessWidget{
   Widget build(BuildContext context) {
     if(article.attachments.isNotEmpty) {
       for (var element in article.attachments) {
-      element.contains(".photo")||element.contains(".jpg")?images.add(element):records.add(element);
+      if(element.isNotEmpty)element.contains(".photo")||element.contains(".jpg")?images.add(element):records.add(element);
     }
     }
 
@@ -46,7 +46,7 @@ class DiaryArticleItem extends StatelessWidget{
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(article.time, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w400)),
-                      buildRichText(article.text),
+                      buildRichText(article.text, []),
                       if(images.isNotEmpty||records.isNotEmpty)const Padding(
                         padding: EdgeInsets.symmetric(vertical: 8.0),
                         child: Divider(color: AppColors.grey, height: 2,),
@@ -62,7 +62,7 @@ class DiaryArticleItem extends StatelessWidget{
                           );
                         })
                       ],),
-                      ListView.builder(
+                      if(records.isNotEmpty)ListView.builder(
                             shrinkWrap: true,
                             itemCount: records.length,
                             itemBuilder: (BuildContext context, int index){

@@ -1320,7 +1320,7 @@ class AppViewModel with ChangeNotifier {
       ];
     try {
       /*diaryItems = isDataFetched!=0?(await repository.getDiaryList(mainScreenState!.moon.id))??[CardData(id: 0, emoji: "⚽", title: "ничего не найдено", description: "", text: "", color: Colors.transparent),]:*/
-      await localRep.getAllDiary(mainScreenState?.moon.id??0);
+      diaryItems = await localRep.getAllDiary(mainScreenState?.moon.id??0);
       if(diaryItems.isEmpty) {
         if(connectivity != 'No Internet Connection')repository.addDiary(cardData, mainScreenState!.moon.id);
         localRep.addAllDiary(cardData, mainScreenState?.moon.id??-1);
@@ -1368,6 +1368,17 @@ class AppViewModel with ChangeNotifier {
       print(s);
     }
   }
+ Future updateDiaryArticle(String text, List<String> attachmentsList, int articleId) async {
+    try{
+      await localRep.updateDiaryArticle(text, attachmentsList, articleId, mainScreenState?.moon.id??0);
+      articles.firstWhere((e) => e.id==articleId)
+        ..text=text
+        ..attachments=attachmentsList;
+      notifyListeners();
+    }catch(ex){
+      addError("#536${ex.toString()}");
+    }
+  }
   Future<void> updateDiary(CardData cd)async{
     try{
       final index = diaryItems.indexWhere((element) => element.id==cd.id);
@@ -1381,7 +1392,24 @@ class AppViewModel with ChangeNotifier {
       addError("#536${ex.toString()}");
     }
   }
-
+  deleteDiary(int diaryId){
+    try{
+      localRep.deleteDiary(diaryId, mainScreenState?.moon.id??0);
+      repository.deleteDiary(diaryId, mainScreenState?.moon.id??0);
+      diaryItems.removeWhere((diary) => diary.id==diaryId);
+      notifyListeners();
+    }catch(ex){
+      addError('#647$ex');
+    }
+  }
+  deleteDiaryArticle(int articleId){
+    try{
+      localRep.deleteArticle(articleId, mainScreenState?.moon.id??0);
+      articles.removeWhere((article) => article.id==articleId);
+    }catch(ex){
+      addError('#648$ex');
+    }
+  }
 
   Future<List<TaskItem>?> getTasksForAim(int aimId) async {
     try {
