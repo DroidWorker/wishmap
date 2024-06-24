@@ -3,7 +3,9 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:voice_message_package/voice_message_package.dart';
+import 'package:wishmap/interface_widgets/popup_menu.dart';
 
 import '../data/models.dart';
 import '../interface_widgets/custom_textfield.dart';
@@ -13,8 +15,10 @@ class DiaryArticleItem extends StatelessWidget{
   final Article article;
   List<String> images = [];
   List<String> records = [];
+  Function() onEdit;
+  Function() onDelete;
 
-  DiaryArticleItem(this.article, {super.key});
+  DiaryArticleItem(this.article, { required this.onEdit, required this.onDelete, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -89,6 +93,22 @@ class DiaryArticleItem extends StatelessWidget{
                                 activeSliderColor: AppColors.gradientEnd,
                                 circlesColor: AppColors.gradientEnd,);
                             }),
+                      const Divider(color: AppColors.backgroundColor, height: 8,),
+                      GestureDetector(
+                        onTapDown: (details){
+                          showPopupMenu(details.globalPosition, context,
+                              (){
+                                onDelete();
+                              },
+                              (){
+                                onEdit();
+                              });
+                        },
+                        child: Align(
+                          alignment: Alignment.topRight,
+                            child: SizedBox(height: 16, width: 40, child: SvgPicture.asset("assets/icons/ellipsis.svg", width: 15, height: 15, color: AppColors.darkGrey,))
+                        ),
+                      ),
                     ],
                   ),
                 ),

@@ -94,6 +94,7 @@ class DiaryScreen extends StatefulWidget {
               elevation: 0,
               onPressed: (){
                 final newid = cardData.last.id+1;
+                appVM.articles.clear();
                 appVM.addDiary(CardData(id: newid, emoji: "➕", title: "заголовок", description: "описание", text: "текст", color: Colors.deepPurple));
                 BlocProvider.of<NavigationBloc>(context)
                     .add(NavigateToDiaryEditScreenEvent(newid));

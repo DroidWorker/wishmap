@@ -195,12 +195,16 @@ class _TaskScreenState extends State{
                         }
                     ),),
                     const SizedBox(height: 3),
-                    !trashModeActive?ColorRoundedButton("Добавить задачу", (){
+                    /*!trashModeActive?ColorRoundedButton("Добавить задачу", (){
                       appViewModel.hint="Добавление ЗАДАЧ происходит из цели, добавление цели из желания, а желания из сферы. Определяй сферу, создавай желания, ставь цели и выполняй задачи. Твои желания обязательно сбудутся";
                       appViewModel.mainCircles.clear();
                       if(appViewModel.mainScreenState!=null)appViewModel.startMainScreen(appViewModel.mainScreenState!.moon);
                       BlocProvider.of<NavigationBloc>(context)
                           .add(NavigateToMainScreenEvent());
+                    }):*/
+                    !trashModeActive?ColorRoundedButton("Добавить общую задачу", (){
+                      BlocProvider.of<NavigationBloc>(context)
+                          .add(NavigateToSimpleTasksScreenEvent());
                     }):
                     ColorRoundedButton("Удалить", c: AppColors.buttonBackRed, (){
                       setState(() {

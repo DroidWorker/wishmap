@@ -8,9 +8,8 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
-import 'package:voice_message_package/voice_message_package.dart';
-import 'package:wechat_camera_picker/wechat_camera_picker.dart';
 import 'package:wishmap/common/gallery_widget.dart';
+import 'package:wishmap/dialog/camera_dialog.dart';
 import 'package:wishmap/interface_widgets/animated_rounded_button.dart';
 import 'package:wishmap/interface_widgets/custom_textfield.dart';
 
@@ -131,7 +130,7 @@ class _MyOverlayState extends State<MyDETOverlay> {
               ),
               Expanded(
                   child: widget.isActive?(
-                      contentType==0?CustomTextField(controller: controller, attachments: images,):contentType==1?Padding(
+                      contentType==0?CustomTextField(key: ValueKey(attachments.length),controller: controller, attachments: attachments,):contentType==1?Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: RoundedPhotoGallery(onClick: (image) async {
                           final String filename = "${DateTime.timestamp()}.photo";
@@ -160,37 +159,43 @@ class _MyOverlayState extends State<MyDETOverlay> {
                     ),
                   )
               ),
-
-              Padding(
+              /*Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: ListView.builder(
                     shrinkWrap: true,
                     itemCount: records.length,
                     itemBuilder: (BuildContext context, int index){
                       print("play - ${records[index]}");
-                      return VoiceMessageView(controller: VoiceController(
-                        audioSrc: records[index],
-                        onComplete: () {
-                          /// do something on complete
-                        },
-                        onPause: () {
-                          /// do something on pause
-                        },
-                        onPlaying: () {
-                          /// do something on playing
-                        },
-                        onError: (err) {
-                          print("error ${err.toString()}");
-                        },
-                        maxDuration: const Duration(seconds: 60),
-                        isFile: true,
-                      ),
-                      innerPadding: 4,
-                      cornerRadius: 12,
-                      activeSliderColor: AppColors.gradientEnd,
-                      circlesColor: AppColors.gradientEnd,);
+                      return Row(
+                        children: [
+                          Expanded(
+                            child: VoiceMessageView(controller: VoiceController(
+                              audioSrc: records[index],
+                              onComplete: () {
+                                /// do something on complete
+                              },
+                              onPause: () {
+                                /// do something on pause
+                              },
+                              onPlaying: () {
+                                /// do something on playing
+                              },
+                              onError: (err) {
+                                print("error ${err.toString()}");
+                              },
+                              maxDuration: const Duration(seconds: 60),
+                              isFile: true,
+                            ),
+                            innerPadding: 4,
+                            cornerRadius: 12,
+                            activeSliderColor: AppColors.gradientEnd,
+                            circlesColor: AppColors.gradientEnd,),
+                          ),
+                          IconButton(onPressed: (){}, icon: const Icon(Icons.close))
+                        ],
+                      );
                     }),
-              ),
+              ),*/
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -218,7 +223,7 @@ class _MyOverlayState extends State<MyDETOverlay> {
                                 });
                               }, icon: SvgPicture.asset('assets/icons/gallery.svg', height: 24, width: 24)),
                               IconButton(onPressed: () async {
-                                final AssetEntity? entity = await CameraPicker.pickFromCamera(
+                                /*final AssetEntity? entity = await CameraPicker.pickFromCamera(
                                   context,
                                   locale: const Locale.fromSubtags(languageCode: "en"),
                                   pickerConfig: CameraPickerConfig(
@@ -260,15 +265,36 @@ class _MyOverlayState extends State<MyDETOverlay> {
                                   final String path = "${(await getApplicationDocumentsDirectory()).path}/${DateTime.now().millisecondsSinceEpoch.toString()}.jpg";
                                     final resultFile = await file?.copy(path);
                                   setState(() {
-                                    if(resultFile!=null)attachments.add(resultFile.path);
+                                    if(resultFile!=null){
+                                      attachments.add(resultFile.path);
+                                      controller.text+="_attach_";
+                                      setState(() {});
+                                    }
                                   });
-                                }
+                                }*/
+                                showModalBottomSheet<void>(
+                                    context: context,
+                                    isScrollControlled: true,
+                                    builder: (BuildContext context) {
+                                        return CameraWidget((file) async {
+                                          Navigator.pop(context, 'OK');
+                                          final String path = "${(await getApplicationDocumentsDirectory()).path}/${DateTime.now().millisecondsSinceEpoch.toString()}.jpg";
+                                          final resultFile = await file?.copy(path);
+                                          setState(() {
+                                          if(resultFile!=null){
+                                            attachments.add(resultFile.path);
+                                            controller.text+="_attach_";
+                                            setState(() {});
+                                          }
+                                          });
+                                        });
+                                    });
                               }, icon: SvgPicture.asset('assets/icons/camera.svg', height: 24, width: 24)),
                               AnimatedRoundIconButton(icon: SvgPicture.asset('assets/icons/voice.svg', height: 24, width: 24), onTouchDown: () async {
                               }, onTouchUp: (path){
-                                setState(() {
-                                  attachments.add(path);
-                                });
+                                attachments.add(path);
+                                controller.text+="_attach_";
+                                setState(() {});
                               })
                           ],
                           ),

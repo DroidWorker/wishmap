@@ -204,15 +204,17 @@ class DiaryEditScreenState extends State<DiaryEditScreen>{
                                 ),
                                 const SizedBox(height: 14)
                               ],
-                            ) :GestureDetector(
-                              onTap: (){
-                                setState(() {
-                                  tappedArticleId = appVM.articles[index-1].id;
-                                  edittextActive = true;
-                                });
-                              },
-                                child: DiaryArticleItem(appVM.articles[index-1])
-                            );
+                            ) :DiaryArticleItem(appVM.articles[index-1], onEdit: (){
+                              setState(() {
+                                tappedArticleId = appVM.articles[index-1].id;
+                                edittextActive = true;
+                              });
+                            },
+                            onDelete: (){
+                              setState(() {
+                                appVM.deleteDiaryArticle(appVM.articles[index-1].id);
+                              });
+                            },);
                           }
                       ),
                     )

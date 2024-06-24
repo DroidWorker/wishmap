@@ -28,6 +28,8 @@ class NavigateToAimEditScreenEvent extends NavigationEvent {
 
 class NavigateToTasksScreenEvent extends NavigationEvent {}
 
+class NavigateToSimpleTasksScreenEvent extends NavigationEvent {}
+
 class NavigateToWishesScreenEvent extends NavigationEvent {}
 
 class NavigateToAimsScreenEvent extends NavigationEvent {}
@@ -84,6 +86,8 @@ class NavigationAimEditScreenState extends NavigationState {
 }
 
 class NavigationTasksScreenState extends NavigationState {}
+
+class NavigationSimpleTasksScreenState extends NavigationState {}
 
 class NavigationWishesScreenState extends NavigationState {}
 
@@ -155,6 +159,13 @@ class NavigationBloc extends Bloc<NavigationEvent, NavigationState> {
       _navigationHistory.clear();
       _navigationHistory.add(NavigationMainScreenState());
       _navigationHistory.add(NavigationTasksScreenState());
+      emit(_navigationHistory.last);
+    });
+
+    on<NavigateToSimpleTasksScreenEvent>((event, emit) {
+      _navigationHistory.clear();
+      _navigationHistory.add(NavigationMainScreenState());
+      _navigationHistory.add(NavigationSimpleTasksScreenState());
       emit(_navigationHistory.last);
     });
 
@@ -268,63 +279,5 @@ class NavigationBloc extends Bloc<NavigationEvent, NavigationState> {
   Future<void> close() {
     _backPressController.close();
     return super.close();
-  }
-
-  @override
-  Stream<NavigationState> mapEventToState(NavigationEvent event) async* {
-    if (event is NavigateToAuthScreenEvent) {
-      _navigationHistory.add(NavigationAuthScreenState());
-    } else if (event is NavigateToMainScreenEvent) {
-      _navigationHistory.add(NavigationMainScreenState());
-    } else if (event is NavigateToCardsScreenEvent) {
-      _navigationHistory.add(NavigationCardsScreenState());
-    } else if (event is NavigateToWishScreenEvent) {
-      _navigationHistory.add(NavigationWishScreenState());
-    } else if (event is NavigateToAimCreateScreenEvent) {
-      _navigationHistory.add(NavigationAimCreateScreenState(parentCircleId: event.circleId));
-    } else if (event is NavigateToAimEditScreenEvent) {
-      _navigationHistory.add(NavigationAimEditScreenState(event.aimId));
-    } else if (event is NavigateToTasksScreenEvent) {
-      _navigationHistory.clear();
-      _navigationHistory.add(NavigationMainScreenState());
-      _navigationHistory.add(NavigationTasksScreenState());
-    } else if (event is NavigateToWishesScreenEvent) {
-      _navigationHistory.clear();
-      _navigationHistory.add(NavigationMainScreenState());
-      _navigationHistory.add(NavigationWishesScreenState());
-    } else if (event is NavigateToAimsScreenEvent) {
-      _navigationHistory.clear();
-      _navigationHistory.add(NavigationMainScreenState());
-      _navigationHistory.add(NavigationAimsScreenState());
-    } else if (event is NavigateToProfileScreenEvent) {
-      _navigationHistory.clear();
-      _navigationHistory.add(NavigationMainScreenState());
-      _navigationHistory.add(NavigationProfileScreenState());
-    } else if (event is NavigateToTaskCreateScreenEvent) {
-      _navigationHistory.add(NavigationTaskCreateScreenState(event.parentAimId));
-    } else if (event is NavigateToTaskEditScreenEvent) {
-      _navigationHistory.add(NavigationTaskEditScreenState(event.taskId));
-    } else if (event is NavigateToMainSphereEditScreenEvent) {
-      _navigationHistory.add(NavigationMainSphereEditScreenState());
-    } else if (event is NavigateToDiaryScreenEvent) {
-      _navigationHistory.add(NavigationDiaryScreenState());
-    } else if (event is NavigateToDiaryEditScreenEvent) {
-      _navigationHistory.add(NavigationDiaryEditScreenState(event.id));
-    } else if (event is NavigateToGalleryScreenEvent) {
-      _navigationHistory.add(NavigationGalleryScreenState());
-    } else if (event is NavigateToQRScreenEvent) {
-      _navigationHistory.add(NavigationQRScreenState());
-    } else if (event is NavigateToPersonalSettingsScreenEvent) {
-      _navigationHistory.add(NavigationPersonalSettingsScreenState());
-    } else if (event is NavigateToMainSettingsScreenEvent) {
-      _navigationHistory.add(NavigationMainSettingsScreenState());
-    } else if (event is NavigateToSoundsSettingsScreenEvent) {
-      _navigationHistory.add(NavigationSoundsSettingsScreenState());
-    }
-    else if(event is NavigateBackEvent) {
-      yield _navigationHistory.last;
-    }
-
-    yield _navigationHistory.last;
   }
 }

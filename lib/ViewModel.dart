@@ -13,6 +13,7 @@ import 'package:wishmap/provider/file_loader.dart';
 import 'package:wishmap/repository/Repository.dart';
 import 'package:wishmap/repository/photosSearch.dart';
 import 'package:wishmap/repository/local_repository.dart';
+import 'package:wishmap/res/colors.dart';
 
 import 'data/date_static.dart';
 import 'data/models.dart';
@@ -1554,6 +1555,61 @@ class AppViewModel with ChangeNotifier {
       myNodes.clear();
       notifyListeners();
       return [];
+    }
+  }
+
+  Future<void> addSimpleTask(int parentId, String objType, String taskData) async {
+    int? wishId;
+    int? aimId;
+    if(objType=='s'){
+      final allWish = await localRep.getAllSpheres(mainScreenState?.moon.id??0);
+      final simpleWish = allWish.where((e) => (e.text=="Общие задачи"&&e.parentId==parentId));
+      if(simpleWish.isEmpty){
+        //await adding aim
+        wishId = allWish.reduce((a,b) => a.id > (b.id) ? a:b).id+1;
+        await localRep.addSphere(WishData(id: wishId, prevId: -2, nextId: -2, parentId: parentId, text: "Общие задачи", description: "Общие задачи", affirmation: "", color: AppColors.grey), mainScreenState?.moon.id??0);
+        final allAims = await localRep.getAllAims(mainScreenState?.moon.id??0);
+        aimId = allAims.isNotEmpty?(allAims.reduce((a,b) => a.id > (b.id) ? a:b).id+1):1;
+        await localRep.addAim(AimData(id: aimId, parentId: wishId, text: "Общие задачи", description: "Общие задачи"), mainScreenState?.moon.id??0);
+      }else{
+        wishId = simpleWish.first.id;
+        final allAims = await localRep.getAllAims(mainScreenState?.moon.id??0);
+        final simpleAim = allAims.where((e) => (e.text=="Общие задачи"&&e.parentId==wishId));
+        if(simpleAim.isEmpty){
+          //await adding aim
+          aimId = allAims.isNotEmpty?(allAims.reduce((a,b) => a.id > (b.id) ? a:b).id+1):1;
+          await localRep.addAim(AimData(id: aimId, parentId: wishId, text: "Общие задачи", description: "Общие задачи"), mainScreenState?.moon.id??0);
+        }else{
+          aimId = simpleAim.first.id;
+        }
+      }
+    }else if(objType == 'w'||objType=='m'){
+      wishId = parentId;
+      final wish = await localRep.getSphere(wishId, mainScreenState?.moon.id??0);
+      if(wish?.isActive == false){
+        addError("актуализируйте карту для добавления задачи!");
+        return;
+      }
+      final allAim = await localRep.getAllAims(mainScreenState?.moon.id??0);
+      final simpleAim = allAim.where((e) => (e.text=="Общие задачи"&&e.parentId==wishId));
+      if(simpleAim.isEmpty){
+        //await adding aim
+          aimId = allAim.isNotEmpty?(allAim.reduce((a,b) => a.id > (b.id) ? a:b).id+1):1;
+          await localRep.addAim(AimData(id: aimId, parentId: wishId, text: "Общие задачи", description: "Общие задачи"), mainScreenState?.moon.id??0);
+      }else{
+        aimId = simpleAim.first.id;
+      }
+    }
+
+    //add Simple Task
+    if(aimId!=null){
+      final allTasks = (await localRep.getAllTasks(mainScreenState?.moon.id??0));
+    final taskId = allTasks.isNotEmpty?(allTasks.reduce((a,b) => a.id > (b.id) ? a:b).id+1):1;
+    localRep.addTask(TaskData(id: taskId, parentId: aimId, text: taskData, description: ""), mainScreenState?.moon.id??0);
+    taskItems.add(TaskItem(id: taskId, parentId: aimId, text: taskData, isChecked: false, isActive: true));
+    notifyListeners();
+    }else{
+      addError("ошибка добавления задачи");
     }
   }
 

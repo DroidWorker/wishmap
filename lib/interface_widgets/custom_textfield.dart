@@ -30,9 +30,11 @@ class _CustomTextFieldState extends State<CustomTextField> {
     _controllers = [];
     final data = widget.controller.text;
     List<String> lines = data.split('\n');
-    _controllers.add(TextEditingController(text: lines[0]));
-    lines.removeAt(0);
-    final othertext = lines.join("\n");
+    if(lines.length>1){
+      _controllers.add(TextEditingController(text: lines[0]));
+      lines.removeAt(0);
+    }
+    final othertext = lines.join(" ");
     List<String> parts = othertext.split('_attach_');
     for (var part in parts) {
       if (part.isNotEmpty) {
@@ -101,6 +103,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
       }
 
       if (i>0 && i < _controllers.length && imageIndex < widget.attachments.length) {
+        final index = imageIndex;
         children.add(
           (widget.attachments[imageIndex].contains(".photo")||widget.attachments[imageIndex].contains(".jpg"))?Padding(
             padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -109,27 +112,43 @@ class _CustomTextFieldState extends State<CustomTextField> {
               height: 150,
               fit: BoxFit.fitHeight,
             ),
-          ): VoiceMessageView(controller: VoiceController(
-            audioSrc: widget.attachments[imageIndex],
-            onComplete: () {
-              /// do something on complete
-            },
-            onPause: () {
-              /// do something on pause
-            },
-            onPlaying: () {
-              /// do something on playing
-            },
-            onError: (err) {
-              print("error ${err.toString()}");
-            },
-            maxDuration: const Duration(seconds: 60),
-            isFile: true,
-          ),
-            innerPadding: 4,
-            cornerRadius: 12,
-            activeSliderColor: AppColors.gradientEnd,
-            circlesColor: AppColors.gradientEnd,),
+          ): Row(
+            children: [
+              VoiceMessageView(controller: VoiceController(
+              audioSrc: widget.attachments[imageIndex],
+              onComplete: () {
+                /// do something on complete
+              },
+              onPause: () {
+                /// do something on pause
+              },
+              onPlaying: () {
+                /// do something on playing
+              },
+              onError: (err) {
+                print("error ${err.toString()}");
+              },
+              maxDuration: const Duration(seconds: 60),
+              isFile: true,
+            ),
+              innerPadding: 4,
+              cornerRadius: 12,
+              activeSliderColor: AppColors.gradientEnd,
+              circlesColor: AppColors.gradientEnd,),
+              IconButton(key: Key(imageIndex.toString()), onPressed: (){
+                final parts = widget.controller.text.split('_attach_');
+                int i = 0;
+                String result ="";
+                for (var item in parts) {
+                  if(i!=index){result+='${item}_attach_';}else{result+=item;}
+                  i++;
+                }
+                widget.attachments.removeAt(index);
+                widget.controller.text = result;
+                _initializeControllers();
+                setState(() { });
+              }, icon: const Icon(Icons.close))
+          ],)
         );
         imageIndex++;
       }
@@ -154,72 +173,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
     super.dispose();
   }
 }
-/*class CustomTextField extends StatefulWidget {
-  CustomTextField(this._controller, {required this.imagePaths, super.key});
 
-  final TextEditingController _controller;
-  final List<String> imagePaths;
-
-  @override
-  _CustomTextFieldState createState() => _CustomTextFieldState();
-}
-
-class _CustomTextFieldState extends State<CustomTextField> {
-  final FocusNode _focusNode = FocusNode();
-
-  @override
-  void initState() {
-    super.initState();
-    widget._controller.addListener(_onTextChanged);
-  }
-
-  void _onTextChanged() {
-    setState(() {});
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Expanded(
-          child: Stack(
-            children: [
-              TextField(
-                controller: widget._controller,
-                focusNode: _focusNode,
-                autofocus: true,
-                maxLines: null,
-                expands: true,
-                decoration: InputDecoration(
-                  border: InputBorder.none,
-                  filled: true,
-                  fillColor: AppColors.backgroundColor,
-                  hintText: 'Напишите....',
-                  hintStyle: TextStyle(color: Colors.black.withOpacity(0.3)),
-                ),
-                style: const TextStyle(color: Colors.transparent), // Make the text transparent
-                cursorColor: Colors.transparent, // Make the cursor transparent
-                // Disable selection to prevent user from seeing the selection handles
-                enableInteractiveSelection: false,
-              ),
-              Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: buildRichText(widget._controller.text, widget.imagePaths),
-              ),
-            ],
-          ),
-        )
-      ],
-    );
-  }
-
-  @override
-  void dispose() {
-    _focusNode.dispose();
-    super.dispose();
-  }
-}
-*/
 Widget buildRichText(String text, List<String> imagePaths) {
   List<InlineSpan> spans = [];
   List<String> lines = text.split('\n');

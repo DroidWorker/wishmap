@@ -46,9 +46,9 @@ class _TaskItem extends State<TaskItemWidget>{
             height: 50,
             child: Row(
               children: [widget.ti.isChecked ? Text(
-                widget.ti.text,
+                widget.ti.text.replaceAll("HEADERSIMPLETASKHEADER", ""),
                 style: const TextStyle(decoration: TextDecoration.lineThrough, decorationColor: AppColors.greytextColor, color: AppColors.greytextColor),
-              ) : Text(widget.ti.text),
+              ) : Text(widget.ti.text.replaceAll("HEADERSIMPLETASKHEADER", "")),
                 const Spacer(),
                 Container(
                   height: 44,

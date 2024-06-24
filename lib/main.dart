@@ -20,6 +20,7 @@ import 'package:wishmap/home/wish_screen.dart';
 import 'ViewModel.dart';
 import 'common/error_widget.dart';
 import 'firebase_options.dart';
+import 'home/my_simple_tasks_screen.dart';
 import 'home/myaims_screen.dart';
 import 'home/mywishes_screen.dart';
 import 'home/profile_screen.dart';
@@ -113,6 +114,8 @@ class MyApp extends StatelessWidget {
       return AimEditScreen(aimId: state.aimId);
     } else if (state is NavigationTasksScreenState) {
       return const TasksScreen();
+    }else if (state is NavigationSimpleTasksScreenState) {
+      return const SimpleTasksScreen();
     } else if (state is NavigationWishesScreenState) {
       return WishesScreen();
     } else if (state is NavigationAimsScreenState) {
