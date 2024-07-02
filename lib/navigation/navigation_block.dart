@@ -38,7 +38,9 @@ class NavigateToProfileScreenEvent extends NavigationEvent {}
 
 class NavigateToTaskCreateScreenEvent extends NavigationEvent {
   int parentAimId = 0;
-  NavigateToTaskCreateScreenEvent(this.parentAimId);
+  bool isSimple;
+  String type;
+  NavigateToTaskCreateScreenEvent(this.parentAimId, {this.isSimple = false, this.type = ''});
 }
 
 class NavigateToTaskEditScreenEvent extends NavigationEvent {
@@ -97,7 +99,9 @@ class NavigationProfileScreenState extends NavigationState {}
 
 class NavigationTaskCreateScreenState extends NavigationState {
   int parentAimId=0;
-  NavigationTaskCreateScreenState(this.parentAimId);
+  bool isSimple;
+  String type;
+  NavigationTaskCreateScreenState(this.parentAimId, {this.isSimple= false, this.type = ''});
 }
 
 class NavigationTaskEditScreenState extends NavigationState {
@@ -191,7 +195,7 @@ class NavigationBloc extends Bloc<NavigationEvent, NavigationState> {
     });
 
     on<NavigateToTaskCreateScreenEvent>((event, emit) {
-      _navigationHistory.add(NavigationTaskCreateScreenState(event.parentAimId));
+      _navigationHistory.add(NavigationTaskCreateScreenState(event.parentAimId, isSimple: event.isSimple, type: event.type));
       emit(_navigationHistory.last);
     });
 

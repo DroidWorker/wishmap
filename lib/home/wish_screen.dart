@@ -94,10 +94,10 @@ class _WishScreenState extends State<WishScreen>{
   Widget build(BuildContext context) {
     _treeViewKey = GlobalKey();
     final appViewModel = Provider.of<AppViewModel>(context);
-    TextEditingController _title = TextEditingController(text: curwish.text);
+    TextEditingController _title = TextEditingController(text: curwish.text.replaceAll("HEADERSIMPLETASKHEADER", ""));
     TextEditingController _description = TextEditingController(text: curwish.description);
     TextEditingController _affirmation = TextEditingController(text: curwish.affirmation.split("|")[0]);
-    _title.addListener(() { if(_title.text!=appViewModel.wishScreenState!.wish.text)appViewModel.isChanged = true;curwish.text=_title.text;});
+    _title.addListener(() { if(_title.text!=appViewModel.wishScreenState!.wish.text&&!_title.text.contains("HEADERSIMPLETASKHEADER"))appViewModel.isChanged = true;curwish.text=_title.text;});
     _description.addListener(() { if(_description.text!=appViewModel.wishScreenState!.wish.description)appViewModel.isChanged = true;curwish.description=_description.text;});
     _affirmation.addListener(() { });
     myColors = appViewModel.getUserColors();
@@ -154,8 +154,6 @@ class _WishScreenState extends State<WishScreen>{
           if(ids.firstOrNull=="")ids.clear();
           if(appViewModel.cachedImages.length!=ids.length){
             appViewModel.isChanged=true;
-          }else {
-            appViewModel.isChanged=false;
           }
           root.clear();
           root.addAll(appVM.myNodes);
@@ -200,6 +198,7 @@ class _WishScreenState extends State<WishScreen>{
                                 }
                                 if(!curwish.isChecked&&appViewModel.isChanged){
                                   showModalBottomSheet<void>(
+                                    backgroundColor: AppColors.backgroundColor,
                                     context: context,
                                     isScrollControlled: true,
                                     builder: (BuildContext context) {
@@ -224,7 +223,7 @@ class _WishScreenState extends State<WishScreen>{
                                 }
                               }
                           ),
-                          Text(curwish.text, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+                          Text(curwish.text.replaceAll("HEADERSIMPLETASKHEADER", ""), style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
                           IconButton(
                               padding: EdgeInsets.zero,
                               constraints: const BoxConstraints(),
@@ -233,6 +232,7 @@ class _WishScreenState extends State<WishScreen>{
                               ),
                               onPressed: () async {
                                 showModalBottomSheet<void>(
+                                  backgroundColor: AppColors.backgroundColor,
                                   context: context,
                                   isScrollControlled: true,
                                   builder: (BuildContext context) {
@@ -241,6 +241,7 @@ class _WishScreenState extends State<WishScreen>{
                                         onOk: () { Navigator.pop(context, 'OK');
                                         appViewModel.deleteSphereWish(appVM.wishScreenState!.wish.id, curwish.prevId, curwish.nextId);
                                         showModalBottomSheet<void>(
+                                          backgroundColor: AppColors.backgroundColor,
                                           context: context,
                                           isScrollControlled: true,
                                           builder: (BuildContext context) {
@@ -301,6 +302,7 @@ class _WishScreenState extends State<WishScreen>{
                                   } else {
                                     if(appVM.isChanged) {
                                       showModalBottomSheet<void>(
+                                        backgroundColor: AppColors.backgroundColor,
                                         context: context,
                                         isScrollControlled: true,
                                         builder: (BuildContext mcontext) {
@@ -343,6 +345,7 @@ class _WishScreenState extends State<WishScreen>{
                                       showUnavailable("Чтобы изменить статус необходимо отменить статус 'скрыто' для вышестоящего желания");
                                     } else if(curwish.isHidden&&appVM.getShowedCirclesCount(curwish.parentId)>=12){
                                       showModalBottomSheet<void>(
+                                        backgroundColor: AppColors.backgroundColor,
                                         context: context,
                                         isScrollControlled: true,
                                         builder: (BuildContext context) {
@@ -352,6 +355,7 @@ class _WishScreenState extends State<WishScreen>{
                                       );
                                     }else {
                                       showModalBottomSheet<void>(
+                                        backgroundColor: AppColors.backgroundColor,
                                         context: context,
                                         isScrollControlled: true,
                                         builder: (BuildContext context) {
@@ -368,6 +372,7 @@ class _WishScreenState extends State<WishScreen>{
                                                       curwish.isHidden, true);
                                                 });
                                                 showModalBottomSheet<void>(
+                                                  backgroundColor: AppColors.backgroundColor,
                                                   context: context,
                                                   isScrollControlled: true,
                                                   builder: (BuildContext context) {
@@ -395,11 +400,12 @@ class _WishScreenState extends State<WishScreen>{
                                   controller: _title,
                                   onTap: (){
                                     if(curwish.isChecked&&!curwish.isActive) {showUnavailable("Желание исполнено в прошлой карте. Изменению не подлежит. Вы можете видеть ее в журнале желаний в разделах 'исполненные' и 'все цели', а также в иерархии желания.\n\nВы можете удалить желание. Если вам нужна подобная, просто создайте новую.");}
+                                    else if(curwish.text.contains("HEADERSIMPLETASKHEADER")){showUnavailable("Это желание содержит простые задачи. Его невозможно изменить");}
                                     else if(curwish.isChecked)showUnavailable("Чтобы редактировать желание необходимо перевести в статус \nна 'не исполнено'");
                                     else if(!curwish.isActive)showUneditable();
                                   },
                                   showCursor: true,
-                                  readOnly: curwish.isChecked||!curwish.isActive?true:false,
+                                  readOnly: curwish.isChecked||!curwish.isActive||curwish.text.contains("HEADERSIMPLETASKHEADER")?true:false,
                                   style: const TextStyle(color: Colors.black), // Черный текст ввода
                                   decoration: InputDecoration(
                                     contentPadding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
@@ -690,7 +696,8 @@ class _WishScreenState extends State<WishScreen>{
                                       ):InkWell(
                                         onTap: (){
                                           final shotColor = _color?.value;
-                                          curwish.isChecked?showUnavailable("Чтобы редактировать желание необходимо сменить статус \nна 'не выполнено'"):!curwish.isActive?showUneditable():showModalBottomSheet(context: context, isScrollControlled: true, builder: (BuildContext context){
+                                          curwish.isChecked?showUnavailable("Чтобы редактировать желание необходимо сменить статус \nна 'не выполнено'"):!curwish.isActive?showUneditable():showModalBottomSheet(
+                                              backgroundColor: AppColors.backgroundColor,context: context, isScrollControlled: true, builder: (BuildContext context){
                                             return ColorPickerBS(_color??Colors.white, (c){
                                               setState(() {
                                                 if(shotColor!=c.value)appViewModel.isChanged=true;
@@ -731,6 +738,7 @@ class _WishScreenState extends State<WishScreen>{
                                           appVM.wishScreenState!.wish.id));
                                     }else{
                                       showModalBottomSheet<void>(
+                                        backgroundColor: AppColors.backgroundColor,
                                         context: context,
                                         isScrollControlled: true,
                                         builder: (BuildContext context) {
@@ -761,6 +769,26 @@ class _WishScreenState extends State<WishScreen>{
                                   }
                                 },
                                 ),
+                                const SizedBox(height: 8),
+                                if(curwish.isActive&&!curwish.isChecked)OutlinedGradientButton("Создать общую задачу", () {
+                                  if(curwish.isChecked&&!curwish.isActive) {showUnavailable("Желание исполнено в прошлой карте. Изменению не подлежит. Вы можете видеть ее в журнале желаний в разделах 'исполненные' и 'все цели', а также в иерархии желания.\n\nВы можете удалить желание. Если вам нужна подобная, просто создайте новую.");}
+                                  else if(curwish.isChecked)showUnavailable("Чтобы редактировать желание необходимо перевести в статус \nна 'не исполнено'");
+                                  else if(!curwish.isActive)showUneditable();
+                                  else{
+                                    if(appVM.mainScreenState!.allCircles.where((element) => element.id==appVM.wishScreenState!.wish.id).isNotEmpty) {
+                                      BlocProvider.of<NavigationBloc>(context).add(NavigateToTaskCreateScreenEvent(curwish.id, isSimple: true, type: curwish.parentId > 1?'w':'s'));
+                                    }else{
+                                      showModalBottomSheet<void>(
+                                        backgroundColor: AppColors.backgroundColor,
+                                        context: context,
+                                        isScrollControlled: true,
+                                        builder: (BuildContext context) {
+                                          return NotifyBS('Необходимо сохранить желание', "", 'OK',
+                                              onOk: () => Navigator.pop(context, 'OK'));
+                                        },
+                                      );
+                                    }}
+                                }),
                               ]),
                               if(!curwish.isActive||curwish.isChecked)Positioned.fill(
                                 child: Container(
@@ -777,7 +805,7 @@ class _WishScreenState extends State<WishScreen>{
                                   SizedBox(key: _keyToScroll, height: 5),
                                   appVM.settings.treeView==0?MyTreeView(key: _treeViewKey,roots: root, onTap: (id, type) => onTreeItemTap(appVM, id, type, _title, _description, _affirmation)):
                                   TreeViewWidgetV2(key: UniqueKey(), root: root.firstOrNull??MyTreeNode(id: -1, type: "a", title: "title", isChecked: true), idToOpen: curwish.id, onTap: (id,type) => onTreeItemTap(appVM, id, type, _title, _description, _affirmation)),
-                                  const SizedBox(height: 62),
+                                  const SizedBox(height: 82),
                                 ],),
                               )                ],
                         ),),
@@ -788,7 +816,21 @@ class _WishScreenState extends State<WishScreen>{
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Row(
+                  MediaQuery.of(context).viewInsets.bottom!=0? Align(
+                    alignment: Alignment.topRight,
+                    child: Container(height: 50, width: 50,
+                        margin: const EdgeInsets.fromLTRB(0, 0, 16, 16),
+                        alignment: Alignment.center,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white,
+                        ), child:
+                        GestureDetector(
+                          onTap: (){FocusManager.instance.primaryFocus?.unfocus();},
+                          child: const Icon(Icons.keyboard_hide_sharp, size: 30, color: AppColors.darkGrey,),
+                        )
+                    ),
+                  ):Row(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       FloatingActionButton(
@@ -806,10 +848,11 @@ class _WishScreenState extends State<WishScreen>{
                         ],),
                       ),
                       const SizedBox(width: 16),
-                      !curwish.isActive&&curwish.isChecked?const SizedBox():Expanded(
+                      !curwish.isActive&&curwish.isChecked||!appVM.isChanged?const SizedBox():Expanded(
                         child: ColorRoundedButton("Сохранить", () async {
                           if(_title.text.isEmpty||_affirmation.text.isEmpty){
                             await showModalBottomSheet<void>(
+                              backgroundColor: AppColors.backgroundColor,
                               context: context,
                               isScrollControlled: true,
                               builder: (BuildContext context) {
@@ -827,6 +870,7 @@ class _WishScreenState extends State<WishScreen>{
                                 appVM.wishScreenState!.wish, false);
                             appViewModel.isChanged = false;
                             showModalBottomSheet<void>(
+                              backgroundColor: AppColors.backgroundColor,
                               context: context,
                               isScrollControlled: true,
                               builder: (BuildContext context) {
@@ -847,21 +891,6 @@ class _WishScreenState extends State<WishScreen>{
                     ],
                   ),
                   const SizedBox(height: 16),
-                  if(MediaQuery.of(context).viewInsets.bottom!=0) Align(
-                    alignment: Alignment.topRight,
-                    child: Container(height: 50, width: 50,
-                        margin: const EdgeInsets.fromLTRB(0, 0, 16, 16),
-                        alignment: Alignment.center,
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.white,
-                        ), child:
-                        GestureDetector(
-                          onTap: (){FocusManager.instance.primaryFocus?.unfocus();},
-                          child: const Icon(Icons.keyboard_hide_sharp, size: 30, color: AppColors.darkGrey,),
-                        )
-                    ),
-                  )
                 ],
               ),
             ),
@@ -914,6 +943,7 @@ class _WishScreenState extends State<WishScreen>{
   void changeStatus(AppViewModel appVM){
     if(appVM.wishScreenState!.wish.childAims.isNotEmpty||appVM.mainScreenState?.allCircles.firstWhereOrNull((element) => element.parenId==appVM.wishScreenState!.wish.id)!=null) {
       showModalBottomSheet<void>(
+        backgroundColor: AppColors.backgroundColor,
         context: context,
         isScrollControlled: true,
         builder: (BuildContext context) {
@@ -928,6 +958,7 @@ class _WishScreenState extends State<WishScreen>{
                         .id, curwish.isChecked);
                 showOverlayedAnimations(context,'assets/lottie/inaim.json');
                 showModalBottomSheet<void>(
+                  backgroundColor: AppColors.backgroundColor,
                   context: context,
                   isScrollControlled: true,
                   builder: (BuildContext context) {
@@ -949,6 +980,7 @@ class _WishScreenState extends State<WishScreen>{
           appVM.wishScreenState!.wish
               .id, curwish.isChecked);
       showModalBottomSheet<void>(
+        backgroundColor: AppColors.backgroundColor,
         context: context,
         isScrollControlled: true,
         builder: (BuildContext context) {
@@ -962,6 +994,7 @@ class _WishScreenState extends State<WishScreen>{
   Future<bool> onSaveClicked(AppViewModel appVM, bool isExit, TextEditingController title, TextEditingController description, TextEditingController affirmation) async {
     if(title.text.isEmpty||affirmation.text.isEmpty){
       await showModalBottomSheet<void>(
+        backgroundColor: AppColors.backgroundColor,
         context: context,
         isScrollControlled: true,
         builder: (BuildContext context) {
@@ -980,6 +1013,7 @@ class _WishScreenState extends State<WishScreen>{
     appVM.isChanged=false;
     appVM.convertToMyTreeNodeFullBranch(curwish.id);
     showModalBottomSheet<void>(
+      backgroundColor: AppColors.backgroundColor,
       context: context,
       isScrollControlled: true,
       builder: (BuildContext context) {
@@ -999,6 +1033,7 @@ class _WishScreenState extends State<WishScreen>{
 
   Future<bool?> showOnExit(AppViewModel appVM, TextEditingController title, TextEditingController description, TextEditingController affirmation) async {
     return await showModalBottomSheet<bool>(
+      backgroundColor: AppColors.backgroundColor,
       context: context,
       isScrollControlled: true,
       builder: (BuildContext context) {
@@ -1015,6 +1050,7 @@ class _WishScreenState extends State<WishScreen>{
   }
   void showUnavailable(String text){
     showModalBottomSheet<void>(
+      backgroundColor: AppColors.backgroundColor,
       context: context,
       isScrollControlled: true,
       builder: (BuildContext context) {
@@ -1025,6 +1061,7 @@ class _WishScreenState extends State<WishScreen>{
   }
   void showUneditable() {
     showModalBottomSheet<void>(
+      backgroundColor: AppColors.backgroundColor,
       context: context,
       isScrollControlled: true,
       builder: (BuildContext context) {
@@ -1035,6 +1072,7 @@ class _WishScreenState extends State<WishScreen>{
   }
   void showCantChangeStatus(){
     showModalBottomSheet<void>(
+      backgroundColor: AppColors.backgroundColor,
       context: context,
       isScrollControlled: true,
       builder: (BuildContext context) {

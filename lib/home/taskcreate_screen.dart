@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:keyboard_attachable/keyboard_attachable.dart';
 import 'package:provider/provider.dart';
 import '../ViewModel.dart';
 import '../common/EditTextOverlay.dart';
@@ -12,9 +11,11 @@ import '../navigation/navigation_block.dart';
 import '../res/colors.dart';
 
 class TaskScreen extends StatefulWidget {
-  int parentAimId = 0;
+  int parentAimId = 0;//or parent sphere to simple task creation
+  bool isSimpleTask;
+  String simpleParentType;
 
-  TaskScreen({super.key, required this.parentAimId});
+  TaskScreen({super.key, required this.parentAimId, this.isSimpleTask = false, this.simpleParentType = ''});
   @override
   TaskScreenState createState() => TaskScreenState();
 }
@@ -45,6 +46,7 @@ class TaskScreenState extends State<TaskScreen>{
                     onPressed: () {
                       if(text.text.isNotEmpty&&!taskCreateClicked){
                         showModalBottomSheet<void>(
+                          backgroundColor: AppColors.backgroundColor,
                           context: context,
                           isScrollControlled: true,
                           builder: (BuildContext context) {
@@ -134,9 +136,14 @@ class TaskScreenState extends State<TaskScreen>{
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: ColorRoundedButton("Сохранить", () async {
-                  if(!taskCreateClicked){
-                    taskCreateClicked = true;
-                    await onSaveClicked(appViewModel);
+                  if(!widget.isSimpleTask) {
+                    if (!taskCreateClicked) {
+                      taskCreateClicked = true;
+                      await onSaveClicked(appViewModel);
+                    }
+                  }else{
+                    appViewModel.addSimpleTask(widget.parentAimId, widget.simpleParentType, "HEADERSIMPLETASKHEADER${text.text}", taskDescription: description.text);
+                    BlocProvider.of<NavigationBloc>(context).handleBackPress();
                   }
                 }
                 ),
@@ -165,6 +172,7 @@ class TaskScreenState extends State<TaskScreen>{
     if (text.text.isEmpty) {
       taskCreateClicked=false;
       showModalBottomSheet<void>(
+        backgroundColor: AppColors.backgroundColor,
         context: context,
         isScrollControlled: true,
         builder: (BuildContext context) {
@@ -179,6 +187,7 @@ class TaskScreenState extends State<TaskScreen>{
           description: description.text), widget.parentAimId);
       if (taskId != null) {
         showModalBottomSheet<void>(
+          backgroundColor: AppColors.backgroundColor,
           context: context,
           isScrollControlled: true,
           builder: (BuildContext context) {

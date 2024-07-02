@@ -11,6 +11,7 @@ import '../ViewModel.dart';
 import '../common/EditTextOverlay.dart';
 import '../common/animation_overlay.dart';
 import '../common/bottombar.dart';
+import '../common/gradientText.dart';
 import '../common/treeview_widget_v2.dart';
 import '../data/models.dart';
 import '../data/static.dart';
@@ -46,6 +47,8 @@ class AimEditScreenState extends State<AimEditScreen>{
 
   bool isTextSetted = false;
 
+  bool HEADERSIMPLETASKHEADER = false;
+
   @override
   void initState(){
     super.initState();
@@ -68,10 +71,28 @@ class AimEditScreenState extends State<AimEditScreen>{
     _treeViewKey = GlobalKey();
     text.addListener(() { if(ai?.text!=text.text)isChanged = true;});
     description.addListener(() { if(ai?.description!=description.text)isChanged = true;});
+    ///return true if lines count > maxLines
+    bool _checkLines(int maxlines){
+      final TextSpan textSpan = TextSpan(text: description.text);
+      final TextPainter textPainter = TextPainter(
+          text: textSpan,
+          textDirection: TextDirection.ltr
+      );
+      textPainter.layout(maxWidth: MediaQuery.of(context).size.width - 64);
+      final int lines = textPainter.computeLineMetrics().length;
+      if(lines>maxlines){
+        return true;
+      }
+      return false;
+    }
 
     return Consumer<AppViewModel>(
         builder: (context, appVM, child) {
           if(ai==null||ai!.id==-1)ai = appVM.currentAim??AimData(id: -1, parentId: -1, text: 'объект не найден', description: "", isChecked: false);
+          if(ai!.text.contains("HEADERSIMPLETASKHEADER")) {
+            ai!.text = ai!.text.replaceAll("HEADERSIMPLETASKHEADER", "");
+            HEADERSIMPLETASKHEADER = true;
+          }
           if(roots.isEmpty&&ai!=null&&ai!.id!=-1)appVM.convertToMyTreeNode(CircleData(id: ai!.id, prevId: -1, nextId: -1, text: ai!.text, color: Colors.transparent, parenId: ai!.parentId, isChecked: ai!.isChecked, isActive: ai!.isActive));
           roots = appVM.myNodes;
           final parentObj = ai!.id!=-1?appVM.mainScreenState!.allCircles.where((element) => element.id ==ai!.parentId).firstOrNull:null;
@@ -123,6 +144,7 @@ class AimEditScreenState extends State<AimEditScreen>{
                               onPressed: () {
                                 if(ai!=null&&!ai!.isChecked&&isChanged){
                                   showModalBottomSheet<void>(
+                                    backgroundColor: AppColors.backgroundColor,
                                     context: context,
                                     isScrollControlled: true,
                                     builder: (BuildContext context) {
@@ -156,6 +178,7 @@ class AimEditScreenState extends State<AimEditScreen>{
                                 ),
                                 onPressed: () async {
                                   showModalBottomSheet<void>(
+                                    backgroundColor: AppColors.backgroundColor,
                                     context: context,
                                     isScrollControlled: true,
                                     builder: (BuildContext context) {
@@ -164,6 +187,7 @@ class AimEditScreenState extends State<AimEditScreen>{
                                           appVM.deleteAim(widget.aimId, ai!.parentId);
                                           BlocProvider.of<NavigationBloc>(context).handleBackPress();
                                           showModalBottomSheet<void>(
+                                            backgroundColor: AppColors.backgroundColor,
                                             context: context,
                                             isScrollControlled: true,
                                             builder: (BuildContext context) {
@@ -205,6 +229,7 @@ class AimEditScreenState extends State<AimEditScreen>{
                             } else {
                               if(isChanged) {
                                 showModalBottomSheet<void>(
+                                  backgroundColor: AppColors.backgroundColor,
                                   context: context,
                                   isScrollControlled: true,
                                   builder: (BuildContext context) {
@@ -213,6 +238,7 @@ class AimEditScreenState extends State<AimEditScreen>{
                                         onSaveClick(appVM);
                                         if (ai!.childTasks.isNotEmpty) {
                                           showModalBottomSheet<void>(
+                                            backgroundColor: AppColors.backgroundColor,
                                             context: context,
                                             isScrollControlled: true,
                                             builder: (BuildContext context) {
@@ -224,6 +250,7 @@ class AimEditScreenState extends State<AimEditScreen>{
                                                     appVM.updateAimStatus(ai!.id, ai!.isChecked);
                                                     showOverlayedAnimations(context,'assets/lottie/inaim.json', fillBackground: true);
                                                     showModalBottomSheet<void>(
+                                                      backgroundColor: AppColors.backgroundColor,
                                                       context: context,
                                                       isScrollControlled: true,
                                                       builder: (BuildContext context) {
@@ -248,6 +275,7 @@ class AimEditScreenState extends State<AimEditScreen>{
                                           Navigator.pop(context, 'Cancel');
                                           if (ai!.childTasks.isNotEmpty) {
                                             showModalBottomSheet<void>(
+                                              backgroundColor: AppColors.backgroundColor,
                                               context: context,
                                               isScrollControlled: true,
                                               builder: (BuildContext context) {
@@ -268,6 +296,7 @@ class AimEditScreenState extends State<AimEditScreen>{
                                                       isChanged = false;
                                                       showOverlayedAnimations(context,'assets/lottie/inaim.json', fillBackground: true);
                                                       showModalBottomSheet<void>(
+                                                        backgroundColor: AppColors.backgroundColor,
                                                         context: context,
                                                         isScrollControlled: true,
                                                         builder: (BuildContext context) {
@@ -300,6 +329,7 @@ class AimEditScreenState extends State<AimEditScreen>{
                               }else {
                                 if (ai!.childTasks.isNotEmpty) {
                                   showModalBottomSheet<void>(
+                                    backgroundColor: AppColors.backgroundColor,
                                       context: context,
                                       isScrollControlled: true,
                                       builder: (BuildContext context) {
@@ -314,6 +344,7 @@ class AimEditScreenState extends State<AimEditScreen>{
                                               ai!.isChecked);
                                           showOverlayedAnimations(context,'assets/lottie/inaim.json', fillBackground: true);
                                           showModalBottomSheet<void>(
+                                            backgroundColor: AppColors.backgroundColor,
                                             context: context,
                                             isScrollControlled: true,
                                             builder: (BuildContext context) {
@@ -333,6 +364,7 @@ class AimEditScreenState extends State<AimEditScreen>{
                                       ai!.id, ai!.isChecked);
                                   showOverlayedAnimations(context,'assets/lottie/inaim.json', fillBackground: true);
                                   showModalBottomSheet<void>(
+                                    backgroundColor: AppColors.backgroundColor,
                                     context: context,
                                     isScrollControlled: true,
                                     builder: (BuildContext context) {
@@ -350,13 +382,14 @@ class AimEditScreenState extends State<AimEditScreen>{
                           Column(children: [
                             TextField(
                               onTap: (){
+                                if(HEADERSIMPLETASKHEADER) return;
                                 if(ai!.isChecked&&!ai!.isActive) {showUneditable(text: "3адача выполнена в прошлой карте. Изменению не подлежит. Вы можете видеть ее в журнале задач в разделах 'выполненные' и 'все задачи', а также в иерархии цели и желания.\n\nВы можете удалить задачу. Если вам нужна подобная, просто создайте новую задачу.");}
                                 else if(ai!.isChecked) {showUneditable(text: "Чтобы редактировать цель необходимо сменить статус \nна 'не выполнена'");}
                                 else if(!ai!.isActive) {showUneditable(text: "Невозможно изменить неактуализированную задачу");}
                               },
                               controller: text,
                               showCursor: true,
-                              readOnly: ai!=null?(ai!.isChecked||!ai!.isActive?true:false):false,
+                              readOnly: ai!=null?(ai!.isChecked||!ai!.isActive||HEADERSIMPLETASKHEADER?true:false):false,
                               style: const TextStyle(color: Colors.black), // Черный текст ввода
                               decoration: InputDecoration(
                                 contentPadding: const EdgeInsets.fromLTRB(16, 16, 16, 19),
@@ -381,7 +414,9 @@ class AimEditScreenState extends State<AimEditScreen>{
                             const SizedBox(height: 8),
                             TextField(
                               maxLength: 260,
+                              minLines: 1,
                               maxLines: 5,
+                              controller: description,
                               showCursor: false,
                               readOnly: true,
                               onTap: () async {
@@ -401,23 +436,66 @@ class AimEditScreenState extends State<AimEditScreen>{
                               },
                               style: const TextStyle(color: Colors.black), // Черный текст ввода
                               decoration: InputDecoration(
-                                contentPadding: const EdgeInsets.fromLTRB(16, 16, 16, 19),
-                                suffixIconConstraints: const BoxConstraints(
-                                    minWidth: 32,
-                                    minHeight: 100
-                                ),
-                                suffixIcon: const Text("*", style: TextStyle(fontSize: 30, color: AppColors.greytextColor)),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(10.0),
+                                contentPadding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                                border:  OutlineInputBorder(
+                                  borderRadius: _checkLines(5)?const BorderRadius.only(topLeft: Radius.circular(10), topRight: Radius.circular(10)):BorderRadius.all(Radius.circular(10)),
                                   borderSide: const BorderSide(
                                     width: 0,
                                     style: BorderStyle.none,
                                   ),
                                 ),
+                                counterText: "",
                                 filled: true, // Заливка фона
                                 fillColor: ai!=null?(ai!.isChecked?AppColors.fieldLockColor:!ai!.isActive?AppColors.fieldLockColor:Colors.white):Colors.white,
                                 hintText: 'Описание', // Базовый текст
                                 hintStyle: TextStyle(color: Colors.black.withOpacity(0.3)), // Полупрозрачный черный базовый текст
+                              ),
+                            ),
+                            if(_checkLines(5))Container(
+                              height: 40,
+                              width: double.infinity,
+                              decoration: const BoxDecoration(
+                                borderRadius: BorderRadius.only(bottomLeft: Radius.circular(10), bottomRight: Radius.circular(10)),
+                                color: Colors.white,
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 16),
+                                child: Container(
+                                  width: double.infinity,
+                                  decoration: const BoxDecoration(
+                                    borderRadius: BorderRadius.only(bottomLeft: Radius.circular(10), bottomRight: Radius.circular(10)),
+                                    border: Border(
+                                      top: BorderSide(width: 1.0, color: AppColors.grey),
+                                    ),
+                                  ),
+                                  child: InkWell(
+                                    onTap: () async {
+                                      if(ai!.isChecked){
+                                        if(ai!.isChecked&&!ai!.isActive) {showUneditable(text: "3адача выполнена в прошлой карте. Изменению не подлежит. Вы можете видеть ее в журнале задач в разделах 'выполненные' и 'все задачи', а также в иерархии цели и желания.\n\nВы можете удалить задачу. Если вам нужна подобная, просто создайте новую задачу.");}
+                                        else if(ai!.isChecked) {showUneditable(text: "Чтобы редактировать цель необходимо сменить статус \nна 'не выполнена'");}
+                                        else if(!ai!.isActive) {showUneditable(text: "Невозможно изменить неактуализированную задачу");}
+                                      }
+                                      else if(!ai!.isActive){showUneditable();}
+                                      else {
+                                        final returnedText = await showOverlayedEdittext(context, description.text, (ai!.isActive&&!ai!.isChecked))??"";
+                                        if(returnedText!=description.text) {
+                                          description.text = returnedText;
+                                          isChanged = true;
+                                        }
+                                      }
+                                    },
+                                    child: const Row(
+                                      children: [
+                                        GradientText("Показать все", gradient: LinearGradient(
+                                            colors: [AppColors.gradientStart, AppColors.gradientEnd]
+                                        ),
+                                          style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14),),
+                                        Spacer(),
+                                        Icon(Icons.arrow_forward_ios, color: AppColors.gradientEnd, size: 18,)
+                                      ],
+                                    ),
+                                  ),
+                                ),
                               ),
                             ),
                             const SizedBox(height: 24),
@@ -436,7 +514,8 @@ class AimEditScreenState extends State<AimEditScreen>{
                                     return;
                                   }
 
-                                  BlocProvider.of<NavigationBloc>(context)
+                                  HEADERSIMPLETASKHEADER?BlocProvider.of<NavigationBloc>(context)
+                                      .add(NavigateToTaskCreateScreenEvent(ai!.parentId, isSimple: true, type: "w")):BlocProvider.of<NavigationBloc>(context)
                                       .add(NavigateToTaskCreateScreenEvent(ai!.id));
                                 }
                               },
@@ -453,33 +532,31 @@ class AimEditScreenState extends State<AimEditScreen>{
                         const SizedBox(height: 24),
                         SizedBox(key: _keyToScroll, height: 15,),
                         appVM.settings.treeView==0?MyTreeView(key: _treeViewKey = GlobalKey(),roots: roots, onTap: (id, type) => onTreeItemTap(appVM, id, type)):
-                        TreeViewWidgetV2(key: UniqueKey(), root: roots.firstOrNull??MyTreeNode(id: -1, type: "a", title: "title", isChecked: true), idToOpen: ai?.id??0, onTap: (id,type) => onTreeItemTap(appVM, id, type),)
+                        TreeViewWidgetV2(key: UniqueKey(), root: roots.firstOrNull??MyTreeNode(id: -1, type: "a", title: "title", isChecked: true), idToOpen: ai?.id??0, onTap: (id,type) => onTreeItemTap(appVM, id, type),),
+                        const SizedBox(height: 50,)
                       ]),
                     ))
-
                   ]
               ),
             )),
-                  if(MediaQuery.of(context).viewInsets.bottom!=0) Align(
-                    alignment: Alignment.topRight,
-                    child: Container(height: 50, width: 50,
-                        margin: const EdgeInsets.fromLTRB(0, 0, 16, 16),
-                        alignment: Alignment.center,
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.white,
-                        ), child:
-                        GestureDetector(
-                          onTap: (){FocusManager.instance.primaryFocus?.unfocus();},
-                          child: const Icon(Icons.keyboard_hide_sharp, size: 30, color: AppColors.darkGrey,),
-                        )
-                    ),
-                  )
                       ])
             ),
             bottomSheet: Padding(
               padding: const EdgeInsets.all(16.0),
-              child: Row(
+                  child: MediaQuery.of(context).viewInsets.bottom!=0? Align(
+                alignment: Alignment.bottomRight,
+                child: Container(height: 50, width: 50,
+                    alignment: Alignment.center,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white,
+                    ), child:
+                    GestureDetector(
+                      onTap: (){FocusManager.instance.primaryFocus?.unfocus();},
+                      child: const Icon(Icons.keyboard_hide_sharp, size: 30, color: AppColors.darkGrey,),
+                    )
+                ),
+              ):Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   FloatingActionButton(
@@ -499,7 +576,7 @@ class AimEditScreenState extends State<AimEditScreen>{
                     ],),
                   ),
                   const SizedBox(width: 16),
-                  ai!=null&&(!ai!.isActive&&ai!.isChecked)?const SizedBox():Expanded(
+                  ai!=null&&(!ai!.isActive&&ai!.isChecked||!isChanged)?const SizedBox():Expanded(
                     child: ColorRoundedButton("Сохранить", () {
                       if(ai!=null&&!ai!.isChecked) {
                         onSaveClick(appVM);
@@ -560,6 +637,7 @@ class AimEditScreenState extends State<AimEditScreen>{
     if(ai!=null){
       if(text.text.isEmpty||description.text.isEmpty){
         await showModalBottomSheet<void>(
+          backgroundColor: AppColors.backgroundColor,
           context: context,
           isScrollControlled: true,
           builder: (BuildContext context) {
@@ -572,6 +650,7 @@ class AimEditScreenState extends State<AimEditScreen>{
         ai!.text = text.text;
         ai!.description = description.text;
       }
+      if(HEADERSIMPLETASKHEADER)ai!.text = "HEADERSIMPLETASKHEADER${ai!.text}";
       appVM.updateAim(ai!);
       setState(() {
         roots.clear();
@@ -579,6 +658,7 @@ class AimEditScreenState extends State<AimEditScreen>{
         isChanged = false;
       });
       showModalBottomSheet<void>(
+        backgroundColor: AppColors.backgroundColor,
         context: context,
         isScrollControlled: true,
         builder: (BuildContext context) {
@@ -591,6 +671,7 @@ class AimEditScreenState extends State<AimEditScreen>{
   }
   Future<bool?> showOnExit(AppViewModel appVM) async {
     return await showModalBottomSheet<bool>(
+      backgroundColor: AppColors.backgroundColor,
         context: context,
         isScrollControlled: true,
         builder: (BuildContext context) {
@@ -608,6 +689,7 @@ class AimEditScreenState extends State<AimEditScreen>{
 
   void showUneditable({String text = "Чтобы редактировать необходимо изменить статус на 'актуальное' нажав кнопку 'осознать'"}) {
     showModalBottomSheet<void>(
+      backgroundColor: AppColors.backgroundColor,
       context: context,
       isScrollControlled: true,
       builder: (BuildContext context) {
@@ -618,6 +700,7 @@ class AimEditScreenState extends State<AimEditScreen>{
   }
   void showCantChangeStatus(){
     showModalBottomSheet<void>(
+      backgroundColor: AppColors.backgroundColor,
       context: context,
       isScrollControlled: true,
       builder: (BuildContext context) {

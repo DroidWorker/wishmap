@@ -318,6 +318,7 @@ class _WishesScreenState extends State<WishesScreen>{
       });
     } else { //удалить
       showModalBottomSheet<void>(
+        backgroundColor: AppColors.backgroundColor,
         context: context,
         isScrollControlled: true,
         builder: (BuildContext context) {

@@ -14,6 +14,7 @@ import '../common/bottombar.dart';
 import '../common/diary_article_item.dart';
 import '../common/diary_edittext_overlay.dart';
 import '../data/models.dart';
+import '../dialog/bottom_sheet_action.dart';
 import '../navigation/navigation_block.dart';
 import '../res/colors.dart';
 
@@ -104,8 +105,22 @@ class DiaryEditScreenState extends State<DiaryEditScreen>{
                           ),
                           icon: SvgPicture.asset("assets/icons/trash.svg", width: 24, height: 24),
                           onPressed: () {
-                              appVM.deleteDiary(widget.diaryId);
-                              BlocProvider.of<NavigationBloc>(context).handleBackPress();
+                            showModalBottomSheet<bool>(
+                              backgroundColor: AppColors.backgroundColor,
+                              context: context,
+                              isScrollControlled: true,
+                              builder: (BuildContext context) {
+                                return ActionBS('Удалить', "", "Да", 'Нет',
+                                    onOk: () async {
+                                      Navigator.pop(context, true);
+                                      appVM.deleteDiary(widget.diaryId);
+                                      BlocProvider.of<NavigationBloc>(context).handleBackPress();
+                                    },
+                                    onCancel: () { Navigator.pop(context, true);
+                                    appVM.isChanged=false;}
+                                );
+                              },
+                            );
                           },
                         ),
                       ],
@@ -123,6 +138,7 @@ class DiaryEditScreenState extends State<DiaryEditScreen>{
                                 GestureDetector(
                                     onTap: () {
                                       showModalBottomSheet<void>(
+                                        backgroundColor: AppColors.backgroundColor,
                                         context: context,
                                         builder: (BuildContext context) {
                                           return EmojiChoose(

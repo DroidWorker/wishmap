@@ -38,6 +38,7 @@ class _SimpleTasksScreenState extends State{
     return Consumer<AppViewModel>(
         builder: (context, appVM, child) {
           taskList = appVM.taskItems.where((e) => e.text.contains("HEADERSIMPLETASKHEADER")).toList();
+          if(!isReverce)taskList = taskList.reversed.toList();
           isPBActive=appVM.isinLoading;
           return Scaffold(
             backgroundColor: AppColors.backgroundColor,
@@ -98,6 +99,7 @@ class _SimpleTasksScreenState extends State{
                               Expanded(
                                 child: TextField(
                                   controller: controller,
+                                  textCapitalization: TextCapitalization.sentences,
                                   style: const TextStyle(color: Colors.black), // Черный текст ввода
                                   decoration: const InputDecoration(
                                     hintText: "Text",
@@ -147,6 +149,7 @@ class _SimpleTasksScreenState extends State{
                               Expanded(
                                 child: TextField(
                                   controller: controller,
+                                  textCapitalization: TextCapitalization.sentences,
                                   style: const TextStyle(color: Colors.black), // Черный текст ввода
                                   decoration: const InputDecoration(
                                     hintText: "Text",
@@ -264,11 +267,10 @@ class _SimpleTasksScreenState extends State{
       }
     }else if(!task.isChecked){//выполнить
       appViewModel.updateTaskStatus(id, true);
-      setState(() {
         appViewModel.taskItems.firstWhere((element) => element.id==id).isChecked=true;
-      });
     }else{//удалить
       showModalBottomSheet<void>(
+        backgroundColor: AppColors.backgroundColor,
         context: context,
         isScrollControlled: true,
         builder: (BuildContext context) {
@@ -276,7 +278,9 @@ class _SimpleTasksScreenState extends State{
               onOk: () {
                 Navigator.pop(context, 'OK');
                 appViewModel.deleteTask(id ,task.parentId);
-                taskList.removeWhere((element) => element.id==id);
+                setState(() {
+                  taskList.removeWhere((element) => element.id==id);
+                });
               },
               onCancel: () { Navigator.pop(context, 'Cancel');
               });

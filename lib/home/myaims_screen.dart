@@ -301,6 +301,7 @@ class _AimsScreenState extends State<AimsScreen>{
       });
     }else{//удалить
       showModalBottomSheet<void>(
+        backgroundColor: AppColors.backgroundColor,
         context: context,
         isScrollControlled: true,
         builder: (BuildContext context) {

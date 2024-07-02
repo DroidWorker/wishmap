@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:wishmap/data/static_affirmations_women.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:wishmap/main.dart';
 import 'package:wishmap/provider/file_loader.dart';
 import 'package:wishmap/repository/Repository.dart';
 import 'package:wishmap/repository/photosSearch.dart';
@@ -91,6 +92,10 @@ class AppViewModel with ChangeNotifier {
     } else {
       inProgress.remove(k);
     }
+    notifyListeners();
+  }
+
+  void refresh(){
     notifyListeners();
   }
 
@@ -568,6 +573,9 @@ class AppViewModel with ChangeNotifier {
       try {
         //mainScreenState!.allCircles = (await repository.getSpheres(mi.id)) ?? [];
         final spheres = (await localRep.getAllMoonSpheres(mi.id));
+        spheres.forEach((y){
+          print("jjjjjjjjjj${y.text} - ${y.parenId}");
+        });
         mainScreenState?.allCircles = spheres;
         if(spheres.isEmpty) {
           mainScreenState!.allCircles = (await repository.getSpheres(mi.id)) ?? [];
@@ -1261,8 +1269,8 @@ class AppViewModel with ChangeNotifier {
     try {
       if(connectivity != 'No Internet Connection')await repository.updateTask(ad, mainScreenState?.moon.id??0);
       await localRep.updateTask(ad,mainScreenState?.moon.id??0);
-      currentTask=(TaskData(id: ad.id, parentId: ad.parentId, text: ad.text, description: ad.description, isChecked: ad.isChecked, isActive: ad.isActive));
       taskItems[taskItems.indexWhere((element) => element.id==ad.id)]=TaskItem(id: ad.id, parentId: ad.parentId, text: ad.text, isChecked: ad.isChecked, isActive: ad.isActive);
+      currentTask=(TaskData(id: ad.id, parentId: ad.parentId, text: ad.text, description: ad.description, isChecked: ad.isChecked, isActive: ad.isActive));
       updateMoonSync(mainScreenState?.moon.id??0);
     }catch(ex){
       addError("#524${ex.toString()}");
@@ -1279,7 +1287,7 @@ class AppViewModel with ChangeNotifier {
       addError("#526${ex.toString()}");
     }
   }
-  Future<void> updateTaskStatus(int taskId, bool status) async{
+  Future<void> updateTaskStatus(int taskId, bool status, {needUpdate = true}) async{
     try {
       currentTask?.isChecked = status;
       if(currentTask!=null){
@@ -1290,7 +1298,7 @@ class AppViewModel with ChangeNotifier {
       await localRep.updateTaskStatus(taskId, status,mainScreenState?.moon.id??0);
       if(myNodes.isNotEmpty)toggleChecked(myNodes.first, 't', taskId, status);
       updateMoonSync(mainScreenState?.moon.id??0);
-      notifyListeners();
+      if(needUpdate)notifyListeners();
     }catch(ex, s){
       addError("#528${ex.toString()}");
       print("errrrrrr$s");
@@ -1558,27 +1566,28 @@ class AppViewModel with ChangeNotifier {
     }
   }
 
-  Future<void> addSimpleTask(int parentId, String objType, String taskData) async {
+  Future<void> addSimpleTask(int parentId, String objType, String taskData, {String taskDescription = ""}) async {
     int? wishId;
     int? aimId;
     if(objType=='s'){
       final allWish = await localRep.getAllSpheres(mainScreenState?.moon.id??0);
-      final simpleWish = allWish.where((e) => (e.text=="Общие задачи"&&e.parentId==parentId));
+      final simpleWish = allWish.where((e) => (e.text=="HEADERSIMPLETASKHEADERОбщие задачи"&&e.parentId==parentId));
       if(simpleWish.isEmpty){
         //await adding aim
         wishId = allWish.reduce((a,b) => a.id > (b.id) ? a:b).id+1;
-        await localRep.addSphere(WishData(id: wishId, prevId: -2, nextId: -2, parentId: parentId, text: "Общие задачи", description: "Общие задачи", affirmation: "", color: AppColors.grey), mainScreenState?.moon.id??0);
+        await localRep.addSphere(WishData(id: wishId, prevId: -2, nextId: -2, parentId: parentId, text: "HEADERSIMPLETASKHEADERОбщие задачи", description: "Общие задачи", affirmation: "", color: AppColors.grey), mainScreenState?.moon.id??0);
+        mainScreenState?.allCircles.add(CircleData(id: wishId, prevId: -2, nextId: -2, text: "HEADERSIMPLETASKHEADERОбщие задачи", color: AppColors.grey, parenId: parentId));
         final allAims = await localRep.getAllAims(mainScreenState?.moon.id??0);
         aimId = allAims.isNotEmpty?(allAims.reduce((a,b) => a.id > (b.id) ? a:b).id+1):1;
-        await localRep.addAim(AimData(id: aimId, parentId: wishId, text: "Общие задачи", description: "Общие задачи"), mainScreenState?.moon.id??0);
+        await localRep.addAim(AimData(id: aimId, parentId: wishId, text: "HEADERSIMPLETASKHEADERОбщие задачи", description: "Общие задачи"), mainScreenState?.moon.id??0);
       }else{
         wishId = simpleWish.first.id;
         final allAims = await localRep.getAllAims(mainScreenState?.moon.id??0);
-        final simpleAim = allAims.where((e) => (e.text=="Общие задачи"&&e.parentId==wishId));
+        final simpleAim = allAims.where((e) => (e.text=="HEADERSIMPLETASKHEADERОбщие задачи"&&e.parentId==wishId));
         if(simpleAim.isEmpty){
           //await adding aim
           aimId = allAims.isNotEmpty?(allAims.reduce((a,b) => a.id > (b.id) ? a:b).id+1):1;
-          await localRep.addAim(AimData(id: aimId, parentId: wishId, text: "Общие задачи", description: "Общие задачи"), mainScreenState?.moon.id??0);
+          await localRep.addAim(AimData(id: aimId, parentId: wishId, text: "HEADERSIMPLETASKHEADERОбщие задачи", description: "Общие задачи"), mainScreenState?.moon.id??0);
         }else{
           aimId = simpleAim.first.id;
         }
@@ -1591,11 +1600,11 @@ class AppViewModel with ChangeNotifier {
         return;
       }
       final allAim = await localRep.getAllAims(mainScreenState?.moon.id??0);
-      final simpleAim = allAim.where((e) => (e.text=="Общие задачи"&&e.parentId==wishId));
+      final simpleAim = allAim.where((e) => (e.text=="HEADERSIMPLETASKHEADERОбщие задачи"&&e.parentId==wishId));
       if(simpleAim.isEmpty){
         //await adding aim
           aimId = allAim.isNotEmpty?(allAim.reduce((a,b) => a.id > (b.id) ? a:b).id+1):1;
-          await localRep.addAim(AimData(id: aimId, parentId: wishId, text: "Общие задачи", description: "Общие задачи"), mainScreenState?.moon.id??0);
+          await localRep.addAim(AimData(id: aimId, parentId: wishId, text: "HEADERSIMPLETASKHEADERОбщие задачи", description: "Общие задачи"), mainScreenState?.moon.id??0);
       }else{
         aimId = simpleAim.first.id;
       }

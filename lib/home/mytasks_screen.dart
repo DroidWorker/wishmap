@@ -195,13 +195,6 @@ class _TaskScreenState extends State{
                         }
                     ),),
                     const SizedBox(height: 3),
-                    /*!trashModeActive?ColorRoundedButton("Добавить задачу", (){
-                      appViewModel.hint="Добавление ЗАДАЧ происходит из цели, добавление цели из желания, а желания из сферы. Определяй сферу, создавай желания, ставь цели и выполняй задачи. Твои желания обязательно сбудутся";
-                      appViewModel.mainCircles.clear();
-                      if(appViewModel.mainScreenState!=null)appViewModel.startMainScreen(appViewModel.mainScreenState!.moon);
-                      BlocProvider.of<NavigationBloc>(context)
-                          .add(NavigateToMainScreenEvent());
-                    }):*/
                     !trashModeActive?ColorRoundedButton("Добавить общую задачу", (){
                       BlocProvider.of<NavigationBloc>(context)
                           .add(NavigateToSimpleTasksScreenEvent());
@@ -292,12 +285,13 @@ class _TaskScreenState extends State{
         });
       }
     }else if(!task.isChecked){//выполнить
-      appViewModel.updateTaskStatus(id, true);
-      setState(() {
+      appViewModel.updateTaskStatus(id, true, needUpdate: false);
+      /*setState(() {
         appViewModel.taskItems.firstWhere((element) => element.id==id).isChecked=true;
-      });
+      });*/
     }else{//удалить
       showModalBottomSheet<void>(
+        backgroundColor: AppColors.backgroundColor,
         context: context,
         isScrollControlled: true,
         builder: (BuildContext context) {
@@ -305,7 +299,9 @@ class _TaskScreenState extends State{
               onOk: () {
                 Navigator.pop(context, 'OK');
                 appViewModel.deleteTask(id ,task.parentId);
-                taskList.removeWhere((element) => element.id==id);
+                setState(() {
+                  taskList.removeWhere((element) => element.id==id);
+                });
               },
               onCancel: () { Navigator.pop(context, 'Cancel');
               });

@@ -64,7 +64,10 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
           return MaterialApp(
             theme: ThemeData(
-              fontFamily: 'Gilroy'
+              fontFamily: 'Gilroy',
+              bottomSheetTheme:  BottomSheetThemeData(
+                backgroundColor: Colors.black.withOpacity(0)
+              )
             ),
             title: 'wishMap',
               builder: (BuildContext context, Widget? widget) {
@@ -123,7 +126,7 @@ class MyApp extends StatelessWidget {
     } else if (state is NavigationProfileScreenState) {
       return const ProfileScreen();
     } else if (state is NavigationTaskCreateScreenState) {
-      return TaskScreen(parentAimId: state.parentAimId);
+      return TaskScreen(parentAimId: state.parentAimId, isSimpleTask: state.isSimple, simpleParentType: state.type);
     } else if (state is NavigationTaskEditScreenState) {
       return TaskEditScreen(aimId: state.aimId);
     } else if (state is NavigationMainSphereEditScreenState) {

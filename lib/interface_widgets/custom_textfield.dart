@@ -79,6 +79,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
               constraints: const BoxConstraints(minHeight: 40, minWidth: 40),
               child: TextField(
                 controller: _controllers[i],
+                autofocus: i==0,
                 maxLines: null,
                 decoration: InputDecoration(
                   border: InputBorder.none,
@@ -107,10 +108,12 @@ class _CustomTextFieldState extends State<CustomTextField> {
         children.add(
           (widget.attachments[imageIndex].contains(".photo")||widget.attachments[imageIndex].contains(".jpg"))?Padding(
             padding: const EdgeInsets.symmetric(vertical: 8.0),
-            child: Image.file(
-              File(widget.attachments[imageIndex]),
-              height: 150,
-              fit: BoxFit.fitHeight,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: Image.file(
+                File(widget.attachments[imageIndex]),
+                fit: BoxFit.fitWidth,
+              ),
             ),
           ): Row(
             children: [

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 
 import '../data/models.dart';
 
@@ -22,7 +23,7 @@ class _TaskItem extends State<WishItemWidget>{
         child:Row(children: [
           Expanded(child: Text(widget.ti.text)),
           IconButton(
-            icon: widget.ti.isHidden?Image.asset('assets/icons/love5110868.png', width: 30, height: 30):widget.ti.isChecked?Image.asset('assets/icons/wish_done.png', width: 30, height: 30):!widget.ti.isActive?Image.asset('assets/icons/wish_unactive.png', width: 30, height: 30):Image.asset('assets/icons/wish_active.png', width: 30, height: 30),
+            icon: widget.ti.isHidden?Image.asset('assets/icons/wish_hidden.png', width: 30, height: 30):widget.ti.isChecked?SvgPicture.asset('assets/icons/wish_done.svg', width: 30, height: 30):!widget.ti.isActive?SvgPicture.asset('assets/icons/wish_unactive.svg', width: 30, height: 30):SvgPicture.asset('assets/icons/wish_active.svg', width: 30, height: 30),
             onPressed: () {
               widget.onClick(widget.ti.id);
             },

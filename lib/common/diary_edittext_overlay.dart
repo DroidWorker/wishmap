@@ -15,6 +15,7 @@ import 'package:wishmap/interface_widgets/custom_textfield.dart';
 
 import '../ViewModel.dart';
 import '../data/models.dart';
+import '../dialog/bottom_sheet_action.dart';
 import '../res/colors.dart';
 
 Future<Map<String?, List<String>>> showDiaryOverlayedEdittext(BuildContext context, String text, Article? article, bool isAttachmentsBarActive, )async {
@@ -117,8 +118,22 @@ class _MyOverlayState extends State<MyDETOverlay> {
                       onPressed: () {
                         setState(() {
                           if(widget.article!=null){
-                            appVM.deleteDiaryArticle(widget.article!.id);
-                            widget.onClose("", [], null);
+                            showModalBottomSheet<bool>(
+                              backgroundColor: AppColors.backgroundColor,
+                              context: context,
+                              isScrollControlled: true,
+                              builder: (BuildContext context) {
+                                return ActionBS('Удалить', "", "Да", 'Нет',
+                                    onOk: () async {
+                                      Navigator.pop(context, true);
+                                      appVM.deleteDiaryArticle(widget.article!.id);
+                                      widget.onClose("", [], null);
+                                    },
+                                    onCancel: () { Navigator.pop(context, true);
+                                    appVM.isChanged=false;}
+                                );
+                              },
+                            );
                           }else{
                             widget.onClose("", [], null);
                           }
@@ -273,6 +288,7 @@ class _MyOverlayState extends State<MyDETOverlay> {
                                   });
                                 }*/
                                 showModalBottomSheet<void>(
+                                    backgroundColor: AppColors.backgroundColor,
                                     context: context,
                                     isScrollControlled: true,
                                     builder: (BuildContext context) {

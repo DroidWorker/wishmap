@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'dart:typed_data';
 
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:capped_progress_indicator/capped_progress_indicator.dart';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
@@ -33,13 +34,14 @@ class MainSphereEditScreen extends StatefulWidget{
   _MainSphereEditScreenState createState() => _MainSphereEditScreenState();
 }
 
-class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
+class _MainSphereEditScreenState extends State<MainSphereEditScreen> with SingleTickerProviderStateMixin{
   Color circleColor = Colors.black12;
   CircleData curWd = CircleData(id: -1, prevId: -1, nextId: -1, text: "", color: Colors.black12, parenId: -1);
   Color? shotColor;
 
   static const defaultColorList = [Color(0xFF3FA600),Color(0xFFFE0000),Color(0xFFFF006A),Color(0xFFFF5C00),Color(0xFFFEE600),Color(0xFF0029FF),Color(0xFF46C7FE),Color(0xFFFEE600),Color(0xFF0029FF),Color(0xFF009989)];
   var myColors = [];
+
 
   @override
   Widget build(BuildContext context) {
@@ -64,13 +66,19 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
     if(ids.firstOrNull=="")ids.clear();
     if(appViewModel.cachedImages.length!=ids.length){
       appViewModel.isChanged=true;
-    }else {
-      appViewModel.isChanged=false;
     }
     TextEditingController text = TextEditingController(text: curWd.text);
     TextEditingController affirmation = TextEditingController(text: curWd.affirmation.split("|")[0]);
     circleColor = curWd.color;
-    text.addListener(() { if(text.text!=curWd.text)appViewModel.isChanged = true;curWd.text=text.text;});
+    text.addListener(() {
+      if(text.text!=curWd.text){
+          if(appViewModel.isChanged==false){
+            appViewModel.isChanged = true;
+
+          }
+      }
+      curWd.text=text.text;
+    });
 
     return Consumer<AppViewModel>(
 
@@ -105,6 +113,7 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
                               onPressed: () {
                                 if(appViewModel.isChanged){
                                   showModalBottomSheet<void>(
+                                    backgroundColor: AppColors.backgroundColor,
                                     context: context,
                                     isScrollControlled: true,
                                     builder: (BuildContext context) {
@@ -140,34 +149,7 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
                   child: SingleChildScrollView(
                       child:Padding(padding: const EdgeInsets.all(16), child: Column(
                     children: [
-                      curWd.isActive?ColorRoundedButton("Cохранить", () async {
-                        if(appViewModel.isChanged){
-                          onSaveClicked(appVM);
-                        }else {
-                          await appViewModel.updateSphereWish(WishData(
-                              id: curWd.id,
-                              prevId: curWd.prevId,
-                              nextId: curWd.nextId,
-                              parentId: curWd.parenId,
-                              text: curWd.text,
-                              description: curWd.subText,
-                              affirmation: curWd.affirmation,
-                              color: curWd.color));
-                          if (appViewModel.mainScreenState != null) await appViewModel.startMainScreen(appViewModel.mainScreenState!.moon);
-                          appViewModel.hint =
-                          "Отлично! Теперь пришло время заполнить все сферы жизни. Ты можешь настроить состав и название сфер так, как считаешь нужным. И помни, что максимальное количество сфер ограничено и равно 1.";
-                          appViewModel.isChanged = false;
-                          showModalBottomSheet<void>(
-                            context: context,
-                            isScrollControlled: true,
-                            builder: (BuildContext context) {
-                              return NotifyBS('Сохранено', "", 'OK',
-                                  onOk: () => Navigator.pop(context, 'OK'));
-                            },
-                          );
-                        }
-                      },
-                      ):ColorRoundedButton("Осознать", () async {
+                      if(!curWd.isActive)ColorRoundedButton("Осознать", () async {
                         await appViewModel.activateSphereWish(curWd.id, true);
                         if(appVM.mainScreenState!=null)appViewModel.startMainScreen(appVM.mainScreenState!.moon);
                         curWd.isActive = true;
@@ -410,15 +392,6 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
                       ),
                       const SizedBox(height: 24),
                       const Divider(color: AppColors.grey, height: 2,),
-                      const SizedBox(height: 24),
-                      Align(
-                          alignment: Alignment.center,
-                          child: Column(children: [
-                            appVM.settings.treeView==0?MyTreeView(key: UniqueKey(),roots: root, onTap: (id, type) => onTreeItemTap(appVM, id, type)):
-                            TreeViewWidgetV2(key: UniqueKey(), root: root.firstOrNull??MyTreeNode(id: -1, type: "a", title: "title", isChecked: true), idToOpen: 0, onTap: (id,type) => onTreeItemTap(appVM, id, type),),
-                            const SizedBox(height: 16)
-                          ])
-                      ),
                       if(curWd.isActive)OutlinedGradientButton("Добавить цель", (){
                         if(curWd.isActive){BlocProvider.of<NavigationBloc>(context)
                             .add(NavigateToAimCreateScreenEvent(0));}else{
@@ -429,6 +402,7 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
                       if(curWd.isActive)OutlinedGradientButton("Добавить сферу", () async {
                         if(appVM.mainScreenState?.allCircles.where((element) => element.parenId==0).toList().length==12){
                           showModalBottomSheet<void>(
+                            backgroundColor: AppColors.backgroundColor,
                             context: context,
                             isScrollControlled: true,
                             builder: (BuildContext context) {
@@ -452,28 +426,111 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
                           );
                         }
                       },
-                      )]
+                      ),
+                      const SizedBox(height: 8),
+                      if(curWd.isActive)OutlinedGradientButton("Создать общую задачу", () {
+                        if(!appVM.isChanged) {
+                          BlocProvider.of<NavigationBloc>(context).add(NavigateToTaskCreateScreenEvent(0, isSimple: true, type: 'm'));
+                        }else{
+                          showModalBottomSheet<void>(
+                            backgroundColor: AppColors.backgroundColor,
+                            context: context,
+                            isScrollControlled: true,
+                            builder: (BuildContext context) {
+                              return NotifyBS('Необходимо сохранить сферу', "", 'OK',
+                                  onOk: () => Navigator.pop(context, 'OK'));
+                            },
+                          );
+                        }
+                      },
+                      ),
+                      const SizedBox(height: 12),
+                      Align(
+                          alignment: Alignment.center,
+                          child: Column(children: [
+                            appVM.settings.treeView==0?MyTreeView(key: UniqueKey(),roots: root, onTap: (id, type) => onTreeItemTap(appVM, id, type)):
+                            TreeViewWidgetV2(key: UniqueKey(), root: root.firstOrNull??MyTreeNode(id: -1, type: "a", title: "title", isChecked: true), idToOpen: 0, onTap: (id,type) => onTreeItemTap(appVM, id, type),),
+                            const SizedBox(height: 16)
+                          ])
+                      ),
+                    ]
                       ))
                   )
                 ),
-                if(MediaQuery.of(context).viewInsets.bottom!=0) Align(
-                  alignment: Alignment.topRight,
-                  child: Container(height: 50, width: 50,
-                      margin: const EdgeInsets.fromLTRB(0, 0, 16, 16),
-                      alignment: Alignment.center,
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white,
-                      ), child:
-                      GestureDetector(
-                        onTap: (){FocusManager.instance.primaryFocus?.unfocus();},
-                        child: const Icon(Icons.keyboard_hide_sharp, size: 30, color: AppColors.darkGrey,),
-                      )
-                  ),
-                )
               ],
             ),
-            )
+            ),
+            bottomSheet: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  MediaQuery.of(context).viewInsets.bottom!=0? Align(
+                    alignment: Alignment.topRight,
+                    child: Container(height: 50, width: 50,
+                        margin: const EdgeInsets.fromLTRB(0, 0, 16, 16),
+                        alignment: Alignment.center,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white,
+                        ), child:
+                        GestureDetector(
+                          onTap: (){FocusManager.instance.primaryFocus?.unfocus();},
+                          child: const Icon(Icons.keyboard_hide_sharp, size: 30, color: AppColors.darkGrey,),
+                        )
+                    ),
+                  ) :Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      FloatingActionButton(
+                        onPressed: (){
+                          appViewModel.mainCircles.clear();
+                          appViewModel.startMainScreen(appViewModel.mainScreenState!.moon);
+                          BlocProvider.of<NavigationBloc>(context)
+                              .add(NavigateToMainScreenEvent());
+                        },
+                        backgroundColor: curWd.isActive?curWd.color:const Color.fromARGB(255, 217, 217, 217),
+                        shape: const CircleBorder(),
+                        child: const Stack(children: [
+                          Center(child: AutoSizeText("Я", textAlign: TextAlign.center ,style: TextStyle(color: Colors.white, ),)),
+                        ],),
+                      ),
+                      const SizedBox(width: 16),
+                      curWd.isActive&&appVM.isChanged?Expanded(
+                        child: ColorRoundedButton("Сохранить", () async {
+                              if(appViewModel.isChanged){
+                                onSaveClicked(appVM);
+                              }else {
+                                await appViewModel.updateSphereWish(WishData(
+                                    id: curWd.id,
+                                    prevId: curWd.prevId,
+                                    nextId: curWd.nextId,
+                                    parentId: curWd.parenId,
+                                    text: curWd.text,
+                                    description: curWd.subText,
+                                    affirmation: curWd.affirmation,
+                                    color: curWd.color));
+                                if (appViewModel.mainScreenState != null) await appViewModel.startMainScreen(appViewModel.mainScreenState!.moon);
+                                appViewModel.hint =
+                                "Отлично! Теперь пришло время заполнить все сферы жизни. Ты можешь настроить состав и название сфер так, как считаешь нужным. И помни, что максимальное количество сфер ограничено и равно 1.";
+                                appViewModel.isChanged = false;
+                                showModalBottomSheet<void>(
+                                  backgroundColor: AppColors.backgroundColor,
+                                  context: context,
+                                  isScrollControlled: true,
+                                  builder: (BuildContext context) {
+                                    return NotifyBS('Сохранено', "", 'OK',
+                                        onOk: () => Navigator.pop(context, 'OK'));
+                                  },
+                                );
+                              }
+                            }),
+                      ):const SizedBox(),
+                    ],
+                  )
+                ],
+              ),
+            ),
     );
         });
   }
@@ -481,6 +538,7 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
   Future<void> onSaveClicked(AppViewModel appViewModel) async {
     if(curWd.text.isEmpty||curWd.affirmation.isEmpty){
       showModalBottomSheet<void>(
+        backgroundColor: AppColors.backgroundColor,
         context: context,
         isScrollControlled: true,
         builder: (BuildContext context) {
@@ -495,6 +553,7 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
     appViewModel.hint="Отлично! Теперь пришло время заполнить все сферы жизни. Ты можешь настроить состав и название сфер так, как считаешь нужным. И помни, что максимальное количество сфер ограничено и равно 13.";
     appViewModel.isChanged = false;
     showModalBottomSheet<void>(
+      backgroundColor: AppColors.backgroundColor,
       context: context,
       isScrollControlled: true,
       builder: (BuildContext context) {
@@ -512,6 +571,7 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
 
   showOnExit(AppViewModel appVM){
     showModalBottomSheet<void>(
+      backgroundColor: AppColors.backgroundColor,
       context: context,
       isScrollControlled: true,
       builder: (BuildContext context) {
@@ -528,6 +588,7 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>{
   }
   void showUneditable(){
     showModalBottomSheet<void>(
+      backgroundColor: AppColors.backgroundColor,
       context: context,
       isScrollControlled: true,
       builder: (BuildContext context) {

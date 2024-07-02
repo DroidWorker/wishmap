@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_fancy_tree_view/flutter_fancy_tree_view.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:wishmap/res/colors.dart';
 
 import '../data/models.dart';
@@ -228,7 +229,7 @@ class MyTreeTile extends StatelessWidget {
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
                                           Text(
-                                            entry.node.title,
+                                            entry.node.title.replaceAll("HEADERSIMPLETASKHEADER", ""),
                                             maxLines: 1,
                                             style: entry.node.noClickable
                                                 ? const TextStyle()
@@ -246,12 +247,12 @@ class MyTreeTile extends StatelessWidget {
                                         child: Center(
                                           child: entry.node.type == "w"
                                               ? (entry.node.isHidden
-                                              ? Image.asset('assets/icons/love5110868.png', width: 16, height: 16,)
+                                              ? Image.asset('assets/icons/wish_hidden.png', width: 30, height: 30,)
                                               : entry.node.isChecked
-                                              ? Image.asset('assets/icons/wish_done.png', width: 16, height: 16,)
+                                              ? Image.asset('assets/icons/wish_done.png', width: 30, height: 30,)
                                               : !entry.node.isActive
-                                              ? Image.asset('assets/icons/wish_unactive.png', width: 16, height: 16)
-                                              : Image.asset('assets/icons/wish_active.png', width: 16, height: 16))
+                                              ? Image.asset('assets/icons/wish_unactive.png', width: 30, height: 30)
+                                              : Image.asset('assets/icons/wish_active.png', width: 30, height: 30))
                                               : (entry.node.type == "a"
                                               ? (entry.node.isChecked
                                               ? Image.asset('assets/icons/target_done.png', width: 16, height: 16)

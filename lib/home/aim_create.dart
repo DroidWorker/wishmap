@@ -42,6 +42,7 @@ class AimScreen extends StatelessWidget {
                         onPressed: () {
                           if((text.text.isNotEmpty||description.text.isNotEmpty)&&!aimCreateClicked){
                             showModalBottomSheet<void>(
+                              backgroundColor: AppColors.backgroundColor,
                               context: context,
                               isScrollControlled: true,
                               builder: (BuildContext context) {
@@ -129,6 +130,7 @@ class AimScreen extends StatelessWidget {
                 ),
                 ColorRoundedButton("Создать задачу", (){
                   showModalBottomSheet<void>(
+                    backgroundColor: AppColors.backgroundColor,
                     context: context,
                     isScrollControlled: true,
                     builder: (BuildContext context) {
@@ -171,6 +173,7 @@ class AimScreen extends StatelessWidget {
   }
   void showUnavailable(String text, BuildContext maincontext){
     showModalBottomSheet<void>(
+      backgroundColor: AppColors.backgroundColor,
       context: maincontext,
       isScrollControlled: true,
       builder: (BuildContext context) {
@@ -183,6 +186,7 @@ class AimScreen extends StatelessWidget {
     if(text.text.isEmpty||description.text.isEmpty){
       aimCreateClicked=false;
       showModalBottomSheet<void>(
+        backgroundColor: AppColors.backgroundColor,
         context: maincontext,
         isScrollControlled: true,
         builder: (BuildContext context) {
@@ -198,6 +202,7 @@ class AimScreen extends StatelessWidget {
           description: description.text), parentCircleId);
       if (aimId != null) {
         showModalBottomSheet<void>(
+          backgroundColor: AppColors.backgroundColor,
           context: maincontext,
           isScrollControlled: true,
           builder: (BuildContext context) {

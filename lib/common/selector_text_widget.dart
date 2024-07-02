@@ -49,6 +49,7 @@ class _SelectorTextWidgetState extends State<SelectorTextWidget> {
           const Divider(color: AppColors.backgroundColor, height: 8,),
           TextButton(onPressed: (){
             showModalBottomSheet<void>(
+              backgroundColor: AppColors.backgroundColor,
               context: context,
               isScrollControlled: true,
               builder: (BuildContext context) {

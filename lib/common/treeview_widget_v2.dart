@@ -2,6 +2,7 @@ import 'package:collection/collection.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:wishmap/res/colors.dart';
 
 import '../data/models.dart';
@@ -122,7 +123,7 @@ class _TreeViewWidgetState extends State<TreeViewWidgetV2> {
                     const Spacer(),
                     child.type == "w"
                         ? (child.isHidden
-                        ? Image.asset('assets/icons/love5110868.png', width: 20, height: 20,)
+                        ? Image.asset('assets/icons/wish_hidden.png', width: 20, height: 20,)
                         : child.isChecked? Image.asset('assets/icons/wish_done.png', width: 20, height: 20,)
                         : !child.isActive? Image.asset('assets/icons/wish_unactive.png', width: 20, height: 20)
                         :Image.asset('assets/icons/wish_active.png', width: 20, height: 20))

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 
 import '../data/models.dart';
 import '../res/colors.dart';
@@ -58,9 +59,9 @@ class _AimItem extends State<AimItemWidget>{
           child: Row(
             children: [
               widget.ai.isChecked ? Text(
-                widget.ai.text,
+                widget.ai.text.replaceAll("HEADERSIMPLETASKHEADER", ""),
                 style: const TextStyle(decoration: TextDecoration.lineThrough, decorationColor: AppColors.greytextColor, color: AppColors.greytextColor),
-              ) : Text(widget.ai.text),
+              ) : Text(widget.ai.text.replaceAll("HEADERSIMPLETASKHEADER", "")),
               const Spacer(),
               Container(
                 height: 44,
@@ -69,7 +70,7 @@ class _AimItem extends State<AimItemWidget>{
                     color: AppColors.lightGrey,
                   borderRadius: BorderRadius.all(Radius.circular(7))
                 ),
-                child: Center(child: widget.ai.isChecked ? Image.asset('assets/icons/target_done.png', width: 20, height: 20): widget.ai.isActive? Image.asset('assets/icons/target_active.png', width: 20, height: 20) : Image.asset('assets/icons/target_unactive.png', width: 20, height: 20)),
+                child: Center(child: widget.ai.isChecked ? Image.asset('assets/icons/target_done.png', width: 30, height: 30): widget.ai.isActive? Image.asset('assets/icons/target_active.png', width: 30, height: 30) : Image.asset('assets/icons/target_unactive.png', width: 30, height: 30)),
               )
             ],
           ),

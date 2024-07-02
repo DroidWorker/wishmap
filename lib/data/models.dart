@@ -390,6 +390,8 @@ List<CircleData> sortList(List<CircleData> inputList) {
     buildSortedList(root.id);
   });
 
+  sortedList.addAll(inputList.where((circleData) => circleData.prevId < -1).toList());
+
   sortedList.forEach((element) {
     print("element ${element.id}  ${element.text}");
   });
