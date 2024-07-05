@@ -38,6 +38,7 @@ class _AimsScreenState extends State<AimsScreen>{
   @override
   Widget build(BuildContext context) {
     appViewModel = Provider.of<AppViewModel>(context);
+    if(appViewModel.wishItems.isEmpty)appViewModel.startMyWishesScreen();
     return Consumer<AppViewModel>(
         builder: (context, appVM, child) {
           allAims = appVM.aimItems;
@@ -188,7 +189,9 @@ class _AimsScreenState extends State<AimsScreen>{
                   ListView.builder(
                       itemCount: filteredAimList.length,
                       itemBuilder: (context, index) {
+                        final parent = appVM.wishItems.firstWhere((e) => e.id==filteredAimList[index].parentId, orElse: ()=>WishItem(id: -1, text: "Я", isChecked: true, isActive: true, isHidden: false)).text;
                         return AimItemWidget(ai: filteredAimList[index],
+                            parent: parent,
                             onItemSelect: onItemSelect,
                             onDoubleClick: onDoubleClick,
                             outlined: deleteQueue.contains(filteredAimList[index].id));
@@ -207,7 +210,7 @@ class _AimsScreenState extends State<AimsScreen>{
                     setState(() {
                       trashModeActive=false;
                       for (var id in deleteQueue) {
-                        final aim = appVM.aimItems.firstWhere((element) => element.id==id);
+                        final aim = appVM.aimItems.firstWhere((element) => element.id==id, orElse: ()=>AimItem(id: -1, parentId: -1, text: "", isChecked: true, isActive: true));
                         appVM.deleteAim(id, aim.parentId);
                         appVM.aimItems.removeWhere((element) => element.id==id);
                       }

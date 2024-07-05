@@ -360,6 +360,17 @@ class Article{
   Article(this.id, this.parentId, this.text, this.date, this.time, this.attachments);
 }
 
+class Reminder{
+  final int id;
+  final int TaskId;
+  DateTime dateTime;
+  List<String> remindDays;
+  String music;
+  bool remindEnabled;
+
+  Reminder(this.id, this.TaskId, this.dateTime, this.remindDays, this.music, this.remindEnabled);
+}
+
 List<CircleData> sortList(List<CircleData> inputList) {
   Map<int, CircleData> circleDataMap = {};
   List<CircleData> sortedList = [];

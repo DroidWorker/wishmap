@@ -8,9 +8,10 @@ import '../data/models.dart';
 import '../res/colors.dart';
 
 class AimItemWidget extends StatefulWidget{
-  AimItemWidget({super.key, required this.ai, required this.onItemSelect, required this.onDoubleClick, this.onDelete, this.outlined = true});
+  AimItemWidget({super.key, required this.ai, required this.parent, required this.onItemSelect, required this.onDoubleClick, this.onDelete, this.outlined = true});
 
   AimItem ai;
+  String parent;
   bool outlined;
   Function(int id) onItemSelect;
   Function(int id) onDoubleClick;
@@ -58,10 +59,16 @@ class _AimItem extends State<AimItemWidget>{
           height: 50,
           child: Row(
             children: [
-              widget.ai.isChecked ? Text(
-                widget.ai.text.replaceAll("HEADERSIMPLETASKHEADER", ""),
-                style: const TextStyle(decoration: TextDecoration.lineThrough, decorationColor: AppColors.greytextColor, color: AppColors.greytextColor),
-              ) : Text(widget.ai.text.replaceAll("HEADERSIMPLETASKHEADER", "")),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(widget.parent, maxLines: 1, style: const TextStyle(color: AppColors.textLightGrey)),
+                  widget.ai.isChecked ? Text(
+                    widget.ai.text.replaceAll("HEADERSIMPLETASKHEADER", ""),
+                    style: const TextStyle(decoration: TextDecoration.lineThrough, decorationColor: AppColors.greytextColor, color: AppColors.greytextColor),
+                  ) : Text(widget.ai.text.replaceAll("HEADERSIMPLETASKHEADER", "")),
+                ],
+              ),
               const Spacer(),
               Container(
                 height: 44,

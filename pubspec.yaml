@@ -73,6 +73,7 @@ dependencies:
   voice_message_package: ^2.2.1
   next_audio_recorder: ^1.0.1
   camera: ^0.10.6
+  numberpicker: ^2.1.2
 
 
 dev_dependencies:

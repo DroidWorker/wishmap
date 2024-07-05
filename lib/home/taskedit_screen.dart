@@ -17,6 +17,7 @@ import '../data/models.dart';
 import '../data/static.dart';
 import '../dialog/bottom_sheet_action.dart';
 import '../dialog/bottom_sheet_notify.dart';
+import '../dialog/bottom_sheet_reminder.dart';
 import '../navigation/navigation_block.dart';
 import '../res/colors.dart';
 
@@ -364,6 +365,16 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                             ],)
                           ],),
                           const SizedBox(height: 24),
+                          const Divider(color: AppColors.grey, height: 2,),
+                          const SizedBox(height: 16),
+                          OutlinedGradientButton("Напоминание", widgetBeforeText: const Icon(Icons.add_circle_outline_rounded), (){
+                            showModalBottomSheet(context: context,backgroundColor: AppColors.backgroundColor, isScrollControlled: true, builder: (BuildContext context){
+                              return ReminderBS((){
+
+                              }, ai?.id??-1);
+                            });
+                          }),
+                          const SizedBox(height: 16),
                           const Divider(color: AppColors.grey, height: 2,),
                           const SizedBox(height: 16),
                           appVM.settings.treeView==0?MyTreeView(key: UniqueKey(),roots: roots, onTap: (id,type) => onTreeItemTap(appVM, id, type)):

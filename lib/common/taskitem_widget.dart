@@ -6,9 +6,10 @@ import '../data/models.dart';
 import '../res/colors.dart';
 
 class TaskItemWidget extends StatefulWidget{
-  TaskItemWidget({super.key, required this.ti, required this.onSelect, required this.onDoubleClick, this.onDelete, this.outlined = false});
+  TaskItemWidget({super.key, required this.ti, required this.path, required this.onSelect, required this.onDoubleClick, this.onDelete, this.outlined = false});
 
   TaskItem ti;
+  String path;
   bool outlined;
   Function(int id) onSelect;
   Function(int id) onDoubleClick;
@@ -53,11 +54,17 @@ class _TaskItem extends State<TaskItemWidget>{
               height: 50,
               child: Row(
                 children: [
-                  widget.ti.isChecked ? Expanded(
-                    child:
-                        Text(widget.ti.text.replaceAll("HEADERSIMPLETASKHEADER", ""),
-                      style: const TextStyle(decoration: TextDecoration.lineThrough, decorationColor: AppColors.greytextColor, color: AppColors.greytextColor),),
-                  ) : Text(widget.ti.text.replaceAll("HEADERSIMPLETASKHEADER", "")),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(widget.path, maxLines: 1, style: const TextStyle(color: AppColors.textLightGrey)),
+                      widget.ti.isChecked ? Expanded(
+                        child:
+                            Text(widget.ti.text.replaceAll("HEADERSIMPLETASKHEADER", ""),
+                          style: const TextStyle(decoration: TextDecoration.lineThrough, decorationColor: AppColors.greytextColor, color: AppColors.greytextColor),),
+                      ) : Text(widget.ti.text.replaceAll("HEADERSIMPLETASKHEADER", "")),
+                    ],
+                  ),
                   const Spacer(),
                   Container(
                     height: 44,

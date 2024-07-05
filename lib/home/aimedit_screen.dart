@@ -635,7 +635,7 @@ class AimEditScreenState extends State<AimEditScreen>{
 
   Future<bool> onSaveClick(AppViewModel appVM) async {
     if(ai!=null){
-      if(text.text.isEmpty||description.text.isEmpty){
+      if(text.text.isEmpty){
         await showModalBottomSheet<void>(
           backgroundColor: AppColors.backgroundColor,
           context: context,

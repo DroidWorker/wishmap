@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:voice_message_package/voice_message_package.dart';
+import 'package:wishmap/interface_widgets/popup_menu.dart';
 
 import '../res/colors.dart';
 
@@ -29,12 +30,12 @@ class _CustomTextFieldState extends State<CustomTextField> {
   void _initializeControllers() {
     _controllers = [];
     final data = widget.controller.text;
-    List<String> lines = data.split('\n');
+    /*List<String> lines = data.split('\n');
     if(lines.length>1){
       _controllers.add(TextEditingController(text: lines[0]));
       lines.removeAt(0);
-    }
-    final othertext = lines.join(" ");
+    }*/
+    final othertext = data;//lines.join(" ");
     List<String> parts = othertext.split('_attach_');
     for (var part in parts) {
       if (part.isNotEmpty) {
@@ -50,12 +51,12 @@ class _CustomTextFieldState extends State<CustomTextField> {
     int imageCounter = 0;
 
     // Добавляем первую строку
-    if (_controllers.isNotEmpty) {
+    /*if (_controllers.isNotEmpty) {
       updatedText += _controllers[0].text;
-    }
+    }*/
 
-    for (int i = 1; i < _controllers.length; i++) {
-      updatedText += '\n${_controllers[i].text}';
+    for (int i = 0; i < _controllers.length; i++) {
+      updatedText += _controllers[i].text;
       if (imageCounter < widget.attachments.length) {
         updatedText += '_attach_';
         imageCounter++;
@@ -91,7 +92,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
                   ),
                 ),
                 style: TextStyle(
-                  fontWeight: i == 0 ? FontWeight.bold : FontWeight.normal,
+                  //fontWeight: i == 0 ? FontWeight.bold : FontWeight.normal,
                   fontSize: i == 0 ? 16 : 14,
                 ),
                 onChanged: (text) {
@@ -103,16 +104,33 @@ class _CustomTextFieldState extends State<CustomTextField> {
         );
       }
 
-      if (i>0 && i < _controllers.length && imageIndex < widget.attachments.length) {
+      if ( i < _controllers.length && imageIndex < widget.attachments.length) {
         final index = imageIndex;
         children.add(
           (widget.attachments[imageIndex].contains(".photo")||widget.attachments[imageIndex].contains(".jpg"))?Padding(
             padding: const EdgeInsets.symmetric(vertical: 8.0),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: Image.file(
-                File(widget.attachments[imageIndex]),
-                fit: BoxFit.fitWidth,
+              child: GestureDetector(
+                onTapDown: (details){
+                  showDeletePopupMenu(details.globalPosition, context, (){
+                    final parts = widget.controller.text.split('_attach_');
+                    int i = 0;
+                    String result ="";
+                    for (var item in parts) {
+                      if(i!=index){result+='${item}_attach_';}else{result+=item;}
+                      i++;
+                    }
+                    widget.attachments.removeAt(index);
+                    widget.controller.text = result;
+                    _initializeControllers();
+                    setState(() { });
+                  });
+                },
+                child: Image.file(
+                  File(widget.attachments[imageIndex]),
+                  fit: BoxFit.fitWidth,
+                ),
               ),
             ),
           ): Row(
@@ -180,6 +198,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
 Widget buildRichText(String text, List<String> imagePaths) {
   List<InlineSpan> spans = [];
   List<String> lines = text.split('\n');
+  if(lines.length == 1) lines = text.split('_attach_');
   int imageIndex = 0;
 
   for (int i = 0; i < lines.length; i++) {

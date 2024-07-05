@@ -25,6 +25,7 @@ class AppColors {
   static const Color textLightGrey = Color(0x2C2C2C4D);
   static const Color gradientStart = Color(0xFF1A4EFF);
   static const Color gradientEnd = Color(0xFFC522FF);
+  static const Color transPink = Color(0x27663BFF);
   static const Color buttonBackRed = Color(0xFFFF4040);
   static const Color greenButtonBack = Color(0xFFDAF6C8);
   static const Color linesColor = Color(0xFFD4CCFA);

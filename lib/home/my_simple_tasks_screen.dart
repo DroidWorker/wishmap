@@ -189,6 +189,7 @@ class _SimpleTasksScreenState extends State{
                           ),
                         ):
                         TaskItemWidget(ti: taskList[!isReverce?index-1:index],
+                            path: appVM.aimItems.firstWhere((e) => e.id==taskList[index].parentId).text,
                             onSelect: onItemSelect,
                             onDoubleClick: onDoubleClick,
                             outlined: false);

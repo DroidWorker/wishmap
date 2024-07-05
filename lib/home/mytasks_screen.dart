@@ -37,6 +37,7 @@ class _TaskScreenState extends State{
   @override
   Widget build(BuildContext context) {
     appViewModel = Provider.of<AppViewModel>(context);
+    if(appViewModel.aimItems.isEmpty)appViewModel.startMyAimsScreen();
     return Consumer<AppViewModel>(
         builder: (context, appVM, child) {
           taskList = appVM.taskItems;
@@ -189,6 +190,7 @@ class _TaskScreenState extends State{
                         itemCount: filteredTaskList.length,
                         itemBuilder: (context, index) {
                           return TaskItemWidget(ti: filteredTaskList[index],
+                              path: appVM.aimItems.firstWhere((e) => e.id==filteredTaskList[index].parentId).text.replaceAll("HEADERSIMPLETASKHEADER", ""),
                               onSelect: onItemSelect,
                               onDoubleClick: onDoubleClick,
                               outlined: deleteQueue.contains(filteredTaskList[index].id));
