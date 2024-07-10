@@ -79,6 +79,9 @@ class AppViewModel with ChangeNotifier {
   List<String> photoUrls = [];
   List<String> photopexelsUrls = [];
 
+  //reminders
+  List<Reminder> reminders = [];
+
   //appcfg
   var isinLoading = false;
   var needAutoScrollBottom = false;
@@ -1620,6 +1623,23 @@ class AppViewModel with ChangeNotifier {
     }else{
       addError("ошибка добавления задачи");
     }
+  }
+
+  Future<void> getReminders(int taskId) async {
+    reminders.clear();
+    reminders = await localRep.getReminders(taskId);
+    notifyListeners();
+  }
+
+  addReminder(Reminder reminder) {
+    localRep.addReminder(reminder);
+    reminders.add(reminder);
+  }
+
+  deleteReminder(int id){
+    localRep.deleteReminder(id);
+    reminders.removeWhere((e)=>e.id==id);
+    notifyListeners();
   }
 
   void toggleChecked(MyTreeNode e, String type, int targetId, bool value) {

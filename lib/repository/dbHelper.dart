@@ -111,6 +111,19 @@ class DatabaseHelper {
         attacments TEXT
       )
     ''');
+
+    await db.execute('''
+    CREATE TABLE reminders(
+        id INTEGER  PRIMARY KEY AUTOINCREMENT,
+        taskId INTEGER,
+        dateTime INTEGER,
+        remindDays TEXT,
+        music TEXT,
+        remindEnabled INTEGER,
+        vibration INTEGER
+      )
+    ''');
+
   }
 
   Future<void> clearDatabase(int moonId) async {
@@ -470,6 +483,30 @@ class DatabaseHelper {
   Future<List<Map<String, dynamic>>> getAllMoonSpheres(int moonId) async {
     Database db = await database;
     return await db.query('spheres', where: "moonId = ?", whereArgs: [moonId]);
+  }
+
+  insertReminder(Reminder reminder) async {
+    Database db = await database;
+    await db.insert("reminders", {'taskId':reminder.TaskId, 'dateTime': reminder.dateTime.toString(), 'remindDays': reminder.remindDays.join("|"), 'music': reminder.music, 'remindEnabled': reminder.remindEnabled?1:0, 'vibration': reminder.vibration?1:0});
+  }
+
+  deleteReminder(int id) async {
+    Database db = await database;
+    await db.delete("reminders", where: "id = ?", whereArgs: [id]);
+  }
+
+  Future<List<Reminder>> getReminders() async {
+    Database db = await database;
+    List<Map<String, dynamic>> reqResult = await db.query('reminders');
+
+    return reqResult.map((e)=>Reminder(e['id'], e['taskId'],DateTime.parse(e['dateTime']), e['remindDays'].toString().split("|").toList(), e['music'], e['remindEnabled']==1?true:false, vibration: e['vibration']==1?true:false)).toList();
+  }
+
+  Future<List<Reminder>> getRemindersForTask(int taskId) async {
+    Database db = await database;
+    List<Map<String, dynamic>> reqResult = await db.query('reminders', where: "taskId = ?", whereArgs: [taskId]);
+
+    return reqResult.map((e)=>Reminder(e['id'], e['taskId'], DateTime.parse(e['dateTime']), e['remindDays'].toString().split("|").toList(), e['music'], e['remindEnabled']==1?true:false, vibration: e['vibration']==1?true:false)).toList();
   }
 
 }

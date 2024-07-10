@@ -2,6 +2,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:wishmap/home/aim_create.dart';
@@ -17,6 +19,8 @@ import 'package:wishmap/home/settings/main_settings.dart';
 import 'package:wishmap/home/settings/personal_settings.dart';
 import 'package:wishmap/home/taskcreate_screen.dart';
 import 'package:wishmap/home/wish_screen.dart';
+import 'package:wishmap/services/reminder_service.dart';
+import 'package:workmanager/workmanager.dart';
 import 'ViewModel.dart';
 import 'common/error_widget.dart';
 import 'firebase_options.dart';
@@ -30,6 +34,9 @@ import 'navigation/navigation_block.dart';
 import 'home/main_screen.dart';
 import 'home/auth_screen.dart';
 
+import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
+
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
@@ -40,10 +47,34 @@ void main() async{
       Permission.notification.request();
     }
   });
+  await Permission.scheduleExactAlarm.isDenied.then((value){
+    if (value) {
+      Permission.scheduleExactAlarm.request();
+    }
+  });
   // Инициализация плагина загрузки
   await FlutterDownloader.initialize(debug: true);
   final appViewModel = AppViewModel();
   await appViewModel.init();
+
+  tz.initializeTimeZones();
+  final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+  const initializationSettingsAndroid = AndroidInitializationSettings('@mipmap/ic_launcher');
+  const initializationSettingsDarwin = DarwinInitializationSettings();
+  const initializationSettings = InitializationSettings(
+    android: initializationSettingsAndroid,
+    iOS: initializationSettingsDarwin,
+  );
+  await flutterLocalNotificationsPlugin.initialize(initializationSettings);
+  _requestPermissions(flutterLocalNotificationsPlugin);
+  Workmanager().initialize(callbackDispatcher, isInDebugMode: true);
+  Workmanager().registerPeriodicTask(
+    "6871",
+    checkRemindersTask,
+    frequency: const Duration(minutes: 15), // интервал выполнения задачи
+  );
+  tz.initializeTimeZones();
+  print("callback registered");
 
   runApp(
     ChangeNotifierProvider(
@@ -59,9 +90,19 @@ void main() async{
   );
 }
 
+Future<void> _requestPermissions(FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin) async {
+  try {
+    flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>()?.requestNotificationsPermission();
+  } catch (e) {
+    print('Error while requesting permissions: $e');
+  }
+}
+
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+
           return MaterialApp(
             theme: ThemeData(
               fontFamily: 'Gilroy',
@@ -69,6 +110,16 @@ class MyApp extends StatelessWidget {
                 backgroundColor: Colors.black.withOpacity(0)
               )
             ),
+              onGenerateRoute: (settings) {
+                if (settings.name == '/task') {
+                  // Extract id parameter from URL
+                  final String id = settings.arguments.toString().split('?id=')[1];
+                  return MaterialPageRoute(
+                    builder: (context) => TaskEditScreen(aimId: int.parse(id)),
+                  );
+                }
+                return null;
+              },
             title: 'wishMap',
               builder: (BuildContext context, Widget? widget) {
                 ErrorWidget.builder = (FlutterErrorDetails errorDetails) {

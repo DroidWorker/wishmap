@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:wishmap/data/date_static.dart';
@@ -28,14 +26,14 @@ enum IntervalLabel {
 class ReminderBS extends StatefulWidget {
   ReminderBS(this.onClose, this.parentTaskId, {super.key});
 
-  Function() onClose;
+  Function(Reminder) onClose;
   int parentTaskId;
 
   @override
-  ColorPickerBSState createState() => ColorPickerBSState();
+  ReminderBSState createState() => ReminderBSState();
 }
 
-class ColorPickerBSState extends State<ReminderBS>{
+class ReminderBSState extends State<ReminderBS>{
   String datetime = "";
   DateTime selectedDatetime = DateTime.now().add(const Duration(minutes: 30));
   IntervalLabel selectedItem = IntervalLabel.th;
@@ -62,8 +60,30 @@ class ColorPickerBSState extends State<ReminderBS>{
         ).add(Duration(days: i)));
   }
 
+  String buildDays(){
+    String daysString = "";
+    int prevDay = int.parse(reminder.remindDays.firstOrNull??"-1");
+    bool isInterval = false;
+    for (var e in reminder.remindDays) {
+      final day = int.parse(e);
+      if(day!=0){
+        daysString+="${shortDayOfWeek[day-1]}";
+        if(day==prevDay+1){
+          prevDay = day;
+          isInterval=true;
+        }
+      }
+    }
+    if(isInterval){
+      daysString = "${shortDayOfWeek[int.parse(reminder.remindDays.firstOrNull??"0")]}-${shortDayOfWeek[int.parse(reminder.remindDays.lastOrNull??"0")]}";
+    }
+    return daysString;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final daysString = buildDays();
+
     return LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
           return Padding(
@@ -165,12 +185,12 @@ class ColorPickerBSState extends State<ReminderBS>{
                             settingScreen = 2;
                           });
                         },
-                        child: const Row(
+                        child: Row(
                           children: [
-                            Text("Повторить"),
-                            Spacer(),
-                            Text("pn - vs"),
-                            Icon(Icons.arrow_forward_ios)
+                            const Text("Повторить"),
+                            const Spacer(),
+                            Text(daysString),
+                            const Icon(Icons.arrow_forward_ios)
                           ],
                         ),
                       ),
@@ -179,17 +199,17 @@ class ColorPickerBSState extends State<ReminderBS>{
                         children: [
                           Text("Сигнал напоминания"),
                           Spacer(),
-                          Text("type"),
+                          Text("signal"),
                           Icon(Icons.arrow_forward_ios)
                         ],
                       ),
                       const SizedBox(height: 10),
                       Row(
                         children: [
-                          const Text("Повторить"),
+                          const Text("вибрация"),
                           const Spacer(),
                           MySwitch(value: false, onChanged: (v){
-
+                            reminder.vibration = v;
                           },)
                         ],
                       )
@@ -198,7 +218,8 @@ class ColorPickerBSState extends State<ReminderBS>{
                 ),
                 const SizedBox(height: 32),
                 ColorRoundedButton("Сохранить", (){
-
+                  reminder.dateTime = selectedDatetime;
+                    widget.onClose(reminder);
                 })
               ],
             ):
@@ -235,15 +256,19 @@ class ColorPickerBSState extends State<ReminderBS>{
                     checkStates[0]=false;
                   }
                 }),
-                SquareCheckbox(state: checkStates[1], "Воскресенье", (state){}),
-                SquareCheckbox(state: checkStates[2], "Понедельник", (state){}),
-                SquareCheckbox(state: checkStates[3], "Вторник", (state){}),
-                SquareCheckbox(state: checkStates[4], "Среда", (state){}),
-                SquareCheckbox(state: checkStates[5], "Четверг", (state){}),
-                SquareCheckbox(state: checkStates[6], "Пятница", (state){}),
-                SquareCheckbox(state: checkStates[7], "Суббота", (state){}),
+                SquareCheckbox(state: checkStates[1], "Воскресенье", (state){checkStates[7]=state;}),
+                SquareCheckbox(state: checkStates[2], "Понедельник", (state){checkStates[1]=state;}),
+                SquareCheckbox(state: checkStates[3], "Вторник", (state){checkStates[2]=state;}),
+                SquareCheckbox(state: checkStates[4], "Среда", (state){checkStates[3]=state;}),
+                SquareCheckbox(state: checkStates[5], "Четверг", (state){checkStates[4]=state;}),
+                SquareCheckbox(state: checkStates[6], "Пятница", (state){checkStates[5]=state;}),
+                SquareCheckbox(state: checkStates[7], "Суббота", (state){checkStates[6]=state;}),
                 const SizedBox(height: 20),
                 ColorRoundedButton("Готово", (){
+                  reminder.remindDays.clear();
+                  for (var e in checkStates.indexed) {
+                    if(e.$2)reminder.remindDays.add(e.$1.toString());
+                  }
                   setState(() {
                     settingScreen = 0;
                   });

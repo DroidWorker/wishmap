@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:keyboard_attachable/keyboard_attachable.dart';
 import 'package:provider/provider.dart';
+import 'package:wishmap/common/reminder_item.dart';
 import 'package:wishmap/common/treeview_widget.dart';
 import 'package:wishmap/interface_widgets/colorButton.dart';
 import 'package:wishmap/interface_widgets/outlined_button.dart';
@@ -74,6 +75,7 @@ class TaskEditScreenState extends State<TaskEditScreen>{
           }
           roots=appVM.myNodes;
           if(!isTextSetted&&ai!.id!=-1) {
+            appVM.getReminders(ai!.id);
             text.text = ai!.text;
             description.text = ai!.description;
             isTextSetted=true;
@@ -367,10 +369,26 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                           const SizedBox(height: 24),
                           const Divider(color: AppColors.grey, height: 2,),
                           const SizedBox(height: 16),
+                          ...appVM.reminders.map((e){
+                            return ReminderItem(e, onTap: (id){
+
+                            },
+                            onDelete: (id){
+                              appVM.deleteReminder(id);
+                            },
+                              onChangeState: (id, v){
+
+                              },
+                            );
+                          }),
+                          const SizedBox(height: 16),
                           OutlinedGradientButton("Напоминание", widgetBeforeText: const Icon(Icons.add_circle_outline_rounded), (){
                             showModalBottomSheet(context: context,backgroundColor: AppColors.backgroundColor, isScrollControlled: true, builder: (BuildContext context){
-                              return ReminderBS((){
-
+                              return ReminderBS((reminder){
+                                  setState(() {
+                                    appVM.addReminder(reminder);
+                                    Navigator.pop(context, 'OK');
+                                  });
                               }, ai?.id??-1);
                             });
                           }),

@@ -189,7 +189,7 @@ class _SimpleTasksScreenState extends State{
                           ),
                         ):
                         TaskItemWidget(ti: taskList[!isReverce?index-1:index],
-                            path: appVM.aimItems.firstWhere((e) => e.id==taskList[index].parentId).text,
+                            path: appVM.aimItems.firstWhere((e) => e.id==taskList[!isReverce?index-1:index].parentId, orElse: ()=> AimItem(id: -1, parentId: -1, text: "", isChecked: false, isActive: true)).text.replaceAll("HEADERSIMPLETASKHEADER", ""),
                             onSelect: onItemSelect,
                             onDoubleClick: onDoubleClick,
                             outlined: false);

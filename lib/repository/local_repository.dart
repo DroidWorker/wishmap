@@ -438,4 +438,16 @@ class LocalRepository{
   void deleteArticle(articleId, int moonId) async {
     await dbHelper.deleteArticle(articleId, moonId);
   }
+
+  Future<List<Reminder>> getReminders(int taskId) async{
+    return await dbHelper.getRemindersForTask(taskId);
+  }
+
+  Future addReminder(Reminder reminder) async{
+    await dbHelper.insertReminder(reminder);
+  }
+
+  Future deleteReminder(int id) async {
+    await dbHelper.deleteReminder(id);
+  }
 }

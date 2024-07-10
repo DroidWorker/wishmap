@@ -362,13 +362,14 @@ class Article{
 
 class Reminder{
   final int id;
-  final int TaskId;
-  DateTime dateTime;
-  List<String> remindDays;
-  String music;
-  bool remindEnabled;
+  final int TaskId;//id задачи которой принадлежит reminder
+  DateTime dateTime;//время когда сработает напоминание
+  List<String> remindDays;//список дней когда напоминание должно сработать
+  String music;//музыка напоминания
+  bool remindEnabled;//флаг определяющий включен ли повтор напоминанаий
+  bool vibration;
 
-  Reminder(this.id, this.TaskId, this.dateTime, this.remindDays, this.music, this.remindEnabled);
+  Reminder(this.id, this.TaskId, this.dateTime, this.remindDays, this.music, this.remindEnabled, {this.vibration = true});
 }
 
 List<CircleData> sortList(List<CircleData> inputList) {

@@ -53,9 +53,12 @@ class _TaskItem extends State<TaskItemWidget>{
               ),
               height: 50,
               child: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(widget.path, maxLines: 1, style: const TextStyle(color: AppColors.textLightGrey)),
                       widget.ti.isChecked ? Expanded(
@@ -65,7 +68,6 @@ class _TaskItem extends State<TaskItemWidget>{
                       ) : Text(widget.ti.text.replaceAll("HEADERSIMPLETASKHEADER", "")),
                     ],
                   ),
-                  const Spacer(),
                   Container(
                     height: 44,
                     width: 44,

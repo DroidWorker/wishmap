@@ -74,6 +74,10 @@ dependencies:
   next_audio_recorder: ^1.0.1
   camera: ^0.10.6
   numberpicker: ^2.1.2
+  workmanager: ^0.5.2
+  flutter_local_notifications: ^17.2.1
+  timezone: ^0.9.4
+  flutter_timezone: ^2.0.1
 
 
 dev_dependencies:
