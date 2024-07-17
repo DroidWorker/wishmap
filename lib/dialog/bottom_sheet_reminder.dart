@@ -1,5 +1,7 @@
+import 'package:calendar_date_picker2/calendar_date_picker2.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:wishmap/data/date_static.dart';
 import 'package:wishmap/import_extension/custom_string_picker.dart';
 import 'package:wishmap/interface_widgets/colorButton.dart';
@@ -24,10 +26,11 @@ enum IntervalLabel {
 }
 
 class ReminderBS extends StatefulWidget {
-  ReminderBS(this.onClose, this.parentTaskId, {super.key});
+  ReminderBS(this.onClose, this.parentTaskId, {this.reminder, super.key});
 
   Function(Reminder) onClose;
   int parentTaskId;
+  Reminder? reminder;
 
   @override
   ReminderBSState createState() => ReminderBSState();
@@ -35,8 +38,8 @@ class ReminderBS extends StatefulWidget {
 
 class ReminderBSState extends State<ReminderBS>{
   String datetime = "";
-  DateTime selectedDatetime = DateTime.now().add(const Duration(minutes: 30));
-  IntervalLabel selectedItem = IntervalLabel.th;
+  DateTime selectedDatetime = DateTime.now();
+  IntervalLabel selectedItem = IntervalLabel.none;
 
   final TextEditingController intervalController = TextEditingController();
   late List<DateTime> dayList;
@@ -46,11 +49,20 @@ class ReminderBSState extends State<ReminderBS>{
 
   late Reminder reminder;
 
+  String daysString = "";
+
   @override
   void initState() {
     super.initState();
 
-    reminder = Reminder(-1, widget.parentTaskId, selectedDatetime, [], "default", false);
+    if(widget.reminder!=null){
+      selectedDatetime =widget.reminder!.dateTime;
+      checkStates = List.generate(8, (i)=>false);
+      widget.reminder!.remindDays.forEach((i){
+        checkStates[int.parse(i)]= true;
+      });
+    }
+    reminder = widget.reminder??Reminder(-1, widget.parentTaskId, selectedDatetime, [], "default", false);
     datetime = "${fullDayOfWeek[selectedDatetime.weekday]}, ${selectedDatetime.day} ${monthOfYear[selectedDatetime.month]} ${selectedDatetime.year}";
     dayList = List<DateTime>.generate(62, (i) =>
         DateTime.utc(
@@ -58,6 +70,7 @@ class ReminderBSState extends State<ReminderBS>{
           DateTime.now().month,
           DateTime.now().day,
         ).add(Duration(days: i)));
+    daysString = buildDays();
   }
 
   String buildDays(){
@@ -82,8 +95,7 @@ class ReminderBSState extends State<ReminderBS>{
 
   @override
   Widget build(BuildContext context) {
-    final daysString = buildDays();
-
+    daysString = buildDays();
     return LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
           return Padding(
@@ -139,7 +151,30 @@ class ReminderBSState extends State<ReminderBS>{
                 ],),
                 const SizedBox(height: 20),
                 const Align(alignment: Alignment.centerLeft,child: Text("Выберите дату и время:", style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16))),
-                Align(alignment: Alignment.centerLeft,child: Text(datetime, style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 14, color: AppColors.greytextColor))),
+                InkWell(onTap:() async {
+                    var results = await showCalendarDatePicker2Dialog(
+                      context: context,
+                      config: CalendarDatePicker2WithActionButtonsConfig(
+
+                      ),
+                      dialogSize: const Size(325, 400),
+                      borderRadius: BorderRadius.circular(15),
+
+                    );
+                    if(results!=null){
+                      setState(() {
+                        selectedDatetime = selectedDatetime.copyWith(year:  results.first?.year, month: results.first?.month, day: results.first?.day);
+                        final startdate = selectedDatetime.subtract(const Duration(days: 20));
+                        dayList = List<DateTime>.generate(82, (i) =>
+                            DateTime.utc(
+                              startdate.year,
+                              startdate.month,
+                              startdate.day,
+                            ).add(Duration(days: i)));
+                      });
+                    }
+                    },
+                    child: Align(alignment: Alignment.centerLeft,child:Text(datetime, style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 14, color: AppColors.greytextColor)))),
                 const SizedBox(height: 8),
                 Row(
                   children: [

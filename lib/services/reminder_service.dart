@@ -1,5 +1,6 @@
 import 'dart:io';
-
+import 'dart:typed_data';
+import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:workmanager/workmanager.dart';
 import '../data/models.dart';
@@ -41,16 +42,6 @@ Future<void> _checkReminders() async {
     print("errrrrrrrrrror worker - $ex");
     print(s);
   }
-  /*final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
-
-  const initializationSettingsAndroid = AndroidInitializationSettings('@mipmap/ic_launcher');
-  const initializationSettingsDarwin = DarwinInitializationSettings();
-  const initializationSettings = InitializationSettings(
-    android: initializationSettingsAndroid,
-    iOS: initializationSettingsDarwin,
-  );
-
-  await flutterLocalNotificationsPlugin.initialize(initializationSettings);*/
 
   DateTime now = DateTime.now();
   String currentDay = now.weekday.toString();
@@ -64,10 +55,9 @@ Future<void> _checkReminders() async {
 
       if (differenceMinutes <= 15) {
         final interval = differenceMinutes<=0?1:differenceMinutes;
-        // Schedule the notification
-        sleep(Duration(minutes: interval));
+        /*sleep(Duration(minutes: interval));
         _showNotification(reminder);
-        dbHelper.deleteReminder(reminder.id);
+        dbHelper.deleteReminder(reminder.id);*/
       }
     }
   }
@@ -145,4 +135,150 @@ Future<void> _scheduleNotification(FlutterLocalNotificationsPlugin flutterLocalN
     print("Error scheduling notification: $ex");
     print(s);
   }
+}
+
+void setReminder(Reminder reminder) async {
+  if (reminder.remindDays.isNotEmpty) {
+    int reminderId = reminder.TaskId*100;
+
+    reminder.remindDays.forEach((day) async {
+      reminderId++;
+      final DateTime now = DateTime.now();
+      final int dayOffset = _getDayOffset(int.parse(day), now.weekday);
+      final DateTime firstAlarmTime = now.add(Duration(days: dayOffset));
+
+      await AndroidAlarmManager.periodic(
+        const Duration(days: 7),
+        reminderId,
+        showRemindNotification,
+        startAt: firstAlarmTime,
+        exact: true,
+        wakeup: true,
+      );
+
+      print('Repeating reminder set for $day starting at $firstAlarmTime');
+    });
+  } else {
+    final result = await AndroidAlarmManager.oneShotAt(
+      reminder.dateTime,
+      reminder.TaskId*100,
+      showRemindNotification,
+      alarmClock: true,
+      exact: true,
+      wakeup: true,
+    );
+    print('Single reminder set for ${reminder.dateTime} with id ${reminder.id} - $result');
+  }
+}
+
+void cancelAlarmManager(int id){
+  AndroidAlarmManager.cancel(id);
+}
+
+void setAlarm(Alarm alarm, bool repeating) async {
+  final DateTime now = DateTime.now();
+
+  if (repeating) {
+    int alarmId = alarm.id*100;
+
+    alarm.remindDays.forEach((day) async {
+      alarmId++;
+      final DateTime now = DateTime.now();
+      final int dayOffset = _getDayOffset(int.parse(day), now.weekday);
+      final DateTime firstAlarmTime = now.add(Duration(days: dayOffset));
+
+      await AndroidAlarmManager.periodic(
+        const Duration(days: 7),
+        alarmId,
+        showFSNotification,
+        startAt: firstAlarmTime,
+        exact: true,
+        wakeup: true,
+      );
+
+      print('Repeating alarm set for $day starting at $firstAlarmTime');
+    });
+  } else {
+    final result = await AndroidAlarmManager.oneShotAt(
+      alarm.dateTime,
+      alarm.id+654,
+      showFSNotification,
+      alarmClock: true,
+      exact: true,
+      wakeup: true,
+    );
+    print('Single alarm set for ${alarm.dateTime} with id ${alarm.id} - $result');
+  }
+}
+
+int _getDayOffset(int selectedDay, int currentWeekday) {
+  if (selectedDay >= currentWeekday) {
+    return selectedDay - currentWeekday;
+  } else {
+    return 7 - (currentWeekday - selectedDay);
+  }
+}
+
+@pragma('vm:entry-point')
+void showFSNotification() async {
+  String? soundPath = "/storage/emulated/0/Notifications/viber_message.mp3";
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+  FlutterLocalNotificationsPlugin();
+  const int insistentFlag = 4;
+  final Int32List flags = Int32List.fromList(<int>[insistentFlag]);
+  AndroidNotificationDetails androidPlatformChannelSpecifics =
+  AndroidNotificationDetails(
+    '87585n',
+    'wishmapAlarm',
+    channelDescription: 'some channel description',
+    importance: Importance.max,
+    priority: Priority.high,
+    ticker: 'ticker',
+    fullScreenIntent: true,
+    additionalFlags: flags,
+    playSound: true,
+    sound: const RawResourceAndroidNotificationSound('notification')
+  );
+
+  NotificationDetails platformChannelSpecifics =
+  NotificationDetails(android: androidPlatformChannelSpecifics);
+
+  await flutterLocalNotificationsPlugin.show(
+    0,
+    'Alarm',
+    'Нажмите чтобы отключить!',
+    platformChannelSpecifics,
+    payload: 'alarm',
+  );
+}
+
+@pragma('vm:entry-point')
+void showRemindNotification(int notificationId) async {
+  final taskId = notificationId~/100;
+  final deepLink = 'WishMap://task?id=$taskId';
+
+
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+  FlutterLocalNotificationsPlugin();
+  AndroidNotificationDetails androidPlatformChannelSpecifics =
+  const AndroidNotificationDetails(
+    '97585',
+    'wishmapReminder',
+    channelDescription: 'your channel description',
+    importance: Importance.max,
+    priority: Priority.high,
+    ticker: 'ticker',
+    playSound: true
+  );
+
+  NotificationDetails platformChannelSpecifics =
+  NotificationDetails(android: androidPlatformChannelSpecifics);
+
+  await flutterLocalNotificationsPlugin.show(
+    notificationId,
+    'Напоминание',
+    'Нажмите чтобы посмотреть!',
+    platformChannelSpecifics,
+    payload: deepLink,
+  );
 }

@@ -119,7 +119,10 @@ class _ProfileScreenState extends State<ProfileScreen>{
                ],),
              ),
               InkWell(
-                onTap: (){},
+                onTap: (){
+                  BlocProvider.of<NavigationBloc>(context)
+                      .add(NavigateToAlarmScreenEvent());
+                },
                 child: const Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                   Text("Напоминания"),

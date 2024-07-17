@@ -1636,6 +1636,12 @@ class AppViewModel with ChangeNotifier {
     reminders.add(reminder);
   }
 
+  updateReminder(Reminder reminder) {
+    localRep.updateReminder(reminder);
+    final reminderindex = reminders.indexWhere((i)=> i.id==reminder.id);
+    reminders[reminderindex] = reminder;
+  }
+
   deleteReminder(int id){
     localRep.deleteReminder(id);
     reminders.removeWhere((e)=>e.id==id);

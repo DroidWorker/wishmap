@@ -1,14 +1,17 @@
 import 'dart:math';
 
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:keyboard_attachable/keyboard_attachable.dart';
 import 'package:provider/provider.dart';
+import 'package:wishmap/common/gallery_widget.dart';
 import 'package:wishmap/common/reminder_item.dart';
 import 'package:wishmap/common/treeview_widget.dart';
 import 'package:wishmap/interface_widgets/colorButton.dart';
 import 'package:wishmap/interface_widgets/outlined_button.dart';
+import 'package:wishmap/services/reminder_service.dart';
 import '../ViewModel.dart';
 import '../common/EditTextOverlay.dart';
 import '../common/bottombar.dart';
@@ -371,9 +374,19 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                           const SizedBox(height: 16),
                           ...appVM.reminders.map((e){
                             return ReminderItem(e, onTap: (id){
-
+                              showModalBottomSheet(context: context,backgroundColor: AppColors.backgroundColor, isScrollControlled: true, builder: (BuildContext context){
+                                return ReminderBS((reminder){
+                                  setState(() {
+                                    appVM.updateReminder(reminder);
+                                    setReminder(reminder);
+                                    Navigator.pop(context, 'OK');
+                                  });
+                                }, ai?.id??-1);
+                              });
                             },
                             onDelete: (id){
+                              final taskId = e.TaskId;
+                              cancelAlarmManager(taskId*100);
                               appVM.deleteReminder(id);
                             },
                               onChangeState: (id, v){
@@ -387,6 +400,7 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                               return ReminderBS((reminder){
                                   setState(() {
                                     appVM.addReminder(reminder);
+                                    setReminder(reminder);
                                     Navigator.pop(context, 'OK');
                                   });
                               }, ai?.id??-1);

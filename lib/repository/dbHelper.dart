@@ -487,7 +487,12 @@ class DatabaseHelper {
 
   insertReminder(Reminder reminder) async {
     Database db = await database;
-    await db.insert("reminders", {'taskId':reminder.TaskId, 'dateTime': reminder.dateTime.toString(), 'remindDays': reminder.remindDays.join("|"), 'music': reminder.music, 'remindEnabled': reminder.remindEnabled?1:0, 'vibration': reminder.vibration?1:0});
+    await db.insert("reminders", {'taskId':reminder.TaskId, 'dateTime': reminder.dateTime.toString(), 'remindDays': reminder.remindDays.join("|"), 'music': reminder.music, 'remindEnabled': reminder.remindEnabled?1:0, 'vibration': reminder.vibration?1:0}, conflictAlgorithm: ConflictAlgorithm.replace);
+  }
+
+  updateReminder(Reminder reminder) async {
+    Database db = await database;
+    await db.update("reminders", {'taskId':reminder.TaskId, 'dateTime': reminder.dateTime.toString(), 'remindDays': reminder.remindDays.join("|"), 'music': reminder.music, 'remindEnabled': reminder.remindEnabled?1:0, 'vibration': reminder.vibration?1:0}, where: "id = ?", whereArgs: [reminder.id], conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
   deleteReminder(int id) async {

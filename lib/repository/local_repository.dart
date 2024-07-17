@@ -446,6 +446,9 @@ class LocalRepository{
   Future addReminder(Reminder reminder) async{
     await dbHelper.insertReminder(reminder);
   }
+  Future updateReminder(Reminder reminder) async{
+    await dbHelper.updateReminder(reminder);
+  }
 
   Future deleteReminder(int id) async {
     await dbHelper.deleteReminder(id);

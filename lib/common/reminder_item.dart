@@ -9,12 +9,12 @@ import 'package:wishmap/res/colors.dart';
 
 class ReminderItem extends StatefulWidget{
 
-  Reminder reminder;
+  ReminderInterface reminder;
   Function(int id)? onDelete;
   Function(int id)? onTap;
   Function(int id, bool state)? onChangeState;
 
-  ReminderItem(this.reminder, {this.onTap, this.onDelete, this.onChangeState, super.key});
+  ReminderItem(this.reminder, { this.onTap, this.onDelete, this.onChangeState, super.key});
 
   @override
   State<ReminderItem> createState() => ReminderItemState();
@@ -53,40 +53,50 @@ class ReminderItemState extends State<ReminderItem>{
     final nextReminder = getNextReminder();
     Duration? difference = nextReminder?.difference(DateTime.now());
 
-    return Container(
-      padding: const EdgeInsets.all(8),
-      decoration: const BoxDecoration(
-        borderRadius: BorderRadius.all(Radius.circular(14)),
-        color: Colors.white
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              difference!=null?Text("Сработает через ${difference.inHours}ч ${difference.inMinutes}мин", style: const TextStyle(fontSize: 14, color: AppColors.greytextColor),):const SizedBox(),
-              InkWell(onTap: (){
-                if(widget.onDelete!=null)widget.onDelete!(widget.reminder.id);
-              }, child: SvgPicture.asset("assets/icons/trash.svg", width: 28, height: 28)),
-            ],
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Column(
-                children: [
-                  Text("${nextReminder.hour}:${nextReminder.minute}", style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w500),),
-                  Text(fullDayOfWeek[nextReminder.weekday]??"", style: const TextStyle(fontSize: 14, color: AppColors.greytextColor))
-                ],
-              ),
-              MySwitch(value: true, onChanged: (v){
-                if(widget.onChangeState!=null)widget.onChangeState!(widget.reminder.id, v);
-              },)
-            ],
-          )
-        ],
+    return InkWell(
+      onTap: (){
+        widget.onTap!(widget.reminder.id);
+      },
+      child: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: const BoxDecoration(
+          borderRadius: BorderRadius.all(Radius.circular(14)),
+          color: Colors.white
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                difference!=null?Text("Сработает через ${difference.inHours}ч ${difference.inMinutes-(difference.inHours*60)}мин", style: const TextStyle(fontSize: 14, color: AppColors.greytextColor),):const SizedBox(),
+                InkWell(onTap: (){
+                  if(widget.onDelete!=null)widget.onDelete!(widget.reminder.id);
+                }, child: SvgPicture.asset("assets/icons/trash.svg", width: 28, height: 28)),
+              ],
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Column(
+                  children: [
+                    Row(
+                      children: [
+                        Text("${nextReminder.hour}:${nextReminder.minute}", style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w500)),
+                        if(widget.reminder is Alarm)Text((widget.reminder as Alarm).text, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w500))
+                      ],
+                    ),
+                    Text(fullDayOfWeek[nextReminder.weekday]??"", style: const TextStyle(fontSize: 14, color: AppColors.greytextColor))
+                  ],
+                ),
+                MySwitch(value: true, onChanged: (v){
+                  if(widget.onChangeState!=null)widget.onChangeState!(widget.reminder.id, v);
+                },)
+              ],
+            )
+          ],
+        ),
       ),
     );
   }

@@ -360,7 +360,19 @@ class Article{
   Article(this.id, this.parentId, this.text, this.date, this.time, this.attachments);
 }
 
-class Reminder{
+abstract class ReminderInterface{
+  int id;
+  int TaskId;
+  DateTime dateTime;
+  List<String> remindDays;
+  String music;
+  bool remindEnabled;
+  bool vibration;
+
+  ReminderInterface(this.id, this.TaskId, this.dateTime, this.remindDays, this.music, this.remindEnabled, {this.vibration = true});
+}
+
+class Reminder extends ReminderInterface{
   final int id;
   final int TaskId;//id задачи которой принадлежит reminder
   DateTime dateTime;//время когда сработает напоминание
@@ -369,7 +381,21 @@ class Reminder{
   bool remindEnabled;//флаг определяющий включен ли повтор напоминанаий
   bool vibration;
 
-  Reminder(this.id, this.TaskId, this.dateTime, this.remindDays, this.music, this.remindEnabled, {this.vibration = true});
+  Reminder(this.id, this.TaskId, this.dateTime, this.remindDays, this.music, this.remindEnabled, {this.vibration = true}) : super(id, TaskId, dateTime, remindDays, music, remindEnabled, vibration: vibration);
+}
+
+class Alarm extends ReminderInterface{
+  final int id;
+  final int TaskId;//id задачи которой принадлежит reminder
+  DateTime dateTime;//время когда сработает напоминание
+  List<String> remindDays;//список дней когда напоминание должно сработать
+  String music;//музыка напоминания
+  bool remindEnabled;//флаг определяющий включен ли повтор напоминанаий
+  bool vibration;
+  String text;
+  List<int> notificationIds;
+
+  Alarm(this.id, this.TaskId, this.dateTime, this.remindDays, this.music, this.remindEnabled, this.text, {this.vibration = true, this.notificationIds = const[]}) : super(id, TaskId, dateTime, remindDays, music, remindEnabled, vibration: vibration);
 }
 
 List<CircleData> sortList(List<CircleData> inputList) {

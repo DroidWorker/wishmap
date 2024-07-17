@@ -212,7 +212,6 @@ class _NumberPickerState extends State<StringPicker> {
             index >= listItemsCount - additionalItemsOnEachSide);
     final itemStyle = value == widget.value ? selectedStyle : defaultStyle;
 
-    print("fffffffffffffffff${widget.text.length}");
     final child = isExtra
         ? const SizedBox.shrink()
         : Text(widget.text.isNotEmpty&&widget.text.length>itemCount?widget.text[value]:_getDisplayedValue(value),

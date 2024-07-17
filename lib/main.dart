@@ -1,13 +1,18 @@
+import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:wishmap/home/aim_create.dart';
 import 'package:wishmap/home/aimedit_screen.dart';
+import 'package:wishmap/home/alarm_screen.dart';
+import 'package:wishmap/home/alarm_setting_screen.dart';
 import 'package:wishmap/home/cards_screen.dart';
 import 'package:wishmap/home/diary_screen.dart';
 import 'package:wishmap/home/diaryedit_screen.dart';
@@ -35,7 +40,8 @@ import 'home/main_screen.dart';
 import 'home/auth_screen.dart';
 
 import 'package:timezone/data/latest.dart' as tz;
-import 'package:timezone/timezone.dart' as tz;
+
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
 
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
@@ -58,23 +64,58 @@ void main() async{
   await appViewModel.init();
 
   tz.initializeTimeZones();
-  final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
-  const initializationSettingsAndroid = AndroidInitializationSettings('@mipmap/ic_launcher');
-  const initializationSettingsDarwin = DarwinInitializationSettings();
-  const initializationSettings = InitializationSettings(
+  await AndroidAlarmManager.initialize();
+
+  const AndroidInitializationSettings initializationSettingsAndroid = AndroidInitializationSettings('@mipmap/ic_launcher');
+
+  final InitializationSettings initializationSettings = InitializationSettings(
     android: initializationSettingsAndroid,
-    iOS: initializationSettingsDarwin,
   );
-  await flutterLocalNotificationsPlugin.initialize(initializationSettings);
+
+  await flutterLocalNotificationsPlugin.initialize(
+    initializationSettings,
+    onDidReceiveNotificationResponse: (NotificationResponse response) async {
+      if (response.payload == "alarm") {
+        runApp(MyApp(alarmScreen: true));
+      }else if(response.payload?.contains("WishMap://task")==true){
+        WidgetsFlutterBinding.ensureInitialized();
+        await Firebase.initializeApp(
+          options: DefaultFirebaseOptions.currentPlatform,
+        );
+        final appViewModel = AppViewModel();
+        await appViewModel.init();
+
+        tz.initializeTimeZones();
+
+        await flutterLocalNotificationsPlugin.initialize(
+          initializationSettings,
+          onDidReceiveNotificationResponse: (NotificationResponse response) async {
+            if (response.payload == "alarm") {
+              runApp(MyApp(alarmScreen: true));
+            }else if(response.payload?.contains("WishMap://task")==true){
+
+            }
+          },
+        );
+
+        runApp(
+          ChangeNotifierProvider(
+            create: (context) => appViewModel,
+            child: BlocProvider<NavigationBloc>(
+              create: (context) {
+                final appViewModel = context.read<AppViewModel>();
+                appViewModel.getTask(int.parse(response.payload!.split("id=")[1]));
+                return NavigationBloc()..add((appViewModel.profileData!=null&&appViewModel.profileData!.id.isNotEmpty)?NavigateToTasksScreenEvent():NavigateToAuthScreenEvent());
+              },
+              child: MyApp(),
+            ),
+          ),
+        );
+      }
+    },
+  );
   _requestPermissions(flutterLocalNotificationsPlugin);
-  Workmanager().initialize(callbackDispatcher, isInDebugMode: true);
-  Workmanager().registerPeriodicTask(
-    "6871",
-    checkRemindersTask,
-    frequency: const Duration(minutes: 15), // интервал выполнения задачи
-  );
   tz.initializeTimeZones();
-  print("callback registered");
 
   runApp(
     ChangeNotifierProvider(
@@ -98,8 +139,18 @@ Future<void> _requestPermissions(FlutterLocalNotificationsPlugin flutterLocalNot
     print('Error while requesting permissions: $e');
   }
 }
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
-class MyApp extends StatelessWidget {
+
+class MyApp extends StatefulWidget {
+  bool alarmScreen;
+  MyApp({this.alarmScreen = false});
+
+  @override
+  MyAppState createState() => MyAppState();
+}
+
+class MyAppState extends State<MyApp>{
   @override
   Widget build(BuildContext context) {
 
@@ -110,6 +161,10 @@ class MyApp extends StatelessWidget {
                 backgroundColor: Colors.black.withOpacity(0)
               )
             ),
+              localizationsDelegates: GlobalMaterialLocalizations.delegates,
+              supportedLocales: const [
+                Locale('ru', ''),
+              ],
               onGenerateRoute: (settings) {
                 if (settings.name == '/task') {
                   // Extract id parameter from URL
@@ -128,7 +183,9 @@ class MyApp extends StatelessWidget {
                 };
                 return widget!;
               },
-            home: BlocBuilder<NavigationBloc, NavigationState>(
+            home: widget.alarmScreen ? NotifyAlarmScreen(((){
+              SystemNavigator.pop();
+            })) : BlocBuilder<NavigationBloc, NavigationState>(
               builder: (context, state)
           {
             return Consumer<AppViewModel>(
@@ -196,6 +253,10 @@ class MyApp extends StatelessWidget {
       return PersonalSettings();
     }else if (state is NavigationSoundsSettingsScreenState) {
       return SoundsSettings();
+    }else if (state is NavigationAlarmSettingsScreenState) {
+      return AlarmSettingScreen(state.id);
+    } else if (state is NavigationAlarmScreenState) {
+      return AlarmScreen();
     } else {
       return Container(); // По умолчанию или для других состояний.
     }
@@ -206,6 +267,27 @@ class MyApp extends StatelessWidget {
       SnackBar(
         content: Text(message),
         duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+}
+
+class NotifyAlarmScreen extends StatelessWidget {
+  final Function() onClose;
+  const NotifyAlarmScreen(this.onClose, {super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Alarm')),
+      body: Center(
+        child: ElevatedButton(
+          onPressed: () {
+            // Логика для отключения будильника
+            onClose();
+          },
+          child: const Text('Turn off Alarm'),
+        ),
       ),
     );
   }
