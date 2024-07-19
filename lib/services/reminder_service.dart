@@ -175,12 +175,11 @@ void cancelAlarmManager(int id){
   AndroidAlarmManager.cancel(id);
 }
 
-void setAlarm(Alarm alarm, bool repeating) async {
-  final DateTime now = DateTime.now();
+Future<List<int>> setAlarm(Alarm alarm, bool repeating) async {
+  List<int> alarmIds = [];
 
   if (repeating) {
     int alarmId = alarm.id*100;
-
     alarm.remindDays.forEach((day) async {
       alarmId++;
       final DateTime now = DateTime.now();
@@ -195,6 +194,7 @@ void setAlarm(Alarm alarm, bool repeating) async {
         exact: true,
         wakeup: true,
       );
+      alarmIds.add(alarmId);
 
       print('Repeating alarm set for $day starting at $firstAlarmTime');
     });
@@ -207,8 +207,10 @@ void setAlarm(Alarm alarm, bool repeating) async {
       exact: true,
       wakeup: true,
     );
+    alarmIds.add(alarm.id+654);
     print('Single alarm set for ${alarm.dateTime} with id ${alarm.id} - $result');
   }
+  return alarmIds;
 }
 
 int _getDayOffset(int selectedDay, int currentWeekday) {

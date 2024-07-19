@@ -453,4 +453,18 @@ class LocalRepository{
   Future deleteReminder(int id) async {
     await dbHelper.deleteReminder(id);
   }
+  Future<List<Alarm>> getAlarms() async{
+    return await dbHelper.selectAlarms();
+  }
+
+  Future addAlarm(Alarm alarm) async{
+    await dbHelper.insertAlarm(alarm);
+  }
+  Future updateAlarm(Alarm alarm) async{
+    await dbHelper.updateAlarm(alarm);
+  }
+
+  Future deleteAlarm(int id) async {
+    await dbHelper.deleteAlarm(id);
+  }
 }

@@ -394,8 +394,10 @@ class Alarm extends ReminderInterface{
   bool vibration;
   String text;
   List<int> notificationIds;
+  List<int> offMods;
+  Map<String, String> offModsParams;
 
-  Alarm(this.id, this.TaskId, this.dateTime, this.remindDays, this.music, this.remindEnabled, this.text, {this.vibration = true, this.notificationIds = const[]}) : super(id, TaskId, dateTime, remindDays, music, remindEnabled, vibration: vibration);
+  Alarm(this.id, this.TaskId, this.dateTime, this.remindDays, this.music, this.remindEnabled, this.text, {this.vibration = true, this.notificationIds = const[], this.offMods= const[], this.offModsParams = const{}}) : super(id, TaskId, dateTime, remindDays, music, remindEnabled, vibration: vibration);
 }
 
 List<CircleData> sortList(List<CircleData> inputList) {

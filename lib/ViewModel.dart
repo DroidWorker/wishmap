@@ -81,6 +81,8 @@ class AppViewModel with ChangeNotifier {
 
   //reminders
   List<Reminder> reminders = [];
+  //alarms
+  List<Alarm> alarms = [];
 
   //appcfg
   var isinLoading = false;
@@ -1645,6 +1647,30 @@ class AppViewModel with ChangeNotifier {
   deleteReminder(int id){
     localRep.deleteReminder(id);
     reminders.removeWhere((e)=>e.id==id);
+    notifyListeners();
+  }
+
+  Future<void> getAlarms() async {
+    alarms.clear();
+    alarms = await localRep.getAlarms();
+    notifyListeners();
+  }
+
+  addAlarm(Alarm alarm) {
+    localRep.addAlarm(alarm);
+    alarms.add(alarm);
+    notifyListeners();
+  }
+
+  updateAlarm(Alarm alarm) {
+    localRep.updateAlarm(alarm);
+    final alarmindex = alarms.indexWhere((i)=> i.id==alarm.id);
+    alarms[alarmindex] = alarm;
+  }
+
+  deleteAlarm(int id){
+    localRep.deleteAlarm(id);
+    alarms.removeWhere((e)=>e.id==id);
     notifyListeners();
   }
 

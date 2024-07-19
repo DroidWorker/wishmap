@@ -36,7 +36,7 @@ class AlarmSettingScreenState extends State<AlarmSettingScreen>{
 
   @override
   void initState() {
-    alarm = Alarm(widget.alarmId, -1, selectedDatetime, [], '', true, "");
+    alarm = Alarm(widget.alarmId, -1, selectedDatetime, [], '', true, "", notificationIds: [], offMods: [], offModsParams: {});
     textEditingController.addListener((){
       alarm.text = textEditingController.text;
     });
@@ -69,16 +69,13 @@ class AlarmSettingScreenState extends State<AlarmSettingScreen>{
                             ),
                             icon: const Icon(Icons.keyboard_arrow_left, size: 28, color: AppColors.gradientStart),
                             onPressed: () async {
-                              if(alarm.music.isEmpty) {
-                                final path = await getAlarmSoundUri();
-                                if(path!=null) alarm.music = path;
-                                return;
-                              }
+                              List<int> alarmIds = [];
                               if(alarm.remindDays.isNotEmpty){
-                                setAlarm(alarm, true);
+                                alarmIds = await setAlarm(alarm, true);
                               }else{
-                                setAlarm(alarm, false);
+                                alarmIds = await setAlarm(alarm, false);
                               }
+                              appVM.addAlarm(Alarm(alarm.id, alarm.TaskId, alarm.dateTime, alarm.remindDays, alarm.music, alarm.remindEnabled, alarm.text, vibration: alarm.vibration, notificationIds: alarmIds, offMods: alarm.offMods, offModsParams: alarm.offModsParams));
                               BlocProvider.of<NavigationBloc>(context).handleBackPress();
                             }
                         ),
@@ -130,9 +127,14 @@ class AlarmSettingScreenState extends State<AlarmSettingScreen>{
                               const Text("Миссия (Отключить будильник)", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),),
                               const SizedBox(height: 16),
                               Row(
-
                                 children: [
-                                  Container(height: 70, width: 70, color: Colors.blue,)
+                                  InkWell(
+                                    onTap: (){
+                                      alarm.offMods.add(1);
+                                      alarm.offModsParams["test"] = "54";
+                                    },
+                                      child: Container(height: 70, width: 70, color: Colors.blue,)
+                                  )
                                 ],
                               ),
                               const SizedBox(height: 24),

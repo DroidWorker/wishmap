@@ -124,6 +124,21 @@ class DatabaseHelper {
       )
     ''');
 
+    await db.execute('''
+    CREATE TABLE alarms(
+        id INTEGER  PRIMARY KEY AUTOINCREMENT,
+        taskId INTEGER,
+        dateTime INTEGER,
+        remindDays TEXT,
+        music TEXT,
+        remindEnabled INTEGER,
+        vibration INTEGER,
+        text TEXT,
+        notifications TEXT,
+        offMods TEXT,
+        offModsParams TEXT
+      )
+    ''');
   }
 
   Future<void> clearDatabase(int moonId) async {
@@ -514,4 +529,32 @@ class DatabaseHelper {
     return reqResult.map((e)=>Reminder(e['id'], e['taskId'], DateTime.parse(e['dateTime']), e['remindDays'].toString().split("|").toList(), e['music'], e['remindEnabled']==1?true:false, vibration: e['vibration']==1?true:false)).toList();
   }
 
+  insertAlarm(Alarm alarm) async {
+    Database db = await database;
+    await db.insert("alarms", {'taskId': -1,'dateTime': alarm.dateTime.toString(), 'remindDays': alarm.remindDays.join("|"), 'music': alarm.music, 'remindEnabled': alarm.remindEnabled?1:0, 'text': alarm.text,'vibration': alarm.vibration?1:0, 'notifications': alarm.notificationIds.join("|"), 'offMods': alarm.offMods.join("|"), 'offModsParams': json.encode(alarm.offModsParams)}, conflictAlgorithm: ConflictAlgorithm.replace);
+  }
+
+  updateAlarm(Alarm alarm) async {
+    Database db = await database;
+    await db.update("alarms", {'dateTime': alarm.dateTime.toString(), 'remindDays': alarm.remindDays.join("|"), 'music': alarm.music, 'remindEnabled': alarm.remindEnabled?1:0, 'vibration': alarm.vibration?1:0, 'notifications': alarm.notificationIds.join("|"),'offMods': alarm.offMods.join("|"), 'offModsParams': json.encode(alarm.offModsParams)}, where: "id = ?", whereArgs: [alarm.id], conflictAlgorithm: ConflictAlgorithm.replace);
+  }
+
+  deleteAlarm(int id) async {
+    Database db = await database;
+    await db.delete("alarms", where: "id = ?", whereArgs: [id]);
+  }
+
+  Future<List<Alarm>> selectAlarms() async {
+    Database db = await database;
+    List<Map<String, dynamic>> reqResult = await db.query('alarms');
+
+    return reqResult.map((e) {
+        Map<String, dynamic> tmp = json.decode(e['offModsParams']);
+        Map<String, String> omp = {};
+        tmp.keys.toList().forEach((e){
+          omp[e] = tmp[e].toString();
+        });
+        return Alarm(e['id'], e['taskId'],DateTime.parse(e['dateTime']), e['remindDays'].toString().isNotEmpty?e['remindDays'].toString().split("|").toList():[], e['music'], e['remindEnabled']==1?true:false, e['text'], vibration: e['vibration']==1?true:false, notificationIds: e['notifications'].toString().split("|").map((e)=>int.parse(e)).toList(), offMods: e['offMods'].toString().isNotEmpty?e['offMods'].toString().split("|").map((e)=>int.parse(e)).toList():[], offModsParams: omp);
+    }).toList();
+  }
 }

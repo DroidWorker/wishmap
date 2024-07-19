@@ -120,6 +120,7 @@ class _ProfileScreenState extends State<ProfileScreen>{
              ),
               InkWell(
                 onTap: (){
+                  appViewModel.getAlarms();
                   BlocProvider.of<NavigationBloc>(context)
                       .add(NavigateToAlarmScreenEvent());
                 },

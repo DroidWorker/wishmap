@@ -25,6 +25,7 @@ class AlarmScreenState extends State<AlarmScreen>{
   Widget build(BuildContext context) {
     return Consumer<AppViewModel>(
         builder: (context, appVM, child) {
+          alarms = appVM.alarms;
           return Scaffold(
             backgroundColor: AppColors.backgroundColor,
             body: SafeArea(
@@ -84,43 +85,47 @@ class AlarmScreenState extends State<AlarmScreen>{
                           ),
                         ),
                       )
-                    :Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Column(
-                        children: [
-                          ListView.builder(
-                              itemCount: alarms.length,
-                              itemBuilder: (BuildContext context, int index) {
-                                return ReminderItem(alarms[index]);
-                              }
-                          ),
-                          deleteMode?ColorRoundedButton("Удалить", (){
-
-                            setState(() {
-                              deleteMode = false;
-                            });
-                          }):FloatingActionButton(
-                            backgroundColor: Colors.transparent,
-                            elevation: 0,
-                            onPressed: (){
-                              BlocProvider.of<NavigationBloc>(context)
-                                  .add(NavigateToAlarmSettingsScreenEvent(alarms.length));
-                            },
-                            child: Container(
-                              width: 50,
-                              height: 50,
-                              decoration: const BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: Colors.white
-                              ),
-                              child: const Icon(
-                                Icons.add,
-                                size: 30,
-                                color: AppColors.gradientEnd,
+                    :Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Column(
+                          children: [
+                            Expanded(
+                              child: ListView.builder(
+                                  itemCount: alarms.length,
+                                  itemBuilder: (BuildContext context, int index) {
+                                    return ReminderItem(alarms[index]);
+                                  }
                               ),
                             ),
-                          ),
-                        ],
+                            deleteMode?ColorRoundedButton("Удалить", (){
+                      
+                              setState(() {
+                                deleteMode = false;
+                              });
+                            }):FloatingActionButton(
+                              backgroundColor: Colors.transparent,
+                              elevation: 0,
+                              onPressed: (){
+                                BlocProvider.of<NavigationBloc>(context)
+                                    .add(NavigateToAlarmSettingsScreenEvent(alarms.length));
+                              },
+                              child: Container(
+                                width: 50,
+                                height: 50,
+                                decoration: const BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Colors.white
+                                ),
+                                child: const Icon(
+                                  Icons.add,
+                                  size: 30,
+                                  color: AppColors.gradientEnd,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     )
                   ],
