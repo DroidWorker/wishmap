@@ -201,7 +201,7 @@ Future<List<int>> setAlarm(Alarm alarm, bool repeating) async {
   } else {
     final result = await AndroidAlarmManager.oneShotAt(
       alarm.dateTime,
-      alarm.id+654,
+      alarm.id*100,
       showFSNotification,
       alarmClock: true,
       exact: true,
@@ -222,14 +222,13 @@ int _getDayOffset(int selectedDay, int currentWeekday) {
 }
 
 @pragma('vm:entry-point')
-void showFSNotification() async {
-  String? soundPath = "/storage/emulated/0/Notifications/viber_message.mp3";
-  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-  FlutterLocalNotificationsPlugin();
+void showFSNotification(int id) async {
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+
   const int insistentFlag = 4;
   final Int32List flags = Int32List.fromList(<int>[insistentFlag]);
-  AndroidNotificationDetails androidPlatformChannelSpecifics =
-  AndroidNotificationDetails(
+
+  AndroidNotificationDetails androidPlatformChannelSpecifics = AndroidNotificationDetails(
     '87585n',
     'wishmapAlarm',
     channelDescription: 'some channel description',
@@ -239,18 +238,20 @@ void showFSNotification() async {
     fullScreenIntent: true,
     additionalFlags: flags,
     playSound: true,
-    sound: const RawResourceAndroidNotificationSound('notification')
+    sound: const RawResourceAndroidNotificationSound('notification'),
+    visibility: NotificationVisibility.public,
+    autoCancel: true,
+    timeoutAfter: 60000, // Уведомление исчезнет через минуту
   );
 
-  NotificationDetails platformChannelSpecifics =
-  NotificationDetails(android: androidPlatformChannelSpecifics);
+  NotificationDetails platformChannelSpecifics = NotificationDetails(android: androidPlatformChannelSpecifics);
 
   await flutterLocalNotificationsPlugin.show(
-    0,
+    id,
     'Alarm',
     'Нажмите чтобы отключить!',
     platformChannelSpecifics,
-    payload: 'alarm',
+    payload: 'alarm|$id',
   );
 }
 

@@ -11,6 +11,7 @@ import '../common/bottombar.dart';
 import '../interface_widgets/colorButton.dart';
 import '../navigation/navigation_block.dart';
 import '../res/colors.dart';
+import 'mission_screen.dart';
 
 class AlarmScreen extends StatefulWidget{
   @override
@@ -19,6 +20,7 @@ class AlarmScreen extends StatefulWidget{
 
 class AlarmScreenState extends State<AlarmScreen>{
   bool deleteMode = false;
+  List<int> deleteQueue= [];
 
   List<Alarm> alarms = [];
   @override
@@ -33,35 +35,39 @@ class AlarmScreenState extends State<AlarmScreen>{
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        IconButton(
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          IconButton(
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
+                              style: const ButtonStyle(
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap, // the '2023' part
+                              ),
+                              icon: const Icon(Icons.keyboard_arrow_left, size: 28, color: AppColors.gradientStart),
+                              onPressed: () {
+                                BlocProvider.of<NavigationBloc>(context).handleBackPress();
+                              }
+                          ),
+                          const Text("Будильник", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+                          IconButton(
                             padding: EdgeInsets.zero,
                             constraints: const BoxConstraints(),
-                            style: const ButtonStyle(
-                              tapTargetSize: MaterialTapTargetSize.shrinkWrap, // the '2023' part
+                            style: TextButton.styleFrom(
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap
                             ),
-                            icon: const Icon(Icons.keyboard_arrow_left, size: 28, color: AppColors.gradientStart),
-                            onPressed: () {
-                              BlocProvider.of<NavigationBloc>(context).handleBackPress();
-                            }
-                        ),
-                        const Text("Будильник", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
-                        deleteMode?IconButton(
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(),
-                          style: TextButton.styleFrom(
-                              tapTargetSize: MaterialTapTargetSize.shrinkWrap
-                          ),
-                          onPressed: () async {
-                            setState(() {
-                              deleteMode = !deleteMode;
-                            });
-                          },
-                          icon: SvgPicture.asset("assets/icons/trash.svg", width: 28, height: 28),
-                        ):const SizedBox(width: 40, height: 40,)
-                      ],
+                            onPressed: () async {
+                              setState(() {
+                                deleteMode = !deleteMode;
+                                deleteQueue.clear();
+                              });
+                            },
+                            icon: SvgPicture.asset("assets/icons/trash.svg", width: 28, height: 28),
+                          )
+                        ],
+                      ),
                     ),
                     alarms.isEmpty?//noalarms
                       Expanded(
@@ -94,12 +100,30 @@ class AlarmScreenState extends State<AlarmScreen>{
                               child: ListView.builder(
                                   itemCount: alarms.length,
                                   itemBuilder: (BuildContext context, int index) {
-                                    return ReminderItem(alarms[index]);
+                                    return ReminderItem(alarms[index], outlined: deleteQueue.contains(index),
+                                    onTap: (id){
+                                      if(deleteMode){
+                                        setState(() {
+                                          if(deleteQueue.contains(index)){deleteQueue.remove(index);}else{deleteQueue.add(index);}
+                                        });
+                                      }else{
+                                        BlocProvider.of<NavigationBloc>(context)
+                                            .add(NavigateToAlarmSettingsScreenEvent(alarms[index].id));
+                                      }
+                                    },
+                                    onChangeState: (id, state){
+                                      final alarm = (alarms.firstWhere((e)=>e.id==id)..remindEnabled = state);
+                                      appVM.updateAlarm(alarm);
+                                    },
+                                    );
                                   }
                               ),
                             ),
                             deleteMode?ColorRoundedButton("Удалить", (){
-                      
+                              for (var e in deleteQueue) {
+                                appVM.deleteAlarm(alarms[e].id);
+                              }
+                              deleteQueue.clear();
                               setState(() {
                                 deleteMode = false;
                               });
@@ -107,8 +131,10 @@ class AlarmScreenState extends State<AlarmScreen>{
                               backgroundColor: Colors.transparent,
                               elevation: 0,
                               onPressed: (){
+                                showOverlayedMissionScreen(context, 15, 2);
+                                /*final id = alarms.lastOrNull?.id??0;
                                 BlocProvider.of<NavigationBloc>(context)
-                                    .add(NavigateToAlarmSettingsScreenEvent(alarms.length));
+                                    .add(NavigateToAlarmSettingsScreenEvent(id+1));*/
                               },
                               child: Container(
                                 width: 50,

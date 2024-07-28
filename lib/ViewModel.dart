@@ -9,7 +9,6 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:wishmap/data/static_affirmations_women.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:wishmap/main.dart';
 import 'package:wishmap/provider/file_loader.dart';
 import 'package:wishmap/repository/Repository.dart';
 import 'package:wishmap/repository/photosSearch.dart';
@@ -1655,7 +1654,9 @@ class AppViewModel with ChangeNotifier {
     alarms = await localRep.getAlarms();
     notifyListeners();
   }
-
+  Future<Alarm?> getAlarmById(int alarmId) async {
+    return await localRep.getAlarmById(alarmId);
+  }
   addAlarm(Alarm alarm) {
     localRep.addAlarm(alarm);
     alarms.add(alarm);

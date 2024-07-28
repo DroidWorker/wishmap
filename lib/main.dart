@@ -32,6 +32,7 @@ import 'firebase_options.dart';
 import 'home/my_simple_tasks_screen.dart';
 import 'home/myaims_screen.dart';
 import 'home/mywishes_screen.dart';
+import 'home/notify_alarm_screen.dart';
 import 'home/profile_screen.dart';
 import 'home/settings/sounds_setting.dart';
 import 'home/taskedit_screen.dart';
@@ -43,88 +44,41 @@ import 'package:timezone/data/latest.dart' as tz;
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
 
-void main() async{
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  await Permission.notification.isDenied.then((value) {
-    if (value) {
-      Permission.notification.request();
-    }
-  });
-  await Permission.scheduleExactAlarm.isDenied.then((value){
-    if (value) {
-      Permission.scheduleExactAlarm.request();
-    }
-  });
-  // Инициализация плагина загрузки
+  await _requestPermissions(flutterLocalNotificationsPlugin);
   await FlutterDownloader.initialize(debug: true);
-  final appViewModel = AppViewModel();
-  await appViewModel.init();
-
-  tz.initializeTimeZones();
   await AndroidAlarmManager.initialize();
+  tz.initializeTimeZones();
 
   const AndroidInitializationSettings initializationSettingsAndroid = AndroidInitializationSettings('@mipmap/ic_launcher');
-
   final InitializationSettings initializationSettings = InitializationSettings(
     android: initializationSettingsAndroid,
   );
 
+  final appViewModel = AppViewModel();
+  await appViewModel.init();
+
   await flutterLocalNotificationsPlugin.initialize(
     initializationSettings,
-    onDidReceiveNotificationResponse: (NotificationResponse response) async {
-      if (response.payload == "alarm") {
-        runApp(MyApp(alarmScreen: true));
-      }else if(response.payload?.contains("WishMap://task")==true){
-        WidgetsFlutterBinding.ensureInitialized();
-        await Firebase.initializeApp(
-          options: DefaultFirebaseOptions.currentPlatform,
-        );
-        final appViewModel = AppViewModel();
-        await appViewModel.init();
-
-        tz.initializeTimeZones();
-
-        await flutterLocalNotificationsPlugin.initialize(
-          initializationSettings,
-          onDidReceiveNotificationResponse: (NotificationResponse response) async {
-            if (response.payload == "alarm") {
-              runApp(MyApp(alarmScreen: true));
-            }else if(response.payload?.contains("WishMap://task")==true){
-
-            }
-          },
-        );
-
-        runApp(
-          ChangeNotifierProvider(
-            create: (context) => appViewModel,
-            child: BlocProvider<NavigationBloc>(
-              create: (context) {
-                final appViewModel = context.read<AppViewModel>();
-                appViewModel.getTask(int.parse(response.payload!.split("id=")[1]));
-                return NavigationBloc()..add((appViewModel.profileData!=null&&appViewModel.profileData!.id.isNotEmpty)?NavigateToTasksScreenEvent():NavigateToAuthScreenEvent());
-              },
-              child: MyApp(),
-            ),
-          ),
-        );
-      }
-    },
+    onDidReceiveNotificationResponse:(response)=> _handleNotificationResponse(response, appViewModel),
   );
-  _requestPermissions(flutterLocalNotificationsPlugin);
-  tz.initializeTimeZones();
 
   runApp(
     ChangeNotifierProvider(
       create: (context) => appViewModel,
       child: BlocProvider<NavigationBloc>(
-          create: (context) {
-            final appViewModel = context.read<AppViewModel>();
-            return NavigationBloc()..add((appViewModel.profileData!=null&&appViewModel.profileData!.id.isNotEmpty)?NavigateToCardsScreenEvent():NavigateToAuthScreenEvent());
-          },
+        create: (context) {
+          final appViewModel = context.read<AppViewModel>();
+          return NavigationBloc()..add(
+              appViewModel.profileData != null && appViewModel.profileData!.id.isNotEmpty
+                  ? NavigateToCardsScreenEvent()
+                  : NavigateToAuthScreenEvent()
+          );
+        },
         child: MyApp(),
       ),
     ),
@@ -139,12 +93,47 @@ Future<void> _requestPermissions(FlutterLocalNotificationsPlugin flutterLocalNot
     print('Error while requesting permissions: $e');
   }
 }
+
+Future<void> _handleNotificationResponse(NotificationResponse response, AppViewModel vm) async {
+  if (response.payload?.contains("alarm") == true) {
+    final id = int.parse(response.payload!.split("|")[1]);
+    _runAppWithAlarm(id~/100, vm);
+  } else if (response.payload?.contains("WishMap://task") == true) {
+    _runAppWithTask(response, vm);
+  }
+}
+
+void _runAppWithAlarm(int alarmId, AppViewModel vm) async {
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => vm,
+      child: MyApp(alarmId: alarmId),
+    ),
+  );
+}
+
+void _runAppWithTask(NotificationResponse response, AppViewModel vm) async {
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => vm,
+      child: BlocProvider<NavigationBloc>(
+        create: (context) {
+          final appViewModel = context.read<AppViewModel>();
+          appViewModel.getTask(int.parse(response.payload!.split("id=")[1]));
+          return NavigationBloc()..add((appViewModel.profileData!=null&&appViewModel.profileData!.id.isNotEmpty)?NavigateToTasksScreenEvent():NavigateToAuthScreenEvent());
+        },
+        child: MyApp(),
+      ),
+    ),
+  );
+}
+
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 
 class MyApp extends StatefulWidget {
-  bool alarmScreen;
-  MyApp({this.alarmScreen = false});
+  int? alarmId;
+  MyApp({super.key, this.alarmId});
 
   @override
   MyAppState createState() => MyAppState();
@@ -153,7 +142,6 @@ class MyApp extends StatefulWidget {
 class MyAppState extends State<MyApp>{
   @override
   Widget build(BuildContext context) {
-
           return MaterialApp(
             theme: ThemeData(
               fontFamily: 'Gilroy',
@@ -183,9 +171,9 @@ class MyAppState extends State<MyApp>{
                 };
                 return widget!;
               },
-            home: widget.alarmScreen ? NotifyAlarmScreen(((){
+            home: widget.alarmId!=null ? NotifyAlarmScreen(((){
               SystemNavigator.pop();
-            })) : BlocBuilder<NavigationBloc, NavigationState>(
+            }), widget.alarmId!) : BlocBuilder<NavigationBloc, NavigationState>(
               builder: (context, state)
           {
             return Consumer<AppViewModel>(
@@ -267,27 +255,6 @@ class MyAppState extends State<MyApp>{
       SnackBar(
         content: Text(message),
         duration: const Duration(seconds: 3),
-      ),
-    );
-  }
-}
-
-class NotifyAlarmScreen extends StatelessWidget {
-  final Function() onClose;
-  const NotifyAlarmScreen(this.onClose, {super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Alarm')),
-      body: Center(
-        child: ElevatedButton(
-          onPressed: () {
-            // Логика для отключения будильника
-            onClose();
-          },
-          child: const Text('Turn off Alarm'),
-        ),
       ),
     );
   }

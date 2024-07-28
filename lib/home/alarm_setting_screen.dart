@@ -1,11 +1,20 @@
+import 'dart:io';
+
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:lecle_volume_flutter/lecle_volume_flutter.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
-import 'package:volume_controller/volume_controller.dart';
+import 'package:wishmap/common/snoozeRepeatsSettings.dart';
 import 'package:wishmap/data/models.dart';
+import 'package:wishmap/data/static.dart';
 import 'package:wishmap/dialog/bottom_sheet_repeat.dart';
+import 'package:wishmap/home/Aalarm_settings_off_screen.dart';
+import 'package:wishmap/home/snooze_settings_screen.dart';
 import 'package:wishmap/services/reminder_service.dart';
 
 import '../ViewModel.dart';
@@ -29,33 +38,85 @@ class AlarmSettingScreenState extends State<AlarmSettingScreen>{
 
   int settingScreen = 0;//0-default 1-otlojit 2-disable
   String daysString = "pn-vs";
-  String setdownText = "5 мин., 3 раза";
-  double _volume = 0;
+  String setdownText = "";
+  int _volume = 1;
+  int _maxVol = 1;
 
   late Alarm alarm;
+  bool firstLaunch = true;
+  bool shouldUpdate = false;
+
+  List<File> audioFiles = [];
 
   @override
   void initState() {
-    alarm = Alarm(widget.alarmId, -1, selectedDatetime, [], '', true, "", notificationIds: [], offMods: [], offModsParams: {});
     textEditingController.addListener((){
       alarm.text = textEditingController.text;
     });
-    VolumeController().listener((v) {
-      setState(() => _volume = v);
-    });
-
-    VolumeController().getVolume().then((v) => _volume = v);
+    _initVolume();
+    _copyAudio();
+    _loadAudios();
     super.initState();
+  }
+
+  _initVolume() async {
+    await Volume.initAudioStream(AudioManager.streamNotification);
+
+    // get Max Volume
+    Volume.getMaxVol.then((v)=>_maxVol = v);
+    // get Current Volume
+    Volume.getVol.then((v)=>_volume = v);
+
+    setState(() {});
+  }
+
+  void setVol({int androidVol = 0, double iOSVol = 0.0, bool showVolumeUI = true}) async {
+    await Volume.setVol(
+      androidVol: androidVol,
+      iOSVol: iOSVol,
+      showVolumeUI: showVolumeUI,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Consumer<AppViewModel>(
         builder: (context, appVM, child) {
+          if(firstLaunch){
+            final searched = appVM.alarms.where((e)=>e.id==widget.alarmId);
+            alarm = searched.isNotEmpty?searched.first:Alarm(widget.alarmId, -1, selectedDatetime, [], '', true, "", notificationIds: [], offMods: [], offModsParams: {});
+            if(searched.isNotEmpty){
+              selectedDatetime = alarm.dateTime;
+              shouldUpdate = true;
+            }
+            final sn = alarm.snooze.split("|");
+            alarm.snooze.isNotEmpty?setdownText = "${repeatInterval[int.parse(sn[0])]}., ${repeatCount[int.parse(sn[1])]}":setdownText="нет";
+          firstLaunch = false;
+          }
           return Scaffold(
             backgroundColor: AppColors.backgroundColor,
             body: SafeArea(
-                child: Column(
+                child: settingScreen==2?AlarmSettingsOffScreen((type, params){
+                  if(type == -1) {
+                    setState(() {
+                      settingScreen = 0;
+                    });
+                    return;
+                  }
+                  alarm.offMods.add(type);
+                  alarm.offModsParams.addAll(params);
+                  setState(() {
+                    settingScreen = 0;
+                  });
+                }): settingScreen==1?
+                   SnoozeSettingsScreen(alarm.snooze, (snooze){
+                     alarm.snooze = snooze;
+                     setState(() {
+                       final sn = snooze.split("|");
+                       snooze.isNotEmpty?setdownText = "${repeatInterval[int.parse(sn[0])]}., ${repeatCount[int.parse(sn[1])]}":setdownText="нет";
+                       settingScreen = 0;
+                     });
+                   }) : Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Row(
@@ -75,7 +136,8 @@ class AlarmSettingScreenState extends State<AlarmSettingScreen>{
                               }else{
                                 alarmIds = await setAlarm(alarm, false);
                               }
-                              appVM.addAlarm(Alarm(alarm.id, alarm.TaskId, alarm.dateTime, alarm.remindDays, alarm.music, alarm.remindEnabled, alarm.text, vibration: alarm.vibration, notificationIds: alarmIds, offMods: alarm.offMods, offModsParams: alarm.offModsParams));
+                              shouldUpdate?appVM.updateAlarm(Alarm(alarm.id, alarm.TaskId, alarm.dateTime, alarm.remindDays, alarm.music, alarm.remindEnabled, alarm.text, vibration: alarm.vibration, notificationIds: alarmIds, offMods: alarm.offMods, offModsParams: alarm.offModsParams, snooze: alarm.snooze)):
+                              appVM.addAlarm(Alarm(alarm.id, alarm.TaskId, alarm.dateTime, alarm.remindDays, alarm.music, alarm.remindEnabled, alarm.text, vibration: alarm.vibration, notificationIds: alarmIds, offMods: alarm.offMods, offModsParams: alarm.offModsParams, snooze: alarm.snooze));
                               BlocProvider.of<NavigationBloc>(context).handleBackPress();
                             }
                         ),
@@ -130,10 +192,61 @@ class AlarmSettingScreenState extends State<AlarmSettingScreen>{
                                 children: [
                                   InkWell(
                                     onTap: (){
-                                      alarm.offMods.add(1);
-                                      alarm.offModsParams["test"] = "54";
-                                    },
-                                      child: Container(height: 70, width: 70, color: Colors.blue,)
+                                      setState(() {
+                                        settingScreen = 2;
+                                      });
+                                    }, child: ShaderMask(
+                                      blendMode: BlendMode.srcIn,
+                                      shaderCallback: (bounds) => const LinearGradient(colors: [AppColors.gradientStart, AppColors.gradientEnd]).createShader(
+                                        Rect.fromLTWH(0, 0, bounds.width, bounds.height),
+                                      ),
+                                      child: Container(height: 70, width: 70,
+                                        decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), border: Border.all(width: 1, color: Colors.white)),
+                                        child: Center(child: alarm.offMods.contains(0)?Column(mainAxisSize: MainAxisSize.min, children: [SvgPicture.asset('assets/icons/tablerswipe.svg', height: 40, width: 40),const Text("желаний")],):const Icon(Icons.add, size: 25,)),
+                                      )
+                                  )
+                                  ),
+                                  const SizedBox(width: 16),
+                                  InkWell(
+                                      onTap: (){
+                                        setState(() {
+                                          settingScreen = 2;
+                                        });
+                                      }, child: ShaderMask(
+                                      blendMode: BlendMode.srcIn,
+                                      shaderCallback: (bounds) => const LinearGradient(colors: [AppColors.gradientStart, AppColors.gradientEnd]).createShader(
+                                        Rect.fromLTWH(0, 0, bounds.width, bounds.height),
+                                      ),
+                                      child: Container(height: 70, width: 70,
+                                        decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), border: Border.all(width: 1, color: Colors.white)),
+                                        child: Center(child: alarm.offMods.contains(1)?Column(mainAxisSize: MainAxisSize.min, children: [SvgPicture.asset('assets/icons/fluenttasklist.svg', height: 40, width: 40),const Text("задачи")],):const Icon(Icons.add, size: 25,)),
+                                      )
+                                  )
+                                  ),
+                                  const SizedBox(width: 16),
+                                  InkWell(
+                                      onTap: (){
+                                        setState(() {
+                                          settingScreen = 2;
+                                        });
+                                      }, child: ShaderMask(
+                                      blendMode: BlendMode.srcIn,
+                                      shaderCallback: (bounds) => const LinearGradient(colors: [AppColors.gradientStart, AppColors.gradientEnd]).createShader(
+                                        Rect.fromLTWH(0, 0, bounds.width, bounds.height),
+                                      ),
+                                      child: Container(height: 70, width: 70,
+                                        decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), border: Border.all(width: 1, color: Colors.white)),
+                                        child: Center(child: alarm.offMods.contains(2)?Column(mainAxisSize: MainAxisSize.min, children: [SvgPicture.asset('assets/icons/magemessage.svg', height: 40, width: 40),const Text("аффирмац")],):const Icon(Icons.add, size: 25,)),
+                                      )
+                                  )
+                                  ),
+                                  const SizedBox(width: 16),
+                                  InkWell(
+                                      onTap: (){
+                                      }, child: Container(height: 70, width: 70,
+                                    decoration: BoxDecoration(borderRadius: BorderRadius.circular(12), border: Border.all(width: 1, color: AppColors.darkGrey)),
+                                    child: const Center(child: Icon(Icons.lock, size: 25, color: AppColors.darkGrey)),
+                                  )
                                   )
                                 ],
                               ),
@@ -158,7 +271,8 @@ class AlarmSettingScreenState extends State<AlarmSettingScreen>{
                                                 alarm.remindDays = repaetDays;
                                                 daysString = string;
                                               });
-                                            }, []);
+                                              Navigator.pop(context);
+                                            }, alarm.remindDays);
                                           },
                                         );
                                       },
@@ -173,9 +287,39 @@ class AlarmSettingScreenState extends State<AlarmSettingScreen>{
                                     ),
                                     const SizedBox(height: 10),
                                     InkWell(
-                                      onTap: () async {
-                                        final path = await getAlarmSoundUri();
-                                        if(path!=null)alarm.music = path;
+                                      onTap: () {
+                                        showModalBottomSheet(
+                                            backgroundColor: AppColors.backgroundColor,
+                                          context: context,
+                                          isScrollControlled: true,
+                                              builder: (BuildContext context) {
+                                            return Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                const Padding(
+                                                  padding: EdgeInsets.all(16.0),
+                                                  child: Center(child: Text("Выберите аудио")),
+                                                ),
+                                                ListView.builder(
+                                                  shrinkWrap: true,
+                                                  itemCount: audioFiles.length,
+                                                  itemBuilder: (context, index){
+                                                    return ListTile(
+                                                      title: Text(audioFiles[index].path.split("/").last),
+                                                      leading: const Icon(Icons.audiotrack),
+                                                      onTap: (){
+                                                        setState(() {
+                                                          alarm.music=audioFiles[index].path;
+                                                        });
+                                                        Navigator.pop(context);
+                                                      },
+                                                    );
+                                                  },
+                                                )
+                                              ],
+                                            );
+                                          },
+                                        );
                                       },
                                       child: Row(
                                         children: [
@@ -191,9 +335,9 @@ class AlarmSettingScreenState extends State<AlarmSettingScreen>{
                                       children: [
                                         const Icon(Icons.volume_up_rounded),
                                         Expanded(
-                                          child: Slider(value: _volume, onChanged: (v){
-                                            _volume = v;
-                                            VolumeController().setVolume(v);
+                                          child: Slider(value: _volume.toDouble(), max: _maxVol.toDouble(), onChanged: (v){
+                                            _volume = v.toInt();
+                                             setVol(androidVol: v.toInt());
                                             setState(() {});
                                           }),
                                         )
@@ -213,20 +357,27 @@ class AlarmSettingScreenState extends State<AlarmSettingScreen>{
                                 ),
                               ),
                               const SizedBox(height: 16),
-                              Container(
-                                  padding: const EdgeInsets.all(16),
-                                  decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(12),
-                                      border: Border.all(color: AppColors.grey)
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      const Text("Отложить"),
-                                      const Spacer(),
-                                      Text(setdownText),
-                                      const Icon(Icons.arrow_forward_ios)
-                                    ],
-                                  )
+                              InkWell(
+                                onTap: () async {
+                                  setState(() {
+                                    settingScreen = 1;
+                                  });
+                                },
+                                child: Container(
+                                    padding: const EdgeInsets.all(16),
+                                    decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(color: AppColors.grey)
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        const Text("Отложить"),
+                                        const Spacer(),
+                                        Text(setdownText),
+                                        const Icon(Icons.arrow_forward_ios)
+                                      ],
+                                    )
+                                ),
                               )
                             ],
                           ),
@@ -265,6 +416,25 @@ class AlarmSettingScreenState extends State<AlarmSettingScreen>{
           );
         });
   }
+  Future _copyAudio() async{
+    final appDir =await getApplicationDocumentsDirectory();
+    final audioDir = Directory('${appDir.path}/audios');
+    if(!await audioDir.exists()){
+      await audioDir.create();
+      const audioAsset = 'assets/audio/notification.mp3';
+      final bytes = await rootBundle.load(audioAsset);
+      final audioFile = File('${audioDir.path}/not1.mp3');
+      await audioFile.writeAsBytes(bytes.buffer.asUint8List());
+    }
+  }
+  Future _loadAudios() async{
+    final appDir =await getApplicationDocumentsDirectory();
+    final audioDir = Directory('${appDir.path}/audios');
+    if(await audioDir.exists()){
+      final files = await audioDir.list().toList();
+      audioFiles = files.whereType<File>().toList();
+    }
+  }
   Future<String?> getAlarmSoundUri() async {
     try {
       String? filePath = await FilePicker.platform.pickFiles(
@@ -284,5 +454,16 @@ class AlarmSettingScreenState extends State<AlarmSettingScreen>{
       print('Error getting alarm sound URI: $e');
       return null;
     }
+  }
+
+  Future<int> showSnoozeRepeatsSettings(int count) async {
+    return await showModalBottomSheet(backgroundColor: AppColors.backgroundColor,
+        context: context,
+        isScrollControlled: true,
+        builder: (buildContext){
+          return Snoozerepeatssettings(count, (count){
+            Navigator.pop(context, count);
+          });
+        });
   }
 }

@@ -456,7 +456,9 @@ class LocalRepository{
   Future<List<Alarm>> getAlarms() async{
     return await dbHelper.selectAlarms();
   }
-
+  Future<Alarm?> getAlarmById(int id) async{
+    return await dbHelper.selectAlarm(id);
+  }
   Future addAlarm(Alarm alarm) async{
     await dbHelper.insertAlarm(alarm);
   }

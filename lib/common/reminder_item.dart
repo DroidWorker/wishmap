@@ -14,7 +14,9 @@ class ReminderItem extends StatefulWidget{
   Function(int id)? onTap;
   Function(int id, bool state)? onChangeState;
 
-  ReminderItem(this.reminder, { this.onTap, this.onDelete, this.onChangeState, super.key});
+  bool outlined = false;
+
+  ReminderItem(this.reminder, { this.onTap, this.onDelete, this.onChangeState, this.outlined = false, super.key});
 
   @override
   State<ReminderItem> createState() => ReminderItemState();
@@ -59,8 +61,9 @@ class ReminderItemState extends State<ReminderItem>{
       },
       child: Container(
         padding: const EdgeInsets.all(8),
-        decoration: const BoxDecoration(
-          borderRadius: BorderRadius.all(Radius.circular(14)),
+        decoration: BoxDecoration(
+          borderRadius: const BorderRadius.all(Radius.circular(14)),
+          border: widget.outlined?Border.all(color: AppColors.gradientStart, width: 2):null,
           color: Colors.white
         ),
         child: Column(
@@ -70,7 +73,7 @@ class ReminderItemState extends State<ReminderItem>{
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 difference!=null?Text("Сработает через ${difference.inHours}ч ${difference.inMinutes-(difference.inHours*60)}мин", style: const TextStyle(fontSize: 14, color: AppColors.greytextColor),):const SizedBox(),
-                InkWell(onTap: (){
+                if(widget.reminder is Reminder)InkWell(onTap: (){
                   if(widget.onDelete!=null)widget.onDelete!(widget.reminder.id);
                 }, child: SvgPicture.asset("assets/icons/trash.svg", width: 28, height: 28)),
               ],

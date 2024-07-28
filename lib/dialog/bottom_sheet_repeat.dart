@@ -27,11 +27,11 @@ class RepeatBSState extends State<RepeatBS>{
     for (var e in widget.remindDays) {
       final day = int.parse(e);
       if(day!=0){
-        daysString+="${shortDayOfWeek[day-1]}";
+        daysString+="${shortDayOfWeek[day]}";
         if(day==prevDay+1){
           prevDay = day;
           isInterval=true;
-        }
+        }else{isInterval=false;}
       }
     }
     if(isInterval){
