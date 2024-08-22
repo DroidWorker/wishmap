@@ -5,7 +5,7 @@ import 'package:wishmap/interface_widgets/colorButton.dart';
 import '../interface_widgets/sq_checkbox.dart';
 
 class Snoozerepeatssettings extends StatefulWidget{
-  int count = -1;
+  int count = 1;
   Function(int count) onClose;
 
   Snoozerepeatssettings(this.count, this.onClose, {super.key});
@@ -14,9 +14,18 @@ class Snoozerepeatssettings extends StatefulWidget{
 }
 
 class SnoozerepeatssettingsState extends State<Snoozerepeatssettings>{
+  final repeats = {
+    0: 1,
+    1: 2,
+    2: 3,
+    3: 4,
+    4: 5,
+    5: 10
+  };
+
   @override
   Widget build(BuildContext context) {
-    const items = repeatCount;
+    List<String> items = repeatCount.values.toList();
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -29,8 +38,8 @@ class SnoozerepeatssettingsState extends State<Snoozerepeatssettings>{
           ListView.builder(itemCount: items.length,
               shrinkWrap: true,
               itemBuilder: (context, index) {
-                return SquareCheckbox(state: index==widget.count, items[index], (state){setState(() {
-                  widget.count = index;
+                return SquareCheckbox(state: repeats[index]==widget.count, items[index], (state){setState(() {
+                  widget.count = repeats[index]!;
                 });});
               }),
           ColorRoundedButton("Применить", (){

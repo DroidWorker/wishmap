@@ -6,8 +6,9 @@ import '../res/colors.dart';
 class SquareCheckbox extends StatefulWidget{
   bool state;
   String text;
+  TextStyle? textStyle;
   Function(bool) stateChanged;
-  SquareCheckbox(this.text, this.stateChanged, { this.state = false, super.key});
+  SquareCheckbox(this.text, this.stateChanged, { this.state = false, this.textStyle, super.key});
   @override
   SquareCheckboxState createState() => SquareCheckboxState();
 }
@@ -39,7 +40,7 @@ class SquareCheckboxState extends State<SquareCheckbox>{
               ):const SizedBox(),
             ),
             const SizedBox(width: 12),
-            Text(widget.text, style: const TextStyle(fontSize: 20))
+            Text(widget.text, style: widget.textStyle??const TextStyle(fontSize: 20))
           ],
         ),
       ),

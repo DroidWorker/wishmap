@@ -4,6 +4,7 @@ import 'dart:ui';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
@@ -22,6 +23,7 @@ import 'package:wishmap/data/models.dart';
 import '../ViewModel.dart';
 import '../common/moon_widget.dart';
 import '../common/selector_text_widget.dart';
+import '../dialog/bottom_sheet_action.dart';
 
 class MainScreen extends StatefulWidget {
   MainScreen({super.key});
@@ -110,6 +112,28 @@ class _MainScreenState extends State<MainScreen>{
           final SSSize = MediaQuery.of(context).size.width-20;
           final maxHeight = centerY-SSSize/2-50;
 
+          SchedulerBinding.instance.addPostFrameCallback((timeStamp) async {
+            if(!appVM.alarmChecked&&await appVM.alarmsExists){
+              showModalBottomSheet<bool>(
+                backgroundColor: AppColors.backgroundColor,
+                context: context,
+                isScrollControlled: true,
+                builder: (BuildContext context) {
+                  return ActionBS('В профиле есть несохраненные будильники', "Перейти в настройки?", "Да", 'Нет',
+                      onOk: () async {
+                        appVM.getAlarms();
+                        BlocProvider.of<NavigationBloc>(context)
+                            .add(NavigateToAlarmScreenEvent());
+                        Navigator.pop(context, true);
+                      },
+                      onCancel: () {
+                        Navigator.pop(context, true);
+                      }
+                  );
+                },
+              );
+            }
+          });
           Widget w = Scaffold(
               backgroundColor: AppColors.backgroundColor,
               body: SafeArea(child:Stack(

@@ -247,6 +247,7 @@ class AimEditScreenState extends State<AimEditScreen>{
                                                     Navigator.pop(
                                                         context, 'OK');
                                                     ai!.isChecked = !ai!.isChecked;
+                                                    if(ai!.isChecked)showOverlayedAnimations(context, 'assets/lottie/dostizhenieceli.json', fillBackground: true);
                                                     appVM.updateAimStatus(ai!.id, ai!.isChecked);
                                                     showOverlayedAnimations(context,'assets/lottie/inaim.json', fillBackground: true);
                                                     showModalBottomSheet<void>(
@@ -267,6 +268,7 @@ class AimEditScreenState extends State<AimEditScreen>{
                                           );
                                         }else {
                                           ai!.isChecked = !ai!.isChecked;
+                                          if(ai!.isChecked)showOverlayedAnimations(context, 'assets/lottie/dostizhenieceli.json', fillBackground: true);
                                           appVM.updateAimStatus(ai!.id, ai!.isChecked);
                                           showOverlayedAnimations(context,'assets/lottie/inaim.json', fillBackground: true);
                                         }
@@ -285,6 +287,7 @@ class AimEditScreenState extends State<AimEditScreen>{
                                                           context, 'OK');
                                                       ai!.isChecked = !ai!
                                                           .isChecked;
+                                                      if(ai!.isChecked)showOverlayedAnimations(context, 'assets/lottie/dostizhenieceli.json', fillBackground: true);
                                                       await appVM.updateAimStatus(
                                                           ai!.id, ai!.isChecked);
                                                       await appVM.getAim(ai!.id);
@@ -312,6 +315,7 @@ class AimEditScreenState extends State<AimEditScreen>{
                                           }else {
                                             ai!.isChecked = !ai!
                                                 .isChecked;
+                                            if(ai!.isChecked)showOverlayedAnimations(context, 'assets/lottie/dostizhenieceli.json', fillBackground: true);
                                             await appVM.updateAimStatus(
                                                 ai!.id, ai!.isChecked);
                                             await appVM.getAim(ai!.id);
@@ -339,6 +343,7 @@ class AimEditScreenState extends State<AimEditScreen>{
                                               context, 'OK');
                                           ai!.isChecked = !ai!
                                               .isChecked;
+                                          if(ai!.isChecked)showOverlayedAnimations(context, 'assets/lottie/dostizhenieceli.json', fillBackground: true);
                                           appVM.updateAimStatus(
                                               ai!.id,
                                               ai!.isChecked);
@@ -360,6 +365,7 @@ class AimEditScreenState extends State<AimEditScreen>{
                                 } else {
                                   ai!.isChecked = !ai!
                                       .isChecked;
+                                  if(ai!.isChecked)showOverlayedAnimations(context, 'assets/lottie/dostizhenieceli.json', fillBackground: true);
                                   appVM.updateAimStatus(
                                       ai!.id, ai!.isChecked);
                                   showOverlayedAnimations(context,'assets/lottie/inaim.json', fillBackground: true);

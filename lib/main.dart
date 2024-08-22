@@ -22,6 +22,8 @@ import 'package:wishmap/home/mytasks_screen.dart';
 import 'package:wishmap/home/qrCheck_screen.dart';
 import 'package:wishmap/home/settings/main_settings.dart';
 import 'package:wishmap/home/settings/personal_settings.dart';
+import 'package:wishmap/home/settings/proposal_scren.dart';
+import 'package:wishmap/home/settings/q_screen.dart';
 import 'package:wishmap/home/taskcreate_screen.dart';
 import 'package:wishmap/home/wish_screen.dart';
 import 'package:wishmap/services/reminder_service.dart';
@@ -62,11 +64,17 @@ void main() async {
   final appViewModel = AppViewModel();
   await appViewModel.init();
 
+  NotificationResponse? initialNotificationResponse;
+
   await flutterLocalNotificationsPlugin.initialize(
     initializationSettings,
     onDidReceiveNotificationResponse:(response)=> _handleNotificationResponse(response, appViewModel),
   );
 
+  // Проверка, было ли приложение запущено через уведомление
+  initialNotificationResponse = (await flutterLocalNotificationsPlugin.getNotificationAppLaunchDetails())?.notificationResponse;
+
+  if(initialNotificationResponse==null){
   runApp(
     ChangeNotifierProvider(
       create: (context) => appViewModel,
@@ -83,6 +91,14 @@ void main() async {
       ),
     ),
   );
+  }else {
+    if (initialNotificationResponse.payload?.contains("alarm") == true) {
+      final id = int.parse(initialNotificationResponse.payload!.split("|")[1]);
+      _runAppWithAlarm(id ~/ 100, appViewModel);
+    } else if (initialNotificationResponse.payload?.contains("WishMap://task") == true) {
+      _runAppWithTask(initialNotificationResponse, appViewModel);
+    };
+  }
 }
 
 Future<void> _requestPermissions(FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin) async {
@@ -95,6 +111,7 @@ Future<void> _requestPermissions(FlutterLocalNotificationsPlugin flutterLocalNot
 }
 
 Future<void> _handleNotificationResponse(NotificationResponse response, AppViewModel vm) async {
+  print('ghghggjygygghg');
   if (response.payload?.contains("alarm") == true) {
     final id = int.parse(response.payload!.split("|")[1]);
     _runAppWithAlarm(id~/100, vm);
@@ -107,7 +124,12 @@ void _runAppWithAlarm(int alarmId, AppViewModel vm) async {
   runApp(
     ChangeNotifierProvider(
       create: (context) => vm,
-      child: MyApp(alarmId: alarmId),
+      child: BlocProvider<NavigationBloc>(
+        create: (context) {
+          return NavigationBloc();
+        },
+        child: MyApp(alarmId: alarmId),
+      ),
     ),
   );
 }
@@ -172,7 +194,12 @@ class MyAppState extends State<MyApp>{
                 return widget!;
               },
             home: widget.alarmId!=null ? NotifyAlarmScreen(((){
-              SystemNavigator.pop();
+              setState(() {
+                widget.alarmId = null;
+                BlocProvider.of<NavigationBloc>(context)
+                    .add(NavigateToCardsScreenEvent());
+              });
+              //SystemNavigator.pop();
             }), widget.alarmId!) : BlocBuilder<NavigationBloc, NavigationState>(
               builder: (context, state)
           {
@@ -241,6 +268,10 @@ class MyAppState extends State<MyApp>{
       return PersonalSettings();
     }else if (state is NavigationSoundsSettingsScreenState) {
       return SoundsSettings();
+    }else if (state is NavigationQuestionsSettingsScreenState) {
+      return QScreen();
+    }else if (state is NavigationProposalScreenState) {
+      return ProposalScreen();
     }else if (state is NavigationAlarmSettingsScreenState) {
       return AlarmSettingScreen(state.id);
     } else if (state is NavigationAlarmScreenState) {

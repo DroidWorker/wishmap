@@ -373,30 +373,44 @@ class Repository{
       if (dataSnapshot.children.isNotEmpty) {
         dataSnapshot.children.forEach((element) {
           final Map<dynamic, dynamic> dataList = element.value as Map<dynamic,dynamic>;
-          WishData circleData = WishData(
-              id: int.parse(element.key.toString()),
-              nextId: dataList['nextId'] == null ? -1 : (dataList['nextId'] is int ? dataList['nextId'] : int.tryParse(dataList['nextId']) ?? -1),
-              prevId: dataList['prevId'] == null ? -1 : (dataList['prevId'] is int ? dataList['prevId'] : int.tryParse(dataList['prevId']) ?? -1),
-              text: dataList['text'].toString(),
-              description: dataList['subText'].toString() ?? "",
-              color: Color(int.parse(dataList['color'].toString())),
-              parentId: int.parse(dataList['parentId'].toString()),
-              photoIds: dataList['photosIds']??"",
-              affirmation: dataList['affirmation']??""
-          )..isChecked = dataList['isChecked']??false
-          ..isActive = dataList['isActive']??true
-          ..isHidden = dataList['isHidden']??false;
-          if(dataList['childAims']!=null){
-            final Map<dynamic, dynamic> aimsData = dataList['childAims'] as Map<dynamic, dynamic>;
-            final Map<String, int> aims = {};
-            aimsData.forEach((key, value) {
-              if (value is int) {
-                aims[key]=value;
-              }
-            });
-            circleData.childAims = aims;
+          try {
+            WishData circleData = WishData(
+                id: int.parse(element.key.toString()),
+                nextId: dataList['nextId'] == null
+                    ? -1
+                    : (dataList['nextId'] is int ? dataList['nextId'] : int
+                    .tryParse(dataList['nextId']) ?? -1),
+                prevId: dataList['prevId'] == null
+                    ? -1
+                    : (dataList['prevId'] is int ? dataList['prevId'] : int
+                    .tryParse(dataList['prevId']) ?? -1),
+                text: dataList['text'].toString(),
+                description: dataList['subText'].toString() ?? "",
+                color: Color(int.parse(dataList['color'].toString())),
+                parentId: int.parse(dataList['parentId'].toString()),
+                photoIds: dataList['photosIds'] ?? "",
+                affirmation: dataList['affirmation'] ?? ""
+            )
+              ..isChecked = dataList['isChecked'] ?? false
+              ..isActive = dataList['isActive'] ?? true
+              ..isHidden = dataList['isHidden'] ?? false;
+            if (dataList['childAims'] != null) {
+              final Map<dynamic,
+                  dynamic> aimsData = dataList['childAims'] as Map<
+                  dynamic,
+                  dynamic>;
+              final Map<String, int> aims = {};
+              aimsData.forEach((key, value) {
+                if (value is int) {
+                  aims[key] = value;
+                }
+              });
+              circleData.childAims = aims;
+            }
+            circleDataList.add(circleData);
+          }catch(ex){
+            print("exception 7876${ex}");
           }
-          circleDataList.add(circleData);
         });
       }
       return circleDataList;
@@ -477,14 +491,18 @@ class Repository{
       if (dataSnapshot.children.isNotEmpty) {
         dataSnapshot.children.forEach((element) {
           final Map<dynamic, dynamic> dataList = element.value as Map<dynamic,dynamic>;
-          tasksList.add(TaskData(
-              id: int.parse(dataList['id'].toString()),
-              parentId: int.parse(dataList['parentId'].toString()),
-              text: dataList['text'],
-              description: dataList['subText'],
-              isChecked: dataList['isChecked'],
-            isActive: dataList['isActive']??false
-          ));
+          try {
+            tasksList.add(TaskData(
+                id: int.parse(dataList['id'].toString()),
+                parentId: int.parse(dataList['parentId'].toString()),
+                text: dataList['text'],
+                description: dataList['subText'],
+                isChecked: dataList['isChecked'],
+              isActive: dataList['isActive']??false
+            ));
+          } on Exception catch (e) {
+            print("exception 548044$e");
+          }
         });
       }
       return tasksList;
@@ -953,5 +971,17 @@ class Repository{
       return diaryList;
     }
     return null;
+  }
+
+  Future<Map<String, String>> getQ() async {
+    if(_auth.currentUser!=null) {
+      DataSnapshot dataSnapshot = (await FirebaseDatabase.instance.refFromURL('https://wishmap-c3e06-default-rtdb.europe-west1.firebasedatabase.app/').child("questions").once()).snapshot;
+      print("hhhhhhhhhhhhhhhhhhhhhhhhhhh${dataSnapshot.children}");
+        if (dataSnapshot.children.isNotEmpty) {
+        final Map<dynamic, dynamic> dataList = dataSnapshot.value as Map<dynamic,dynamic>;
+        return Map<String, String>.fromEntries(dataList.entries.map((element)=>MapEntry(element.key, element.value)));
+      }
+    }
+    return {};
   }
 }

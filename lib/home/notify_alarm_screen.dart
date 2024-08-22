@@ -1,23 +1,24 @@
 import 'dart:async';
-import 'dart:ffi';
 import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:wishmap/data/date_static.dart';
 import 'package:wishmap/interface_widgets/colorButton.dart';
 
-import 'package:wishmap/repository/local_repository.dart';
 import 'package:wishmap/services/reminder_service.dart';
 
 import '../ViewModel.dart';
 import '../data/models.dart';
 import '../data/static.dart';
 import '../data/static_affirmations_men.dart';
+import '../dialog/bottom_sheet_notify.dart';
 import '../res/colors.dart';
+import 'mission_screen.dart';
 
 class NotifyAlarmScreen extends StatefulWidget {
   final Function() onClose;
@@ -35,6 +36,7 @@ class NotifyAlarmScreenState extends State<NotifyAlarmScreen>{
   Alarm? alarm;
   String snooze = "";
   bool repeatState = false;
+  DateTime? cyrrepeatInterval;
   @override
   void initState(){
     super.initState();
@@ -49,6 +51,12 @@ class NotifyAlarmScreenState extends State<NotifyAlarmScreen>{
   
   @override
   Widget build(BuildContext context) {
+    if(cyrrepeatInterval!=null&&cyrrepeatInterval!.millisecond>DateTime.now().millisecond){
+      cyrrepeatInterval=null;
+      setState(() {
+        repeatState=false;
+      });
+    }
     final appViewModel = Provider.of<AppViewModel>(context);
     if(alarm==null) {
       appViewModel.getAlarmById(widget.alarmId).then((v){setState(() {
@@ -77,9 +85,10 @@ class NotifyAlarmScreenState extends State<NotifyAlarmScreen>{
                 SizedBox(height: MediaQuery.of(context).size.height*0.12),
                 Text("${fullDayOfWeek[current.weekday]}, ${current.day} ${monthOfYear[current.month]} ${current.year}", style: const TextStyle(color: Colors.white),),
                 Text(DateFormat('HH:mm').format(current), style: const TextStyle(fontSize: 64, color: Colors.white)),
-                ColorRoundedButton("Посмотреть задачи", (){
+                Text(alarm?.text??"", style: const TextStyle(color: Colors.white)),
+                /*ColorRoundedButton("Посмотреть задачи", (){
 
-                }),
+                }),*/
                 const Spacer(),
                 Text(IMenAffirmations[Random().nextInt(IMenAffirmations.length)], textAlign: TextAlign.center, style: const TextStyle(color: Colors.white,  fontWeight: FontWeight.w500, fontSize: 16)),
                 const Spacer(),
@@ -98,13 +107,20 @@ class NotifyAlarmScreenState extends State<NotifyAlarmScreen>{
                     ],
                   ),
                 ),
-                if(snooze.isNotEmpty&&!repeatState)InkWell(
+                if(snooze.isNotEmpty&&alarm!.snooze.split("|")[1]!="0"&&!repeatState)InkWell(
                   onTap: (){
+                    cyrrepeatInterval = alarm!.dateTime.add(Duration(minutes: intervals[int.parse(snooze.split("|")[0])]));
+                    if(alarm!=null)setAlarm(Alarm(alarm!.id, alarm!.TaskId, cyrrepeatInterval!, alarm!.remindDays, alarm!.music, alarm!.remindEnabled, alarm!.text), false);
+                    final snoze = alarm?.snooze.split("|");
+                    if(snoze!=null&&snoze.isNotEmpty){
+                      alarm!.snooze="${snoze[0]}|${int.parse(snoze[1])-1}";
+                      appViewModel.updateAlarm(alarm!);
+                      snooze = alarm!.snooze;
+                    }
                     setState(() {
                       repeatState = true;
                     });
-                    if(alarm!=null)setAlarm(Alarm(alarm!.id, alarm!.TaskId, alarm!.dateTime.add(Duration(minutes: intervals[int.parse(snooze.split("|")[1])])), alarm!.remindDays, alarm!.music, alarm!.remindEnabled, alarm!.text), false);
-                  },
+                    },
                   child:Container(
                     height: 46,
                     decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(23)),
@@ -118,14 +134,45 @@ class NotifyAlarmScreenState extends State<NotifyAlarmScreen>{
                               Rect.fromLTWH(0, 0, bounds.width, bounds.height),
                             ),
                             child: const Text("Отложить будильник ")),
-                        Text(repeatCount[int.parse(snooze.split("|")[1])])
+                        Text(repeatCount[int.parse(snooze.split("|")[1])]??"${snooze.split("|")[1]} pa3")
                       ],
                     ),
                   ),
                 ),
                 const SizedBox(height: 16),
-                ColorRoundedButton("Отключить", (){
-                    widget.onClose();
+                ColorRoundedButton("Отключить", () async {
+                  if(alarm?.offMods.contains(0)==true){
+                    final repCount = alarm!.offModsParams["WishSwipesCount"]!=null?int.tryParse(alarm!.offModsParams["WishSwipesCount"]!)??1:1;
+                    await showOverlayedMissionScreen(context, repCount, 0);
+                  }
+                  if(alarm?.offMods.contains(1)==true){
+                    final repCount = alarm!.offModsParams["TaskSwipesCount"]!=null?int.tryParse(alarm!.offModsParams["TaskSwipesCount"]!)??1:1;
+                    await showOverlayedMissionScreen(context, repCount, 1);
+                  }
+                  if(alarm?.offMods.contains(2)==true){
+                    await showOverlayedMissionScreen(context, 0, 2);
+                  }
+                  if(alarm!=null&&alarm?.remindDays.isNotEmpty==true){
+                    final dayOffset = getDayOffsetToClosest(alarm!.remindDays.map((e)=> int.parse(e)).toList(), alarm!.dateTime.weekday);
+                    alarm!.dateTime.add(Duration(days: dayOffset));
+                    final notifId = await setAlarm(alarm!, false);
+                    if(notifId.isEmpty){
+                      showModalBottomSheet<void>(
+                        backgroundColor: AppColors.backgroundColor,
+                        context: context,
+                        isScrollControlled: true,
+                        builder: (BuildContext context) {
+                          return NotifyBS('Будильник не установлен!', "", 'OK',
+                              onOk: () => Navigator.pop(context));
+                        },
+                      );
+                    }
+                    appViewModel.updateAlarm(alarm!);
+                  }else if(alarm!=null&&alarm?.remindDays.isEmpty==true){
+                    alarm!.remindEnabled=false;
+                    appViewModel.updateAlarm(alarm!);
+                  }
+                  widget.onClose();
                 })
               ],
             ),

@@ -20,29 +20,9 @@ class RepeatBSState extends State<RepeatBS>{
 
   List<bool> checkStates = List.generate(8, (i)=> false);
 
-  String buildDays(){
-    String daysString = "";
-    int prevDay = int.parse(widget.remindDays.firstOrNull??"-1");
-    bool isInterval = false;
-    for (var e in widget.remindDays) {
-      final day = int.parse(e);
-      if(day!=0){
-        daysString+="${shortDayOfWeek[day]}";
-        if(day==prevDay+1){
-          prevDay = day;
-          isInterval=true;
-        }else{isInterval=false;}
-      }
-    }
-    if(isInterval){
-      daysString = "${shortDayOfWeek[int.parse(widget.remindDays.firstOrNull??"0")]}-${shortDayOfWeek[int.parse(widget.remindDays.lastOrNull??"0")]}";
-    }
-    return daysString;
-  }
-
   @override
   Widget build(BuildContext context) {
-    final daysString = buildDays();
+    final daysString = buildDays(widget.remindDays);
 
     return LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
@@ -94,7 +74,7 @@ class RepeatBSState extends State<RepeatBS>{
                   for (var e in checkStates.indexed) {
                     if(e.$2)widget.remindDays.add(e.$1.toString());
                   }
-                  widget.onClose(widget.remindDays, buildDays());
+                  widget.onClose(widget.remindDays, buildDays(widget.remindDays));
                 })
               ],
             ),
@@ -102,4 +82,24 @@ class RepeatBSState extends State<RepeatBS>{
         }
     );
   }
+}
+
+String buildDays(List<String> remindDays){
+  String daysString = "";
+  int prevDay = int.parse(remindDays.firstOrNull??"-1");
+  bool isInterval = false;
+  for (var e in remindDays) {
+    final day = int.parse(e);
+    if(day!=0){
+      daysString+="${shortDayOfWeek[day]}";
+      if(day==prevDay+1){
+        prevDay = day;
+        isInterval=true;
+      }else{isInterval=false;}
+    }
+  }
+  if(isInterval){
+    daysString = "${shortDayOfWeek[int.parse(remindDays.firstOrNull??"0")]}-${shortDayOfWeek[int.parse(remindDays.lastOrNull??"0")]}";
+  }
+  return daysString;
 }

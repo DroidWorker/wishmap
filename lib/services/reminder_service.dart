@@ -144,7 +144,7 @@ void setReminder(Reminder reminder) async {
     reminder.remindDays.forEach((day) async {
       reminderId++;
       final DateTime now = DateTime.now();
-      final int dayOffset = _getDayOffset(int.parse(day), now.weekday);
+      final int dayOffset = getDayOffset(int.parse(day), now.weekday);
       final DateTime firstAlarmTime = now.add(Duration(days: dayOffset));
 
       await AndroidAlarmManager.periodic(
@@ -171,8 +171,8 @@ void setReminder(Reminder reminder) async {
   }
 }
 
-void cancelAlarmManager(int id){
-  AndroidAlarmManager.cancel(id);
+Future<bool> cancelAlarmManager(int id) async{
+  return await AndroidAlarmManager.cancel(id);
 }
 
 Future<List<int>> setAlarm(Alarm alarm, bool repeating) async {
@@ -183,7 +183,7 @@ Future<List<int>> setAlarm(Alarm alarm, bool repeating) async {
     alarm.remindDays.forEach((day) async {
       alarmId++;
       final DateTime now = DateTime.now();
-      final int dayOffset = _getDayOffset(int.parse(day), now.weekday);
+      final int dayOffset = getDayOffset(int.parse(day), now.weekday);
       final DateTime firstAlarmTime = now.add(Duration(days: dayOffset));
 
       await AndroidAlarmManager.periodic(
@@ -213,7 +213,28 @@ Future<List<int>> setAlarm(Alarm alarm, bool repeating) async {
   return alarmIds;
 }
 
-int _getDayOffset(int selectedDay, int currentWeekday) {
+int getDayOffset(int selectedDay, int currentWeekday) {
+  if (selectedDay >= currentWeekday) {
+    return selectedDay - currentWeekday;
+  } else {
+    return 7 - (currentWeekday - selectedDay);
+  }
+}
+
+int getDayOffsetToClosest(List<int> days, int currentWeekday) {
+  var selectedDay = 0;
+  var diff = 20;
+  for (var e in days) {
+    final d = (e-currentWeekday);
+    if(d<diff&&d>=0){
+      diff=d;
+      selectedDay = e;
+    }
+  }
+  if(diff==20){
+    selectedDay=days.first;
+  }
+
   if (selectedDay >= currentWeekday) {
     return selectedDay - currentWeekday;
   } else {
@@ -226,22 +247,27 @@ void showFSNotification(int id) async {
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
 
   const int insistentFlag = 4;
-  final Int32List flags = Int32List.fromList(<int>[insistentFlag]);
+  const int ongoingFlag = 2;
+  const int noClearFlag = 32;
+  final Int32List flags = Int32List.fromList(<int>[insistentFlag, ongoingFlag, noClearFlag]);
 
   AndroidNotificationDetails androidPlatformChannelSpecifics = AndroidNotificationDetails(
-    '87585n',
-    'wishmapAlarm',
+    '875855nnn',
+    'WishMapAlarm',
     channelDescription: 'some channel description',
     importance: Importance.max,
     priority: Priority.high,
     ticker: 'ticker',
     fullScreenIntent: true,
+    ongoing: true,
     additionalFlags: flags,
     playSound: true,
     sound: const RawResourceAndroidNotificationSound('notification'),
+    category: AndroidNotificationCategory.alarm,
     visibility: NotificationVisibility.public,
+    enableVibration: true,
     autoCancel: true,
-    timeoutAfter: 60000, // Уведомление исчезнет через минуту
+    timeoutAfter: 180000, // Уведомление исчезнет через минуту
   );
 
   NotificationDetails platformChannelSpecifics = NotificationDetails(android: androidPlatformChannelSpecifics);

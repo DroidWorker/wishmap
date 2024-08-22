@@ -96,7 +96,7 @@ class _WishScreenState extends State<WishScreen>{
     TextEditingController _description = TextEditingController(text: curwish.description);
     TextEditingController _affirmation = TextEditingController(text: curwish.affirmation.split("|")[0]);
     _title.addListener(() { if(_title.text!=appViewModel.wishScreenState!.wish.text&&!_title.text.contains("HEADERSIMPLETASKHEADER"))appViewModel.isChanged = true;curwish.text=_title.text;});
-    _description.addListener(() { if(_description.text!=appViewModel.wishScreenState!.wish.description)appViewModel.isChanged = true;curwish.description=_description.text;});
+   _description.addListener(() { if(_description.text!=appViewModel.wishScreenState!.wish.description)appViewModel.isChanged = true;curwish.description=_description.text;});
     _affirmation.addListener(() { });
     myColors = appViewModel.getUserColors();
     myColors.add(Colors.transparent);
@@ -150,9 +150,9 @@ class _WishScreenState extends State<WishScreen>{
           }
           final ids = appVM.wishScreenState?.wish.photoIds.split("|")??[];
           if(ids.firstOrNull=="")ids.clear();
-          if(appViewModel.cachedImages.length!=ids.length){
-            appViewModel.isChanged=true;
-          }
+          //if(appViewModel.cachedImages.length!=ids.length){
+            //appViewModel.isChanged=true;
+          //}
           root.clear();
           root.addAll(appVM.myNodes);
 
@@ -282,6 +282,11 @@ class _WishScreenState extends State<WishScreen>{
                                     element.id == curwish.id).firstOrNull?.isActive = true;
                                     curwish.isActive = true;
                                   });
+                                  if(curwish.parentId==0) {
+                                    showOverlayedAnimations(context, 'assets/lottie/aktualizaciyasfery.json', fillBackground: true);
+                                  } else {
+                                    showOverlayedAnimations(context, 'assets/lottie/aktualizaciyazhelaniya.json', fillBackground: true);
+                                  }
                                 } else{
                                   showUnavailable("Чтобы представить это желание необходимо сначала представить вышестоящиую сферу");
                                 }
@@ -307,7 +312,9 @@ class _WishScreenState extends State<WishScreen>{
                                           return ActionBS('Внимание', "Вы изменили поля но не нажали 'Сохранить'\nСохранить изменения?", "Да", 'Нет',
                                               onOk: () async { Navigator.pop(context, 'OK');
                                               final result = await onSaveClicked(appVM, false, _title, _description, _affirmation);
-                                              if(result)changeStatus(appVM);
+                                              if(result){
+                                                changeStatus(appVM);
+                                              }
                                               },
                                               onCancel: () async {
                                                 Navigator.pop(mcontext, 'Cancel');
@@ -951,6 +958,7 @@ class _WishScreenState extends State<WishScreen>{
                 Navigator.pop(context, 'OK');
                 curwish.isChecked =
                 !curwish.isChecked;
+                if(curwish.isChecked)showOverlayedAnimations(context, 'assets/lottie/vypolneniezhelaniya.json', fillBackground: true);
                 appVM.updateWishStatus(
                     appVM.wishScreenState!.wish
                         .id, curwish.isChecked);

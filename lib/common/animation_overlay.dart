@@ -54,13 +54,13 @@ class MyAnimationOverlayState extends State<MyAnimationOverlay> with TickerProvi
   @override
   Widget build(BuildContext context) {
     return Positioned.fill(
-      child:  Center(
+      child: Center(
             child: Container(
               width: 300,
               height: 300,
               decoration: widget.fillBackground?BoxDecoration(
                 shape: BoxShape.circle,
-                  gradient: RadialGradient(radius: 0.3, colors: [Colors.grey.shade700, Colors.grey.shade400.withOpacity(0.0)])
+                  gradient: RadialGradient(radius: 0.6, focalRadius: 0.99,colors: [Colors.grey.shade400, Colors.grey.shade200.withOpacity(0.0)])
               ):null,
               child: Lottie.asset(
                   widget.path,

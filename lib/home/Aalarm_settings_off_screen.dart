@@ -8,7 +8,8 @@ import '../res/colors.dart';
 
 class AlarmSettingsOffScreen extends StatelessWidget{
   final Function(int type, Map<String, String> params) onClose;
-  AlarmSettingsOffScreen(this.onClose, {super.key});
+  final List<int> offMods;
+  AlarmSettingsOffScreen(this.onClose, this.offMods, {super.key});
 
   int type = -1;
   Map<String, String> params = {};
@@ -43,7 +44,7 @@ class AlarmSettingsOffScreen extends StatelessWidget{
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  InkWell(
+                  if(offMods.contains(0))InkWell(
                     onTap: () async {
                       final p = await _showBottomSheet(context, 0);
                       if(p==null) return;
@@ -66,7 +67,7 @@ class AlarmSettingsOffScreen extends StatelessWidget{
                     ),
                   ),
                   const SizedBox(height: 8),
-                  InkWell(
+                  if(offMods.contains(1))InkWell(
                     onTap: () async {
                       final p = await _showBottomSheet(context, 1);
                       if(p==null) return;
@@ -122,7 +123,7 @@ class AlarmSettingsOffScreen extends StatelessWidget{
 
   Future<Map<String, String>?> _showBottomSheet(BuildContext context, int offType) async{
     const swipesCount = ["5", "10", "20", "30", "40", "50","все", "", "", ""];
-    Map<String, String> resultParams = {};
+    Map<String, String> resultParams = offType==1?{"TaskSwipesCount": "10"}:offType==0?{"WishSwipesCount": "10"}:{};
     return await showModalBottomSheet(backgroundColor: AppColors.backgroundColor,
         context: context,
         isScrollControlled: true,
@@ -147,7 +148,7 @@ class AlarmSettingsOffScreen extends StatelessWidget{
                           children: [
                             Center(
                               child: StringPicker(minValue: 0, maxValue: 6, value: 1, text: swipesCount, onChanged: (v){
-                                resultParams["swipesCount"] = swipesCount[v];
+                                resultParams["WishSwipesCount"] = swipesCount[v];
                               }),
                             ),
                             const Positioned(
@@ -178,7 +179,7 @@ class AlarmSettingsOffScreen extends StatelessWidget{
                       children: [
                         Center(
                           child: StringPicker(minValue: 0, maxValue: 6, value: 1, text: swipesCount, onChanged: (v){
-                            resultParams["swipesCount"] = swipesCount[v];
+                            resultParams["TaskSwipesCount"] = swipesCount[v];
                           }),
                         ),
                         const Positioned(
@@ -203,6 +204,7 @@ class AlarmSettingsOffScreen extends StatelessWidget{
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: ColorRoundedButton("Сохранить", (){
+              print("hhhhhhhffffffffffffffffff${resultParams}");
               Navigator.pop(context, resultParams);
             }),
           )

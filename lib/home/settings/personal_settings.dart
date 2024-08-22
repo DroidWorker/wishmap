@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:wishmap/common/checkbox_widget.dart';
+import 'package:wishmap/interface_widgets/sq_checkbox.dart';
 
 import '../../ViewModel.dart';
 import '../../navigation/navigation_block.dart';
@@ -36,29 +37,40 @@ class PersonalSettingsState extends State<PersonalSettings>{
       backgroundColor: AppColors.backgroundColor,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(10),
+          padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  IconButton(onPressed: (){
-                    appViewModel.mainCircles.clear();
-                    if(appViewModel.mainScreenState!=null)appViewModel.startMainScreen(appViewModel.mainScreenState!.moon);
-                    BlocProvider.of<NavigationBloc>(context).handleBackPress();
-                  }, icon: const Icon(Icons.arrow_back_ios, size: 15,)),
-                  const Text("Личные данные"),
-                  const SizedBox(width: 15,)
-                ],),
+                  IconButton(
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      style: const ButtonStyle(
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap, // the '2023' part
+                      ),
+                      icon: const Icon(Icons.keyboard_arrow_left, size: 28, color: AppColors.gradientStart),
+                      onPressed: () {
+                        appViewModel.mainCircles.clear();
+                        if(appViewModel.mainScreenState!=null)appViewModel.startMainScreen(appViewModel.mainScreenState!.moon);
+                        BlocProvider.of<NavigationBloc>(context).handleBackPress();
+                      }
+                  ),
+                  const Text("Личные данные", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+                  const SizedBox(width: 28),
+                ],
+              ),
               const SizedBox(height: 10,),
-              const Text("Имя", style: TextStyle(color: AppColors.greytextColor),),
+              const Text("Имя", style: TextStyle(fontWeight: FontWeight.w600),),
+              const SizedBox(height: 4),
               TextField(
                 controller: _name,
                 style: const TextStyle(color: Colors.black), // Черный текст ввода
                 decoration: InputDecoration(
+                  hintText: "Введите имя",
                   filled: true,
-                  fillColor: AppColors.fieldFillColor,
+                  fillColor: Colors.white,
                   contentPadding:const EdgeInsets.fromLTRB(10,0,10,0),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10.0),
@@ -69,15 +81,16 @@ class PersonalSettingsState extends State<PersonalSettings>{
                   ),
                 ),
               ),
-              const SizedBox(height: 8,),
-              const SizedBox(height: 10,),
-              const Text("Фамилия", style: TextStyle(color: AppColors.greytextColor),),
+              const SizedBox(height: 16),
+              const Text("Фамилия", style: TextStyle(fontWeight: FontWeight.w600)),
+              const SizedBox(height: 4),
               TextField(
                 controller: _sname,
                 style: const TextStyle(color: Colors.black), // Черный текст ввода
                 decoration: InputDecoration(
+                  hintText: "Введите фамилию",
                   filled: true,
-                  fillColor: AppColors.fieldFillColor,
+                  fillColor: Colors.white,
                   contentPadding:const EdgeInsets.fromLTRB(10,0,10,0),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10.0),
@@ -88,15 +101,16 @@ class PersonalSettingsState extends State<PersonalSettings>{
                   ),
                 ),
               ),
-              const SizedBox(height: 8,),
-              const SizedBox(height: 10,),
-              const Text("Отчество", style: TextStyle(color: AppColors.greytextColor),),
+              const SizedBox(height: 16),
+              const Text("Отчество", style: TextStyle(fontWeight: FontWeight.w600),),
+              const SizedBox(height: 4),
               TextField(
                 controller: _lname,
                 style: const TextStyle(color: Colors.black), // Черный текст ввода
                 decoration: InputDecoration(
+                  hintText: "Введите отчество",
                   filled: true,
-                  fillColor: AppColors.fieldFillColor,
+                  fillColor: Colors.white,
                   contentPadding:const EdgeInsets.fromLTRB(10,0,10,0),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10.0),
@@ -107,78 +121,112 @@ class PersonalSettingsState extends State<PersonalSettings>{
                   ),
                 ),
               ),
-              const SizedBox(height: 8,),
-              const Text("Дата рождения", style: TextStyle(color: AppColors.greytextColor),),
+              const SizedBox(height: 16),
+              const Text("Дата рождения", style: TextStyle(fontWeight: FontWeight.w600),),
+              const SizedBox(height: 4),
               Row(
                 children: [
-                  DropdownButton(
-                    items: days.map((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
-                      );
-                    }).toList(),
-                    onChanged: (String? val) {
-                      setState(() {
-                        selectedDay = val!;
-                      });
-                    },
-                    value: selectedDay,
-                    icon: const Icon(Icons.arrow_drop_down_sharp),
+                  Container(
+                    width: 50,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Center(
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton(
+                          iconSize: 0,
+                          items: days.map((String value) {
+                            return DropdownMenuItem<String>(
+                              value: value,
+                              child: Text("  $value", textAlign: TextAlign.center),
+                            );
+                          }).toList(),
+                          onChanged: (String? val) {
+                            setState(() {
+                              selectedDay = val!;
+                            });
+                          },
+                          value: selectedDay,
+                        ),
+                      ),
+                    ),
                   ),
                   const SizedBox(width: 3,),
-                  DropdownButton(
-                    items: months.map((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
-                      );
-                    }).toList(),
-                    onChanged: (String? val) {
-                      setState(() {
-                        selectedMonth = val!;
-                      });
-                    },
-                    value: selectedMonth,
-                    icon: const Icon(Icons.arrow_drop_down_sharp),
+                  Container(
+                    width: 50,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Center(
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton(
+                          iconSize: 0,
+                          items: months.map((String value) {
+                            return DropdownMenuItem<String>(
+                              value: value,
+                              child: Text("  $value", textAlign: TextAlign.center),
+                            );
+                          }).toList(),
+                          onChanged: (String? val) {
+                            setState(() {
+                              selectedMonth = val!;
+                            });
+                          },
+                          value: selectedMonth,
+                        ),
+                      ),
+                    ),
                   ),
                   const SizedBox(width: 3,),
-                  DropdownButton(
-                    items: years.map((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
-                      );
-                    }).toList(),
-                    onChanged: (String? val) {
-                      setState(() {
-                        selectedYear = val!;
-                      });
-                    },
-                    value: selectedYear,
-                    icon: const Icon(Icons.arrow_drop_down_sharp),
-                  ),
+                  Container(
+                    width: 50,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Center(
+                      child: DropdownButtonHideUnderline(child: DropdownButton(
+                        iconSize: 0,
+                        items: years.map((String value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(" $value", textAlign: TextAlign.center),
+                          );
+                        }).toList(),
+                        onChanged: (String? val) {
+                          setState(() {
+                            selectedYear = val!;
+                          });
+                        },
+                        value: selectedYear,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                                        ),
+                    ),
+                  )
                 ],
               ),
-              const SizedBox(height: 8,),
-              const Text("Пол", style: TextStyle(color: AppColors.greytextColor),),
-              Row(
-                children: [
-                  CustomCheckbox(isCircle: true, onChanged: (value){}),
-                  const Text("женский"),
-                  const SizedBox(width: 5),
-                  CustomCheckbox(isCircle: true, onChanged: (value){}),
-                  const Text("мужской"),
-                ],
-              ),
-              const SizedBox(height: 8,),
-              const Text("Номер телефона", style: TextStyle(color: AppColors.greytextColor),),
+              const SizedBox(height: 20),
+              const Text("Пол", style: TextStyle(fontWeight:FontWeight.w600),),
+              const SizedBox(height: 8),
+              SquareCheckbox("Мужской", (state){
+
+              }),
+              SquareCheckbox("Женский", (state){
+
+              }),
+              const SizedBox(height: 16),
+              const Text("Номер телефона", style: TextStyle(fontWeight: FontWeight.w600),),
+              const SizedBox(height: 4),
               TextField(
                 controller: _phone,
                 style: const TextStyle(color: Colors.black), // Черный текст ввода
                 decoration: InputDecoration(
+                  hintText: "+7(999) 999-99-99",
                   filled: true,
-                  fillColor: AppColors.fieldFillColor,
+                  fillColor: Colors.white,
                   contentPadding:const EdgeInsets.fromLTRB(10,0,10,0),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10.0),
@@ -189,15 +237,16 @@ class PersonalSettingsState extends State<PersonalSettings>{
                   ),
                 ),
               ),
-              const SizedBox(height: 8,),
-              const SizedBox(height: 10,),
-              const Text("e-mail", style: TextStyle(color: AppColors.greytextColor),),
+              const SizedBox(height: 16),
+              const Text("E-Mail", style: TextStyle(fontWeight: FontWeight.w600),),
+              const SizedBox(height: 4),
               TextField(
                 controller: _email,
                 style: const TextStyle(color: Colors.black), // Черный текст ввода
                 decoration: InputDecoration(
+                  hintText: "example@exmp.ru",
                   filled: true,
-                  fillColor: AppColors.fieldFillColor,
+                  fillColor: Colors.white,
                   contentPadding:const EdgeInsets.fromLTRB(10,0,10,0),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10.0),
@@ -208,15 +257,16 @@ class PersonalSettingsState extends State<PersonalSettings>{
                   ),
                 ),
               ),
-              const SizedBox(height: 8,),
-              const SizedBox(height: 10,),
-              const Text("telegram", style: TextStyle(color: AppColors.greytextColor),),
+              const SizedBox(height: 16),
+              const Text("Telegram", style: TextStyle(fontWeight: FontWeight.w600),),
+              const SizedBox(height: 4),
               TextField(
                 controller: _tg,
                 style: const TextStyle(color: Colors.black), // Черный текст ввода
                 decoration: InputDecoration(
+                  hintText: "@example",
                   filled: true,
-                  fillColor: AppColors.fieldFillColor,
+                  fillColor: Colors.white,
                   contentPadding:const EdgeInsets.fromLTRB(10,0,10,0),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10.0),
@@ -227,10 +277,8 @@ class PersonalSettingsState extends State<PersonalSettings>{
                   ),
                 ),
               ),
-              const SizedBox(height: 8,),
-              CustomCheckbox(isCircle: false, onChanged: (value){}),
-              const Text("я согласен(-на) на обработку персональных данных"),
-              const SizedBox(height: 8,),
+              const SizedBox(height: 20),
+              SquareCheckbox("Я согласен (-а) на обработку персональных данных", textStyle: const TextStyle(fontSize: 10),(state){}),
             ],
           ),
         )

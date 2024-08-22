@@ -53,7 +53,7 @@ class ReminderItemState extends State<ReminderItem>{
   @override
   Widget build(BuildContext context) {
     final nextReminder = getNextReminder();
-    Duration? difference = nextReminder?.difference(DateTime.now());
+    Duration difference = nextReminder.difference(DateTime.now());
 
     return InkWell(
       onTap: (){
@@ -72,7 +72,7 @@ class ReminderItemState extends State<ReminderItem>{
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                difference!=null?Text("Сработает через ${difference.inHours}ч ${difference.inMinutes-(difference.inHours*60)}мин", style: const TextStyle(fontSize: 14, color: AppColors.greytextColor),):const SizedBox(),
+                widget.reminder.remindEnabled?Text(difference.inMinutes>0?"Сработает через ${difference.inHours}ч ${difference.inMinutes-(difference.inHours*60)}мин":"Будильник уже сработал", style: const TextStyle(fontSize: 14, color: AppColors.greytextColor),):const SizedBox(),
                 if(widget.reminder is Reminder)InkWell(onTap: (){
                   if(widget.onDelete!=null)widget.onDelete!(widget.reminder.id);
                 }, child: SvgPicture.asset("assets/icons/trash.svg", width: 28, height: 28)),
@@ -93,7 +93,7 @@ class ReminderItemState extends State<ReminderItem>{
                     Text(fullDayOfWeek[nextReminder.weekday]??"", style: const TextStyle(fontSize: 14, color: AppColors.greytextColor))
                   ],
                 ),
-                MySwitch(value: true, onChanged: (v){
+                MySwitch(value: widget.reminder.remindEnabled, onChanged: (v){
                   if(widget.onChangeState!=null)widget.onChangeState!(widget.reminder.id, v);
                 },)
               ],

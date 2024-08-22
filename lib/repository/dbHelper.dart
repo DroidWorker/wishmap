@@ -128,6 +128,7 @@ class DatabaseHelper {
     CREATE TABLE alarms(
         id INTEGER  PRIMARY KEY AUTOINCREMENT,
         taskId INTEGER,
+        userId TEXT,
         dateTime INTEGER,
         remindDays TEXT,
         music TEXT,
@@ -138,6 +139,13 @@ class DatabaseHelper {
         offMods TEXT,
         offModsParams TEXT,
         snooze TEXT
+      )
+    ''');
+
+    await db.execute('''
+    CREATE TABLE questions(
+        q TEXT PRIMARY KEY,
+        answ TEXT
       )
     ''');
   }
@@ -530,24 +538,30 @@ class DatabaseHelper {
     return reqResult.map((e)=>Reminder(e['id'], e['taskId'], DateTime.parse(e['dateTime']), e['remindDays'].toString().split("|").toList(), e['music'], e['remindEnabled']==1?true:false, vibration: e['vibration']==1?true:false)).toList();
   }
 
-  insertAlarm(Alarm alarm) async {
+  insertAlarm(Alarm alarm, String userId) async {
     Database db = await database;
-    await db.insert("alarms", {'taskId': -1,'dateTime': alarm.dateTime.toString(), 'remindDays': alarm.remindDays.join("|"), 'music': alarm.music, 'remindEnabled': alarm.remindEnabled?1:0, 'text': alarm.text,'vibration': alarm.vibration?1:0, 'notifications': alarm.notificationIds.join("|"), 'offMods': alarm.offMods.join("|"), 'offModsParams': json.encode(alarm.offModsParams), 'snooze': alarm.snooze}, conflictAlgorithm: ConflictAlgorithm.replace);
+    await db.insert("alarms", {'taskId': -1, 'userId': userId,'dateTime': alarm.dateTime.toString(), 'remindDays': alarm.remindDays.join("|"), 'music': alarm.music, 'remindEnabled': alarm.remindEnabled?1:0, 'text': alarm.text,'vibration': alarm.vibration?1:0, 'notifications': alarm.notificationIds.join("|"), 'offMods': alarm.offMods.join("|"), 'offModsParams': json.encode(alarm.offModsParams), 'snooze': alarm.snooze}, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
   updateAlarm(Alarm alarm) async {
     Database db = await database;
-    await db.update("alarms", {'dateTime': alarm.dateTime.toString(), 'remindDays': alarm.remindDays.join("|"), 'music': alarm.music, 'remindEnabled': alarm.remindEnabled?1:0, 'vibration': alarm.vibration?1:0, 'notifications': alarm.notificationIds.join("|"),'offMods': alarm.offMods.join("|"), 'offModsParams': json.encode(alarm.offModsParams), 'snooze': alarm.snooze}, where: "id = ?", whereArgs: [alarm.id], conflictAlgorithm: ConflictAlgorithm.replace);
+    await db.update("alarms", {'dateTime': alarm.dateTime.toString(), 'remindDays': alarm.remindDays.join("|"), 'music': alarm.music, 'remindEnabled': alarm.remindEnabled?1:0, 'text': alarm.text, 'vibration': alarm.vibration?1:0, 'notifications': alarm.notificationIds.join("|"),'offMods': alarm.offMods.join("|"), 'offModsParams': json.encode(alarm.offModsParams), 'snooze': alarm.snooze}, where: "id = ?", whereArgs: [alarm.id], conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
   deleteAlarm(int id) async {
     Database db = await database;
     await db.delete("alarms", where: "id = ?", whereArgs: [id]);
+
+    int count = Sqflite.firstIntValue(await db.rawQuery('SELECT COUNT(*) FROM alarms')) ?? 0;
+    if (count == 0) {
+      // Таблица пуста, сбрасываем автоинкремент
+      await db.rawQuery('DELETE FROM sqlite_sequence WHERE name = ?', ["alarms"]);
+    }
   }
 
-  Future<List<Alarm>> selectAlarms() async {
+  Future<List<Alarm>> selectAlarms(String userId) async {
     Database db = await database;
-    List<Map<String, dynamic>> reqResult = await db.query('alarms');
+    List<Map<String, dynamic>> reqResult = await db.query('alarms', where: "userId = ?", whereArgs: [userId]);
 
     return reqResult.map((e) {
         Map<String, dynamic> tmp = json.decode(e['offModsParams']);
@@ -555,12 +569,12 @@ class DatabaseHelper {
         tmp.keys.toList().forEach((e){
           omp[e] = tmp[e].toString();
         });
-        return Alarm(e['id'], e['taskId'],DateTime.parse(e['dateTime']), e['remindDays'].toString().isNotEmpty?e['remindDays'].toString().split("|").toList():[], e['music'], e['remindEnabled']==1?true:false, e['text'], vibration: e['vibration']==1?true:false, notificationIds: e['notifications'].toString().split("|").map((e)=>int.parse(e)).toList(), offMods: e['offMods'].toString().isNotEmpty?e['offMods'].toString().split("|").map((e)=>int.parse(e)).toList():[], offModsParams: omp);
+        return Alarm(e['id'], e['taskId'],DateTime.parse(e['dateTime']), e['remindDays'].toString().isNotEmpty?e['remindDays'].toString().split("|").toList():[], e['music'], e['remindEnabled']==1?true:false, e['text'], vibration: e['vibration']==1?true:false, notificationIds: e['notifications'].toString().split("|").map((e)=>int.parse(e)).toList(), offMods: e['offMods'].toString().isNotEmpty?e['offMods'].toString().split("|").map((e)=>int.parse(e)).toList():[], offModsParams: omp, snooze: e["snooze"]);
     }).toList();
   }
-  Future<Alarm?> selectAlarm(int id) async {
+  Future<Alarm?> selectAlarm(int id, String userId) async {
     Database db = await database;
-    List<Map<String, dynamic>> reqResult = await db.query('alarms', where: "id = ?", whereArgs: [id]);
+    List<Map<String, dynamic>> reqResult = await db.query('alarms', where: "id = ? AND userId = ?", whereArgs: [id, userId]);
 
     return reqResult.map((e) {
       Map<String, dynamic> tmp = json.decode(e['offModsParams']);
@@ -570,5 +584,26 @@ class DatabaseHelper {
       });
       return Alarm(e['id'], e['taskId'],DateTime.parse(e['dateTime']), e['remindDays'].toString().isNotEmpty?e['remindDays'].toString().split("|").toList():[], e['music'], e['remindEnabled']==1?true:false, e['text'], vibration: e['vibration']==1?true:false, notificationIds: e['notifications'].toString().split("|").map((e)=>int.parse(e)).toList(), offMods: e['offMods'].toString().isNotEmpty?e['offMods'].toString().split("|").map((e)=>int.parse(e)).toList():[], offModsParams: omp, snooze: e['snooze']);
     }).firstOrNull;
+  }
+
+  Future<int> addAllQuestions(Map<String,String> qs) async {
+    Database db = await database;
+    var batch = db.batch();
+    for (var q in qs.entries) {
+      batch.insert('questions', {'q': q.key, 'answ':q.value});
+    }
+    await batch.commit();
+    return 1;
+  }
+
+  Future<Map<String, String>> getQuestions() async {
+    try {
+      Database db = await database;
+      List<Map<String, dynamic>> result = await db.query('questions');
+      return Map<String, String>.fromEntries(result.firstOrNull?.entries.map((item)=>MapEntry(item.key, item.value))??[]);
+    } on Exception catch (ex) {
+      print("error 54267 $ex");
+      return {};
+    }
   }
 }

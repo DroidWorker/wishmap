@@ -3,15 +3,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
+import 'package:wishmap/common/gallery_widget.dart';
 import 'package:wishmap/common/reminder_item.dart';
 import 'package:wishmap/data/models.dart';
+import 'package:wishmap/services/reminder_service.dart';
 
 import '../ViewModel.dart';
 import '../common/bottombar.dart';
+import '../dialog/bottom_sheet_notify.dart';
 import '../interface_widgets/colorButton.dart';
 import '../navigation/navigation_block.dart';
 import '../res/colors.dart';
-import 'mission_screen.dart';
 
 class AlarmScreen extends StatefulWidget{
   @override
@@ -23,6 +25,7 @@ class AlarmScreenState extends State<AlarmScreen>{
   List<int> deleteQueue= [];
 
   List<Alarm> alarms = [];
+
   @override
   Widget build(BuildContext context) {
     return Consumer<AppViewModel>(
@@ -84,7 +87,7 @@ class AlarmScreenState extends State<AlarmScreen>{
                               const Spacer(flex: 2),
                               ColorRoundedButton("Добавить будильник", (){
                                 BlocProvider.of<NavigationBloc>(context)
-                                    .add(NavigateToAlarmSettingsScreenEvent(0));
+                                    .add(NavigateToAlarmSettingsScreenEvent(1));
                               }),
                               const SizedBox(height: 24)
                             ],
@@ -111,8 +114,39 @@ class AlarmScreenState extends State<AlarmScreen>{
                                             .add(NavigateToAlarmSettingsScreenEvent(alarms[index].id));
                                       }
                                     },
-                                    onChangeState: (id, state){
+                                    onChangeState: (id, state) async {
                                       final alarm = (alarms.firstWhere((e)=>e.id==id)..remindEnabled = state);
+                                      if(state){
+                                        if(alarm.remindDays.isNotEmpty){
+                                          final dayOffset = getDayOffsetToClosest(alarm.remindDays.map((e)=> int.parse(e)).toList(), alarm.dateTime.weekday);
+                                          alarm.dateTime = alarm.dateTime.add(Duration(days: dayOffset));
+                                        }else {
+                                          if(alarm.dateTime.isBefore(DateTime.now())){
+                                            alarm.dateTime = alarm.dateTime.copyWith(day: DateTime.now().day);
+                                            if(alarm.dateTime.isBefore(DateTime.now())){
+                                              alarm.dateTime = alarm.dateTime.add(const Duration(days: 1));
+                                            }
+                                          }
+                                        }
+                                        final notifId = await setAlarm(alarm, false);
+                                        if(notifId.isEmpty){
+                                          showModalBottomSheet<void>(
+                                            backgroundColor: AppColors.backgroundColor,
+                                            context: context,
+                                            isScrollControlled: true,
+                                            builder: (BuildContext context) {
+                                              return NotifyBS('Будильник не установлен!', "", 'OK',
+                                                  onOk: () => Navigator.pop(context));
+                                            },
+                                          );
+                                        }else{
+                                          alarm.notificationIds=notifId;
+                                        }
+                                      }else{
+                                        final notifIds = alarm.notificationIds;
+                                        if(notifIds.isEmpty)return;
+                                        cancelAlarmManager(notifIds.first);
+                                      }
                                       appVM.updateAlarm(alarm);
                                     },
                                     );
@@ -131,10 +165,9 @@ class AlarmScreenState extends State<AlarmScreen>{
                               backgroundColor: Colors.transparent,
                               elevation: 0,
                               onPressed: (){
-                                showOverlayedMissionScreen(context, 15, 2);
-                                /*final id = alarms.lastOrNull?.id??0;
+                                final id = (alarms.lastOrNull?.id??0)+1;
                                 BlocProvider.of<NavigationBloc>(context)
-                                    .add(NavigateToAlarmSettingsScreenEvent(id+1));*/
+                                    .add(NavigateToAlarmSettingsScreenEvent(id));
                               },
                               child: Container(
                                 width: 50,

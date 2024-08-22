@@ -1,6 +1,5 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:sqflite/utils/utils.dart';
 import 'package:wishmap/data/static.dart';
 
 import '../common/snoozeRepeatsSettings.dart';
@@ -107,7 +106,7 @@ class SnoozeSettingsScreenState extends State<SnoozeSettingsScreen>{
                               children: [
                                 const Text("Сколько раз"),
                                 const Spacer(),
-                                Text(repeatCount[repCount]),
+                                Text(repeatCount[repCount]??"$repCount pаз"),
                                 const Icon(Icons.arrow_forward_ios)
                               ],
                             ),

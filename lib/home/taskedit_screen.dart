@@ -4,9 +4,7 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:keyboard_attachable/keyboard_attachable.dart';
 import 'package:provider/provider.dart';
-import 'package:wishmap/common/gallery_widget.dart';
 import 'package:wishmap/common/reminder_item.dart';
 import 'package:wishmap/common/treeview_widget.dart';
 import 'package:wishmap/interface_widgets/colorButton.dart';
@@ -14,6 +12,7 @@ import 'package:wishmap/interface_widgets/outlined_button.dart';
 import 'package:wishmap/services/reminder_service.dart';
 import '../ViewModel.dart';
 import '../common/EditTextOverlay.dart';
+import '../common/animation_overlay.dart';
 import '../common/bottombar.dart';
 import '../common/gradientText.dart';
 import '../common/treeview_widget_v2.dart';
@@ -194,6 +193,7 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                                   appVM.activateTask(ai!.id, true);
                                   ai!.isActive = true;
                                 });
+                                showOverlayedAnimations(context, 'assets/lottie/aktualizaciyazadachi.json', fillBackground: true);
                               }else{
                                 showUnavailable(text: "Чтобы актуализировать задачу необходимо актуализировать вышестоящее желание");
                               }
@@ -212,12 +212,13 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                                     return ActionBS('Внимание', "Вы изменили поля но не нажали 'Сохранить'\nСохранить изменения перед выполнением задачи?", "Да", 'Нет',
                                         onOk: () async { Navigator.pop(context, 'OK');
                                         if(await onSaveClicked(appVM, ai!)) {
-                                          appVM.updateTaskStatus(
-                                              ai!.id, !ai!.isChecked);
+                                          if(!ai!.isChecked)showOverlayedAnimations(context, 'assets/lottie/vypolneniezadach.json', fillBackground: true);
+                                          appVM.updateTaskStatus(ai!.id, !ai!.isChecked);
                                         }
                                         },
                                         onCancel: () async {
                                           Navigator.pop(context, 'Cancel');
+                                          if(!ai!.isChecked)showOverlayedAnimations(context, 'assets/lottie/vypolneniezadach.json', fillBackground: true);
                                           await appVM.updateTaskStatus(
                                               ai!.id, !ai!.isChecked);
                                           await appVM.getTask(ai?.id??0);
@@ -227,6 +228,7 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                                   },
                                 );
                               }else {
+                                if(!ai!.isChecked)showOverlayedAnimations(context, 'assets/lottie/vypolneniezadach.json', fillBackground: true);
                                 appVM.updateTaskStatus(
                                     ai!.id, !ai!.isChecked);
                                 showModalBottomSheet<void>(

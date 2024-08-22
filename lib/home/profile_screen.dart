@@ -2,9 +2,11 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import 'package:wishmap/data/static.dart';
 import '../ViewModel.dart';
+import '../common/settingsItem.dart';
 import '../data/models.dart';
 import '../navigation/navigation_block.dart';
 import '../res/colors.dart';
@@ -48,17 +50,32 @@ class _ProfileScreenState extends State<ProfileScreen>{
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              IconButton(onPressed: (){
-                appViewModel.backPressedCount++;
-                appViewModel.mainCircles.clear();
-                if(appViewModel.mainScreenState!=null)appViewModel.startMainScreen(appViewModel.mainScreenState!.moon);
-                if(appViewModel.backPressedCount==appViewModel.settings.quoteupdateFreq){
-                  appViewModel.backPressedCount=0;
-                  appViewModel.hint=quoteBack[Random().nextInt(367)];
-                }
-                BlocProvider.of<NavigationBloc>(context)
-                    .add(NavigateToMainScreenEvent());
-              }, icon: const Icon(Icons.arrow_back_ios)),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  IconButton(
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      style: const ButtonStyle(
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap, // the '2023' part
+                      ),
+                      icon: const Icon(Icons.keyboard_arrow_left, size: 28, color: AppColors.gradientStart),
+                      onPressed: () {
+                        appViewModel.backPressedCount++;
+                        appViewModel.mainCircles.clear();
+                        if(appViewModel.mainScreenState!=null)appViewModel.startMainScreen(appViewModel.mainScreenState!.moon);
+                        if(appViewModel.backPressedCount==appViewModel.settings.quoteupdateFreq){
+                          appViewModel.backPressedCount=0;
+                          appViewModel.hint=quoteBack[Random().nextInt(367)];
+                        }
+                        BlocProvider.of<NavigationBloc>(context)
+                            .add(NavigateToMainScreenEvent());
+                      }
+                  ),
+                  const Text("Настройки", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+                  const SizedBox(width: 28),
+                ],
+              ),
               Padding(
                 padding: const EdgeInsets.fromLTRB(5, 15, 5, 15),
                 child: Row(children: [
@@ -97,159 +114,73 @@ class _ProfileScreenState extends State<ProfileScreen>{
                   ],)
                 ],),
               ),
-              const SizedBox(height: 5),
-              const Text("Настройки", style: TextStyle(fontSize: 10, color: AppColors.greytextColor)),
-              const SizedBox(height: 5),
-              const Divider(
-                height: 3,
-                color: AppColors.dividerGreyColor,
-                indent: 5,
-                endIndent: 5,
-              ),
-              const SizedBox(height: 5),
-             InkWell(
-               onTap: (){
-                 BlocProvider.of<NavigationBloc>(context)
-                     .add(NavigateToMainSettingsScreenEvent());
-               },
-               child: const Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                 children: [
-                 Text("Основные"),
-                 Icon(Icons.arrow_forward_ios)
-               ],),
-             ),
-              InkWell(
-                onTap: (){
-                  appViewModel.getAlarms();
-                  BlocProvider.of<NavigationBloc>(context)
-                      .add(NavigateToAlarmScreenEvent());
-                },
-                child: const Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                  Text("Напоминания"),
-                  Icon(Icons.arrow_forward_ios)
-                ],),
-              ),
-              InkWell(
-                onTap: (){},
-                child: const Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                  Text("Пин-код"),
-                  Icon(Icons.arrow_forward_ios)
-                ],),
-              ),
-              InkWell(
-                onTap: (){
-                  BlocProvider.of<NavigationBloc>(context)
-                      .add(NavigateToSoundsSettingsScreenEvent());
-                },
-                child: const Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                  Text("Звуки"),
-                  Icon(Icons.arrow_forward_ios)
-                ],),
-              ),
-              const SizedBox(height: 10,),
-              const Text("Обо мне", style: TextStyle(fontSize: 10, color: AppColors.greytextColor)),
-              const SizedBox(height: 5),
-              const Divider(
-                height: 3,
-                color: AppColors.dividerGreyColor,
-                indent: 5,
-                endIndent: 5,
-              ),
-              const SizedBox(height: 5),
-              InkWell(
-                onTap: (){
-                  BlocProvider.of<NavigationBloc>(context)
-                      .add(NavigateToPersonalSettingsScreenEvent());
-                },
-                child: const Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                  Text("Личные данные"),
-                  Icon(Icons.arrow_forward_ios)
-                ],),
-              ),
-              InkWell(
-                onTap: (){},
-                child: const Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                  Text("Тестирование"),
-                  Icon(Icons.arrow_forward_ios)
-                ],),
-              ),
-              InkWell(
-                onTap: (){},
-                child: const Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                  Text("Уровень"),
-                  Icon(Icons.arrow_forward_ios)
-                ],),
-              ),
-              const SizedBox(height: 10,),
-              const Text("Помощь", style: TextStyle(fontSize: 10, color: AppColors.greytextColor)),
-              const SizedBox(height: 5),
-              const Divider(
-                height: 3,
-                color: AppColors.dividerGreyColor,
-                indent: 5,
-                endIndent: 5,
-              ),
-              const SizedBox(height: 5),
-              InkWell(
-                onTap: (){},
-                child: const Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                  Text("Обращения"),
-                  Icon(Icons.arrow_forward_ios)
-                ],),
-              ),
-              InkWell(
-                onTap: (){},
-                child: const Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                  Text("Частые вопросы"),
-                  Icon(Icons.arrow_forward_ios)
-                ],),
-              ),
-              InkWell(
-                onTap: (){},
-                child: const Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                  Text("Связаться с нами"),
-                  Icon(Icons.arrow_forward_ios)
-                ],),
-              ),
-              InkWell(
-                onTap: (){},
-                child: const Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                  Text("Пожелания"),
-                  Icon(Icons.arrow_forward_ios)
-                ],),
-              ),
-              const SizedBox(height: 5),
-              const Divider(
-                height: 3,
-                color: AppColors.dividerGreyColor,
-                indent: 5,
-                endIndent: 5,
-              ),
-              const SizedBox(height: 5),
-              InkWell(
-                onTap: () async {
-                  await appViewModel.signOut().then((value){
-                    BlocProvider.of<NavigationBloc>(context).clearHistory();
-                    BlocProvider.of<NavigationBloc>(context)
-                        .add(NavigateToAuthScreenEvent());
-                  });
-                },
-                child: const Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text("Выход"),
-                    Icon(Icons.arrow_forward_ios)
-                  ],),
-              ),
+              const SizedBox(height: 8),
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      const Text("Приложение", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.greytextColor)),
+                      const SizedBox(height: 8),
+                      settingsWidget("assets/icons/settings_settings.svg" ,"Основное", (){
+                        BlocProvider.of<NavigationBloc>(context)
+                          .add(NavigateToMainSettingsScreenEvent());
+                      }),
+                      settingsWidget("assets/icons/setting_alarm.svg" ,"Будильник", (){
+                        appViewModel.getAlarms();
+                        BlocProvider.of<NavigationBloc>(context)
+                            .add(NavigateToAlarmScreenEvent());
+                      }),
+                      settingsWidget("assets/icons/setting_key.svg" ,"Пароль", (){}),
+                      settingsWidget("assets/icons/setting_music.svg" ,"Музыка на главном", (){
+                        BlocProvider.of<NavigationBloc>(context)
+                            .add(NavigateToSoundsSettingsScreenEvent());
+                      }),
+                                   const SizedBox(height: 24),
+                      const Text("Профиль", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.greytextColor)),
+                      const SizedBox(height: 8),
+                      settingsWidget("assets/icons/setting_personal.svg" ,"Личные данные", (){
+                        BlocProvider.of<NavigationBloc>(context)
+                            .add(NavigateToPersonalSettingsScreenEvent());
+                      }),
+                      settingsWidget("assets/icons/setting_testing.svg" ,"Мое тестирование", (){}),
+                      settingsWidget("assets/icons/setting_level.svg" ,"Уровень", (){}),
+                      const SizedBox(height: 24),
+                                const Text("Помощь", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.greytextColor)),
+                                const SizedBox(height: 8),
+                                settingsWidget("assets/icons/setting_message.svg" ,"Обращения", (){}),
+                                settingsWidget("assets/icons/seting_question.svg" ,"Частые вопросы", (){
+                                  appViewModel.fetchQ();
+                                  BlocProvider.of<NavigationBloc>(context)
+                                      .add(NavigateToQuestionsScreenEvent());
+                                }),
+                                settingsWidget("assets/icons/setting_mail.svg" ,"Связаться с нами", (){}),
+                                settingsWidget("assets/icons/setting_feedback.svg" ,"Пожелания", (){
+                                  BlocProvider.of<NavigationBloc>(context)
+                                      .add(NavigateToProposalScreenEvent());
+                                }),
+                                const SizedBox(height: 24),
+                                   InkWell(
+                       onTap: () async {
+                         appViewModel.alarmChecked = false;
+                         appViewModel.disableAllAlarms();
+                         await appViewModel.signOut().then((value){
+                           BlocProvider.of<NavigationBloc>(context).clearHistory();
+                           BlocProvider.of<NavigationBloc>(context)
+                               .add(NavigateToAuthScreenEvent());
+                         });
+                       },
+                       child: Row(
+                         mainAxisAlignment: MainAxisAlignment.center,
+                         children: [
+                           SvgPicture.asset("assets/icons/profile_exit.svg"),
+                           const Text(" Выйти из аккаунта", style: TextStyle(color: AppColors.redTextColor))
+                         ],
+                       ),
+                                   ),
+                    ],
+                  ),
+                ),
+              )
             ],
           ),
         ))

@@ -40,11 +40,12 @@ class _MyCustomSwitchState extends State<MySwitch> {
             });
           },
           child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 2),
             width: 50.0, // Adjust the width of the switch
             height: 30.0, // Adjust the height of the switch
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(20.0),
-              color: switchValue ? AppColors.pinkButtonTextColor : AppColors.greyBackButton,
+              color: switchValue ? AppColors.switchBack : AppColors.greyBackButton,
             ),
             child: Row(
               mainAxisAlignment: switchValue
@@ -52,11 +53,12 @@ class _MyCustomSwitchState extends State<MySwitch> {
                   : MainAxisAlignment.start,
               children: [
                 Container(
-                  width: 28.0, // Adjust the width of the thumb
-                  height: 28.0, // Adjust the height of the thumb
-                  decoration: const BoxDecoration(
+                  width: 25.0, // Adjust the width of the thumb
+                  height: 25.0, // Adjust the height of the thumb
+                  decoration: BoxDecoration(
+                    gradient: switchValue?const LinearGradient(colors: [AppColors.gradientStart, AppColors.gradientEnd]):null,
                     shape: BoxShape.circle,
-                    color: AppColors.backgroundColor,
+                    color: switchValue ? null : AppColors.darkGrey,
                   ),
                 ),
               ],

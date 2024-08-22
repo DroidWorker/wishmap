@@ -7,6 +7,7 @@ import 'package:connectivity/connectivity.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:timezone/timezone.dart';
 import 'package:wishmap/data/static_affirmations_women.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:wishmap/provider/file_loader.dart';
@@ -14,6 +15,7 @@ import 'package:wishmap/repository/Repository.dart';
 import 'package:wishmap/repository/photosSearch.dart';
 import 'package:wishmap/repository/local_repository.dart';
 import 'package:wishmap/res/colors.dart';
+import 'package:wishmap/services/reminder_service.dart';
 
 import 'data/date_static.dart';
 import 'data/models.dart';
@@ -83,6 +85,8 @@ class AppViewModel with ChangeNotifier {
   //alarms
   List<Alarm> alarms = [];
 
+  Map<String, String> questions = {};
+
   //appcfg
   var isinLoading = false;
   var needAutoScrollBottom = false;
@@ -98,6 +102,11 @@ class AppViewModel with ChangeNotifier {
     }
     notifyListeners();
   }
+
+  bool get alarmChecked {return localRep.alarmsChecked();}
+  set alarmChecked(bool v){localRep.setAlarmsChecked =v;}
+
+  Future<bool> get alarmsExists async {return profileData!=null?(await localRep.getAlarms(profileData?.id)).isNotEmpty:false;}
 
   void refresh(){
     notifyListeners();
@@ -132,6 +141,7 @@ class AppViewModel with ChangeNotifier {
   Future<void> init() async {
     authData = await localRep.getAuth();
     profileData = await localRep.getProfile();
+    alarmChecked = await localRep.alarmsChecked();
     if(authData!=null)getMoons();
     settings = await localRep.getActSetting();
     notifyListeners();
@@ -419,10 +429,30 @@ class AppViewModel with ChangeNotifier {
     for (var element in ids) {
       final photo = await localRep.getImage(element);
       //final photo = await repository.getImage(element);//replaced by localrep
-      if(photo!=null)cachedImages.add(photo);
+      cachedImages.add(photo);
     }
     isinLoading = false;
     notifyListeners();
+  }
+
+  Future<Uint8List?> getWishImage(int wishId) async {
+    final sphere = await localRep.getSphere(wishId, mainScreenState?.moon.id??0);
+    final photoid = int.parse(sphere!.photoIds.split("|").firstOrNull??"-1");
+    if(photoid==-1)return null;
+    return await localRep.getImage(photoid);
+  }
+
+  Future fetchQ() async{
+    questions = await localRep.getQ();
+    notifyListeners();
+    var result = await Connectivity().checkConnectivity();
+    if(result == ConnectivityResult.none)  return;
+    final servQ = await repository.getQ();
+    if(questions.hashCode!=servQ.hashCode&&servQ.isNotEmpty) {
+      questions = servQ;
+      notifyListeners();
+      localRep.commitAddQ(servQ);
+    }
   }
 
   Future fetchMoons() async{
@@ -456,7 +486,9 @@ class AppViewModel with ChangeNotifier {
   }
 
   Future<void> fetchAims(int moonId) async{
+    print("feeeetchaimsstart");
     final aims = await repository.getMyAimsData(moonId);
+    print("feeeetchaims$aims");
     /*if(aims!=null)for (var element in aims) {
       await localRep.addAim(element,mainScreenState?.moon.id??-1);
     }*/
@@ -1004,24 +1036,29 @@ class AppViewModel with ChangeNotifier {
       addError("состояние не изменено 007: $ex");
     }
   }
-  Future<void> deleteSphereWish(int id, int prevId, int nextId) async{
+  Future<void> deleteSphereWish(int id, int? prevId, int? nextId) async{
     try {
-      if(mainScreenState!=null){
+      if(mainScreenState==null)throw Exception("irregular state");
+      if(prevId==null||nextId==null){
+        final sphere = await localRep.getSphere(id, mainScreenState!.moon.id);
+        if(sphere==null)return;
+        prevId = sphere.prevId;
+        nextId = sphere.nextId;
+      }
         for (var element in mainScreenState!.allCircles) {
           if(element.parenId==id){
             deleteSphereWish(element.id, element.prevId, element.nextId);
           }
         }
-      }
       if(mainScreenState?.allCircles!=null){
         if(prevId!=-1){
           mainScreenState!.allCircles.where((element) => element.id==prevId).firstOrNull?.nextId=nextId;
-          repository.updateNeighbour(prevId, true, nextId, mainScreenState?.moon.id??0);
+          repository.updateNeighbour(prevId!, true, nextId!, mainScreenState?.moon.id??0);
           localRep.updateSphereNeighbours(prevId, true, nextId, mainScreenState?.moon.id??0);
         }
         if(nextId!=-1){
           mainScreenState!.allCircles.where((element) => element.id==nextId).firstOrNull?.prevId=prevId;
-          repository.updateNeighbour(nextId, false, prevId, mainScreenState?.moon.id??0);
+          repository.updateNeighbour(nextId!, false, prevId!, mainScreenState?.moon.id??0);
           localRep.updateSphereNeighbours(nextId, false, prevId, mainScreenState?.moon.id??0);
         }
       }
@@ -1626,6 +1663,16 @@ class AppViewModel with ChangeNotifier {
     }
   }
 
+  Future updateMainSphereAffirmation(String affirmation) async {
+    if(mainScreenState==null)return;
+    final mainSphere = await localRep.getSphere(0, mainScreenState!.moon.id);
+    if(mainSphere==null) return;
+    mainSphere.affirmation = "$affirmation|${mainSphere.affirmation}";
+    if(connectivity != 'No Internet Connection') repository.createSphereWish(mainSphere, mainScreenState?.moon.id??0);
+    await localRep.insertORudateSphere(mainSphere, mainScreenState?.moon.id??0);
+    mainScreenState!.allCircles.firstWhereOrNull((i)=>i.id==0)?.affirmation=mainSphere.affirmation;
+  }
+
   Future<void> getReminders(int taskId) async {
     reminders.clear();
     reminders = await localRep.getReminders(taskId);
@@ -1651,7 +1698,7 @@ class AppViewModel with ChangeNotifier {
 
   Future<void> getAlarms() async {
     alarms.clear();
-    alarms = await localRep.getAlarms();
+    alarms = await localRep.getAlarms(null);
     notifyListeners();
   }
   Future<Alarm?> getAlarmById(int alarmId) async {
@@ -1661,6 +1708,15 @@ class AppViewModel with ChangeNotifier {
     localRep.addAlarm(alarm);
     alarms.add(alarm);
     notifyListeners();
+  }
+
+  disableAllAlarms() async {
+    final alarms = await localRep.getAlarms(profileData?.id);
+    for (var e in alarms) {//TODO danger code
+      cancelAlarmManager(e.notificationIds.first);
+      e.remindEnabled=false;
+      localRep.updateAlarm(e);
+    }
   }
 
   updateAlarm(Alarm alarm) {
@@ -1754,4 +1810,40 @@ class AppViewModel with ChangeNotifier {
     }
     return result;
   }
+
+  String getPath(int id, String type){
+    String result = "";
+    if(type=="t"){
+      final task = taskItems.firstWhereOrNull((item)=>item.id==id);
+      if(task==null)return "";
+      final aim = aimItems.firstWhereOrNull((item)=>item.id==task.parentId);
+      if(aim==null)return "";
+      result = aim.text;
+      final wish =wishItems.firstWhereOrNull((item)=>item.id==aim.parentId);
+      if(wish==null) return result;
+      result = "${wish.text} / $result";
+      final sphere = wishItems.firstWhereOrNull((item)=>item.id==wish.parentId);
+      if(sphere==null) return result;
+      result = "${sphere.text} / $result";
+    }else if(type == "a"){
+      final aim = aimItems.firstWhereOrNull((item)=>item.id==id);
+      if(aim==null)return "";
+      final wish =wishItems.firstWhereOrNull((item)=>item.id==aim.parentId);
+      if(wish==null) return result;
+      result = wish.text;
+      final sphere = wishItems.firstWhereOrNull((item)=>item.id==wish.parentId);
+      if(sphere==null) return result;
+      result = "${sphere.text} / $result";
+    }else if(type == "w"){
+      final wish =wishItems.firstWhereOrNull((item)=>item.id==id);
+      if(wish==null) return "";
+      final sphere = wishItems.firstWhereOrNull((item)=>item.id==wish.parentId);
+      if(sphere==null) return result;
+      result = "${sphere.text} / $result";
+    }
+
+    return result;
+  }
+
+
 }

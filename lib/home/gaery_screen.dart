@@ -165,78 +165,7 @@ class GalleryScreenState extends State<GalleryScreen>{
                 ]
               ),
               screenNumber==0?  Consumer<AppViewModel>(builder: (context, appVM, child) {
-                return Expanded(child: appViewModel.cachedImages.isNotEmpty?/*SingleChildScrollView(child: LayoutBuilder(
-                    builder: (context, constraints) {
-                      double fullWidth = constraints.maxWidth-4;
-                      double leftWidth = (constraints.maxWidth * 4 /7)-2;
-                      double rightWidth = constraints.maxWidth - leftWidth - 2;
-                      List<Map<Uint8List, int?>> imagesSet = [];
-                      for (var element in appViewModel.cachedImages.indexed) {if(imagesSet.isNotEmpty&&imagesSet.last.length<3){imagesSet.last[element.$2]=element.$1;}else{imagesSet.add({element.$2: element.$1});}}
-                      return Column(children:
-                      imagesSet.map((e) {
-                        if(e.length==1) {
-                          return buildSingle(fullWidth, e.keys.first, appVM.isinLoading,false, imageId: e.values.first,onTap: (index) async {
-                            if(deleteMode){
-
-                            }
-                            else {
-                              final image = await showOverlayedImageManager(
-                                context, index.toString(), mode: 1,
-                                image: appViewModel.cachedImages[index]);
-                            if (image != null) {
-                              setState(() {
-                                appViewModel.cachedImages.removeAt(index);
-                              });
-                            }
-                          }
-                          });
-                        } else if(e.length==2) return buildTwin(leftWidth, rightWidth, e, appVM.isinLoading,false, onTap: (index) async {
-                          if(deleteMode){
-
-                          }
-                          else {
-                            final image = await showOverlayedImageManager(
-                              context, index.toString(), mode: 1,
-                              image: appViewModel.cachedImages[index]);
-                          if (image != null) {
-                            setState(() {
-                              appViewModel.cachedImages.removeAt(index);
-                            });
-                          }
-                        }
-                        });
-                        else if(imagesSet.indexOf(e)%2==0) return buildTriple(leftWidth, rightWidth, e, appVM.isinLoading,false, onTap: (index) async {
-                          if(deleteMode){
-
-                          }
-                          else {
-                            final image = await showOverlayedImageManager(
-                              context, index.toString(), mode: 1,
-                              image: appViewModel.cachedImages[index]);
-                          if (image != null) {
-                              setState(() {
-                                appViewModel.cachedImages.removeAt(index);
-                              });
-                            }
-                          }
-                        });
-                        else return buildTripleReverce(leftWidth, rightWidth, e, appVM.isinLoading,false, onTap: (index) async {
-                            if(deleteMode){
-                              deleteIndexes.add(index);
-                            }
-                            else {
-                              final image = await showOverlayedImageManager(
-                                  context, index.toString(), mode: 1,
-                                  image: appViewModel.cachedImages[index]);
-                              if (image != null) {
-                                setState(() {
-                                  appViewModel.cachedImages.removeAt(index);
-                                });
-                              }
-                            }
-                          });
-                      }).toList()
-                );})):*/
+                return Expanded(child: appViewModel.cachedImages.isNotEmpty?
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: Column(
@@ -262,6 +191,7 @@ class GalleryScreenState extends State<GalleryScreen>{
                               if (image != null) {
                                 setState(() {
                                   appViewModel.cachedImages.removeAt(index);
+                                  appViewModel.isChanged=true;
                                 });
                               }
                             }
@@ -290,6 +220,7 @@ class GalleryScreenState extends State<GalleryScreen>{
                   final imge = await showOverlayedImageManager(context, "no url", image: image);
                   if(imge!=null){
                     appViewModel.cachedImages.add(image);
+                    appViewModel.isChanged=true;
                   }
                 }),
               )):
@@ -343,6 +274,7 @@ class GalleryScreenState extends State<GalleryScreen>{
                         final image = await showOverlayedImageManager(context, url);
                         if(image!=null){
                           appViewModel.cachedImages.add(image);
+                          appViewModel.isChanged=true;
                         }
                       }),
                       //const Expanded(child: SizedBox())
@@ -361,6 +293,7 @@ class GalleryScreenState extends State<GalleryScreen>{
                         print(deleteIndexes);
                         for (var index in deleteIndexes) {
                           appViewModel.cachedImages.removeAt(index);
+                          appViewModel.isChanged=true;
                         }
                         deleteMode=false;
                         deleteIndexes.clear();

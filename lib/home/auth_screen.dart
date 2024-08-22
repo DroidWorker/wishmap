@@ -5,6 +5,8 @@ import 'package:wishmap/navigation/navigation_block.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../ViewModel.dart';
+import '../dialog/bottom_sheet_action.dart';
+import '../res/colors.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -198,14 +200,15 @@ class _AuthScreen_State extends State<AuthScreen> {
                                       isInLoading = true;
                                     });
                                     await appViewModel.signIn(login, password);
-                                    setState(() {
-                                      isInLoading = false;
-                                    });
                                     BlocProvider.of<NavigationBloc>(context)
                                         .removeLastFromBS();
                                     BlocProvider.of<NavigationBloc>(context)
                                         .add(NavigateToCardsScreenEvent());
-                                  }catch(ex){}
+                                  }catch(ex){
+                                    setState(() {
+                                      isInLoading = false;
+                                    });
+                                  }
                                 }else{
                                   String name = _nameController.text;
                                   String surname = _surnameController.text;

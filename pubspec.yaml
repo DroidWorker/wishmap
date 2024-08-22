@@ -75,7 +75,7 @@ dependencies:
   camera: ^0.10.6
   numberpicker: ^2.1.2
   workmanager: ^0.5.2
-  flutter_local_notifications: ^17.2.1
+  flutter_local_notifications: ^17.2.2
   timezone: ^0.9.4
   flutter_timezone: ^2.0.1
   android_alarm_manager_plus: ^4.0.3
@@ -84,6 +84,7 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   lecle_volume_flutter: ^0.0.1+1
+  android_intent_plus: ^5.1.0
 
 
 dev_dependencies:
