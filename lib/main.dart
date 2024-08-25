@@ -36,6 +36,7 @@ import 'home/myaims_screen.dart';
 import 'home/mywishes_screen.dart';
 import 'home/notify_alarm_screen.dart';
 import 'home/profile_screen.dart';
+import 'home/settings/contact_screen.dart';
 import 'home/settings/sounds_setting.dart';
 import 'home/taskedit_screen.dart';
 import 'navigation/navigation_block.dart';
@@ -272,6 +273,8 @@ class MyAppState extends State<MyApp>{
       return QScreen();
     }else if (state is NavigationProposalScreenState) {
       return ProposalScreen();
+    } else if (state is NavigationContactScreenState) {
+      return ContactScreen();
     }else if (state is NavigationAlarmSettingsScreenState) {
       return AlarmSettingScreen(state.id);
     } else if (state is NavigationAlarmScreenState) {

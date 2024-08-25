@@ -235,7 +235,7 @@ class AppViewModel with ChangeNotifier {
     if(connectivity!='No Internet Connection')repository.updateMoonSync(moonId, time);
   }
 
-  Future<void> signIn(String login, String password) async{
+  Future<String?> signIn(String login, String password) async{
     await localRep.saveAuth(login, password);
     try {
       ProfileData? pd = await repository.signIn(login, password);
@@ -247,7 +247,7 @@ class AppViewModel with ChangeNotifier {
       }
     }catch(ex){
       addError(ex.toString().replaceAll("Exception:", ""));
-      throw Exception("no access #vm002");
+      return ex.toString();
     }
   }
   Future<void> signOut() async{

@@ -153,7 +153,10 @@ class _ProfileScreenState extends State<ProfileScreen>{
                                   BlocProvider.of<NavigationBloc>(context)
                                       .add(NavigateToQuestionsScreenEvent());
                                 }),
-                                settingsWidget("assets/icons/setting_mail.svg" ,"Связаться с нами", (){}),
+                                settingsWidget("assets/icons/setting_mail.svg" ,"Связаться с нами", (){
+                                  BlocProvider.of<NavigationBloc>(context)
+                                      .add(NavigateToContactScreenEvent());
+                                }),
                                 settingsWidget("assets/icons/setting_feedback.svg" ,"Пожелания", (){
                                   BlocProvider.of<NavigationBloc>(context)
                                       .add(NavigateToProposalScreenEvent());

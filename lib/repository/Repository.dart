@@ -44,7 +44,9 @@ class Repository{
       }
     } catch (e) {
       if (e is FirebaseAuthException) {
+        print("firebase exception - ${e.code}");
         switch (e.code) {
+          case "invalid-credential":
           case "INVALID_LOGIN_CREDENTIALS":
           case "user-disabled":
           case "user-not-found":
