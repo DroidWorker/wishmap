@@ -4,46 +4,53 @@ import 'package:wishmap/interface_widgets/colorButton.dart';
 
 import '../interface_widgets/sq_checkbox.dart';
 
-class MessageItem extends StatelessWidget {
+class MessageItem extends StatefulWidget {
   final bool myMessage;
   final String message;
   final bool allowChanging;
   final Function(String)? onAction;
   final Function? onTap;
 
-  const MessageItem(this.myMessage, this.message, this.allowChanging, {super.key, this.onAction, this.onTap});
+  const MessageItem(this.myMessage, this.message, this.allowChanging,
+      {super.key, this.onAction, this.onTap});
+
+  @override
+  MessageItemState createState() => MessageItemState();
+}
+
+class MessageItemState extends State<MessageItem>{
+  String selectedDay = "01";
+  String selectedMonth = "01";
+  String selectedYear = "1990";
+
+  final List<String> days =
+  List.generate(31, (index) => (index + 1).toString().padLeft(2, '0'));
+  final List<String> months =
+  List.generate(12, (index) => (index + 1).toString().padLeft(2, '0'));
+  final List<String> years =
+  List.generate(90, (index) => (1950 + index).toString());
+
 
   @override
   Widget build(BuildContext context) {
-    final List<String> days =
-        List.generate(31, (index) => (index + 1).toString().padLeft(2, '0'));
-    final List<String> months =
-        List.generate(12, (index) => (index + 1).toString().padLeft(2, '0'));
-    final List<String> years =
-        List.generate(90, (index) => (1950 + index).toString());
-
-    String selectedDay = "01";
-    String selectedMonth = "01";
-    String selectedYear = "1990";
-
     return InkWell(
-      onTap: (){if(allowChanging&&onTap!=null)onTap!();},
+      onTap: (){if(widget.allowChanging&&widget.onTap!=null)widget.onTap!();},
       child: Container(
               decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(8), color: Colors.white),
               padding: const EdgeInsets.all(8),
               margin: EdgeInsets.fromLTRB(
-                  myMessage ? 0 : 30, 4, myMessage ? 30 : 0, 4),
+                  widget.myMessage ? 0 : 30, 4, widget.myMessage ? 30 : 0, 4),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  myMessage
+                  widget.myMessage
                       ? Row(
-                          children: [Text(message, maxLines: null,), if(allowChanging)const Icon(Icons.edit)],
+                          children: [Text(widget.message, maxLines: null,), if(widget.allowChanging)const Icon(Icons.edit)],
                         )
-                      : Row(children: [Expanded(child: Text(message))]
+                      : Row(children: [Expanded(child: Text(widget.message))]
                   ),
-                  if(message == "Выберите дату рождения")Row(
+                  if(widget.message == "Выберите дату рождения")Row(
                     children: [
                       Container(
                         width: 50,
@@ -62,7 +69,9 @@ class MessageItem extends StatelessWidget {
                                 );
                               }).toList(),
                               onChanged: (String? val) {
-                                selectedDay = val!;
+                                setState(() {
+                                  selectedDay = val!;
+                                });
                               },
                               value: selectedDay,
                             ),
@@ -87,7 +96,9 @@ class MessageItem extends StatelessWidget {
                                 );
                               }).toList(),
                               onChanged: (String? val) {
-                                selectedMonth = val!;
+                                setState(() {
+                                  selectedMonth = val!;
+                                });
                               },
                               value: selectedMonth,
                             ),
@@ -114,7 +125,9 @@ class MessageItem extends StatelessWidget {
                                 );
                               }).toList(),
                               onChanged: (String? val) {
-                                selectedYear = val!;
+                                setState(() {
+                                  selectedYear = val!;
+                                });
                               },
                               value: selectedYear,
                               borderRadius: BorderRadius.circular(8),
@@ -125,23 +138,23 @@ class MessageItem extends StatelessWidget {
                       IconButton(
                           onPressed: () {
                             String date = "$selectedYear-$selectedMonth-$selectedDay";
-                            if (onAction != null) onAction!(date);
+                            if (widget.onAction != null) widget.onAction!(date);
                           },
                           icon: const Icon(Icons.check))
                     ],
-                  )else if(message == "Выберите ваш пол") Row(children: [
+                  )else if(widget.message == "Выберите ваш пол") Row(children: [
                     SquareCheckbox("Мужской", textStyle: const TextStyle(fontSize: 14), (state){
-                      if (onAction != null) onAction!("true");
+                      if (widget.onAction != null) widget.onAction!("true");
                     }),
                     SquareCheckbox("Женский", textStyle: const TextStyle(fontSize: 14), (state){
-                      if (onAction != null) onAction!("false");
+                      if (widget.onAction != null) widget.onAction!("false");
                     }),
-                  ],)else if(message== "Проверьте введенные данные и подтвердите")Row(children: [
+                  ],)else if(widget.message== "Проверьте введенные данные и подтвердите")Row(children: [
                     ColorRoundedButton("Изменить данные", radius: 3, (){
-                      if (onAction != null) onAction!("changedata");
+                      if (widget.onAction != null) widget.onAction!("changedata");
                     }),
                     ColorRoundedButton("Зарегистрироваться", radius: 3, (){
-                      if (onAction != null) onAction!("registration");
+                      if (widget.onAction != null) widget.onAction!("registration");
                     })
                   ],)
                 ],

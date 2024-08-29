@@ -70,6 +70,8 @@ class _WishScreenState extends State<WishScreen>{
 
   int prevHiddenTreeElements = 0;
 
+  AnimationController? lottieController;
+
   @override
   initState(){
     super.initState();
@@ -958,18 +960,23 @@ class _WishScreenState extends State<WishScreen>{
                 Navigator.pop(context, 'OK');
                 curwish.isChecked =
                 !curwish.isChecked;
-                if(curwish.isChecked)showOverlayedAnimations(context, 'assets/lottie/vypolneniezhelaniya.json', fillBackground: true);
+                if(curwish.isChecked)showOverlayedAnimations(context, 'assets/lottie/vypolneniezhelaniya.json', fillBackground: true, onControllerCreated: (controller){lottieController = controller;});
                 appVM.updateWishStatus(
                     appVM.wishScreenState!.wish
                         .id, curwish.isChecked);
-                showOverlayedAnimations(context,'assets/lottie/inaim.json');
                 showModalBottomSheet<void>(
                   backgroundColor: AppColors.backgroundColor,
                   context: context,
                   isScrollControlled: true,
                   builder: (BuildContext context) {
                     return NotifyBS(curwish.isChecked?'исполнено':'не исполнено', "", 'OK',
-                        onOk: () => Navigator.pop(context, 'OK'));
+                        onOk: (){
+                          try {
+                            lottieController?.reset();
+                            lottieController=null;
+                          } catch (ex){}
+                      Navigator.pop(context, 'OK');
+                    });
                   },
                 );
               },

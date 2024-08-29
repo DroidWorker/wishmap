@@ -192,6 +192,11 @@ class DatabaseHelper {
     return await db.query('moons', where: "id = ?", whereArgs: [id]);
   }
 
+  Future deleteMoons(String ids) async {
+    Database db = await database;
+    await db.rawDelete('DELETE FROM moons WHERE id IN ($ids)');
+  }
+
   Future<List<Map<String, dynamic>>> getAllMoons() async {
     Database db = await database;
     return await db.query('moons');

@@ -254,6 +254,7 @@ class AppViewModel with ChangeNotifier {
     await localRep.clearAuth();
     await localRep.clearProfile();
     await localRep.dropDB();
+    alarms.clear();
     moonItems.clear();
     mainScreenState=null;
     mainCircles.clear();
@@ -273,12 +274,21 @@ class AppViewModel with ChangeNotifier {
       throw Exception("no access #vm003");
     }
   }
+  Future saveProfile(ProfileData pd) async{
+    await localRep.saveProfile(pd);
+    await repository.updateProfile(pd);
+  }
 
   Future<void> getMoons() async{
     try {
       DateTime now = DateTime.now();
 
       var result = await Connectivity().checkConnectivity();
+      if(result==ConnectivityResult.none) {
+        connectivity = "No Internet Connection";
+      } else {
+        connectivity = "internet";
+      }
       if(moonItems.isEmpty){
         moonItems = (result!=ConnectivityResult.none)?
         ((await repository.getMoonList())??[]):
@@ -421,6 +431,13 @@ class AppViewModel with ChangeNotifier {
     repository.addDiary(diary, moonId);
     updateMoonSync(moonId);
     notifyListeners();
+  }
+  Future deleteMoons(List<int> moonIds)async{
+    var result = await Connectivity().checkConnectivity();
+    if(result!=ConnectivityResult.none){
+      await repository.deleteMoons(moonIds);
+    }
+    localRep.deleteMoons(moonIds);
   }
 
   Future getImages(List<int> ids) async {
@@ -847,6 +864,7 @@ class AppViewModel with ChangeNotifier {
         wishItems[sphereInWishesList]=WishItem(id: wd.id, text: wd.text, isChecked: wd.isChecked,isActive: wd.isActive, isHidden: wd.isHidden);
       }*/
       wishScreenState?.wish.photoIds=photosIds;
+      mainScreenState?.needToUpdateCoords=true;
       notifyListeners();
       wishItems.clear();
       updateMoonSync(mainScreenState?.moon.id??0);
@@ -1616,11 +1634,16 @@ class AppViewModel with ChangeNotifier {
       if(simpleWish.isEmpty){
         //await adding aim
         wishId = allWish.reduce((a,b) => a.id > (b.id) ? a:b).id+1;
-        await localRep.addSphere(WishData(id: wishId, prevId: -2, nextId: -2, parentId: parentId, text: "HEADERSIMPLETASKHEADERОбщие задачи", description: "Общие задачи", affirmation: "", color: AppColors.grey), mainScreenState?.moon.id??0);
+        final w = WishData(id: wishId, prevId: -2, nextId: -2, parentId: parentId, text: "HEADERSIMPLETASKHEADERОбщие задачи", description: "Общие задачи", affirmation: "", color: AppColors.grey);
+        await localRep.addSphere(w, mainScreenState?.moon.id??0);
+        repository.createSphereWish(w, mainScreenState?.moon.id??0);
         mainScreenState?.allCircles.add(CircleData(id: wishId, prevId: -2, nextId: -2, text: "HEADERSIMPLETASKHEADERОбщие задачи", color: AppColors.grey, parenId: parentId));
         final allAims = await localRep.getAllAims(mainScreenState?.moon.id??0);
         aimId = allAims.isNotEmpty?(allAims.reduce((a,b) => a.id > (b.id) ? a:b).id+1):1;
-        await localRep.addAim(AimData(id: aimId, parentId: wishId, text: "HEADERSIMPLETASKHEADERОбщие задачи", description: "Общие задачи"), mainScreenState?.moon.id??0);
+        final aim= AimData(id: aimId, parentId: wishId, text: "HEADERSIMPLETASKHEADERОбщие задачи (${mainScreenState?.allCircles.firstWhereOrNull((item)=>item.id==parentId)?.text})", description: "Общие задачи");
+        await localRep.addAim(aim, mainScreenState?.moon.id??0);
+        repository.createAim(aim, wishId, mainScreenState?.moon.id??0);
+        currentAim = aim;
       }else{
         wishId = simpleWish.first.id;
         final allAims = await localRep.getAllAims(mainScreenState?.moon.id??0);
@@ -1628,7 +1651,10 @@ class AppViewModel with ChangeNotifier {
         if(simpleAim.isEmpty){
           //await adding aim
           aimId = allAims.isNotEmpty?(allAims.reduce((a,b) => a.id > (b.id) ? a:b).id+1):1;
-          await localRep.addAim(AimData(id: aimId, parentId: wishId, text: "HEADERSIMPLETASKHEADERОбщие задачи", description: "Общие задачи"), mainScreenState?.moon.id??0);
+          final aim = AimData(id: aimId, parentId: wishId, text: "HEADERSIMPLETASKHEADERОбщие задачи (${mainScreenState?.allCircles.firstWhereOrNull((item)=>item.id==parentId)?.text})", description: "Общие задачи");
+          await localRep.addAim(aim, mainScreenState?.moon.id??0);
+          repository.createAim(aim, wishId, mainScreenState?.moon.id??0);
+          currentAim = aim;
         }else{
           aimId = simpleAim.first.id;
         }
@@ -1645,17 +1671,24 @@ class AppViewModel with ChangeNotifier {
       if(simpleAim.isEmpty){
         //await adding aim
           aimId = allAim.isNotEmpty?(allAim.reduce((a,b) => a.id > (b.id) ? a:b).id+1):1;
-          await localRep.addAim(AimData(id: aimId, parentId: wishId, text: "HEADERSIMPLETASKHEADERОбщие задачи", description: "Общие задачи"), mainScreenState?.moon.id??0);
+          final aim = AimData(id: aimId, parentId: wishId, text: "HEADERSIMPLETASKHEADERОбщие задачи (${wish?.text})", description: "Общие задачи");
+          await localRep.addAim(aim, mainScreenState?.moon.id??0);
+          repository.createAim(aim, wishId, mainScreenState?.moon.id??0);
+          currentAim = aim;
       }else{
         aimId = simpleAim.first.id;
       }
+      startMyTasksScreen();
     }
 
     //add Simple Task
     if(aimId!=null){
       final allTasks = (await localRep.getAllTasks(mainScreenState?.moon.id??0));
     final taskId = allTasks.isNotEmpty?(allTasks.reduce((a,b) => a.id > (b.id) ? a:b).id+1):1;
-    localRep.addTask(TaskData(id: taskId, parentId: aimId, text: taskData, description: ""), mainScreenState?.moon.id??0);
+    final task = TaskData(id: taskId, parentId: aimId, text: taskData, description: "");
+    localRep.addTask(task, mainScreenState?.moon.id??0);
+      repository.createTask(task, aimId, mainScreenState?.moon.id??0);
+      currentTask = task;
     taskItems.add(TaskItem(id: taskId, parentId: aimId, text: taskData, isChecked: false, isActive: true));
     notifyListeners();
     }else{
@@ -1843,6 +1876,10 @@ class AppViewModel with ChangeNotifier {
     }
 
     return result;
+  }
+
+  void sendRestorationEmail(String email) {
+    repository.sendRestorationEmail(email);
   }
 
 

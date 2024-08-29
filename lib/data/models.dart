@@ -11,10 +11,20 @@ class AuthData {
 
 class ProfileData {
   String id = "";
-  final String name;
-  final String surname;
+   String name;
+   String surname;
+  String thirdname = "";
+   DateTime birtday;
+   bool male;
+  String phone  = "";
+  final String email;
+  String tg = "";
 
-  ProfileData({this.id = "", required this.name, required this.surname});
+  ProfileData({this.id = "", required this.name, required this.surname, required this.birtday, required this.male, required this.email, this.thirdname = "", this.phone = "", this.tg = ""});
+
+  ProfileData copy(){
+    return ProfileData(id: id, name: name, surname: surname, thirdname: thirdname, birtday: birtday, male: male, phone: phone, email: email, tg: tg);
+  }
 }
 
 class ActualizingSettingData{

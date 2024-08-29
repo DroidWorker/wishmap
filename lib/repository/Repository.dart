@@ -35,7 +35,14 @@ class Repository{
           Map<dynamic, dynamic> userData = snapshot.value as Map<dynamic, dynamic>;
           String name = userData['name']?? '';
           String surname = userData['surname']?? '';
-          return ProfileData(id: _auth.currentUser!.uid, name: name, surname: surname);
+          String thirdname = userData['thirdname']?? '';
+          DateTime birthday = userData['birthday']!=null?DateTime.parse(userData['birthday']?? ''):DateTime.now();
+          bool male = userData['male']=="1";
+          String email = userData['email']?? '';
+          String phone = userData['phone']?? '';
+          String tg = userData['tg']?? '';
+
+          return ProfileData(id: _auth.currentUser!.uid, name: name, surname: surname, thirdname: thirdname, birtday: birthday, male: male, email: email, phone: phone, tg: tg);
         } else {
           return null;
         }
@@ -72,7 +79,11 @@ class Repository{
         userRef.child(_auth.currentUser!.uid).set({
           'name': pd.name,
           'surname': pd.surname,
-          'email': ad.login
+          'email': ad.login,
+          'thirdname': pd.thirdname,
+          'birthday': pd.birtday.toString(),
+          'male': pd.male?"1":"0",
+          'tg': pd.tg
         });
         return _auth.currentUser!.uid;
       }
@@ -94,6 +105,20 @@ class Repository{
       } else {
         throw Exception("unknown exception #rep001");
       }
+    }
+  }
+
+  Future updateProfile(ProfileData pd) async{
+    if(_auth.currentUser!=null){
+      userRef.child(_auth.currentUser!.uid).update({
+        'name': pd.name,
+        'surname': pd.surname,
+        'email': pd.email,
+        'thirdname': pd.thirdname,
+        'birthday': pd.birtday.toString(),
+        'male': pd.male?"1":"0",
+        'tg': pd.tg
+      });
     }
   }
 
@@ -258,6 +283,11 @@ class Repository{
           circleDataMap
         );
         //updateMoonSync(moonItem.id);
+    }
+  }
+  Future deleteMoons(List<int> moonIds) async {
+    for (var e in moonIds) {
+      await userRef.child(_auth.currentUser!.uid).child("moonlist").child(e.toString()).remove();
     }
   }
   Future addAllCircles(List<CircleData> circles, int moonId) async {
@@ -985,5 +1015,9 @@ class Repository{
       }
     }
     return {};
+  }
+
+  void sendRestorationEmail(String email) {
+    FirebaseAuth.instance.sendPasswordResetEmail(email: email);
   }
 }

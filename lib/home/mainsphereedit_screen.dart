@@ -226,14 +226,6 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>
                                       true;
                                 },
                               ),
-                            ColorRoundedButton(
-                              "test",
-                                  () {
-                                showOverlayedAnimations(context,
-                                    'assets/lottie/aktualizaciyaya.json',
-                                    fillBackground: true);
-                              },
-                            ),
                             const SizedBox(height: 16),
                             TextField(
                               controller: text,
@@ -845,7 +837,7 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>
                                           onTap: (id, type) =>
                                               onTreeItemTap(appVM, id, type),
                                         ),
-                                  const SizedBox(height: 16)
+                                  const SizedBox(height: 70)
                                 ])),
                           ])))),
             ],
@@ -853,9 +845,7 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>
         ),
         bottomSheet: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
+          child:
               MediaQuery.of(context).viewInsets.bottom != 0
                   ? Align(
                       alignment: Alignment.topRight,
@@ -948,8 +938,6 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>
                             : const SizedBox(),
                       ],
                     )
-            ],
-          ),
         ),
       );
     });

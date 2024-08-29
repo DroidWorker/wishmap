@@ -278,9 +278,11 @@ class AlarmSettingScreenState extends State<AlarmSettingScreen> {
                                           MainAxisAlignment.center,
                                       children: [
                                         StringPicker(
+                                          zeroPad: true,
+                                            infiniteLoop: true,
                                             itemWidth: 70,
                                             minValue: 0,
-                                            maxValue: 59,
+                                            maxValue: 23,
                                             value: selectedDatetime.hour,
                                             onChanged: (v) {
                                               selectedDatetime =
@@ -293,6 +295,8 @@ class AlarmSettingScreenState extends State<AlarmSettingScreen> {
                                                 fontSize: 24,
                                                 fontWeight: FontWeight.bold)),
                                         StringPicker(
+                                            zeroPad: true,
+                                            infiniteLoop: true,
                                             itemWidth: 70,
                                             minValue: 0,
                                             maxValue: 59,

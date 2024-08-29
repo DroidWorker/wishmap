@@ -4,7 +4,6 @@ import 'package:capped_progress_indicator/capped_progress_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
-import 'package:wishmap/common/custom_bottom_button.dart';
 import '../ViewModel.dart';
 import '../common/bottombar.dart';
 import '../common/treeview_widget.dart';
@@ -39,7 +38,7 @@ class _WishesScreenState extends State<WishesScreen>{
     return Consumer<AppViewModel>(
         builder: (context, appVM, child) {
           appViewModel=appVM;
-          allWishList = appVM.wishItems;
+          allWishList = appVM.wishItems.where((item)=>!item.text.contains("HEADERSIMPLETASKHEADER")).toList();
           if(allWishList.isEmpty&&!isWishesRequested){
             appVM.startMyWishesScreen();
             isWishesRequested = true;

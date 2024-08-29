@@ -189,6 +189,12 @@ class LocalRepository {
     await _prefs!.setString("id", pd.id);
     await _prefs!.setString("name", pd.name);
     await _prefs!.setString("surname", pd.surname);
+    await _prefs!.setString("lastname", pd.thirdname);
+    await _prefs!.setString("birthday", pd.birtday.toString());
+    await _prefs!.setBool("male", pd.male);
+    await _prefs!.setString("email", pd.email);
+    await _prefs!.setString("phone", pd.phone);
+    await _prefs!.setString("tg", pd.tg);
   }
 
   Future<void> clearProfile() async {
@@ -208,8 +214,14 @@ class LocalRepository {
     String? id = _prefs!.getString("id");
     String? name = _prefs!.getString("name");
     String? surname = _prefs!.getString("surname");
+    String? lastname = _prefs!.getString("lastname");
+    String? birthday = _prefs!.getString("birthday");
+    bool? male = _prefs!.getBool("male");
+    String? email = _prefs!.getString("email");
+    String? phone = _prefs!.getString("phone");
+    String? tg = _prefs!.getString("tg");
     return (id != null && name != null && surname != null)
-        ? ProfileData(id: id, name: name, surname: surname)
+        ? ProfileData(id: id, name: name, surname: surname, birtday: birthday!=null?DateTime.parse(birthday):DateTime(2000, 9, 7, 17, 30), male: male??true, email: email??"", thirdname: lastname??"", phone: phone??"", tg: tg??"")
         : null;
   }
 
@@ -255,6 +267,10 @@ class LocalRepository {
 
   Future clearMoons() async {
     dbHelper.clearMoons();
+  }
+
+  Future deleteMoons(List<int> moonIds) async {
+    dbHelper.deleteMoons(moonIds.join(','));
   }
 
   Future addAllMoons(MoonItem mi, List<CircleData>? childCircles,

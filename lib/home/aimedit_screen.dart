@@ -49,6 +49,8 @@ class AimEditScreenState extends State<AimEditScreen>{
 
   bool HEADERSIMPLETASKHEADER = false;
 
+  AnimationController? lottieController;
+
   @override
   void initState(){
     super.initState();
@@ -247,16 +249,21 @@ class AimEditScreenState extends State<AimEditScreen>{
                                                     Navigator.pop(
                                                         context, 'OK');
                                                     ai!.isChecked = !ai!.isChecked;
-                                                    if(ai!.isChecked)showOverlayedAnimations(context, 'assets/lottie/dostizhenieceli.json', fillBackground: true);
+                                                    if(ai!.isChecked)showOverlayedAnimations(context, 'assets/lottie/dostizhenieceli.json', fillBackground: true, onControllerCreated: (controller){lottieController = controller;});
                                                     appVM.updateAimStatus(ai!.id, ai!.isChecked);
-                                                    showOverlayedAnimations(context,'assets/lottie/inaim.json', fillBackground: true);
                                                     showModalBottomSheet<void>(
                                                       backgroundColor: AppColors.backgroundColor,
                                                       context: context,
                                                       isScrollControlled: true,
                                                       builder: (BuildContext context) {
                                                         return NotifyBS(ai!.isChecked?'Достигнута':'не Достигнута', "", 'OK',
-                                                            onOk: () => Navigator.pop(context, 'OK'));
+                                                            onOk: (){
+                                                          Navigator.pop(context, 'OK');
+                                                          try {
+                                                            lottieController?.reset();
+                                                            lottieController=null;
+                                                          } catch (ex){}
+                                                            });
                                                       },
                                                     );
                                                   },
@@ -268,9 +275,8 @@ class AimEditScreenState extends State<AimEditScreen>{
                                           );
                                         }else {
                                           ai!.isChecked = !ai!.isChecked;
-                                          if(ai!.isChecked)showOverlayedAnimations(context, 'assets/lottie/dostizhenieceli.json', fillBackground: true);
+                                          if(ai!.isChecked)showOverlayedAnimations(context, 'assets/lottie/dostizhenieceli.json', fillBackground: true, onControllerCreated: (controller){lottieController = controller;});
                                           appVM.updateAimStatus(ai!.id, ai!.isChecked);
-                                          showOverlayedAnimations(context,'assets/lottie/inaim.json', fillBackground: true);
                                         }
                                         },
                                         onCancel: () async {
@@ -287,7 +293,7 @@ class AimEditScreenState extends State<AimEditScreen>{
                                                           context, 'OK');
                                                       ai!.isChecked = !ai!
                                                           .isChecked;
-                                                      if(ai!.isChecked)showOverlayedAnimations(context, 'assets/lottie/dostizhenieceli.json', fillBackground: true);
+                                                      if(ai!.isChecked)showOverlayedAnimations(context, 'assets/lottie/dostizhenieceli.json', fillBackground: true, onControllerCreated: (controller){lottieController = controller;});
                                                       await appVM.updateAimStatus(
                                                           ai!.id, ai!.isChecked);
                                                       await appVM.getAim(ai!.id);
@@ -297,14 +303,19 @@ class AimEditScreenState extends State<AimEditScreen>{
                                                           appVM.currentAim!
                                                               .description;
                                                       isChanged = false;
-                                                      showOverlayedAnimations(context,'assets/lottie/inaim.json', fillBackground: true);
                                                       showModalBottomSheet<void>(
                                                         backgroundColor: AppColors.backgroundColor,
                                                         context: context,
                                                         isScrollControlled: true,
                                                         builder: (BuildContext context) {
                                                           return NotifyBS((ai!.isChecked)?'Достигнута':'не Достигнута', "", 'OK',
-                                                              onOk: () => Navigator.pop(context, 'OK'));
+                                                              onOk: () {
+                                                                try {
+                                                                  lottieController?.reset();
+                                                                  lottieController=null;
+                                                                } catch (ex){}
+                                                                Navigator.pop(context, 'OK');
+                                                          });
                                                         },
                                                       );
                                                     },
@@ -315,7 +326,7 @@ class AimEditScreenState extends State<AimEditScreen>{
                                           }else {
                                             ai!.isChecked = !ai!
                                                 .isChecked;
-                                            if(ai!.isChecked)showOverlayedAnimations(context, 'assets/lottie/dostizhenieceli.json', fillBackground: true);
+                                            if(ai!.isChecked)showOverlayedAnimations(context, 'assets/lottie/dostizhenieceli.json', fillBackground: true, onControllerCreated: (controller){lottieController = controller;});
                                             await appVM.updateAimStatus(
                                                 ai!.id, ai!.isChecked);
                                             await appVM.getAim(ai!.id);
@@ -325,7 +336,6 @@ class AimEditScreenState extends State<AimEditScreen>{
                                                 appVM.currentAim!
                                                     .description;
                                             isChanged = false;
-                                            showOverlayedAnimations(context,'assets/lottie/inaim.json', fillBackground: true);
                                           }
                                         });
                                   },
@@ -343,18 +353,23 @@ class AimEditScreenState extends State<AimEditScreen>{
                                               context, 'OK');
                                           ai!.isChecked = !ai!
                                               .isChecked;
-                                          if(ai!.isChecked)showOverlayedAnimations(context, 'assets/lottie/dostizhenieceli.json', fillBackground: true);
+                                          if(ai!.isChecked)showOverlayedAnimations(context, 'assets/lottie/dostizhenieceli.json', fillBackground: true, onControllerCreated: (controller){lottieController = controller;});
                                           appVM.updateAimStatus(
                                               ai!.id,
                                               ai!.isChecked);
-                                          showOverlayedAnimations(context,'assets/lottie/inaim.json', fillBackground: true);
                                           showModalBottomSheet<void>(
                                             backgroundColor: AppColors.backgroundColor,
                                             context: context,
                                             isScrollControlled: true,
                                             builder: (BuildContext context) {
                                               return NotifyBS(ai!.isChecked?'Достигнута':'не Достигнута', "", 'OK',
-                                                  onOk: () => Navigator.pop(context, 'OK'));
+                                                  onOk: (){
+                                                    try {
+                                                      lottieController?.reset();
+                                                      lottieController=null;
+                                                    } catch (ex){}
+                                                    Navigator.pop(context, 'OK');
+                                              });
                                             },
                                           );
                                         },
@@ -365,17 +380,22 @@ class AimEditScreenState extends State<AimEditScreen>{
                                 } else {
                                   ai!.isChecked = !ai!
                                       .isChecked;
-                                  if(ai!.isChecked)showOverlayedAnimations(context, 'assets/lottie/dostizhenieceli.json', fillBackground: true);
+                                  if(ai!.isChecked)showOverlayedAnimations(context, 'assets/lottie/dostizhenieceli.json', fillBackground: true, onControllerCreated: (controller){lottieController = controller;});
                                   appVM.updateAimStatus(
                                       ai!.id, ai!.isChecked);
-                                  showOverlayedAnimations(context,'assets/lottie/inaim.json', fillBackground: true);
                                   showModalBottomSheet<void>(
                                     backgroundColor: AppColors.backgroundColor,
                                     context: context,
                                     isScrollControlled: true,
                                     builder: (BuildContext context) {
                                       return NotifyBS(ai!.isChecked?'Достигнута':'не Достигнута', "", 'OK',
-                                          onOk: () => Navigator.pop(context, 'OK'));
+                                          onOk: () {
+                                            try {
+                                              lottieController?.reset();
+                                              lottieController=null;
+                                            } catch (ex){}
+                                            Navigator.pop(context, 'OK');
+                                      });
                                     },
                                   );
                                 }

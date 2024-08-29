@@ -1,13 +1,14 @@
 import 'dart:math';
 
 import 'package:capped_progress_indicator/capped_progress_indicator.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
+import 'package:wishmap/common/gallery_widget.dart';
 import '../ViewModel.dart';
 import '../common/bottombar.dart';
-import '../common/custom_bottom_button.dart';
 import '../common/taskitem_widget.dart';
 import '../data/models.dart';
 import '../data/static.dart';
@@ -38,6 +39,7 @@ class _TaskScreenState extends State{
   Widget build(BuildContext context) {
     appViewModel = Provider.of<AppViewModel>(context);
     if(appViewModel.aimItems.isEmpty)appViewModel.startMyAimsScreen();
+    if(appViewModel.wishItems.isEmpty)appViewModel.startMyWishesScreen();
     return Consumer<AppViewModel>(
         builder: (context, appVM, child) {
           taskList = appVM.taskItems;
@@ -189,8 +191,10 @@ class _TaskScreenState extends State{
                     ListView.builder(
                         itemCount: filteredTaskList.length,
                         itemBuilder: (context, index) {
+                          final parentaim = appVM.aimItems.firstWhereOrNull((e) => e.id==filteredTaskList[index].parentId);
+                          final parentwish = parentaim?.parentId==0?WishItem(id: 0, text: "Я", isChecked: false, isActive: true, isHidden: false):parentaim!=null?appVM.wishItems.firstWhereOrNull((e) => e.id==parentaim.parentId):null;
                           return TaskItemWidget(ti: filteredTaskList[index],
-                              path: appVM.aimItems.firstWhere((e) => e.id==filteredTaskList[index].parentId).text.replaceAll("HEADERSIMPLETASKHEADER", ""),
+                              p: "${parentwish?.text.replaceAll("HEADERSIMPLETASKHEADER", "")} > ${parentaim?.text.replaceAll("HEADERSIMPLETASKHEADER", "")}",
                               onSelect: onItemSelect,
                               onDoubleClick: onDoubleClick,
                               outlined: deleteQueue.contains(filteredTaskList[index].id));

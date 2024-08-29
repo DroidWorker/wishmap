@@ -86,7 +86,8 @@ class ReminderItemState extends State<ReminderItem>{
                   children: [
                     Row(
                       children: [
-                        Text("${nextReminder.hour}:${nextReminder.minute}", style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w500)),
+                        Text("${nextReminder.hour}:${nextReminder.minute.toString().padLeft(2, "0")}", style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w500)),
+                        const SizedBox(width: 8),
                         if(widget.reminder is Alarm)Text((widget.reminder as Alarm).text, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w500))
                       ],
                     ),

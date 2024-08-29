@@ -13,42 +13,48 @@ import '../res/colors.dart';
 import 'moon_widget.dart';
 
 class CardItem extends StatelessWidget{
-  CardItem(this.mi, this.onTap, this.onLoadStarted);
+  CardItem(this.mi, this.isSelected, this.onTap, this.onLongTap, this.onLoadStarted);
 
   MoonItem mi;
   Function() onTap;
+  Function() onLongTap;
   Function() onLoadStarted;
+  bool isSelected;
   @override
   Widget build(BuildContext context) {
     var appViewModel = Provider.of<AppViewModel>(context);
     DateTime date = parseDateString(mi.date)??DateTime.now();
     return Padding(
         padding: const EdgeInsets.all(15),
-        child: InkWell(
-          child: mi.id!=-1?Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [MoonWidget(date: date, size: 85, resolution: 800,),
-              Text(dateToLongString(mi.date)??mi.date)]):
-            OutlinedGradientButton("Добавить карту", widgetBeforeText: const Icon(Icons.add_circle_outline_rounded), () => {
-              showDialog(context: context, builder: (contest){
-                return ActualizeMoonDialog(onActualizeClick: (){
-                  Navigator.pop(contest);
-                  BlocProvider.of<NavigationBloc>(context)
-                      .add(NavigateToQRScreenEvent());
-                }, onCloseDialogClick: (){Navigator.pop(contest);}, onCreateNew: () async {
-                  final now = DateTime.now();
-                  await appViewModel.createNewMoon("${now.day.toString().padLeft(2, '0')}.${now.month.toString().padLeft(2, '0')}.${now.year}");
-                  final moonId = appViewModel.moonItems.last;
-                  onLoadStarted();
-                  appViewModel.startMainScreen(moonId);
-                  Navigator.pop(contest);
-                  BlocProvider.of<NavigationBloc>(context)
-                      .add(NavigateToMainScreenEvent());
-                });
-              })
-            }),
-          onTap: () => onTap(),
+        child: Container(
+          decoration: isSelected?BoxDecoration( borderRadius: BorderRadius.circular(8),border: Border.all(width: 1, color: AppColors.buttonBackRed)):null,
+          child: InkWell(
+            child: mi.id!=-1?Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [MoonWidget(date: date, size: 85, resolution: 800,),
+                Text(dateToLongString(mi.date)??mi.date)]):
+              OutlinedGradientButton("Добавить карту", widgetBeforeText: const Icon(Icons.add_circle_outline_rounded), () => {
+                showDialog(context: context, builder: (contest){
+                  return ActualizeMoonDialog(onActualizeClick: (){
+                    Navigator.pop(contest);
+                    BlocProvider.of<NavigationBloc>(context)
+                        .add(NavigateToQRScreenEvent());
+                  }, onCloseDialogClick: (){Navigator.pop(contest);}, onCreateNew: () async {
+                    final now = DateTime.now();
+                    await appViewModel.createNewMoon("${now.day.toString().padLeft(2, '0')}.${now.month.toString().padLeft(2, '0')}.${now.year}");
+                    final moonId = appViewModel.moonItems.last;
+                    onLoadStarted();
+                    appViewModel.startMainScreen(moonId);
+                    Navigator.pop(contest);
+                    BlocProvider.of<NavigationBloc>(context)
+                        .add(NavigateToMainScreenEvent());
+                  });
+                })
+              }),
+            onTap: () => onTap(),
+            onLongPress: () => onLongTap(),
+          ),
         )
     );
   }

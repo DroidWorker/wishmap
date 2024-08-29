@@ -36,62 +36,112 @@ class CircleWidget extends StatefulWidget {
   _CircleWidgetState createState() => _CircleWidgetState();
 }
 
-class _CircleWidgetState extends State<CircleWidget>{
+class _CircleWidgetState extends State<CircleWidget> with SingleTickerProviderStateMixin {
   double startAngle = 0.0;
-  int touchCount=0;
+  int touchCount = 0;
   Timer? _timer;
+
+  late AnimationController _controller;
+  late Animation<double> _shadowRadiusAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300), // Длительность анимации
+    );
+
+    _shadowRadiusAnimation = Tween<double>(begin: 1.0, end: 35.0).animate(CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeInOut,
+    ));
+
+    _controller.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        _controller.reverse();
+      }
+    });
+  }
+
+  @override
+  void didUpdateWidget(CircleWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (widget.circle.isActive != oldWidget.circle.isActive) {
+      _controller.forward(); // Запуск анимации при изменении состояния isActive
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: (){
+      onTap: () {
         _timer?.cancel();
         touchCount++;
-        if (touchCount>1) {
+        if (touchCount > 1) {
           widget.doubleTap(widget.circle.id, widget.circle.parentId);
-          touchCount=0;
+          touchCount = 0;
+          _controller.forward();
         } else {
-          _timer=Timer(const Duration(milliseconds: 150), () {
+          _timer = Timer(const Duration(milliseconds: 150), () {
             widget.startMoving(widget.circle.id, widget.itemId);
-            touchCount=0;
+            touchCount = 0;
           });
         }
       },
-      child: Container(
-          width: widget.circle.radius.toDouble(),
-          height: widget.circle.radius.toDouble(),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: widget.circle.isActive?widget.circle.color:const Color.fromARGB(255, 217, 217, 217).withOpacity(0.3), // Цвет тени
-                spreadRadius: 1, // Радиус распространения тени
-                blurRadius: 2, // Радиус размытия тени
+      child: AnimatedBuilder(
+        animation: _shadowRadiusAnimation,
+        builder: (context, child) {
+          return Container(
+            width: widget.circle.radius.toDouble(),
+            height: widget.circle.radius.toDouble(),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: widget.circle.isActive
+                      ? widget.circle.color
+                      : const Color.fromARGB(255, 217, 217, 217).withOpacity(0.3),
+                  spreadRadius: 1*(_shadowRadiusAnimation.value/2),
+                  blurRadius: _shadowRadiusAnimation.value,
+                ),
+              ],
+              border: Border.all(
+                color: widget.circle.isActive
+                    ? widget.circle.color
+                    : const Color.fromARGB(255, 217, 217, 217),
+                width: 1.0,
               ),
-            ],
-            border: Border.all(
-              color: widget.circle.isActive?widget.circle.color:const Color.fromARGB(255, 217, 217, 217),
-              width: 1.0,
             ),
-          ),
-          child: Stack(
-            children: [
-              Center( // Используйте Center, чтобы разместить текст по центру
-                  child: WordWrapWidget(
-                    text: widget.circle.text
+            child: Stack(
+              children: [
+                Center(
+                  child: WordWrapWidget(text: widget.circle.text),
+                ),
+                if (widget.circle.isChecked)
+                  Align(
+                    alignment: Alignment.topRight,
+                    child: Image.asset('assets/icons/wish_done.png',
+                        width: 20, height: 20),
                   )
-              ),
-              if(widget.circle.isChecked)Align(
-                alignment: Alignment.topRight,
-                child: Image.asset('assets/icons/wish_done.png', width: 20, height: 20),
-              )
-            ],
-          )
+              ],
+            ),
+          );
+        },
       ),
     );
   }
 }
+
 class CircularDraggableCircles extends StatefulWidget {
   List<Circle> circles;
   bool clearData = true;
@@ -375,6 +425,7 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
 
     final appViewModel = Provider.of<AppViewModel>(context);
 
+    print("update coords ${appViewModel.mainScreenState?.needToUpdateCoords==true}");
     if(appViewModel.mainScreenState?.needToUpdateCoords==true){
       lastRotation.value=0.0;
       final radius = MediaQuery.of(context).size.width*0.15;
@@ -773,13 +824,13 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
                                                   appViewModel.activateSphereWish(id, true);
                                                   widget.circles.where((element) => element.id==id).firstOrNull?.isActive=true;
                                                   setState(() { });
-                                                  _radiusControllers[index].play();
+                                                  //_radiusControllers[index].play();
                                                 }else appViewModel.addError("Режим быстрой актуализации отключен в настройках");
                                               }else if(parentId==0){
                                                 if(appViewModel.settings.fastActSphere){
                                                   appViewModel.activateSphereWish(id, true);
                                                   widget.circles.where((element) => element.id==id).firstOrNull?.isActive=true;
-                                                  _radiusControllers[index].play();
+                                                  //_radiusControllers[index].play();
                                                   setState(() { });
                                                 }else appViewModel.addError("Режим быстрой актуализации едоступен");
                                               }else if(parentId!=0){
@@ -788,7 +839,7 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
                                                   widget.circles.where((element) => element.id==id).firstOrNull?.isActive=true;
                                                   centralCircles.forEach((element) {element.isActive=true;});
                                                   appViewModel.mainCircles = centralCircles;
-                                                  _radiusControllers[index].play();
+                                                  //_radiusControllers[index].play();
                                                   setState(() { });
                                                 }else appViewModel.addError("Актуализация невозможна");
                                               }

@@ -41,7 +41,7 @@ class _AimsScreenState extends State<AimsScreen>{
     if(appViewModel.wishItems.isEmpty)appViewModel.startMyWishesScreen();
     return Consumer<AppViewModel>(
         builder: (context, appVM, child) {
-          allAims = appVM.aimItems;
+          allAims = appVM.aimItems.where((item)=>!item.text.contains("HEADERSIMPLETASKHEADER")).toList();
           page==1?filteredAimList = allAims.where((element) => element.isChecked).toList():
           page==2?filteredAimList = allAims.where((element) => !element.isChecked).toList():
           page==3?filteredAimList = allAims.where((element) => element.isActive&&!element.isChecked).toList():filteredAimList = allAims;

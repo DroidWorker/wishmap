@@ -1,15 +1,14 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 
 import '../data/models.dart';
 import '../res/colors.dart';
 
 class TaskItemWidget extends StatefulWidget{
-  TaskItemWidget({super.key, required this.ti, required this.path, required this.onSelect, required this.onDoubleClick, this.onDelete, this.outlined = false});
+  TaskItemWidget({super.key, required this.ti, required this.p, required this.onSelect, required this.onDoubleClick, this.onDelete, this.outlined = false});
 
   TaskItem ti;
-  String path;
+  String p;
   bool outlined;
   Function(int id) onSelect;
   Function(int id) onDoubleClick;
@@ -21,6 +20,13 @@ class TaskItemWidget extends StatefulWidget{
 
 class _TaskItem extends State<TaskItemWidget>{
   var c = Colors.black;
+  late String path;
+
+  @override
+  void initState() {
+    path = widget.p.replaceAll("HEADERSIMPLETASKHEADER", "");
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -56,17 +62,19 @@ class _TaskItem extends State<TaskItemWidget>{
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(widget.path, maxLines: 1, style: const TextStyle(color: AppColors.textLightGrey)),
-                      widget.ti.isChecked ? Expanded(
-                        child:
-                            Text(widget.ti.text.replaceAll("HEADERSIMPLETASKHEADER", ""),
-                          style: const TextStyle(decoration: TextDecoration.lineThrough, decorationColor: AppColors.greytextColor, color: AppColors.greytextColor),),
-                      ) : Text(widget.ti.text.replaceAll("HEADERSIMPLETASKHEADER", "")),
-                    ],
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        SingleChildScrollView(scrollDirection: Axis.horizontal, reverse: true, child: Text(path, maxLines: 1, style: const TextStyle(color: AppColors.textLightGrey))),
+                        widget.ti.isChecked ? Expanded(
+                          child:
+                              Text(widget.ti.text.replaceAll("HEADERSIMPLETASKHEADER", ""),
+                            style: const TextStyle(decoration: TextDecoration.lineThrough, decorationColor: AppColors.greytextColor, color: AppColors.greytextColor),),
+                        ) : Text(widget.ti.text.replaceAll("HEADERSIMPLETASKHEADER", "")),
+                      ],
+                    ),
                   ),
                   Container(
                     height: 44,

@@ -50,6 +50,8 @@ class TaskEditScreenState extends State<TaskEditScreen>{
 
   bool HEADERSIMPLETASKHEADER = false;
 
+  AnimationController? lottieController;
+
   @override
   Widget build(BuildContext context) {
     text.addListener(() { if(ai?.text!=text.text)isChanged = true;});
@@ -193,7 +195,7 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                                   appVM.activateTask(ai!.id, true);
                                   ai!.isActive = true;
                                 });
-                                showOverlayedAnimations(context, 'assets/lottie/aktualizaciyazadachi.json', fillBackground: true);
+                                showOverlayedAnimations(context, 'assets/lottie/aktualizaciyazadachi.json', fillBackground: true, onControllerCreated: (controller){lottieController = controller;});
                               }else{
                                 showUnavailable(text: "Чтобы актуализировать задачу необходимо актуализировать вышестоящее желание");
                               }
@@ -212,13 +214,13 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                                     return ActionBS('Внимание', "Вы изменили поля но не нажали 'Сохранить'\nСохранить изменения перед выполнением задачи?", "Да", 'Нет',
                                         onOk: () async { Navigator.pop(context, 'OK');
                                         if(await onSaveClicked(appVM, ai!)) {
-                                          if(!ai!.isChecked)showOverlayedAnimations(context, 'assets/lottie/vypolneniezadach.json', fillBackground: true);
+                                          if(!ai!.isChecked)showOverlayedAnimations(context, 'assets/lottie/vypolneniezadach.json', fillBackground: true, onControllerCreated: (controller){lottieController = controller;});
                                           appVM.updateTaskStatus(ai!.id, !ai!.isChecked);
                                         }
                                         },
                                         onCancel: () async {
                                           Navigator.pop(context, 'Cancel');
-                                          if(!ai!.isChecked)showOverlayedAnimations(context, 'assets/lottie/vypolneniezadach.json', fillBackground: true);
+                                          if(!ai!.isChecked)showOverlayedAnimations(context, 'assets/lottie/vypolneniezadach.json', fillBackground: true, onControllerCreated: (controller){lottieController = controller;});
                                           await appVM.updateTaskStatus(
                                               ai!.id, !ai!.isChecked);
                                           await appVM.getTask(ai?.id??0);
@@ -228,7 +230,7 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                                   },
                                 );
                               }else {
-                                if(!ai!.isChecked)showOverlayedAnimations(context, 'assets/lottie/vypolneniezadach.json', fillBackground: true);
+                                if(!ai!.isChecked)showOverlayedAnimations(context, 'assets/lottie/vypolneniezadach.json', fillBackground: true, onControllerCreated: (controller){lottieController = controller;});
                                 appVM.updateTaskStatus(
                                     ai!.id, !ai!.isChecked);
                                 showModalBottomSheet<void>(
@@ -237,7 +239,13 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                                   isScrollControlled: true,
                                   builder: (BuildContext context) {
                                     return NotifyBS(ai!.isChecked?'выполнена':"не выполнена", "", 'OK',
-                                        onOk: () => Navigator.pop(context, 'OK'));
+                                        onOk: () {
+                                          try {
+                                            lottieController?.reset();
+                                            lottieController=null;
+                                          } catch (ex){}
+                                          Navigator.pop(context, 'OK');
+                                    });
                                   },
                                 );
                               }

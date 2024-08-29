@@ -80,7 +80,7 @@ class MissionScreenState extends State<MissionScreen>
       if (status == AnimationStatus.completed &&
           (_offset.dx > 400 || _offset.dx < -400 || _offset.dy < -650)) {
         _offset = Offset.zero;
-        if (currentRepeatCount > 0) {
+        if (currentRepeatCount > 1) {
           currentRepeatCount--;
           // Создаем новый стек после завершения анимации
           image = null;
@@ -161,8 +161,10 @@ class MissionScreenState extends State<MissionScreen>
       if (lastDirection == "right" && currentWish != null) {
         if (!currentWish!.isActive) {
           vm.activateSphereWish(currentWish!.id, true);
-        } else {
+        } else if(!currentWish!.isChecked) {
           vm.updateWishStatus(currentWish!.id, true);
+        } else {
+          vm.hideSphereWish(currentWish!.id, true, true);
         }
       } else if (lastDirection == "top" && currentWish != null) {
         vm.deleteSphereWish(currentWish!.id, null, null);
@@ -197,8 +199,10 @@ class MissionScreenState extends State<MissionScreen>
       if (lastDirection == "right" && currentWish != null) {
         if (!currentWish!.isActive) {
           vm.activateSphereWish(currentWish!.id, true);
-        } else {
+        } else if(!currentWish!.isChecked) {
           vm.updateWishStatus(currentWish!.id, true);
+        } else {
+          vm.hideSphereWish(currentWish!.id, true, true);
         }
       } else if (lastDirection == "top" && currentWish != null) {
         vm.deleteSphereWish(currentWish!.id, null, null);
@@ -323,16 +327,16 @@ class MissionScreenState extends State<MissionScreen>
                                         mainAxisAlignment: MainAxisAlignment
                                             .spaceAround,
                                         children: [
-                                          Expanded(
-                                            child: Text(currentWish?.isActive==false?'Неактуально':currentWish?.isChecked==true?'Не выполнено':'Не выполнено',
-                                                style: const TextStyle(
+                                          const Expanded(
+                                            child: Text('Не трогать',
+                                                style: TextStyle(
                                                     color: AppColors.greytextColor)),
                                           ),
                                           Image.asset(
                                               'assets/icons/hand.png', height: 44,
                                               width: 44),
                                           Expanded(
-                                            child: Text(currentWish?.isActive==false?'Актуально':currentWish?.isChecked==true?'Выполнено':'Выполнено',
+                                            child: Text(currentWish?.isActive==false?'Актуально':currentWish?.isChecked==false?'Выполнено':'Скрыть',
                                                 style: const TextStyle(color: AppColors.greytextColor), textAlign: TextAlign.right,),
                                           )
                                         ],
@@ -351,7 +355,7 @@ class MissionScreenState extends State<MissionScreen>
                           currentWish!.id, "w") : "", style: const TextStyle(
                           color: AppColors.greytextColor)),
                       GradientText(
-                        currentWish?.text ?? "", gradient: const LinearGradient(
+                        currentWish?.text.replaceAll("HEADERSIMPLETASKHEADER", "") ?? "", gradient: const LinearGradient(
                           colors: [
                             AppColors.gradientStart,
                             AppColors.gradientEnd
@@ -368,13 +372,19 @@ class MissionScreenState extends State<MissionScreen>
                             autoSwipe("left");
                           },
                               child: Image.asset(
-                                  'assets/icons/unactual.png', height: 52,
+                                  currentWish?.isActive==false?'assets/icons/unactual.png':currentWish?.isChecked==true?'assets/icons/done_outlined.png':'assets/icons/actual.png', height: 52,
+                                  width: 52)),
+                          InkWell(onTap: () {
+                            autoSwipe("top");
+                          },
+                              child: SvgPicture.asset(
+                                  'assets/icons/circle_trash.svg', height: 52,
                                   width: 52)),
                           InkWell(onTap: () {
                             autoSwipe("right");
                           },
                               child: Image.asset(
-                                  'assets/icons/actual.png', height: 52,
+                                  currentWish?.isActive==false?'assets/icons/actual.png':currentWish?.isChecked==false?'assets/icons/done_outlined.png':'assets/icons/wish_hidden.png', height: 52,
                                   width: 52))
                         ],
                       )
@@ -484,9 +494,9 @@ class MissionScreenState extends State<MissionScreen>
                                               currentTask?.isActive == false
                                               ? "Актуально"
                                               : currentTask?.isChecked == true
-                                              ? ""
+                                              ? "Не трогать"
                                               : "Выполнено", style: const TextStyle(
-                                              color: AppColors.greytextColor)),
+                                              color: AppColors.greytextColor), textAlign: TextAlign.right),
                                         )
                                       ],),
                                     const SizedBox(height: 16)
