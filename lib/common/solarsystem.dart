@@ -225,7 +225,7 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
         }
         if(widget.circles.isNotEmpty)plusId++;
         vm?.cachedImages.clear();
-        vm?.createNewSphereWish(WishData(id: circleid, prevId: prevId, nextId: nextId, parentId: centralCircles.last.id, text: "Новое желание", description: "", affirmation: (defaultAffirmations.join("|").toString()), color: Colors.red), true);
+        vm?.createNewSphereWish(WishData(id: circleid, prevId: prevId, nextId: nextId, parentId: centralCircles.last.id, text: "Новое желание", description: "", affirmation: (defaultAffirmations.join("|").toString()), color: Colors.red), true, false);
         widget.circles.insert(plusId, Circle(id: circleid, parentId: centralCircles.last.id, prevId: prevId, nextId: nextId, text: "Новое желание", color: Colors.red, radius: (widget.size*0.2).toInt(), isChecked: false));
         plusId=-1;
         circlePositions.clear();

@@ -250,30 +250,24 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
         int nextId = -1;
         if(plusId>=0){
           if(widget.circles.length>plusId+1){
-            //если количество свер на окружности больше чем количество плюсов и это не последняя  сфера в базе
-            //(если сфера вставляется не последней)
-            /*prevId = widget.circles[plusId].id;
-            nextId = widget.circles[plusId+1].id;*/
             prevId = widget.circles[plusId].id;
             final nextIndex = vm?.mainScreenState?.allCircles.indexWhere((element) => element.id == widget.circles[plusId].id)??-1;
             nextId = (nextIndex!=-1)? vm?.mainScreenState?.allCircles[nextIndex+1].id??-1: -1;
-            //..circleid = (widget.circles[plusId+1].id-widget.circles[plusId].id)~/2+widget.circles[plusId].id;
           }else if(widget.circles.length==plusId+1){
             //если сера вставляется в конец(что = вставке в начало)
             prevId = vm?.mainScreenState?.allCircles.where((element) => element.id == widget.circles[plusId].id).firstOrNull?.id??-1;
             nextId = -1;
-            //circleid = ((((widget.circles[plusId].id+10000)~/10000)*10000)-widget.circles[plusId].id)~/2+widget.circles[plusId].id;
           }else{
             //сли создается на чистой окружности
             prevId = -1;
             nextId = -1;
-            //circleid = vm!.mainScreenState!.allCircles.isNotEmpty?((vm!.mainScreenState!.allCircles.last.id) ~/ 10000) * 10000 + 10000:-101;
           }
         }
         if(widget.circles.isNotEmpty)plusId++;
         vm?.cachedImages.clear();
-        vm?.createNewSphereWish(WishData(id: circleid, prevId: prevId, nextId: nextId, parentId: centralCircles.last.id, text: "Новое желание", description: "", affirmation: (defaultAffirmations.join("|").toString()), color: Colors.red), true);
-        widget.circles.insert(plusId, Circle(id: circleid, parentId: centralCircles.last.id, prevId: prevId, nextId: nextId, text: "Новое желание", color: Colors.red, radius: (widget.size*0.2).toInt(), isChecked: false));
+        vm?.mainScreenState?.needToUpdateCoords=true;
+        vm?.createNewSphereWish(WishData(id: circleid, prevId: prevId, nextId: nextId, parentId: centralCircles.last.id, text: centralCircles.last.id!=0?"Новое желание":"Сфера", description: "", affirmation: (defaultAffirmations.join("|").toString()), color: Colors.red), true, false);
+        widget.circles.insert(plusId, Circle(id: circleid, parentId: centralCircles.last.id, prevId: prevId, nextId: nextId, text: centralCircles.last.id!=0?"Новое желание":"Сфера", color: Colors.red, radius: (widget.size*0.2).toInt(), isChecked: false));
         plusId=-1;
 
         showHideController.reverse();
@@ -388,7 +382,6 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
         setState(() {
           if(centralCircles.length>2){
             centralCircles[centralCircles.length-3].isVisible = true;
-            print("hhhhhhhhhhhhhhhh${centralCircles[centralCircles.length-3].text}");
           }
           circlesHash=0;
           centralCircles.removeLast();
@@ -406,9 +399,10 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
 
   @override
   Widget build(BuildContext context) {
-    print("rebuild widget");
     vm = Provider.of<AppViewModel>(context);
-    if(centralCircles.isEmpty||widget.clearData) {
+    print("rebuild widget");
+
+    if(centralCircles.isEmpty||(widget.clearData)) {
       centralCircles = List<MainCircle>.from(vm!.mainCircles);
       centralCircles.forEach((element) {
         ccKeys.add(UniqueKey());
@@ -423,10 +417,7 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
       widget.clearData=false;
     }
 
-    final appViewModel = Provider.of<AppViewModel>(context);
-
-    print("update coords ${appViewModel.mainScreenState?.needToUpdateCoords==true}");
-    if(appViewModel.mainScreenState?.needToUpdateCoords==true){
+    if(vm!.mainScreenState?.needToUpdateCoords==true){
       lastRotation.value=0.0;
       final radius = MediaQuery.of(context).size.width*0.15;
       for (int i = 0; i<centralCircles.length; i++) {
@@ -434,7 +425,7 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
         if (centralCircles[i].coords.key == 0.0 || centralCircles[i].coords.value == 0.0) {
           centralCircles[i].coords = Pair(key: widget.center.key - centralCircles[i].radius, value: widget.center.value - centralCircles[i].radius);
           _rTOc = Tween<Offset>(begin: Offset(centralCircles[i].coords.key,centralCircles[i].coords.value), end: Offset(centralCircles[i].coords.key,centralCircles[i].coords.value)).animate(movingController);
-          _cTOa = Tween<Offset>(begin: Offset(widget.center.key*2-100,-50), end: Offset(widget.center.key*2-100,-40)).animate(movingController);
+          _cTOa = Tween<Offset>(begin: Offset((widget.center.key-60) * 2, widget.center.value-40-(widget.size/2)-80), end: Offset(widget.center.key*2-100,-40)).animate(movingController);
         }
       }
       circleRotations.clear();
@@ -466,12 +457,12 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
         if(centralCircles.isNotEmpty&&!centralCircles.last.isChecked&&centralCircles.last.isActive){plusesPositions.add(Offset(px,py));
         plusesRotations.add(1);}
       }
-      if(widget.circles.length>8&&widget.circles.length<=16&&circleRotations.length==widget.circles.length){
+      if(widget.circles.length>8&&circleRotations.length==widget.circles.length){
         for(int i = 0; i < widget.circles.length; i++){
           widget.circles[i].radius=(widget.size*0.15).toInt();
         }
       }
-      if(widget.circles.isNotEmpty)appViewModel.mainScreenState?.needToUpdateCoords=false;
+      if(widget.circles.isNotEmpty)vm!.mainScreenState?.needToUpdateCoords=false;
     }
 
     var lcent =  widget.center.key + 40 - widget.size / 2;
@@ -569,48 +560,48 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
                                 if (touchCount>1) {
                                   if(allowClick){
                                     final id = centralCircles[index].id;
-                                    final parentId = appViewModel.mainScreenState!.allCircles.firstWhereOrNull((element) => element.id==id)?.parenId;
+                                    final parentId = vm!.mainScreenState!.allCircles.firstWhereOrNull((element) => element.id==id)?.parenId;
                                     if(id==0){
-                                      if(appViewModel.settings.fastActMainSphere&&centralCircles[index].isActive==false){
-                                        appViewModel.activateSphereWish(id, true);
+                                      if(vm!.settings.fastActMainSphere&&centralCircles[index].isActive==false){
+                                        vm!.activateSphereWish(id, true);
                                         widget.circles.where((element) => element.id==id).firstOrNull?.isActive=true;
                                         centralCircles.firstOrNull?.isActive=true;
-                                        appViewModel.mainCircles = centralCircles;
+                                        vm?.mainCircles = centralCircles;
                                         setState(() { });
                                       }else {
-                                        appViewModel.cachedImages.clear();
-                                        appViewModel.startMainsphereeditScreen();
+                                        vm?.cachedImages.clear();
+                                        vm?.startMainsphereeditScreen();
                                         BlocProvider.of<NavigationBloc>(context)
                                             .add(NavigateToMainSphereEditScreenEvent());
                                       }
                                     }else if(parentId==0){
-                                      if(appViewModel.settings.fastActSphere&&centralCircles[index].isActive==false){
-                                        appViewModel.activateSphereWish(id, true);
+                                      if(vm!.settings.fastActSphere&&centralCircles[index].isActive==false){
+                                        vm?.activateSphereWish(id, true);
                                         centralCircles.forEach((element) {element.isActive=true;});
-                                        appViewModel.mainCircles = centralCircles;
+                                        vm?.mainCircles = centralCircles;
                                         setState(() { });
                                       }else {
-                                        appViewModel.cachedImages.clear();
-                                        appViewModel.wishScreenState = null;
-                                        appViewModel.startWishScreen(
+                                        vm?.cachedImages.clear();
+                                        vm?.wishScreenState = null;
+                                        vm?.startWishScreen(
                                             centralCircles[index].id, 0, false);
-                                        appViewModel.mainCircles = centralCircles;
+                                        vm?.mainCircles = centralCircles;
                                         BlocProvider.of<NavigationBloc>(context)
                                             .add(NavigateToWishScreenEvent());
                                       };
                                     }else if(parentId!=0){
-                                      if(centralCircles[index].isActive==false&&centralCircles[index].isChecked==false&&appViewModel.settings.fastActWish&&(centralCircles[centralCircles.length-2].isActive==true||(appViewModel.mainScreenState!.allCircles.firstWhereOrNull((element) => element.id==parentId)?.parenId==0&&appViewModel.settings.sphereActualizingMode==1)||(appViewModel.settings.wishActualizingMode==1&&appViewModel.isParentSphereActive(id))||(appViewModel.settings.sphereActualizingMode==1&&appViewModel.settings.wishActualizingMode==1))){
-                                        appViewModel.activateSphereWish(id, true);
+                                      if(centralCircles[index].isActive==false&&centralCircles[index].isChecked==false&&vm!.settings.fastActWish&&(centralCircles[centralCircles.length-2].isActive==true||(vm?.mainScreenState!.allCircles.firstWhereOrNull((element) => element.id==parentId)?.parenId==0&&vm?.settings.sphereActualizingMode==1)||(vm?.settings.wishActualizingMode==1&&vm!.isParentSphereActive(id))||(vm?.settings.sphereActualizingMode==1&&vm?.settings.wishActualizingMode==1))){
+                                        vm?.activateSphereWish(id, true);
                                         widget.circles.where((element) => element.id==id).firstOrNull?.isActive=true;
                                         centralCircles.forEach((element) {element.isActive=true;});
-                                        appViewModel.mainCircles = centralCircles;
+                                        vm?.mainCircles = centralCircles;
                                         setState(() { });
                                       }else {
-                                        appViewModel.cachedImages.clear();
-                                        appViewModel.wishScreenState = null;
-                                        appViewModel.startWishScreen(
+                                        vm?.cachedImages.clear();
+                                        vm?.wishScreenState = null;
+                                        vm?.startWishScreen(
                                             centralCircles[index].id, 0, false);
-                                        appViewModel.mainCircles = centralCircles;
+                                        vm?.mainCircles = centralCircles;
                                         BlocProvider.of<NavigationBloc>(context)
                                             .add(NavigateToWishScreenEvent());
                                       }
@@ -627,16 +618,16 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
                                         widget.circles = vm?.openSphere(value.id) ?? [];
                                         initAnim(centralCircles.last.id, widget.circles.indexWhere((element) => element.id == centralCircles.last.id));
                                       } else if (centralCircles[index].id == 0) {
-                                        appViewModel.cachedImages.clear();
-                                        appViewModel.startMainsphereeditScreen();
+                                        vm?.cachedImages.clear();
+                                        vm?.startMainsphereeditScreen();
                                         BlocProvider.of<NavigationBloc>(context)
                                             .add(NavigateToMainSphereEditScreenEvent());
                                       } else {
-                                        appViewModel.cachedImages.clear();
-                                        appViewModel.wishScreenState = null;
-                                        appViewModel.startWishScreen(
+                                        vm?.cachedImages.clear();
+                                        vm?.wishScreenState = null;
+                                        vm?.startWishScreen(
                                             centralCircles[index].id, 0, false);
-                                        appViewModel.mainCircles = centralCircles;
+                                        vm?.mainCircles = centralCircles;
                                         BlocProvider.of<NavigationBloc>(context)
                                             .add(NavigateToWishScreenEvent());
                                       }
@@ -728,9 +719,9 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
                                     onTap: () {
                                       print("onplustap");
                                       if(centralCircles.last.id==0){
-                                        appViewModel.hint = textNewI[Random().nextInt(18)];
+                                        vm?.hint = textNewI[Random().nextInt(18)];
                                       }else if(centralCircles.last.id<900){
-                                        appViewModel.hint = textNewSphere[Random().nextInt(18)];
+                                        vm?.hint = textNewSphere[Random().nextInt(18)];
                                       }
                                       if(widget.circles.length<12) {
                                         plusId= e.key;
@@ -803,13 +794,13 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
                                               initAnim(id, itemId);
                                               if (!widget.circles[itemId].isActive) {
                                                 itemId < 900
-                                                    ? appViewModel.hint =
+                                                    ? vm?.hint =
                                                 textSphereActualize[Random().nextInt(5)]
                                                     :
-                                                appViewModel.hint =
+                                                vm?.hint =
                                                 textWishActualize[Random().nextInt(15)];
                                               } else {
-                                                appViewModel.hint =
+                                                vm?.hint =
                                                 "Ты в карте сферы. Сфера — это целая область жизни. Если ты хочешь развить данную сферу, задай себе вопрос: “что я хочу изменить в этой сфере, каковы мои желания?”. Отвечая на этот вопрос, создавай желания, исполнение которых качественно изменит данную сферу. Создавай, выбирай аффирмации и управляй своим будущим. Чтобы создать желание, просто нажми «+» на орбите, что вокруг сферы.";
                                               }
 
@@ -817,38 +808,38 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
                                           },
                                           doubleTap: (id, parentId){
                                             print("oncircletap3");
-                                            appViewModel.mainCircles = centralCircles;
-                                            if(allowClick&&!entry.value.isActive&&!entry.value.isChecked&&(appViewModel.settings.fastActMainSphere||appViewModel.settings.fastActSphere||appViewModel.settings.fastActWish)){
+                                            vm?.mainCircles = centralCircles;
+                                            if(allowClick&&!entry.value.isActive&&!entry.value.isChecked&&(vm!.settings.fastActMainSphere||vm!.settings.fastActSphere||vm!.settings.fastActWish)){
                                               if(id==0){
-                                                if(appViewModel.settings.fastActMainSphere){
-                                                  appViewModel.activateSphereWish(id, true);
+                                                if(vm!.settings.fastActMainSphere){
+                                                  vm?.activateSphereWish(id, true);
                                                   widget.circles.where((element) => element.id==id).firstOrNull?.isActive=true;
                                                   setState(() { });
                                                   //_radiusControllers[index].play();
-                                                }else appViewModel.addError("Режим быстрой актуализации отключен в настройках");
+                                                }else vm?.addError("Режим быстрой актуализации отключен в настройках");
                                               }else if(parentId==0){
-                                                if(appViewModel.settings.fastActSphere){
-                                                  appViewModel.activateSphereWish(id, true);
+                                                if(vm!.settings.fastActSphere){
+                                                  vm?.activateSphereWish(id, true);
                                                   widget.circles.where((element) => element.id==id).firstOrNull?.isActive=true;
                                                   //_radiusControllers[index].play();
                                                   setState(() { });
-                                                }else appViewModel.addError("Режим быстрой актуализации едоступен");
+                                                }else vm?.addError("Режим быстрой актуализации едоступен");
                                               }else if(parentId!=0){
-                                                if(appViewModel.settings.fastActWish&&(centralCircles.lastOrNull?.isActive==true||(appViewModel.mainScreenState!.allCircles.firstWhereOrNull((element) => element.id==parentId)?.parenId==0&&appViewModel.settings.sphereActualizingMode==1)||(appViewModel.settings.wishActualizingMode==1&&(appViewModel.settings.sphereActualizingMode==1||appViewModel.isParentSphereActive(id))))){
-                                                  appViewModel.activateSphereWish(id, true);
+                                                if(vm!.settings.fastActWish&&(centralCircles.lastOrNull?.isActive==true||(vm?.mainScreenState!.allCircles.firstWhereOrNull((element) => element.id==parentId)?.parenId==0&&vm!.settings.sphereActualizingMode==1)||(vm!.settings.wishActualizingMode==1&&(vm!.settings.sphereActualizingMode==1||vm!.isParentSphereActive(id))))){
+                                                  vm!.activateSphereWish(id, true);
                                                   widget.circles.where((element) => element.id==id).firstOrNull?.isActive=true;
                                                   centralCircles.forEach((element) {element.isActive=true;});
-                                                  appViewModel.mainCircles = centralCircles;
+                                                  vm!.mainCircles = centralCircles;
                                                   //_radiusControllers[index].play();
                                                   setState(() { });
-                                                }else appViewModel.addError("Актуализация невозможна");
+                                                }else vm!.addError("Актуализация невозможна");
                                               }
                                             }else{
-                                              appViewModel.cachedImages.clear();
-                                              appViewModel.wishScreenState = null;
-                                              appViewModel.startWishScreen(
+                                              vm!.cachedImages.clear();
+                                              vm!.wishScreenState = null;
+                                              vm!.startWishScreen(
                                                   entry.value.id, 0, false);
-                                              appViewModel.mainCircles = centralCircles;
+                                              vm!.mainCircles = centralCircles;
                                               BlocProvider.of<NavigationBloc>(context)
                                                   .add(NavigateToWishScreenEvent());
                                             }
@@ -877,48 +868,48 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
                                     final id = centralCircles.last.id;
                                     if (touchCount>1) {
                                       if(allowClick){
-                                        final parentId = appViewModel.mainScreenState!.allCircles.firstWhereOrNull((element) => element.id==id)?.parenId;
+                                        final parentId = vm!.mainScreenState!.allCircles.firstWhereOrNull((element) => element.id==id)?.parenId;
                                         if(id==0){
-                                          if(appViewModel.settings.fastActMainSphere&&centralCircles[index].isActive==false){
-                                            appViewModel.activateSphereWish(id, true);
+                                          if(vm!.settings.fastActMainSphere&&centralCircles[index].isActive==false){
+                                            vm!.activateSphereWish(id, true);
                                             widget.circles.where((element) => element.id==id).firstOrNull?.isActive=true;
                                             centralCircles.firstOrNull?.isActive=true;
-                                            appViewModel.mainCircles = centralCircles;
+                                            vm!.mainCircles = centralCircles;
                                             setState(() { });
                                           }else {
-                                            appViewModel.cachedImages.clear();
-                                            appViewModel.startMainsphereeditScreen();
+                                            vm!.cachedImages.clear();
+                                            vm!.startMainsphereeditScreen();
                                             BlocProvider.of<NavigationBloc>(context)
                                                 .add(NavigateToMainSphereEditScreenEvent());
                                           }
                                         }else if(parentId==0){
-                                          if(appViewModel.settings.fastActSphere&&centralCircles[index].isActive==false){
-                                            appViewModel.activateSphereWish(id, true);
+                                          if(vm!.settings.fastActSphere&&centralCircles[index].isActive==false){
+                                            vm!.activateSphereWish(id, true);
                                             centralCircles.forEach((element) {element.isActive=true;});
-                                            appViewModel.mainCircles = centralCircles;
+                                            vm!.mainCircles = centralCircles;
                                             setState(() { });
                                           }else {
-                                            appViewModel.cachedImages.clear();
-                                            appViewModel.wishScreenState = null;
-                                            appViewModel.startWishScreen(
+                                            vm!.cachedImages.clear();
+                                            vm!.wishScreenState = null;
+                                            vm!.startWishScreen(
                                                 centralCircles[index].id, 0, false);
-                                            appViewModel.mainCircles = centralCircles;
+                                            vm!.mainCircles = centralCircles;
                                             BlocProvider.of<NavigationBloc>(context)
                                                 .add(NavigateToWishScreenEvent());
                                           };
                                         }else if(parentId!=0){
-                                          if(centralCircles[index].isActive==false&&centralCircles[index].isChecked==false&&appViewModel.settings.fastActWish&&(centralCircles[centralCircles.length-2].isActive==true||(appViewModel.mainScreenState!.allCircles.firstWhereOrNull((element) => element.id==parentId)?.parenId==0&&appViewModel.settings.sphereActualizingMode==1)||(appViewModel.settings.wishActualizingMode==1&&appViewModel.isParentSphereActive(id))||(appViewModel.settings.sphereActualizingMode==1&&appViewModel.settings.wishActualizingMode==1))){
-                                            appViewModel.activateSphereWish(id, true);
+                                          if(centralCircles[index].isActive==false&&centralCircles[index].isChecked==false&&vm!.settings.fastActWish&&(centralCircles[centralCircles.length-2].isActive==true||(vm!.mainScreenState!.allCircles.firstWhereOrNull((element) => element.id==parentId)?.parenId==0&&vm!.settings.sphereActualizingMode==1)||(vm!.settings.wishActualizingMode==1&&vm!.isParentSphereActive(id))||(vm!.settings.sphereActualizingMode==1&&vm!.settings.wishActualizingMode==1))){
+                                            vm!.activateSphereWish(id, true);
                                             widget.circles.where((element) => element.id==id).firstOrNull?.isActive=true;
                                             centralCircles.forEach((element) {element.isActive=true;});
-                                            appViewModel.mainCircles = centralCircles;
+                                            vm!.mainCircles = centralCircles;
                                             setState(() { });
                                           }else {
-                                            appViewModel.cachedImages.clear();
-                                            appViewModel.wishScreenState = null;
-                                            appViewModel.startWishScreen(
+                                            vm!.cachedImages.clear();
+                                            vm!.wishScreenState = null;
+                                            vm!.startWishScreen(
                                                 centralCircles[index].id, 0, false);
-                                            appViewModel.mainCircles = centralCircles;
+                                            vm!.mainCircles = centralCircles;
                                             BlocProvider.of<NavigationBloc>(context)
                                                 .add(NavigateToWishScreenEvent());
                                           }
@@ -936,16 +927,16 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
                                             widget.circles = vm?.openSphere(id) ?? [];
                                             initAnim(centralCircles.last.id, widget.circles.indexWhere((element) => element.id == centralCircles.last.id));
                                           } else if (centralCircles[index].id == 0) {
-                                            appViewModel.cachedImages.clear();
-                                            appViewModel.startMainsphereeditScreen();
+                                            vm!.cachedImages.clear();
+                                            vm!.startMainsphereeditScreen();
                                             BlocProvider.of<NavigationBloc>(context)
                                                 .add(NavigateToMainSphereEditScreenEvent());
                                           } else {
-                                            appViewModel.cachedImages.clear();
-                                            appViewModel.wishScreenState = null;
-                                            appViewModel.startWishScreen(
+                                            vm!.cachedImages.clear();
+                                            vm!.wishScreenState = null;
+                                            vm!.startWishScreen(
                                                 centralCircles[index].id, 0, false);
-                                            appViewModel.mainCircles = centralCircles;
+                                            vm!.mainCircles = centralCircles;
                                             BlocProvider.of<NavigationBloc>(context)
                                                 .add(NavigateToWishScreenEvent());
                                           }

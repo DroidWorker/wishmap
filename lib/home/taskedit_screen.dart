@@ -372,12 +372,12 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                                   ),
                                 ),
                               ),
-                              if(ai?.isActive==false||ai?.isChecked==true)Positioned.fill(
-                                  child: Container(
-                                    color: AppColors.backgroundColor.withOpacity(0.8),
-                                  )
-                              )
-                            ],)
+                            ],),
+                            if(ai?.isActive==false||ai?.isChecked==true)Positioned.fill(
+                                child: Container(
+                                  color: AppColors.backgroundColor.withOpacity(0.8),
+                                )
+                            )
                           ],),
                           const SizedBox(height: 24),
                           const Divider(color: AppColors.grey, height: 2,),

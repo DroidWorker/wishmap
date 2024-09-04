@@ -238,7 +238,8 @@ class _WishScreenState extends State<WishScreen>{
                                   builder: (BuildContext context) {
                                     return ActionBS('Внимание', (curwish.childAims.isEmpty&&!appVM.hasChildWishes(curwish.id))?"Объект будет удален":(curwish.parentId > 1)?"Если в данном желании создавались желания, цели и задачи, то они также будут удалены":
                                     "Если в данной сфере\n создавались желания,\n цели и задачи, то они\n также будут удалены", "Да", 'Нет',
-                                        onOk: () { Navigator.pop(context, 'OK');
+                                        onOk: () {
+                                        Navigator.pop(context, 'OK');
                                         appViewModel.deleteSphereWish(appVM.wishScreenState!.wish.id, curwish.prevId, curwish.nextId);
                                         showModalBottomSheet<void>(
                                           backgroundColor: AppColors.backgroundColor,
@@ -246,20 +247,15 @@ class _WishScreenState extends State<WishScreen>{
                                           isScrollControlled: true,
                                           builder: (BuildContext context) {
                                             return NotifyBS('Удалено', "", 'OK',
-                                                onOk: () { Navigator.pop(context, 'OK');
-                                                var moon = appVM.mainScreenState!.moon;
-                                                appViewModel.mainScreenState = null;
-                                                appViewModel.mainCircles.clear();
-                                                appViewModel.startMainScreen(moon);}
+                                                onOk: () { Navigator.pop(context, 'OK');}
                                             );
                                           },
-                                        ).then((value) {
-                                          var moon = appVM.mainScreenState!.moon;
-                                          appViewModel.mainScreenState = null;
-                                          appViewModel.mainCircles.clear();
-                                          appViewModel.startMainScreen(moon);
-                                          BlocProvider.of<NavigationBloc>(context).handleBackPress();
-                                        });
+                                        );
+                                        var moon = appVM.mainScreenState!.moon;
+                                        appViewModel.mainScreenState = null;
+                                        appViewModel.mainCircles.clear();
+                                        appViewModel.startMainScreen(moon);
+                                        BlocProvider.of<NavigationBloc>(context).handleBackPress();
                                         },
                                         onCancel: () { Navigator.pop(context, 'Cancel');});
                                   },
@@ -760,12 +756,12 @@ class _WishScreenState extends State<WishScreen>{
                                   if(appVM.mainScreenState!.allCircles.where((element) => element.parenId==curwish.id).toList().length>=12){
                                     showUnavailable("Достигнуто максимальноке количество желаний на орбите. Вы можете скрть или удалить другие желания, чтобы освободить место для демонстрации данной желания на орбите");
                                   }else{
+                                    appVM.cachedImages.clear();
                                     final childlastid = appViewModel.mainScreenState?.allCircles.where((element) => element.parenId==curwish.id&&element.nextId==-1).firstOrNull?.id??-1;
                                     int wishid = appViewModel.mainScreenState!.allCircles.isNotEmpty?appViewModel.mainScreenState!.allCircles.map((circle) => circle.id).reduce((value, element) => value > element ? value : element)+1:-101;
-                                    await appViewModel.createNewSphereWish(WishData(id: wishid, prevId: childlastid, nextId: -1, parentId: curwish.id, text: "Новое желание", description: "", affirmation: (defaultAffirmations.join("|").toString()), color: Colors.red), true);
+                                    await appViewModel.createNewSphereWish(WishData(id: wishid, prevId: childlastid, nextId: -1, parentId: curwish.id, text: "Новое желание", description: "", affirmation: (defaultAffirmations.join("|").toString()), color: Colors.red), true, true);
                                     BlocProvider.of<NavigationBloc>(context)
                                         .clearHistory();
-                                    appVM.cachedImages.clear();
                                     appVM.wishScreenState = null;
                                     isDataLoaded=false;
                                     final parentid = curwish.id;
@@ -874,7 +870,7 @@ class _WishScreenState extends State<WishScreen>{
                               ..affirmation = curwish.affirmation
                               ..color = _color!;
                             await appViewModel.createNewSphereWish(
-                                appVM.wishScreenState!.wish, false);
+                                appVM.wishScreenState!.wish, false,true);
                             appViewModel.isChanged = false;
                             showModalBottomSheet<void>(
                               backgroundColor: AppColors.backgroundColor,
@@ -1022,7 +1018,7 @@ class _WishScreenState extends State<WishScreen>{
       ..description=description.text
       ..affirmation=curwish.affirmation
       ..color = _color!;
-    await appVM.createNewSphereWish(appVM.wishScreenState!.wish, false);
+    await appVM.createNewSphereWish(appVM.wishScreenState!.wish, false, true);
     appVM.isChanged=false;
     appVM.convertToMyTreeNodeFullBranch(curwish.id);
     showModalBottomSheet<void>(

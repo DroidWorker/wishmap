@@ -165,6 +165,24 @@ class DatabaseHelper {
     // Удаление всех данных из таблицы diary
     await db.delete('diary', where: "moonId = ?", whereArgs: [moonId]);
   }
+  Future<void> clearDatabaseFolMoons(String ids) async {
+    Database db = await database;
+    int count = 0;
+
+    // Удаление всех данных из таблицы spheres
+    count += await db.rawDelete('DELETE FROM spheres WHERE moonId IN ($ids)');
+
+    // Удаление всех данных из таблицы aims
+    count += await db.rawDelete('DELETE FROM aims WHERE moonId IN ($ids)');
+
+    // Удаление всех данных из таблицы tasks
+    count += await db.rawDelete('DELETE FROM tasks WHERE moonId IN ($ids)');
+
+    // Удаление всех данных из таблицы diary
+    count += await db.rawDelete('DELETE FROM diary WHERE moonId IN ($ids)');
+
+    print("removed $count rows");
+  }
   Future dropDatabase() async{
     Database db = await database;
     await db.delete("spheres");
@@ -195,6 +213,7 @@ class DatabaseHelper {
   Future deleteMoons(String ids) async {
     Database db = await database;
     await db.rawDelete('DELETE FROM moons WHERE id IN ($ids)');
+    await clearDatabaseFolMoons(ids);
   }
 
   Future<List<Map<String, dynamic>>> getAllMoons() async {

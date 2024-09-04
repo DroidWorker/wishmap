@@ -130,7 +130,10 @@ class _ProfileScreenState extends State<ProfileScreen>{
                         BlocProvider.of<NavigationBloc>(context)
                             .add(NavigateToAlarmScreenEvent());
                       }),
-                      settingsWidget("assets/icons/setting_key.svg" ,"Пароль", (){}),
+                      settingsWidget("assets/icons/setting_key.svg" ,"Пароль", (){
+                        BlocProvider.of<NavigationBloc>(context)
+                            .add(NavigateToLockSettingsScreenEvent());
+                      }),
                       settingsWidget("assets/icons/setting_music.svg" ,"Музыка на главном", (){
                         BlocProvider.of<NavigationBloc>(context)
                             .add(NavigateToSoundsSettingsScreenEvent());

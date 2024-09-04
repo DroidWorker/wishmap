@@ -774,7 +774,7 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>
                                                         .join("|")
                                                         .toString()),
                                                 color: Colors.red),
-                                            true)
+                                            true, true)
                                         .then((value) {
                                       BlocProvider.of<NavigationBloc>(context)
                                           .clearHistory();

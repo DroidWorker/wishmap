@@ -137,18 +137,23 @@ class CardsScreenState extends State<CardsScreen> {
                     ),
                   ),
                   deleteMode&&appVM.connectivity!="No Internet Connection"
-                      ? ColorRoundedButton("Удалить", () {
+                      ? ColorRoundedButton("Удалить", () async {
+                    List<int> realIsDeleteQ = [];
                           setState(() {
-                            List<int> realIsDeleteQ = [];
+                            isInSync = true;
+                          });
+                          final len = appVM.moonItems.length;
                             deleteQ.sort((a, b)=>b.compareTo(a));
                             for (var e in deleteQ) {
-                              realIsDeleteQ.add(appVM.moonItems[e].id);
-                              appVM.moonItems.removeAt(appVM.moonItems.length-1-e);
+                              realIsDeleteQ.add(appVM.moonItems[len-1-e].id);
+                              appVM.moonItems.removeAt(len-1-e);
                             }
-                            appViewModel.deleteMoons(realIsDeleteQ);
-                            deleteMode = false;
-                            deleteQ.clear();
-                          });
+                            await appViewModel.deleteMoons(realIsDeleteQ);
+                            setState(() {
+                              deleteMode = false;
+                              deleteQ.clear();
+                              isInSync = false;
+                            });
                         })
                       : const SizedBox()
                 ],

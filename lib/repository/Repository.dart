@@ -286,9 +286,9 @@ class Repository{
     }
   }
   Future deleteMoons(List<int> moonIds) async {
-    for (var e in moonIds) {
+    moonIds.forEach((e) async {
       await userRef.child(_auth.currentUser!.uid).child("moonlist").child(e.toString()).remove();
-    }
+    });
   }
   Future addAllCircles(List<CircleData> circles, int moonId) async {
     if(_auth.currentUser!=null){

@@ -159,9 +159,9 @@ class MissionScreenState extends State<MissionScreen>
 
     if (widget.type == 0) {
       if (lastDirection == "right" && currentWish != null) {
-        if (!currentWish!.isActive) {
+        if (currentWish!.isActive==false) {
           vm.activateSphereWish(currentWish!.id, true);
-        } else if(!currentWish!.isChecked) {
+        } else if(currentWish!.isChecked==false) {
           vm.updateWishStatus(currentWish!.id, true);
         } else {
           vm.hideSphereWish(currentWish!.id, true, true);
@@ -171,8 +171,8 @@ class MissionScreenState extends State<MissionScreen>
       }
     } else if (widget.type == 1) {
       if (lastDirection == "right" && currentTask != null) {
-        if (!currentTask!.isActive) {
-          vm.activateSphereWish(currentTask!.id, true);
+        if (currentTask!.isActive==false) {
+          vm.activateTask(currentTask!.id, true);
         } else {
           vm.updateTaskStatus(currentTask!.id, true);
         }
@@ -197,9 +197,9 @@ class MissionScreenState extends State<MissionScreen>
 
     if (widget.type == 0) {
       if (lastDirection == "right" && currentWish != null) {
-        if (!currentWish!.isActive) {
+        if (currentWish!.isActive==false) {
           vm.activateSphereWish(currentWish!.id, true);
-        } else if(!currentWish!.isChecked) {
+        } else if(currentWish!.isChecked==false) {
           vm.updateWishStatus(currentWish!.id, true);
         } else {
           vm.hideSphereWish(currentWish!.id, true, true);
@@ -209,8 +209,8 @@ class MissionScreenState extends State<MissionScreen>
       }
     } else if (widget.type == 1) {
       if (lastDirection == "right" && currentTask != null) {
-        if (!currentTask!.isActive) {
-          vm.activateSphereWish(currentTask!.id, true);
+        if (currentTask!.isActive==false) {
+          vm.activateTask(currentTask!.id, true);
         } else {
           vm.updateTaskStatus(currentTask!.id, true);
         }

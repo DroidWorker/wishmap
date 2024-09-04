@@ -29,6 +29,35 @@ class LocalRepository {
     dbHelper = DatabaseHelper();
   }
 
+  //lockScreen
+  Future saveLockParams(LockParams lp) async{
+    String sstr(String input){
+      final h = (input.hashCode%100).toInt();
+      return "${(h-int.parse(input[0])).toString().padLeft(2, "0")}${(h-int.parse(input[1])).toString().padLeft(2, "0")}${(h-int.parse(input[2])).toString().padLeft(2, "0")}${(h-int.parse(input[3])).toString().padLeft(2, "0")}${h}";
+    }
+    if (_prefs == null) {
+      await init();
+    }
+    _prefs!.setString("appPassword", lp.password.isNotEmpty?sstr(lp.password):lp.password);
+    _prefs!.setInt("enableFingerprint", lp.allowFingerprint?1:0);
+  }
+  LockParams getLockParams(){
+    String unsstr(String input){
+      final h = int.parse(input.substring(8, 10));
+      return "${h-int.parse(input.substring(0, 2))}${h-int.parse(input.substring(2, 4))}${h-int.parse(input.substring(4, 6))}${h-int.parse(input.substring(6, 8))}";
+    }
+    final pass = _prefs!.getString("appPassword");
+    final enableFingerprint = _prefs!.getInt("enableFingerprint");
+    return LockParams(password: pass!=null&&pass.isNotEmpty?unsstr(pass):"", allowFingerprint: enableFingerprint==1?true:false);
+  }
+  Future<String> getLockPass() async{
+    if (_prefs == null) {
+      await init();
+    }
+    final pass = _prefs!.getString("appPassword");
+    return pass ?? "";
+  }
+
 //auth&reg
   Future<void> saveAuth(String login, String password) async {
     if (_prefs == null) {
@@ -270,7 +299,7 @@ class LocalRepository {
   }
 
   Future deleteMoons(List<int> moonIds) async {
-    dbHelper.deleteMoons(moonIds.join(','));
+    await dbHelper.deleteMoons(moonIds.join(','));
   }
 
   Future addAllMoons(MoonItem mi, List<CircleData>? childCircles,

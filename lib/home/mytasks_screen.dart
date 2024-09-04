@@ -85,7 +85,7 @@ class _TaskScreenState extends State{
                       ),
                     ],
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 15),
                     Container(
                       height: 34,
                       decoration: const BoxDecoration(
@@ -215,12 +215,12 @@ class _TaskScreenState extends State{
                         }
                       });
                     }),
-                    const SizedBox(height: 12),
-                    !isPBActive?const SizedBox(height: 3,):const LinearCappedProgressIndicator(
+                    const SizedBox(height: 15),
+                    /*!isPBActive?const SizedBox(height: 3,):const LinearCappedProgressIndicator(
                       backgroundColor: Colors.black26,
                       color: Colors.black,
                       cornerRadius: 0,
-                    )
+                    )*/
                   ],
                 ),
               )),

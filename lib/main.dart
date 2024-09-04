@@ -17,6 +17,7 @@ import 'package:wishmap/home/cards_screen.dart';
 import 'package:wishmap/home/diary_screen.dart';
 import 'package:wishmap/home/diaryedit_screen.dart';
 import 'package:wishmap/home/gaery_screen.dart';
+import 'package:wishmap/home/lockscreen.dart';
 import 'package:wishmap/home/mainsphereedit_screen.dart';
 import 'package:wishmap/home/mytasks_screen.dart';
 import 'package:wishmap/home/qrCheck_screen.dart';
@@ -37,6 +38,7 @@ import 'home/mywishes_screen.dart';
 import 'home/notify_alarm_screen.dart';
 import 'home/profile_screen.dart';
 import 'home/settings/contact_screen.dart';
+import 'home/settings/lock_settings_screen.dart';
 import 'home/settings/sounds_setting.dart';
 import 'home/taskedit_screen.dart';
 import 'navigation/navigation_block.dart';
@@ -122,6 +124,7 @@ Future<void> _handleNotificationResponse(NotificationResponse response, AppViewM
 }
 
 void _runAppWithAlarm(int alarmId, AppViewModel vm) async {
+  vm.getLastObjectsForAlarm();
   runApp(
     ChangeNotifierProvider(
       create: (context) => vm,
@@ -162,7 +165,32 @@ class MyApp extends StatefulWidget {
   MyAppState createState() => MyAppState();
 }
 
-class MyAppState extends State<MyApp>{
+class MyAppState extends State<MyApp> with WidgetsBindingObserver{
+  AppViewModel? vm;
+
+  @override
+  void initState() {
+    WidgetsBinding.instance.addObserver(this);
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if(state==AppLifecycleState.resumed){
+      if(vm?.lastauthwithfinger==true){
+        vm?.lastauthwithfinger=false;
+      }else {
+        vm?.lockState = true;
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
           return MaterialApp(
@@ -206,6 +234,7 @@ class MyAppState extends State<MyApp>{
           {
             return Consumer<AppViewModel>(
               builder: (context, appViewModel, child) {
+                vm ??= appViewModel;
                 if (appViewModel.messageError.text.isNotEmpty) {
                   WidgetsBinding.instance.addPostFrameCallback((_) {
                     _showError(context, appViewModel.messageError.text);
@@ -218,7 +247,7 @@ class MyAppState extends State<MyApp>{
                         .handleBackPress();
                     return shouldPop;
                   },
-                  child: _buildScreenForState(state),
+                  child: appViewModel.lockEnabled&&appViewModel.lockState?LockScreen():_buildScreenForState(state),
                 );
               },
             );
@@ -277,6 +306,8 @@ class MyAppState extends State<MyApp>{
       return ContactScreen();
     }else if (state is NavigationAlarmSettingsScreenState) {
       return AlarmSettingScreen(state.id);
+    }else if (state is NavigationLockSettingsScreenState) {
+      return LockSettingsScreen();
     } else if (state is NavigationAlarmScreenState) {
       return AlarmScreen();
     } else {

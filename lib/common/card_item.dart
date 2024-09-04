@@ -33,7 +33,7 @@ class CardItem extends StatelessWidget{
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [MoonWidget(date: date, size: 85, resolution: 800,),
-                Text(dateToLongString(mi.date)??mi.date)]):
+                Text("#${mi.id} ${dateToLongString(mi.date)??mi.date}")]):
               OutlinedGradientButton("Добавить карту", widgetBeforeText: const Icon(Icons.add_circle_outline_rounded), () => {
                 showDialog(context: context, builder: (contest){
                   return ActualizeMoonDialog(onActualizeClick: (){

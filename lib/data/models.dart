@@ -9,6 +9,13 @@ class AuthData {
   AuthData({required this.login, required this.password});
 }
 
+class LockParams {
+  String password;
+  bool allowFingerprint;
+
+  LockParams({required this.password, required this.allowFingerprint});
+}
+
 class ProfileData {
   String id = "";
    String name;
