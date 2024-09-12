@@ -293,7 +293,7 @@ class _WishScreenState extends State<WishScreen>{
                               }
                             },
                             ):const SizedBox(),
-                            if(curwish.parentId > 1&&curwish.isActive)Row(children: [
+                            if(curwish.parentId > 1&&curwish.isActive&&!curwish.text.contains("HEADERSIMPLETASKHEADER"))Row(children: [
                               Expanded(
                                 child: OutlinedGradientButton("Исполнено", filledButtonColor: curwish.isChecked?AppColors.greenButtonBack:null, () async {
                                   if(isParentChecked) {
@@ -779,6 +779,7 @@ class _WishScreenState extends State<WishScreen>{
                                   else if(!curwish.isActive)showUneditable();
                                   else{
                                     if(appVM.mainScreenState!.allCircles.where((element) => element.id==appVM.wishScreenState!.wish.id).isNotEmpty) {
+                                      appVM.myNodes.clear();
                                       BlocProvider.of<NavigationBloc>(context).add(NavigateToTaskCreateScreenEvent(curwish.id, isSimple: true, type: curwish.parentId > 1?'w':'s'));
                                     }else{
                                       showModalBottomSheet<void>(
@@ -846,7 +847,7 @@ class _WishScreenState extends State<WishScreen>{
                         backgroundColor: curwish.isActive?curwish.color:const Color.fromARGB(255, 217, 217, 217),
                         shape: const CircleBorder(),
                         child: Stack(children: [
-                          Center(child: AutoSizeText(curwish.text??"", textAlign: TextAlign.center ,style: const TextStyle(color: Colors.white, ),)),
+                          Center(child: Text(curwish.text??"", maxLines: 1, overflow: TextOverflow.fade, textAlign: TextAlign.center ,style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w700),)),
                           if(curwish.isChecked)Align(alignment: Alignment.topRight, child: Image.asset('assets/icons/wish_done.png', width: 20, height: 20),)
                         ],),
                       ),

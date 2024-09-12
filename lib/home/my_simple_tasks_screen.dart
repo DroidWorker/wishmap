@@ -7,12 +7,10 @@ import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
 import '../ViewModel.dart';
 import '../common/bottombar.dart';
-import '../common/custom_bottom_button.dart';
 import '../common/taskitem_widget.dart';
 import '../data/models.dart';
 import '../data/static.dart';
 import '../dialog/bottom_sheet_action.dart';
-import '../interface_widgets/colorButton.dart';
 import '../navigation/navigation_block.dart';
 import '../res/colors.dart';
 

@@ -24,6 +24,7 @@ class LockSettingsScreenState extends State<LockSettingsScreen>{
   LockParams? lockParams;
   String password= "";
   bool fingerprintState = false;
+  String passwordRepeat = "";
   String message = "Введите пароль";
 
   @override
@@ -60,12 +61,11 @@ class LockSettingsScreenState extends State<LockSettingsScreen>{
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const Icon(Icons.lock),
-                  MySwitch(value: appViewModel?.lockEnabled==true, onChanged: (state){
+                  MySwitch(key: UniqueKey(),value: appViewModel?.lockEnabled==true, onChanged: (state){
+                    appViewModel?.lockParams = LockParams(password: "", allowFingerprint: false);
                     setState(() {
                       appViewModel?.lockEnabled=false;
-
                     });
-                    appViewModel?.lockParams = LockParams(password: "", allowFingerprint: false);
                   })
                 ],
               ),
@@ -166,7 +166,7 @@ class LockSettingsScreenState extends State<LockSettingsScreen>{
                     password+="0";
                   });
                   }}),
-                  const SizedBox(width: 66)
+                  const SizedBox(width: 80)
                 ],),
               const SizedBox(height: 16),
               SquareCheckbox("Fingerprint", (state) async {
@@ -177,9 +177,24 @@ class LockSettingsScreenState extends State<LockSettingsScreen>{
               const SizedBox(height: 16),
               ColorRoundedButton(lockParams!.password.isEmpty?"Сохранить":"Сбросить пароль", (){
                 if(lockParams!.password.isEmpty){
+                  print("isempty");
+                  if(passwordRepeat.isEmpty){
+                    print("prisempty");
                     if(password.length==4) {
+                      passwordRepeat = password;
+                      setState(() {
+                        message="Повторите пароль";
+                        password = "";
+                      });
+                    }
+                    return;
+                  }
+                    if(password.length==4&&password==passwordRepeat) {
                         lockParams?.password = password;
                       }else{
+                      setState(() {
+                        password="";
+                      });
                       return;
                     }
                     if(lockParams!=null){

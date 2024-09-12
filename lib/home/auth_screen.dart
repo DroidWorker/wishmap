@@ -865,8 +865,14 @@ class _AuthScreen_State extends State<AuthScreen> {
                                                 setState(() {
                                                   isInLoading = true;
                                                 });
-                                                await vm?.signIn(
+                                                final authresult = await vm?.signIn(
                                                     login, password);
+                                                if(authresult!=null) {
+                                                  setState(() {
+                                                    isInLoading=false;
+                                                  });
+                                                  return;
+                                                }
                                                 BlocProvider.of<NavigationBloc>(
                                                         context)
                                                     .removeLastFromBS();

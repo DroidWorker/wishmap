@@ -235,10 +235,10 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver{
             return Consumer<AppViewModel>(
               builder: (context, appViewModel, child) {
                 vm ??= appViewModel;
-                if (appViewModel.messageError.text.isNotEmpty) {
+                if (appViewModel.messageError.isNotEmpty) {
+                  print("errrrrrrrrrrrrrrrr");
                   WidgetsBinding.instance.addPostFrameCallback((_) {
-                    _showError(context, appViewModel.messageError.text);
-                    appViewModel.messageError.text = '';
+                    _showError(context, appViewModel.messageError);
                   });
                 }
                 return WillPopScope(

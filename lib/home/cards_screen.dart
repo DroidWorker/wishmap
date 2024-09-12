@@ -26,6 +26,11 @@ class CardsScreenState extends State<CardsScreen> {
   List<int> deleteQ = [];
 
   @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     BlocProvider.of<NavigationBloc>(context).clearHistory();
     final now = DateTime.now();
@@ -142,9 +147,11 @@ class CardsScreenState extends State<CardsScreen> {
                           setState(() {
                             isInSync = true;
                           });
+                          print("deeeeeeeeel${appVM.moonItems.length}");
                           final len = appVM.moonItems.length;
-                            deleteQ.sort((a, b)=>b.compareTo(a));
+                            deleteQ.sort((a, b)=>a.compareTo(b));
                             for (var e in deleteQ) {
+                              print("ddd$e  ${appVM.moonItems.length}");
                               realIsDeleteQ.add(appVM.moonItems[len-1-e].id);
                               appVM.moonItems.removeAt(len-1-e);
                             }

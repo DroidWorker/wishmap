@@ -30,6 +30,8 @@ class _WishesScreenState extends State<WishesScreen>{
   AppViewModel? appViewModel;
   bool isWishesRequested = false;
 
+  Map<String, List<String>>? spheres;
+
   var isPBActive = false;
   var trashModeActive = false;
 
@@ -47,6 +49,9 @@ class _WishesScreenState extends State<WishesScreen>{
           page==2?filteredWishList = allWishList.where((element) => !element.isChecked).toList():
           page==3?filteredWishList = allWishList.where((element) => element.isActive&&!element.isChecked).toList():filteredWishList = allWishList;
           isPBActive=appVM.isinLoading;
+
+          spheres ??= getSpheres();
+
           if(filteredWishList.isNotEmpty){
             roots = convertListToMyTreeNodes(filteredWishList);
           }else{roots.clear();}
@@ -183,7 +188,7 @@ class _WishesScreenState extends State<WishesScreen>{
                         return Align(
                       alignment: Alignment.centerLeft,
                       child: SizedBox(
-                        child: MyTreeView(key: UniqueKey(), roots: roots, applyColorChangibg: false, fillWidth: true, alignRight: true, onTap: (id, type){
+                        child: MyTreeView(key: UniqueKey(), roots: roots, spheres: spheres, applyColorChangibg: false, fillWidth: true, alignRight: true, onTap: (id, type){
                           if(type=="m"){
                             BlocProvider.of<NavigationBloc>(context).clearHistory();
                             appVM.cachedImages.clear();
@@ -280,6 +285,23 @@ class _WishesScreenState extends State<WishesScreen>{
           );
     });
   }
+
+  Map<String, List<String>> getSpheres(){
+    Map<String, List<String>> result = {};
+    if(appViewModel?.mainScreenState==null)return result;
+    Map<int, String> sphereslist = { for (var e in appViewModel!.mainScreenState!.allCircles.where((e)=>e.parenId==0)) e.id : e.text };
+    appViewModel?.mainScreenState?.allCircles.forEach((element){
+      if(sphereslist.keys.contains(element.parenId)==true) {
+        result[sphereslist[element.parenId]!] ??= [];
+        result[sphereslist[element.parenId]!]?.add(element.text);
+      }
+    });
+    result.forEach((e, v){
+      print("element - ${e} : $v");
+    });
+    return result;
+  }
+
   filterAims(int type){
     setState(() {
       page==1?filteredWishList = allWishList.where((element) => element.isChecked).toList():

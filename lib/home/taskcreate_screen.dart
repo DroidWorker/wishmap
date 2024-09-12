@@ -1,8 +1,6 @@
-import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
-import 'package:wishmap/common/gallery_widget.dart';
 import '../ViewModel.dart';
 import '../common/EditTextOverlay.dart';
 import '../data/models.dart';

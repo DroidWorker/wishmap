@@ -23,7 +23,12 @@ class AppViewModel with ChangeNotifier {
   LocalRepository localRep = LocalRepository();
   Repository repository = Repository();
 
-  MessageError messageError = MessageError();
+  final MessageError _me = MessageError();
+  String get messageError {
+    final text = _me.text;
+    _me.text="";
+    return text;
+  }
 
   var isDataFetched = 4;
 
@@ -164,8 +169,8 @@ class AppViewModel with ChangeNotifier {
   }
 
   void addError(String text){
-    if(text!=messageError.text) {
-      messageError.text = text;
+    if(text!=messageError) {
+      _me.text = text;
       notifyListeners();
     }
   }
@@ -246,7 +251,7 @@ class AppViewModel with ChangeNotifier {
   }
   
   Future updateMoonSync(int moonId)async{
-    final time= DateTime.timestamp().microsecondsSinceEpoch;
+    final time= DateTime.timestamp().millisecondsSinceEpoch;
     localRep.updateMoonSync(moonId, time);
     if(connectivity!='No Internet Connection')repository.updateMoonSync(moonId, time);
   }
@@ -262,7 +267,7 @@ class AppViewModel with ChangeNotifier {
         throw Exception("unknown error #vm001");
       }
     }catch(ex){
-      addError(ex.toString().replaceAll("Exception:", ""));
+      addError("6785${ex.toString().replaceAll("Exception:", "")}");
       return ex.toString();
     }
   }
@@ -286,7 +291,7 @@ class AppViewModel with ChangeNotifier {
         await init();
       }
     }catch(ex){
-      addError(ex.toString());
+      addError("5857${ex.toString()}");
       throw Exception("no access #vm003");
     }
   }
@@ -360,8 +365,9 @@ class AppViewModel with ChangeNotifier {
       }
       notifyListeners();
       lastImageId = await repository.getLastImageId()??-1;
-    }catch(ex){
-      addError(ex.toString());
+    }catch(ex, s){
+      print("strase $s");
+      addError("87895${ex.toString()}");
     }
   }
   Future createNewMoon(String date) async{
@@ -397,7 +403,7 @@ class AppViewModel with ChangeNotifier {
               moonId - 1)) ?? [];
           if (moonCircles.isNotEmpty) {
             for (int i = 0; i < moonCircles.length; i++) {
-              moonCircles[i].isActive = false;
+              if(!moonCircles[i].text.contains("HEADERSI"))moonCircles[i].isActive = false;
             }
             await repository.addMoon(moonItems.last, null, moonCircles);
             await localRep.addAllMoons(moonItems.last, null, moonCircles);
@@ -416,7 +422,7 @@ class AppViewModel with ChangeNotifier {
         List<CircleData> moonCircles = await localRep.getAllMoonSpheres(moonId-1);
         if(moonCircles.isNotEmpty){
           for (int i=0; i<moonCircles.length; i++){
-            moonCircles[i].isActive = false;
+            if(!moonCircles[i].text.contains("HEADERSI"))moonCircles[i].isActive = false;
           }
           await localRep.addAllMoons(moonItems.last, moonCircles, null);
         }else{
@@ -474,7 +480,7 @@ class AppViewModel with ChangeNotifier {
     final photoid = int.parse(sphere!.photoIds.split("|").firstOrNull??"-1");
     if(photoid==-1)return null;
     return await localRep.getImage(photoid);}
-        finally{
+        catch(ex){
       return null;
         }
   }
@@ -645,7 +651,7 @@ class AppViewModel with ChangeNotifier {
       mainScreenState = MainScreenState(moon: mi, musicId: 0);
       try {
         //mainScreenState!.allCircles = (await repository.getSpheres(mi.id)) ?? [];
-        final spheres = (await localRep.getAllMoonSpheres(mi.id)).where((e)=>!e.text.contains("HEADERSIMPLETASKHEADER")).toList();
+        final spheres = (await localRep.getAllMoonSpheres(mi.id));
         mainScreenState?.allCircles = spheres;
         if(spheres.isEmpty) {
           mainScreenState!.allCircles = (await repository.getSpheres(mi.id)) ?? [];
@@ -657,7 +663,7 @@ class AppViewModel with ChangeNotifier {
         var cc = mainScreenState!.allCircles.where((element) => element.parenId == mainCircles.last.id).toList();
         currentCircles.clear();
         for (var element in cc) {
-          if(!element.isHidden)currentCircles.add(Circle(id: element.id, parentId: element.parenId, prevId: element.prevId, nextId: element.nextId, text: element.text, color: element.color, isActive: element.isActive, isChecked: element.isChecked));
+          if(element.isHidden==false&&element.text.contains("HEADERSI")==false)currentCircles.add(Circle(id: element.id, parentId: element.parenId, prevId: element.prevId, nextId: element.nextId, text: element.text, color: element.color, isActive: element.isActive, isChecked: element.isChecked));
         }
         isinLoading=false;
         notifyListeners();
@@ -676,7 +682,7 @@ class AppViewModel with ChangeNotifier {
         var cc = mainScreenState!.allCircles.where((element) => element.parenId == mainCircles.last.id).toList();
         currentCircles.clear();
         for (var element in cc) {
-          if(!element.isHidden)currentCircles.add(Circle(id: element.id, parentId: element.parenId, prevId: element.prevId, nextId: element.nextId, text: element.text, color: element.color, isActive: element.isActive, isChecked: element.isChecked));
+          if(element.isHidden==false&&element.text.contains("HEADERSI")==false)currentCircles.add(Circle(id: element.id, parentId: element.parenId, prevId: element.prevId, nextId: element.nextId, text: element.text, color: element.color, isActive: element.isActive, isChecked: element.isChecked));
         }
         isinLoading=false;
         notifyListeners();
@@ -699,7 +705,7 @@ class AppViewModel with ChangeNotifier {
         var cc = mainScreenState!.allCircles.where((element) => element.parenId == id).toList();
         currentCircles.clear();
         for (var element in cc) {
-          if(!element.isHidden)currentCircles.add(Circle(id: element.id, parentId: element.parenId, prevId: element.prevId, nextId: element.nextId, text: element.text, color: element.color, isActive: element.isActive, isChecked: element.isChecked));
+          if(element.isHidden==false&&element.text.contains("HEADERSI")==false)currentCircles.add(Circle(id: element.id, parentId: element.parenId, prevId: element.prevId, nextId: element.nextId, text: element.text, color: element.color, isActive: element.isActive, isChecked: element.isChecked));
         }
       } catch (ex) {
         addError("#5734${ex.toString()}");
@@ -833,8 +839,8 @@ class AppViewModel with ChangeNotifier {
   Future getLastObjectsForAlarm() async{
     try{
       final moonId = (await localRep.getMoons()).map((e)=>e.id).reduce(max);
-      wishItems = (await localRep.getAllSpheres(moonId)).where((e)=>!e.text.contains("HEADERSIMPLETASKHEADER")).toList();
-      taskItems = await localRep.getAllTasks(moonId);
+      wishItems = (await localRep.getAllSpheres(moonId)).where((e)=>(!e.text.contains("HEADERSIMPLETASKHEADER")&&e.isHidden==false&&e.isChecked==false)).toList();
+      taskItems = (await localRep.getAllTasks(moonId)).where((e)=>e.isActive).toList();
       notifyListeners();
       startMainScreen(MoonItem(id: moonId, filling: 0.3, text: "", date: ""));
     }catch(ex){
@@ -1123,6 +1129,7 @@ class AppViewModel with ChangeNotifier {
       await deleteallChildAims(id);
       if(connectivity != 'No Internet Connection')await repository.deleteSphereWish(id, mainScreenState?.moon.id??0);
       await localRep.deleteSphere(id,mainScreenState?.moon.id??0);
+      mainScreenState?.allCircles.removeWhere((e)=>e.id == id);
       updateMoonSync(mainScreenState?.moon.id??0);
     }catch(ex, s){
       addError("сфера не была удалена: $ex");
@@ -1664,73 +1671,81 @@ class AppViewModel with ChangeNotifier {
   }
 
   Future<void> addSimpleTask(int parentId, String objType, String taskData, {String taskDescription = ""}) async {
-    int? wishId;
-    int? aimId;
-    if(objType=='s'){
-      final allWish = await localRep.getAllSpheres(mainScreenState?.moon.id??0);
-      final simpleWish = allWish.where((e) => (e.text=="HEADERSIMPLETASKHEADERОбщие задачи"&&e.parentId==parentId));
-      if(simpleWish.isEmpty){
-        //await adding aim
-        wishId = allWish.reduce((a,b) => a.id > (b.id) ? a:b).id+1;
-        final w = WishData(id: wishId, prevId: -2, nextId: -2, parentId: parentId, text: "HEADERSIMPLETASKHEADERОбщие задачи", description: "Общие задачи", affirmation: "", color: AppColors.grey);
-        await localRep.addSphere(w, mainScreenState?.moon.id??0);
-        repository.createSphereWish(w, mainScreenState?.moon.id??0);
-        mainScreenState?.allCircles.add(CircleData(id: wishId, prevId: -2, nextId: -2, text: "HEADERSIMPLETASKHEADERОбщие задачи", color: AppColors.grey, parenId: parentId));
-        final allAims = await localRep.getAllAims(mainScreenState?.moon.id??0);
-        aimId = allAims.isNotEmpty?(allAims.reduce((a,b) => a.id > (b.id) ? a:b).id+1):1;
-        final aim= AimData(id: aimId, parentId: wishId, text: "HEADERSIMPLETASKHEADERОбщие задачи (${mainScreenState?.allCircles.firstWhereOrNull((item)=>item.id==parentId)?.text})", description: "Общие задачи");
-        await localRep.addAim(aim, mainScreenState?.moon.id??0);
-        repository.createAim(aim, wishId, mainScreenState?.moon.id??0);
-        currentAim = aim;
-      }else{
-        wishId = simpleWish.first.id;
-        final allAims = await localRep.getAllAims(mainScreenState?.moon.id??0);
-        final simpleAim = allAims.where((e) => (e.text=="HEADERSIMPLETASKHEADERОбщие задачи"&&e.parentId==wishId));
-        if(simpleAim.isEmpty){
+    try {
+      int? wishId;
+      int? aimId;
+      if(objType=='s'){
+        final allWish = await localRep.getAllSpheres(mainScreenState?.moon.id??0);
+        final simpleWish = allWish.where((e) => (e.text=="HEADERSIMPLETASKHEADERОбщие задачи"&&e.parentId==parentId));
+        if(simpleWish.isEmpty){
           //await adding aim
+          wishId = allWish.isNotEmpty?allWish.reduce((a,b) => a.id > (b.id) ? a:b).id+1:1000;
+          final w = WishData(id: wishId, prevId: -2, nextId: -2, parentId: parentId, text: "HEADERSIMPLETASKHEADERОбщие задачи", description: "Общие задачи", affirmation: "", color: AppColors.grey)..isChecked=true;
+          await localRep.addSphere(w, mainScreenState?.moon.id??0);
+          repository.createSphereWish(w, mainScreenState?.moon.id??0);
+          mainScreenState?.allCircles.add(CircleData(id: wishId, prevId: -2, nextId: -2, text: "HEADERSIMPLETASKHEADERОбщие задачи", color: AppColors.grey, parenId: parentId, isHidden: true));
+          final allAims = await localRep.getAllAims(mainScreenState?.moon.id??0);
           aimId = allAims.isNotEmpty?(allAims.reduce((a,b) => a.id > (b.id) ? a:b).id+1):1;
-          final aim = AimData(id: aimId, parentId: wishId, text: "HEADERSIMPLETASKHEADERОбщие задачи (${mainScreenState?.allCircles.firstWhereOrNull((item)=>item.id==parentId)?.text})", description: "Общие задачи");
+          final aim= AimData(id: aimId, parentId: wishId, text: "HEADERSIMPLETASKHEADERОбщие задачи (${mainScreenState?.allCircles.firstWhereOrNull((item)=>item.id==parentId)?.text})", description: "Общие задачи");
           await localRep.addAim(aim, mainScreenState?.moon.id??0);
           repository.createAim(aim, wishId, mainScreenState?.moon.id??0);
           currentAim = aim;
         }else{
+          wishId = simpleWish.first.id;
+          final allAims = await localRep.getAllAims(mainScreenState?.moon.id??0);
+          final simpleAim = allAims.where((e) => (e.text=="HEADERSIMPLETASKHEADERОбщие задачи"&&e.parentId==wishId));
+          if(simpleAim.isEmpty){
+            //await adding aim
+            aimId = allAims.isNotEmpty?(allAims.reduce((a,b) => a.id > (b.id) ? a:b).id+1):1;
+            final aim = AimData(id: aimId, parentId: wishId, text: "HEADERSIMPLETASKHEADERОбщие задачи (${mainScreenState?.allCircles.firstWhereOrNull((item)=>item.id==parentId)?.text})", description: "Общие задачи");
+            await localRep.addAim(aim, mainScreenState?.moon.id??0);
+            repository.createAim(aim, wishId, mainScreenState?.moon.id??0);
+            currentAim = aim;
+          }else{
+            aimId = simpleAim.first.id;
+          }
+        }
+      }else if(objType == 'w'||objType=='m'){
+        wishId = parentId;
+        final wish = await localRep.getSphere(wishId, mainScreenState?.moon.id??0);
+        if(wish?.isActive == false){
+          addError("актуализируйте карту для добавления задачи!");
+          return;
+        }
+        final allAim = await localRep.getAllAims(mainScreenState?.moon.id??0);
+        final simpleAim = allAim.where((e) => (e.text=="HEADERSIMPLETASKHEADERОбщие задачи"&&e.parentId==wishId));
+        if(simpleAim.isEmpty){
+          //await adding aim
+            aimId = allAim.isNotEmpty?(allAim.reduce((a,b) => a.id > (b.id) ? a:b).id+1):1;
+            final aim = AimData(id: aimId, parentId: wishId, text: "HEADERSIMPLETASKHEADERОбщие задачи (${wish?.text})", description: "Общие задачи");
+            await localRep.addAim(aim, mainScreenState?.moon.id??0);
+            repository.createAim(aim, wishId, mainScreenState?.moon.id??0);
+            currentAim = aim;
+        }else{
           aimId = simpleAim.first.id;
         }
+        startMyTasksScreen();
       }
-    }else if(objType == 'w'||objType=='m'){
-      wishId = parentId;
-      final wish = await localRep.getSphere(wishId, mainScreenState?.moon.id??0);
-      if(wish?.isActive == false){
-        addError("актуализируйте карту для добавления задачи!");
-        return;
+      if(objType=="s"||objType=="w"){
+        myNodes.clear();
+        convertToMyTreeNodeFullBranch(parentId);
       }
-      final allAim = await localRep.getAllAims(mainScreenState?.moon.id??0);
-      final simpleAim = allAim.where((e) => (e.text=="HEADERSIMPLETASKHEADERОбщие задачи"&&e.parentId==wishId));
-      if(simpleAim.isEmpty){
-        //await adding aim
-          aimId = allAim.isNotEmpty?(allAim.reduce((a,b) => a.id > (b.id) ? a:b).id+1):1;
-          final aim = AimData(id: aimId, parentId: wishId, text: "HEADERSIMPLETASKHEADERОбщие задачи (${wish?.text})", description: "Общие задачи");
-          await localRep.addAim(aim, mainScreenState?.moon.id??0);
-          repository.createAim(aim, wishId, mainScreenState?.moon.id??0);
-          currentAim = aim;
-      }else{
-        aimId = simpleAim.first.id;
-      }
-      startMyTasksScreen();
-    }
 
-    //add Simple Task
-    if(aimId!=null){
-      final allTasks = (await localRep.getAllTasks(mainScreenState?.moon.id??0));
-    final taskId = allTasks.isNotEmpty?(allTasks.reduce((a,b) => a.id > (b.id) ? a:b).id+1):1;
-    final task = TaskData(id: taskId, parentId: aimId, text: taskData, description: "");
-    localRep.addTask(task, mainScreenState?.moon.id??0);
-      repository.createTask(task, aimId, mainScreenState?.moon.id??0);
-      currentTask = task;
-    taskItems.add(TaskItem(id: taskId, parentId: aimId, text: taskData, isChecked: false, isActive: true));
-    notifyListeners();
-    }else{
-      addError("ошибка добавления задачи");
+      //add Simple Task
+      if(aimId!=null){
+        final allTasks = (await localRep.getAllTasks(mainScreenState?.moon.id??0));
+      final taskId = allTasks.isNotEmpty?(allTasks.reduce((a,b) => a.id > (b.id) ? a:b).id+1):1;
+      final task = TaskData(id: taskId, parentId: aimId, text: taskData, description: "");
+      localRep.addTask(task, mainScreenState?.moon.id??0);
+        repository.createTask(task, aimId, mainScreenState?.moon.id??0);
+        currentTask = task;
+      taskItems.add(TaskItem(id: taskId, parentId: aimId, text: taskData, isChecked: false, isActive: true));
+      notifyListeners();
+      }else{
+        addError("ошибка добавления задачи");
+      }
+    }  catch (e, s) {
+      print("huggggggggggggggg $s");
     }
   }
 

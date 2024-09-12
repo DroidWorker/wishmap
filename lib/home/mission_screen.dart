@@ -172,7 +172,7 @@ class MissionScreenState extends State<MissionScreen>
     } else if (widget.type == 1) {
       if (lastDirection == "right" && currentTask != null) {
         if (currentTask!.isActive==false) {
-          vm.activateTask(currentTask!.id, true);
+          //vm.activateTask(currentTask!.id, true);
         } else {
           vm.updateTaskStatus(currentTask!.id, true);
         }
@@ -196,7 +196,7 @@ class MissionScreenState extends State<MissionScreen>
     _controller.forward();
 
     if (widget.type == 0) {
-      if (lastDirection == "right" && currentWish != null) {
+      if (direction == "right" && currentWish != null) {
         if (currentWish!.isActive==false) {
           vm.activateSphereWish(currentWish!.id, true);
         } else if(currentWish!.isChecked==false) {
@@ -204,17 +204,17 @@ class MissionScreenState extends State<MissionScreen>
         } else {
           vm.hideSphereWish(currentWish!.id, true, true);
         }
-      } else if (lastDirection == "top" && currentWish != null) {
+      } else if (direction == "top" && currentWish != null) {
         vm.deleteSphereWish(currentWish!.id, null, null);
       }
     } else if (widget.type == 1) {
-      if (lastDirection == "right" && currentTask != null) {
+      if (direction == "right" && currentTask != null) {
         if (currentTask!.isActive==false) {
-          vm.activateTask(currentTask!.id, true);
+          //vm.activateTask(currentTask!.id, true);
         } else {
           vm.updateTaskStatus(currentTask!.id, true);
         }
-      } else if (lastDirection == "top" && currentTask != null) {
+      } else if (direction == "top" && currentTask != null) {
         vm.deleteTask(currentTask!.id, currentTask!.parentId);
       }
     }
@@ -492,7 +492,7 @@ class MissionScreenState extends State<MissionScreen>
                                         Expanded(
                                           child: Text(currentTask?.isChecked == false &&
                                               currentTask?.isActive == false
-                                              ? "Актуально"
+                                              ? "Не трогать"
                                               : currentTask?.isChecked == true
                                               ? "Не трогать"
                                               : "Выполнено", style: const TextStyle(
@@ -527,9 +527,7 @@ class MissionScreenState extends State<MissionScreen>
                                 autoSwipe("right");
                               },
                               child: currentTask?.isChecked == false &&
-                                  currentTask?.isActive == false ? Image.asset(
-                                  'assets/icons/task_unactual_outlined.png',
-                                  height: 52, width: 52) : currentTask
+                                  currentTask?.isActive == false ? const SizedBox(width: 52) : currentTask
                                   ?.isChecked == true ? const SizedBox(width: 52) : Image
                                   .asset(
                                   'assets/icons/task_checked_outlined.png',

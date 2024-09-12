@@ -49,6 +49,7 @@ class _MainScreenState extends State<MainScreen>{
 
   @override
   void initState() {
+    print("maaaaaaain");
     super.initState();
     IsolateNameServer.registerPortWithName(_port.sendPort, 'downloader_send_port');
     _port.listen((dynamic data) {

@@ -236,7 +236,8 @@ class Repository{
         await userRef.child(_auth.currentUser!.uid).child("moonlist").child(moonItem.id.toString()).set({
           'text': moonItem.text,
           'date': moonItem.date,
-          'filling': moonItem.filling
+          'filling': moonItem.filling,
+          'lastSyncDate': DateTime.now().millisecondsSinceEpoch
         });
 
         // Записываем данные для circles, используя индексы из объектов

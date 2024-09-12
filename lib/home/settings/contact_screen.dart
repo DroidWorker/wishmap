@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:wishmap/interface_widgets/colorButton.dart';
 
-import '../../dialog/bottom_sheet_notify.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../navigation/navigation_block.dart';
 import '../../res/colors.dart';
 
@@ -49,15 +49,40 @@ class ContactScreen extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const SizedBox(height: 16),
+                            const SizedBox(height: 96),
                             const Text(
                                 "Связаться с нами:",
                                 style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600)),
                             const SizedBox(height: 15),
                             const Text(
-                                "Заполните поля ниже и мы позвоним вам в ближайшее времяя",
+                                "Выберите способ связи",
                                 style: TextStyle(fontSize: 16)),
-                            const SizedBox(height: 15),
+                            const SizedBox(height: 55),
+                            Row(children: [
+                              Expanded(
+                                child: ColorRoundedButton("Gmail", (){
+                                  final Uri params = Uri(
+                                    scheme: 'mailto',
+                                    path: 'abcd@gmail.com',
+                                    query: 'subject=report',
+                                  );
+                                  final url = params.toString();
+                                  final urlPath = Uri.parse(url);
+                                  launchUrl(urlPath);
+                                }),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: ColorRoundedButton("Telegram", () async {
+                                  const url = 'tg://resolve?domain=telegram';
+                                  final uri = Uri.parse(url);
+                                  if(await canLaunchUrl(uri)){
+                                    launchUrl(uri);
+                                  }
+                                }),
+                              )
+                            ],)
+                            /*const SizedBox(height: 15),
                             TextField(
                               maxLength: 12,
                               minLines: 1,
@@ -176,7 +201,7 @@ class ContactScreen extends StatelessWidget {
                                     ],
                                   )
                               ),
-                            ))
+                            ))*/
                           ],
                         ),
                       ))

@@ -158,84 +158,87 @@ class AlarmSettingScreenState extends State<AlarmSettingScreen> {
                     : Column(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              IconButton(
-                                  padding: EdgeInsets.zero,
-                                  constraints: const BoxConstraints(),
-                                  style: const ButtonStyle(
-                                    tapTargetSize: MaterialTapTargetSize
-                                        .shrinkWrap, // the '2023' part
-                                  ),
-                                  icon: const Icon(Icons.keyboard_arrow_left,
-                                      size: 28, color: AppColors.gradientStart),
-                                  onPressed: () async {
-                                    if (alarm.dateTime
-                                        .isBefore(DateTime.now())) {
-                                      if(alarm.remindDays.isNotEmpty){
-                                        final dayOffset = getDayOffsetToClosest(alarm.remindDays.map((e)=> int.parse(e)).toList(), alarm.dateTime.add(const Duration(days: 1)).weekday);
-                                        alarm.dateTime.add(Duration(days: dayOffset));
-                                      }else {
-                                        alarm.dateTime = alarm.dateTime.add(const Duration(days: 1));
+                          Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                IconButton(
+                                    padding: EdgeInsets.zero,
+                                    constraints: const BoxConstraints(),
+                                    style: const ButtonStyle(
+                                      tapTargetSize: MaterialTapTargetSize
+                                          .shrinkWrap, // the '2023' part
+                                    ),
+                                    icon: const Icon(Icons.keyboard_arrow_left,
+                                        size: 28, color: AppColors.gradientStart),
+                                    onPressed: () async {
+                                      if (alarm.dateTime
+                                          .isBefore(DateTime.now())) {
+                                        if(alarm.remindDays.isNotEmpty){
+                                          final dayOffset = getDayOffsetToClosest(alarm.remindDays.map((e)=> int.parse(e)).toList(), alarm.dateTime.add(const Duration(days: 1)).weekday);
+                                          alarm.dateTime.add(Duration(days: dayOffset));
+                                        }else {
+                                          alarm.dateTime = alarm.dateTime.add(const Duration(days: 1));
+                                        }
+                                        return;
                                       }
-                                      return;
-                                    }
-                                    if (alarm.remindDays.isNotEmpty) {
-                                      final dayOffset = getDayOffsetToClosest(
-                                          alarm.remindDays
-                                              .map((e) => int.parse(e))
-                                              .toList(),
-                                          alarm.dateTime.weekday);
-                                      alarm.dateTime
-                                          .add(Duration(days: dayOffset));
-                                    }
-                                    List<int> alarmIds = [];
-                                    alarm.dateTime = alarm.dateTime.copyWith(second: 0);
-                                    alarm.remindEnabled = true;
-                                    alarmIds = await setAlarm(alarm, false);
-                                    if (alarm.notificationIds.isNotEmpty)
-                                      cancelAlarmManager(alarm.notificationIds.first);
-                                    if (alarmIds.isEmpty) return;
-                                    shouldUpdate
-                                        ? appVM.updateAlarm(Alarm(
-                                            alarm.id,
-                                            alarm.TaskId,
-                                            alarm.dateTime,
-                                            alarm.remindDays,
-                                            alarm.music,
-                                            alarm.remindEnabled,
-                                            alarm.text,
-                                            vibration: alarm.vibration,
-                                            notificationIds: alarmIds,
-                                            offMods: alarm.offMods,
-                                            offModsParams: alarm.offModsParams,
-                                            snooze: alarm.snooze))
-                                        : appVM.addAlarm(Alarm(
-                                            alarm.id,
-                                            alarm.TaskId,
-                                            alarm.dateTime,
-                                            alarm.remindDays,
-                                            alarm.music,
-                                            alarm.remindEnabled,
-                                            alarm.text,
-                                            vibration: alarm.vibration,
-                                            notificationIds: alarmIds,
-                                            offMods: alarm.offMods,
-                                            offModsParams: alarm.offModsParams,
-                                            snooze: alarm.snooze));
-                                    BlocProvider.of<NavigationBloc>(context)
-                                        .handleBackPress();
-                                  }),
-                              const Text("Добавить будильник",
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 16)),
-                              const SizedBox(
-                                width: 40,
-                                height: 40,
-                              )
-                            ],
+                                      if (alarm.remindDays.isNotEmpty) {
+                                        final dayOffset = getDayOffsetToClosest(
+                                            alarm.remindDays
+                                                .map((e) => int.parse(e))
+                                                .toList(),
+                                            alarm.dateTime.weekday);
+                                        alarm.dateTime
+                                            .add(Duration(days: dayOffset));
+                                      }
+                                      List<int> alarmIds = [];
+                                      alarm.dateTime = alarm.dateTime.copyWith(second: 0);
+                                      alarm.remindEnabled = true;
+                                      alarmIds = await setAlarm(alarm, false);
+                                      if (alarm.notificationIds.isNotEmpty)
+                                        cancelAlarmManager(alarm.notificationIds.first);
+                                      if (alarmIds.isEmpty) return;
+                                      shouldUpdate
+                                          ? appVM.updateAlarm(Alarm(
+                                              alarm.id,
+                                              alarm.TaskId,
+                                              alarm.dateTime,
+                                              alarm.remindDays,
+                                              alarm.music,
+                                              alarm.remindEnabled,
+                                              alarm.text,
+                                              vibration: alarm.vibration,
+                                              notificationIds: alarmIds,
+                                              offMods: alarm.offMods,
+                                              offModsParams: alarm.offModsParams,
+                                              snooze: alarm.snooze))
+                                          : appVM.addAlarm(Alarm(
+                                              alarm.id,
+                                              alarm.TaskId,
+                                              alarm.dateTime,
+                                              alarm.remindDays,
+                                              alarm.music,
+                                              alarm.remindEnabled,
+                                              alarm.text,
+                                              vibration: alarm.vibration,
+                                              notificationIds: alarmIds,
+                                              offMods: alarm.offMods,
+                                              offModsParams: alarm.offModsParams,
+                                              snooze: alarm.snooze));
+                                      BlocProvider.of<NavigationBloc>(context)
+                                          .handleBackPress();
+                                    }),
+                                const Text("Добавить будильник",
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 16)),
+                                const SizedBox(
+                                  width: 40,
+                                  height: 40,
+                                )
+                              ],
+                            ),
                           ),
                           Expanded(
                             child: SingleChildScrollView(

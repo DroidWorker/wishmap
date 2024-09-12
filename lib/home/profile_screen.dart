@@ -150,20 +150,20 @@ class _ProfileScreenState extends State<ProfileScreen>{
                       const SizedBox(height: 24),
                                 const Text("Помощь", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.greytextColor)),
                                 const SizedBox(height: 8),
-                                settingsWidget("assets/icons/setting_message.svg" ,"Обращения", (){}),
+                                /*settingsWidget("assets/icons/setting_message.svg" ,"Обращения", (){}),
                                 settingsWidget("assets/icons/seting_question.svg" ,"Частые вопросы", (){
                                   appViewModel.fetchQ();
                                   BlocProvider.of<NavigationBloc>(context)
                                       .add(NavigateToQuestionsScreenEvent());
-                                }),
+                                }),*/
                                 settingsWidget("assets/icons/setting_mail.svg" ,"Связаться с нами", (){
                                   BlocProvider.of<NavigationBloc>(context)
                                       .add(NavigateToContactScreenEvent());
                                 }),
-                                settingsWidget("assets/icons/setting_feedback.svg" ,"Пожелания", (){
+                                /*settingsWidget("assets/icons/setting_feedback.svg" ,"Пожелания", (){
                                   BlocProvider.of<NavigationBloc>(context)
                                       .add(NavigateToProposalScreenEvent());
-                                }),
+                                }),*/
                                 const SizedBox(height: 24),
                                    InkWell(
                        onTap: () async {

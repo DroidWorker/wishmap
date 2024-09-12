@@ -10,6 +10,7 @@ import '../data/models.dart';
 
 class MyTreeView extends StatefulWidget {
   final List<MyTreeNode> roots;
+  final Map<String, List<String>>? spheres;
   final bool applyColorChangibg;
   bool fillWidth = false;
   final bool alignRight;
@@ -20,6 +21,7 @@ class MyTreeView extends StatefulWidget {
       {super.key,
       required this.roots,
       required this.onTap,
+      this.spheres,
       this.onDoubleTap,
       this.applyColorChangibg = true,
       this.fillWidth = false,
@@ -127,7 +129,7 @@ class MyTreeViewState extends State<MyTreeView> {
         ValueListenableBuilder<double>(
           valueListenable: paddingNotifiers[i],
           builder: (context, padding, _) {
-            String curPath = treeEntries[i].level != 0 ? path.join(">") : "";
+            String curPath = treeEntries[i].level != 0 ? path.join(">") : findKeyByValue(treeEntries[i].node.title);
             curLvl = treeEntries[i].level;
             if (treeEntries.length > i + 1) {
               if (curLvl < treeEntries[i + 1].level && curLvl != 0) {
@@ -163,6 +165,16 @@ class MyTreeViewState extends State<MyTreeView> {
       );
     }
     return items;
+  }
+
+  String findKeyByValue(String value){
+    if(widget.spheres==null) return "";
+    for(var entry in widget.spheres!.entries){
+      if(entry.value.contains(value)){
+        return entry.key;
+      }
+    }
+    return "";
   }
 
   void changePadding(int countHid) {
@@ -206,177 +218,185 @@ class MyTreeTile extends StatelessWidget {
         onTap: onTap,
         onDoubleTap: onDoubleTap,
         child: TreeIndentation(
-                  entry: entry,
-                  guide: const IndentGuide.connectingLines(
-          indent: 20,
-          thickness: 1.0,
-          origin: 1.0,
-          color: AppColors.linesColor),
-                  child: AnimatedPadding(
-        duration: const Duration(milliseconds: 300),
-        padding: EdgeInsets.fromLTRB(
-            entry.node.id == 0
-                ? 0
-                : entry.node.type == 's'
+          entry: entry,
+          guide: const IndentGuide.connectingLines(
+              indent: 20,
+              thickness: 1.0,
+              origin: 1.0,
+              color: AppColors.linesColor),
+          child: AnimatedPadding(
+            duration: const Duration(milliseconds: 300),
+            padding: EdgeInsets.fromLTRB(
+                entry.node.id == 0
                     ? 0
-                    : 10,
-            padding,
-            4,
-            0),
-        curve: Curves.easeInOut, // Кривая анимации
-        child: entry.node.id == 0 && entry.node.type == 'm'
-            ? Container(
-                width: 40,
-                height: 40,
-                decoration: const BoxDecoration(
-                    shape: BoxShape.circle, color: AppColors.gradientEnd),
-              )
-            : (entry.node.type=='w'||entry.node.type=='s')&&entry.node.title.contains("HEADERSIMPLETASKHEADER")?
-        Image.asset("assets/icons/service_wish.png", height: 22, width: 22): entry.node.type == 's'
+                    : entry.node.type == 's'
+                        ? 0
+                        : 10,
+                padding,
+                4,
+                0),
+            curve: Curves.easeInOut, // Кривая анимации
+            child: entry.node.id == 0 && entry.node.type == 'm'
                 ? Container(
                     width: 40,
                     height: 40,
-                    decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white,
-                        border: Border.all(color: AppColors.buttonBackRed)),
-                    child: Center(
-                        child: Text(entry.node.title,
-                            maxLines: 2,
-                            style: const TextStyle(fontSize: 10))),
-                  )
-                : Container(
-                    height: fillWidth ? 50 : 25,
                     decoration: const BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.all(Radius.circular(6))),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const SizedBox(width: 8),
-                        fillWidth
-                            ? Expanded(
-                                child: Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.start,
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    path.isNotEmpty
-                                        ? SingleChildScrollView(
-                                            scrollDirection:
-                                                Axis.horizontal,
-                                            reverse: true,
-                                            child: Text(path,
-                                                maxLines: 1,
-                                                style: const TextStyle(
-                                                    color: AppColors
-                                                        .textLightGrey)))
-                                        : const Text("Желание",
-                                            style: TextStyle(
-                                                fontSize: 13,
-                                                fontWeight:
-                                                    FontWeight.w500)),
-                                    Text(
-                                      entry.node.title,
-                                      maxLines: 1,
-                                      style: entry.node.noClickable
-                                          ? const TextStyle()
-                                          : const TextStyle(
-                                              color: Colors.black,
-                                              fontWeight: FontWeight.w500),
-                                    ),
-                                  ],
-                                ),
-                              )
-                            : Column(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(
-                                    entry.node.title.replaceAll(
-                                        "HEADERSIMPLETASKHEADER", ""),
-                                    maxLines: 1,
-                                    style: entry.node.noClickable
-                                        ? const TextStyle()
-                                        : const TextStyle(
-                                            color: Colors.black,
-                                            fontWeight: FontWeight.w500),
-                                  ),
-                                ],
-                              ),
-                        if (fillWidth) const SizedBox(width: 8),
-                        Container(
-                          height: fillWidth ? 38.0 : null,
-                          width: fillWidth ? 38.0 : null,
-                          decoration: fillWidth
-                              ? BoxDecoration(
-                                  color: AppColors
-                                      .lightGrey, // Серый цвет фона
-                                  borderRadius: BorderRadius.circular(
-                                      10), // Закругленные края
-                                )
-                              : null,
-                          child: Center(
-                            child: entry.node.type == "w"
-                                ? (entry.node.isHidden
-                                    ? Image.asset(
-                                        'assets/icons/wish_hidden.png',
-                                        width: 30,
-                                        height: 30,
+                        shape: BoxShape.circle, color: AppColors.gradientEnd),
+                  )
+                : (entry.node.type == 'w' || entry.node.type == 's') &&
+                        entry.node.title.contains("HEADERSIMPLETASKHEADER")
+                    ? Image.asset("assets/icons/service_wish.png",
+                        height: 22, width: 22)
+                    : entry.node.type == 's'
+                        ? Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Colors.white,
+                                border:
+                                    Border.all(color: AppColors.buttonBackRed)),
+                            child: Center(
+                                child: Text(entry.node.title,
+                                    maxLines: 2,
+                                    style: const TextStyle(fontSize: 10))),
+                          )
+                        : Container(
+                            height: fillWidth ? 50 : 25,
+                            decoration: const BoxDecoration(
+                                color: Colors.white,
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(6))),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const SizedBox(width: 8),
+                                fillWidth
+                                    ? Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            path.isNotEmpty
+                                                ? SingleChildScrollView(
+                                                    scrollDirection:
+                                                        Axis.horizontal,
+                                                    reverse: true,
+                                                    child: Text(path,
+                                                        maxLines: 1,
+                                                        style: const TextStyle(
+                                                            color: AppColors
+                                                                .textLightGrey)))
+                                                : const Text("Желание",
+                                                    style: TextStyle(
+                                                        fontSize: 13,
+                                                        fontWeight:
+                                                            FontWeight.w500)),
+                                            Text(
+                                              entry.node.title,
+                                              maxLines: 1,
+                                              style: entry.node.noClickable
+                                                  ? const TextStyle()
+                                                  : const TextStyle(
+                                                      color: Colors.black,
+                                                      fontWeight:
+                                                          FontWeight.w500),
+                                            ),
+                                          ],
+                                        ),
                                       )
-                                    : entry.node.isChecked
-                                        ? Image.asset(
-                                            'assets/icons/wish_done.png',
-                                            width: 30,
-                                            height: 30,
-                                          )
-                                        : !entry.node.isActive
+                                    : Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.start,
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text(
+                                            entry.node.title.replaceAll(
+                                                "HEADERSIMPLETASKHEADER", ""),
+                                            maxLines: 1,
+                                            style: entry.node.noClickable
+                                                ? const TextStyle()
+                                                : const TextStyle(
+                                                    color: Colors.black,
+                                                    fontWeight:
+                                                        FontWeight.w500),
+                                          ),
+                                        ],
+                                      ),
+                                if (fillWidth) const SizedBox(width: 8),
+                                Container(
+                                  height: fillWidth ? 38.0 : null,
+                                  width: fillWidth ? 38.0 : null,
+                                  decoration: fillWidth
+                                      ? BoxDecoration(
+                                          color: AppColors
+                                              .lightGrey, // Серый цвет фона
+                                          borderRadius: BorderRadius.circular(
+                                              10), // Закругленные края
+                                        )
+                                      : null,
+                                  child: Center(
+                                    child: entry.node.type == "w"
+                                        ? (entry.node.isHidden
                                             ? Image.asset(
-                                                'assets/icons/wish_unactive.png',
+                                                'assets/icons/wish_hidden.png',
                                                 width: 30,
-                                                height: 30)
-                                            : Image.asset(
-                                                'assets/icons/wish_active.png',
-                                                width: 30,
-                                                height: 30))
-                                : (entry.node.type == "a"
-                                    ? (entry.node.isChecked
-                                        ? Image.asset(
-                                            'assets/icons/target_done.png',
-                                            width: 16,
-                                            height: 16)
-                                        : entry.node.isActive
-                                            ? Image.asset(
-                                                'assets/icons/target_active.png',
-                                                width: 16,
-                                                height: 16)
-                                            : Image.asset(
-                                                'assets/icons/target_unactive.png',
-                                                width: 16,
-                                                height: 16))
-                                    : (entry.node.type == "t"
-                                        ? (entry.node.isChecked
-                                            ? Image.asset(
-                                                'assets/icons/task_done.png',
-                                                width: 16,
-                                                height: 16)
-                                            : entry.node.isActive
+                                                height: 30,
+                                              )
+                                            : entry.node.isChecked
                                                 ? Image.asset(
-                                                    'assets/icons/task_active.png',
+                                                    'assets/icons/wish_done.png',
+                                                    width: 30,
+                                                    height: 30,
+                                                  )
+                                                : !entry.node.isActive
+                                                    ? Image.asset(
+                                                        'assets/icons/wish_unactive.png',
+                                                        width: 30,
+                                                        height: 30)
+                                                    : Image.asset(
+                                                        'assets/icons/wish_active.png',
+                                                        width: 30,
+                                                        height: 30))
+                                        : (entry.node.type == "a"
+                                            ? (entry.node.isChecked
+                                                ? Image.asset(
+                                                    'assets/icons/target_done.png',
                                                     width: 16,
                                                     height: 16)
-                                                : Image.asset(
-                                                    'assets/icons/task_unactive.png',
-                                                    width: 16,
-                                                    height: 16))
-                                        : Container())),
+                                                : entry.node.isActive
+                                                    ? Image.asset(
+                                                        'assets/icons/target_active.png',
+                                                        width: 16,
+                                                        height: 16)
+                                                    : Image.asset(
+                                                        'assets/icons/target_unactive.png',
+                                                        width: 16,
+                                                        height: 16))
+                                            : (entry.node.type == "t"
+                                                ? (entry.node.isChecked
+                                                    ? Image.asset(
+                                                        'assets/icons/task_done.png',
+                                                        width: 16,
+                                                        height: 16)
+                                                    : entry.node.isActive
+                                                        ? Image.asset(
+                                                            'assets/icons/task_active.png',
+                                                            width: 16,
+                                                            height: 16)
+                                                        : Image.asset(
+                                                            'assets/icons/task_unactive.png',
+                                                            width: 16,
+                                                            height: 16))
+                                                : Container())),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                              ],
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 8),
-                      ],
-                    ),
-                  ),
-                  ),
-                ));
+          ),
+        ));
   }
 }

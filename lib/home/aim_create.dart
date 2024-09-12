@@ -183,7 +183,7 @@ class AimScreen extends StatelessWidget {
     );
   }
   Future<void> onSaveClicked(AppViewModel appViewModel, BuildContext maincontext) async {
-    if(text.text.isEmpty||description.text.isEmpty){
+    if(text.text.isEmpty){
       aimCreateClicked=false;
       showModalBottomSheet<void>(
         backgroundColor: AppColors.backgroundColor,
