@@ -116,6 +116,7 @@ class DatabaseHelper {
     CREATE TABLE reminders(
         id INTEGER  PRIMARY KEY AUTOINCREMENT,
         taskId INTEGER,
+        moonId INTEGER,
         dateTime INTEGER,
         remindDays TEXT,
         music TEXT,
@@ -535,7 +536,7 @@ class DatabaseHelper {
 
   insertReminder(Reminder reminder) async {
     Database db = await database;
-    await db.insert("reminders", {'taskId':reminder.TaskId, 'dateTime': reminder.dateTime.toString(), 'remindDays': reminder.remindDays.join("|"), 'music': reminder.music, 'remindEnabled': reminder.remindEnabled?1:0, 'vibration': reminder.vibration?1:0}, conflictAlgorithm: ConflictAlgorithm.replace);
+    await db.insert("reminders", {'taskId':reminder.TaskId, 'dateTime': reminder.dateTime.toString(), 'moonId': reminder.moonId, 'remindDays': reminder.remindDays.join("|"), 'music': reminder.music, 'remindEnabled': reminder.remindEnabled?1:0, 'vibration': reminder.vibration?1:0}, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
   updateReminder(Reminder reminder) async {
@@ -552,14 +553,14 @@ class DatabaseHelper {
     Database db = await database;
     List<Map<String, dynamic>> reqResult = await db.query('reminders');
 
-    return reqResult.map((e)=>Reminder(e['id'], e['taskId'],DateTime.parse(e['dateTime']), e['remindDays'].toString().split("|").toList(), e['music'], e['remindEnabled']==1?true:false, vibration: e['vibration']==1?true:false)).toList();
+    return reqResult.map((e)=>Reminder(e['id'], e['taskId'], e['moonId'], DateTime.parse(e['dateTime']), e['remindDays'].toString().split("|").toList(), e['music'], e['remindEnabled']==1?true:false, vibration: e['vibration']==1?true:false)).toList();
   }
 
   Future<List<Reminder>> getRemindersForTask(int taskId) async {
     Database db = await database;
     List<Map<String, dynamic>> reqResult = await db.query('reminders', where: "taskId = ?", whereArgs: [taskId]);
 
-    return reqResult.map((e)=>Reminder(e['id'], e['taskId'], DateTime.parse(e['dateTime']), e['remindDays'].toString().split("|").toList(), e['music'], e['remindEnabled']==1?true:false, vibration: e['vibration']==1?true:false)).toList();
+    return reqResult.map((e)=>Reminder(e['id'], e['taskId'], e['moonId'], DateTime.parse(e['dateTime']), e['remindDays'].toString().contains('|')?e['remindDays'].toString().split("|").toList():[], e['music'], e['remindEnabled']==1?true:false, vibration: e['vibration']==1?true:false)).toList();
   }
 
   insertAlarm(Alarm alarm, String userId) async {

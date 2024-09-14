@@ -185,7 +185,7 @@ class LockScreenState extends State<LockScreen> {
                                     biometricOnly: true));
                             if (didAuthenticate) {
                               vm.lockState = false;
-                              vm.lastauthwithfinger = true;
+                              vm.allowSkipAuth = true;
                             }
                           }
                         },

@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 import 'dart:ui';
@@ -36,7 +37,7 @@ class AppViewModel with ChangeNotifier {
 
   bool lockEnabled = false;
   bool _lockState = true;
-  bool lastauthwithfinger = false;
+  bool allowSkipAuth = false;
   set lockState(v) {
     _lockState = v;
     notifyListeners();
@@ -224,6 +225,12 @@ class AppViewModel with ChangeNotifier {
 
   Future<Map<String, String>> getAudioList() async{//returns track name and url
     audioList = await repository.getAudios();
+    if(audios.isEmpty) audios = localRep.getTracks();
+    audios.forEach((k, v){
+      if(!audioList.keys.contains(k)){
+        audioList[k] = v;
+      }
+    });
     notifyListeners();
     localRep.cacheTrackNames(audioList);
     return audioList;
@@ -236,6 +243,15 @@ class AppViewModel with ChangeNotifier {
     localRep.saveTrack(name, "${directory.path}/$name");
     audios[name]="${directory.path}/$name";
     return loadId;
+  }
+  Future saveLocalTrack(String path) async{
+    if(path=="")return null;
+    final directory = await getTemporaryDirectory();
+    final name = path.split('/').last;
+    await File(path).copy('${directory.path}/$name');
+    localRep.saveTrack(name, "${directory.path}/$name");
+    audios[name]="${directory.path}/$name";
+    audioList[name]="${directory.path}/$name";
   }
 
   saveUserColor(Color color) {
@@ -1363,7 +1379,10 @@ class AppViewModel with ChangeNotifier {
         currentTask = await localRep.getTask(id,mainScreenState?.moon.id??0);
         notifyListeners();
       } else {
-        throw Exception("#2366 lost datas");
+        await getReminders(id);
+        await startMainScreen(MoonItem(id: reminders.first.moonId, filling: 0.0, text: "", date: ""));
+        currentTask = await localRep.getTask(id, mainScreenState?.moon.id??0);
+        notifyListeners();
       }
     }catch(ex){
       addError("#2456$ex");
@@ -1713,7 +1732,7 @@ class AppViewModel with ChangeNotifier {
           return;
         }
         final allAim = await localRep.getAllAims(mainScreenState?.moon.id??0);
-        final simpleAim = allAim.where((e) => (e.text=="HEADERSIMPLETASKHEADERОбщие задачи"&&e.parentId==wishId));
+        final simpleAim = allAim.where((e) => (e.text.contains("HEADERSIMPL")&&e.parentId==wishId));
         if(simpleAim.isEmpty){
           //await adding aim
             aimId = allAim.isNotEmpty?(allAim.reduce((a,b) => a.id > (b.id) ? a:b).id+1):1;

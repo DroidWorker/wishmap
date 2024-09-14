@@ -146,7 +146,7 @@ void _runAppWithTask(NotificationResponse response, AppViewModel vm) async {
         create: (context) {
           final appViewModel = context.read<AppViewModel>();
           appViewModel.getTask(int.parse(response.payload!.split("id=")[1]));
-          return NavigationBloc()..add((appViewModel.profileData!=null&&appViewModel.profileData!.id.isNotEmpty)?NavigateToTasksScreenEvent():NavigateToAuthScreenEvent());
+          return NavigationBloc()..add((appViewModel.profileData!=null&&appViewModel.profileData!.id.isNotEmpty)?NavigateToTaskEditScreenEvent(0):NavigateToAuthScreenEvent());
         },
         child: MyApp(),
       ),
@@ -183,8 +183,8 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver{
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if(state==AppLifecycleState.resumed){
-      if(vm?.lastauthwithfinger==true){
-        vm?.lastauthwithfinger=false;
+      if(vm?.allowSkipAuth==true){
+        vm?.allowSkipAuth=false;
       }else {
         vm?.lockState = true;
       }
@@ -236,7 +236,6 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver{
               builder: (context, appViewModel, child) {
                 vm ??= appViewModel;
                 if (appViewModel.messageError.isNotEmpty) {
-                  print("errrrrrrrrrrrrrrrr");
                   WidgetsBinding.instance.addPostFrameCallback((_) {
                     _showError(context, appViewModel.messageError);
                   });

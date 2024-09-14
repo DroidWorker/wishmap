@@ -324,7 +324,7 @@ class MyTreeTile extends StatelessWidget {
                                           ),
                                         ],
                                       ),
-                                if (fillWidth) const SizedBox(width: 8),
+                                if (fillWidth) const SizedBox(width: 10),
                                 Container(
                                   height: fillWidth ? 38.0 : null,
                                   width: fillWidth ? 38.0 : null,
@@ -341,24 +341,24 @@ class MyTreeTile extends StatelessWidget {
                                         ? (entry.node.isHidden
                                             ? Image.asset(
                                                 'assets/icons/wish_hidden.png',
-                                                width: 30,
-                                                height: 30,
+                                                width: 16,
+                                                height: 16,
                                               )
                                             : entry.node.isChecked
                                                 ? Image.asset(
                                                     'assets/icons/wish_done.png',
-                                                    width: 30,
-                                                    height: 30,
+                                                    width: 16,
+                                                    height: 16,
                                                   )
                                                 : !entry.node.isActive
                                                     ? Image.asset(
                                                         'assets/icons/wish_unactive.png',
-                                                        width: 30,
-                                                        height: 30)
+                                                        width: 16,
+                                                        height: 16)
                                                     : Image.asset(
                                                         'assets/icons/wish_active.png',
-                                                        width: 30,
-                                                        height: 30))
+                                                        width: 16,
+                                                        height: 16))
                                         : (entry.node.type == "a"
                                             ? (entry.node.isChecked
                                                 ? Image.asset(

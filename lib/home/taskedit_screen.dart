@@ -195,7 +195,7 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                                   appVM.activateTask(ai!.id, true);
                                   ai!.isActive = true;
                                 });
-                                showOverlayedAnimations(context, 'assets/lottie/aktualizaciyazadachi.json', fillBackground: true, onControllerCreated: (controller){lottieController = controller;});
+                                if(appVM.settings.animationEnabled)showOverlayedAnimations(context, 'assets/lottie/aktualizaciyazadachi.json', fillBackground: true, onControllerCreated: (controller){lottieController = controller;});
                               }else{
                                 showUnavailable(text: "Чтобы актуализировать задачу необходимо актуализировать вышестоящее желание");
                               }
@@ -214,13 +214,13 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                                     return ActionBS('Внимание', "Вы изменили поля но не нажали 'Сохранить'\nСохранить изменения перед выполнением задачи?", "Да", 'Нет',
                                         onOk: () async { Navigator.pop(context, 'OK');
                                         if(await onSaveClicked(appVM, ai!)) {
-                                          if(!ai!.isChecked)showOverlayedAnimations(context, 'assets/lottie/vypolneniezadach.json', fillBackground: true, onControllerCreated: (controller){lottieController = controller;});
+                                          if(!ai!.isChecked&&appVM.settings.animationEnabled)showOverlayedAnimations(context, 'assets/lottie/vypolneniezadach.json', fillBackground: true, onControllerCreated: (controller){lottieController = controller;});
                                           appVM.updateTaskStatus(ai!.id, !ai!.isChecked);
                                         }
                                         },
                                         onCancel: () async {
                                           Navigator.pop(context, 'Cancel');
-                                          if(!ai!.isChecked)showOverlayedAnimations(context, 'assets/lottie/vypolneniezadach.json', fillBackground: true, onControllerCreated: (controller){lottieController = controller;});
+                                          if(!ai!.isChecked&&appVM.settings.animationEnabled)showOverlayedAnimations(context, 'assets/lottie/vypolneniezadach.json', fillBackground: true, onControllerCreated: (controller){lottieController = controller;});
                                           await appVM.updateTaskStatus(
                                               ai!.id, !ai!.isChecked);
                                           await appVM.getTask(ai?.id??0);
@@ -230,7 +230,7 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                                   },
                                 );
                               }else {
-                                if(!ai!.isChecked)showOverlayedAnimations(context, 'assets/lottie/vypolneniezadach.json', fillBackground: true, onControllerCreated: (controller){lottieController = controller;});
+                                if(!ai!.isChecked&&appVM.settings.animationEnabled)showOverlayedAnimations(context, 'assets/lottie/vypolneniezadach.json', fillBackground: true, onControllerCreated: (controller){lottieController = controller;});
                                 appVM.updateTaskStatus(
                                     ai!.id, !ai!.isChecked);
                                 showModalBottomSheet<void>(
@@ -385,22 +385,43 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                           ...appVM.reminders.map((e){
                             return ReminderItem(e, onTap: (id){
                               showModalBottomSheet(context: context,backgroundColor: AppColors.backgroundColor, isScrollControlled: true, builder: (BuildContext context){
-                                return ReminderBS((reminder){
+                                return ReminderBS(reminder: e, (reminder){
                                   setState(() {
                                     appVM.updateReminder(reminder);
                                     setReminder(reminder);
                                     Navigator.pop(context, 'OK');
                                   });
-                                }, ai?.id??-1);
+                                }, ai?.id??-1, appVM.mainScreenState?.moon.id??0);
                               });
                             },
                             onDelete: (id){
                               final taskId = e.TaskId;
-                              cancelAlarmManager(taskId*100);
                               appVM.deleteReminder(id);
+                              if(e.remindDays.isNotEmpty){
+                                for (var i = 0; i<e.remindDays.length; i++) {
+                                  cancelAlarmManager(taskId*100+i);
+                                }
+                              }else {
+                                cancelAlarmManager(taskId*100);
+                              }
                             },
                               onChangeState: (id, v){
-
+                                if(v){
+                                  e.remindEnabled=true;
+                                  appVM.updateReminder(e);
+                                  setReminder(e);
+                                }else{
+                                  final taskId = e.TaskId;
+                                  e.remindEnabled=false;
+                                  appVM.updateReminder(e);
+                                  if(e.remindDays.isNotEmpty){
+                                    for (var i = 0; i<e.remindDays.length; i++) {
+                                      cancelAlarmManager(taskId*100+i);
+                                    }
+                                  }else {
+                                    cancelAlarmManager(taskId*100);
+                                  }
+                                }
                               },
                             );
                           }),
@@ -413,7 +434,7 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                                     setReminder(reminder);
                                     Navigator.pop(context, 'OK');
                                   });
-                              }, ai?.id??-1);
+                              }, ai?.id??-1, appVM.mainScreenState?.moon.id??0);
                             });
                           }),
                           const SizedBox(height: 16),
@@ -460,7 +481,7 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                     backgroundColor: parentSphere?.isActive==true?parentSphere?.color:const Color.fromARGB(255, 217, 217, 217),
                     shape: const CircleBorder(),
                     child: Stack(children: [
-                      Center(child: Text(parentSphere?.text??"", style: const TextStyle(color: Colors.white),)),
+                      Center(child: Text(parentSphere?.text??"", maxLines: 1, overflow: TextOverflow.fade, textAlign: TextAlign.center ,style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w700))),
                       if(parentSphere?.isChecked==true)Align(alignment: Alignment.topRight, child: Image.asset('assets/icons/wish_done.png', width: 20, height: 20),)
                     ],),
                   ),

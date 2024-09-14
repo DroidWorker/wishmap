@@ -141,22 +141,22 @@ void setReminder(Reminder reminder) async {
   if (reminder.remindDays.isNotEmpty) {
     int reminderId = reminder.TaskId*100;
 
-    reminder.remindDays.forEach((day) async {
-      reminderId++;
+    reminder.remindDays.indexed.forEach((v) async {
       final DateTime now = DateTime.now();
-      final int dayOffset = getDayOffset(int.parse(day), now.weekday);
-      final DateTime firstAlarmTime = now.add(Duration(days: dayOffset));
+      final int dayOffset = getDayOffset(int.parse(v.$2), now.weekday);
+      DateTime firstAlarmTime = now.add(Duration(days: dayOffset));
+      firstAlarmTime = firstAlarmTime.copyWith(hour: reminder.dateTime.hour, minute: reminder.dateTime.minute);
 
       await AndroidAlarmManager.periodic(
         const Duration(days: 7),
-        reminderId,
+        reminderId+v.$1,
         showRemindNotification,
         startAt: firstAlarmTime,
         exact: true,
         wakeup: true,
       );
 
-      print('Repeating reminder set for $day starting at $firstAlarmTime');
+      print('Repeating reminder ${reminderId+v.$1} set for ${v.$2} starting at $firstAlarmTime');
     });
   } else {
     final result = await AndroidAlarmManager.oneShotAt(
@@ -172,6 +172,7 @@ void setReminder(Reminder reminder) async {
 }
 
 Future<bool> cancelAlarmManager(int id) async{
+  print("canceled reminder $id");
   return await AndroidAlarmManager.cancel(id);
 }
 

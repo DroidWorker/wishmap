@@ -154,6 +154,17 @@ class MainSettingsState extends State<MainSettings>{
                 appViewModel.settings.treeView=changed?1:0;
                 appViewModel.saveSettings();
               });}),
+              const SizedBox(height: 24),
+              const Divider(
+                height: 3,
+                color: AppColors.grey,
+              ),
+              const SizedBox(height: 16),
+              const Text("Анимация", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
+              const SizedBox(height: 8,),
+              const Center(child: Text("Отключение анимации при смене состояний сфер/желаний/целей", style: TextStyle(fontSize: 12),),),
+              const SizedBox(height: 10,),
+              buildSettingItem("Активна", "", appViewModel.settings.animationEnabled, (changed){appViewModel.settings.animationEnabled=changed;appViewModel.saveSettings();}),
               const SizedBox(height: 5,),
             ],
           ),

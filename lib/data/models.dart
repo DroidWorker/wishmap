@@ -56,6 +56,8 @@ class ActualizingSettingData{
   int treeView = 0;
   //0-old
   //1-new
+
+ bool animationEnabled = true;
 }
 
 class CircleData{
@@ -397,8 +399,9 @@ class Reminder extends ReminderInterface{
   String music;//музыка напоминания
   bool remindEnabled;//флаг определяющий включен ли повтор напоминанаий
   bool vibration;
+  int moonId;
 
-  Reminder(this.id, this.TaskId, this.dateTime, this.remindDays, this.music, this.remindEnabled, {this.vibration = true}) : super(id, TaskId, dateTime, remindDays, music, remindEnabled, vibration: vibration);
+  Reminder(this.id, this.TaskId, this.moonId, this.dateTime, this.remindDays, this.music, this.remindEnabled, {this.vibration = true}) : super(id, TaskId, dateTime, remindDays, music, remindEnabled, vibration: vibration);
 }
 
 class Alarm extends ReminderInterface{

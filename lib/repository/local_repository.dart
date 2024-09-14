@@ -109,6 +109,7 @@ class LocalRepository {
     _prefs!.setBool("fastActualizingSphere", settings.fastActSphere);
     _prefs!.setInt("quoteUpdateFreq", settings.quoteupdateFreq);
     _prefs!.setInt("treeView", settings.treeView);
+    _prefs!.setBool("animationEnabled", settings.animationEnabled);
   }
 
   Future<ActualizingSettingData> getActSetting() async {

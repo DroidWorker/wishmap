@@ -49,7 +49,6 @@ class _MainScreenState extends State<MainScreen>{
 
   @override
   void initState() {
-    print("maaaaaaain");
     super.initState();
     IsolateNameServer.registerPortWithName(_port.sendPort, 'downloader_send_port');
     _port.listen((dynamic data) {
@@ -175,45 +174,31 @@ class _MainScreenState extends State<MainScreen>{
                                     appVM.audioNum = num-1<0?audioUrl.length-1:num-1;
                                     AudioPlayerManager().playLocal(audioUrl.keys.toList()[appVM.audioNum]);
                                   }
-                                  pnPressCount++;
-                                  if(pnPressCount==5){
-                                    pnPressCount=0;
-                                    if(isPauseIcon){
-                                      setState(() {
-                                        appVM.hint = quotesQuite[Random().nextInt(55)];
-                                      });
-                                    }else{
-                                      setState(() {
-                                        appVM.hint = quoteMusic[Random().nextInt(100)];
-                                      });
-                                    }
-                                  }
+                                    setState(() {
+                                      appVM.hint = audioUrl.keys.toList()[appVM.audioNum];
+                                    });
                                 },
                               ),
                               const SizedBox(width: 5),
                               IconButton(
-                                icon: isPauseIcon?Image.asset('assets/icons/plau.png', height: 35, width: 35):SvgPicture.asset('assets/icons/pause.svg', height: 20, width: 20),
+                                icon: isPauseIcon?Image.asset('assets/icons/plau.png', height: 35, width: 35):SvgPicture.asset('assets/icons/pause.svg', height: 35, width: 35),
                                 onPressed: () async {
+                                  final audioUrl = await appVM.getAudio();
+                                  if(audioUrl.isEmpty)return;
                                   if(!isPauseIcon){
                                     AudioPlayerManager().pause();
                                   }else {
-                                    final audioUrl = await appVM.getAudio();
-                                    if(audioUrl.isEmpty)return;
                                     AudioPlayerManager().playLocal(audioUrl.keys.toList()[appVM.audioNum]);
                                   }
                                   setState((){
                                     ppPressCount++;
                                     if(ppPressCount==5){
                                       ppPressCount=0;
-                                      if(isPauseIcon){
-                                        setState(() {
+                                      if(!isPauseIcon){
                                           appVM.hint = quotesQuite[Random().nextInt(55)];
-                                        });
-                                      }else{
-                                        setState(() {
-                                          appVM.hint = quoteMusic[Random().nextInt(100)];
-                                        });
                                       }
+                                    }else{
+                                        appVM.hint = audioUrl.keys.toList()[appVM.audioNum];
                                     }
                                     isPauseIcon=!isPauseIcon;
                                     clearData=false;
@@ -231,19 +216,9 @@ class _MainScreenState extends State<MainScreen>{
                                     appVM.audioNum = num+1>audioUrl.length-1?0:num+1;
                                     AudioPlayerManager().playLocal(audioUrl.keys.toList()[appVM.audioNum]);
                                   }
-                                  pnPressCount++;
-                                  if(pnPressCount==5){
-                                    pnPressCount=0;
-                                    if(isPauseIcon){
-                                      setState(() {
-                                        appVM.hint = quotesQuite[Random().nextInt(55)];
-                                      });
-                                    }else{
-                                      setState(() {
-                                        appVM.hint = quoteMusic[Random().nextInt(100)];
-                                      });
-                                    }
-                                  }
+                                    setState(() {
+                                      appVM.hint = audioUrl.keys.toList()[appVM.audioNum];
+                                    });
                                 },
                               )
                             ],),

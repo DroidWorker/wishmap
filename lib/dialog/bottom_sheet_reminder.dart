@@ -26,10 +26,11 @@ enum IntervalLabel {
 }
 
 class ReminderBS extends StatefulWidget {
-  ReminderBS(this.onClose, this.parentTaskId, {this.reminder, super.key});
+  ReminderBS(this.onClose, this.parentTaskId, this.moonId, {this.reminder, super.key});
 
   Function(Reminder) onClose;
   int parentTaskId;
+  int moonId;
   Reminder? reminder;
 
   @override
@@ -59,21 +60,23 @@ class ReminderBSState extends State<ReminderBS>{
       selectedDatetime =widget.reminder!.dateTime;
       checkStates = List.generate(8, (i)=>false);
       widget.reminder!.remindDays.forEach((i){
-        checkStates[int.parse(i)]= true;
+        if(i!="")checkStates[int.parse(i)]= true;
       });
     }
-    reminder = widget.reminder??Reminder(-1, widget.parentTaskId, selectedDatetime, [], "default", false);
+    reminder = widget.reminder??Reminder(-1, widget.parentTaskId, widget.moonId, selectedDatetime, [], "default", false);
     datetime = "${fullDayOfWeek[selectedDatetime.weekday]}, ${selectedDatetime.day} ${monthOfYear[selectedDatetime.month]} ${selectedDatetime.year}";
-    dayList = List<DateTime>.generate(62, (i) =>
+    dayList = widget.reminder==null?List<DateTime>.generate(62, (i) =>
         DateTime.utc(
           DateTime.now().year,
           DateTime.now().month,
           DateTime.now().day,
-        ).add(Duration(days: i)));
+        ).add(Duration(days: i))):List<DateTime>.generate(62, (i) =>
+        selectedDatetime.add(Duration(days: i)));
     daysString = buildDays();
   }
 
   String buildDays(){
+    if(reminder.remindDays.firstOrNull=="")return "";
     String daysString = "";
     int prevDay = int.parse(reminder.remindDays.firstOrNull??"-1");
     bool isInterval = false;
@@ -195,7 +198,7 @@ class ReminderBSState extends State<ReminderBS>{
                         }
                     }),
                     const Text(":", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-                    StringPicker(itemWidth: 70, minValue: 0, maxValue: 59, value: selectedDatetime.minute, onChanged: (v){
+                    StringPicker(itemWidth: 70, minValue: 0, maxValue: 59, infiniteLoop: true, zeroPad: true, value: selectedDatetime.minute, onChanged: (v){
                         selectedDatetime = selectedDatetime.copyWith(minute: v);
                         if(selectedItem!=IntervalLabel.none) {
                           setState(() {
@@ -243,7 +246,7 @@ class ReminderBSState extends State<ReminderBS>{
                         children: [
                           const Text("вибрация"),
                           const Spacer(),
-                          MySwitch(value: false, onChanged: (v){
+                          MySwitch(value: reminder.vibration, onChanged: (v){
                             reminder.vibration = v;
                           },)
                         ],
@@ -254,7 +257,8 @@ class ReminderBSState extends State<ReminderBS>{
                 const SizedBox(height: 32),
                 ColorRoundedButton("Сохранить", (){
                   reminder.dateTime = selectedDatetime;
-                    widget.onClose(reminder);
+                  reminder.remindEnabled = true;
+                  widget.onClose(reminder);
                 })
               ],
             ):

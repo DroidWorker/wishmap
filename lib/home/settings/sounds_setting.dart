@@ -1,8 +1,11 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
+import 'package:wishmap/interface_widgets/colorButton.dart';
+import 'package:wishmap/interface_widgets/outlined_button.dart';
 
 import '../../ViewModel.dart';
 import '../../common/switch_widget.dart';
@@ -57,7 +60,7 @@ class SoundsSettingsState extends State<SoundsSettings>{
                             const SizedBox(width: 28),
                           ],
                         ),
-                        const SizedBox(height: 10,),
+                        const SizedBox(height: 22),
                         appViewModel.audioList.isEmpty?const Text("Loading..."):
                         ListView.builder(
                           shrinkWrap: true,
@@ -69,7 +72,7 @@ class SoundsSettingsState extends State<SoundsSettings>{
                               Container(
                                 width: 32, height: 32,
                                 decoration: BoxDecoration(borderRadius: BorderRadius.circular(3), color: AppColors.oceanBgColor),
-                                child: SvgPicture.asset("assets/icons/music.svg"),
+                                child: Center(child: SizedBox(height: 15, width: 15, child: SvgPicture.asset("assets/icons/music.svg"))),
                               ),
                               const SizedBox(width: 10),
                               Text(name),
@@ -83,6 +86,15 @@ class SoundsSettingsState extends State<SoundsSettings>{
                             ],);
                           },
                         ),
+                        const SizedBox(height: 22),
+                        OutlinedGradientButton("Добавить трек", () async {
+                          appViewModel.allowSkipAuth=true;
+                          final path = await _pickAudio();
+                          if(path!=null){
+                            await appViewModel.saveLocalTrack(path);
+                            setState((){});
+                          }
+                        })
                       ],
                     ),
                   )
@@ -90,6 +102,17 @@ class SoundsSettingsState extends State<SoundsSettings>{
             );
           }
           );
+    }
+    
+    Future<String?> _pickAudio() async{
+      FilePickerResult? result = await FilePicker.platform.pickFiles(type: FileType.audio);
+      if(result != null){
+        String? filepath = result.files.single.path;
+        if(filepath!=null){
+          return filepath;
+        }
+      }
+      return null;
     }
   }
 

@@ -281,9 +281,9 @@ class _WishScreenState extends State<WishScreen>{
                                     curwish.isActive = true;
                                   });
                                   if(curwish.parentId==0) {
-                                    showOverlayedAnimations(context, 'assets/lottie/aktualizaciyasfery.json', fillBackground: true);
+                                    if(appVM.settings.animationEnabled)showOverlayedAnimations(context, 'assets/lottie/aktualizaciyasfery.json', fillBackground: true);
                                   } else {
-                                    showOverlayedAnimations(context, 'assets/lottie/aktualizaciyazhelaniya.json', fillBackground: true);
+                                    if(appVM.settings.animationEnabled)showOverlayedAnimations(context, 'assets/lottie/aktualizaciyazhelaniya.json', fillBackground: true);
                                   }
                                 } else{
                                   showUnavailable("Чтобы представить это желание необходимо сначала представить вышестоящиую сферу");
@@ -326,6 +326,7 @@ class _WishScreenState extends State<WishScreen>{
                                       );
                                     }
                                     else {
+
                                       changeStatus(appVM);
                                     }
                                   }
@@ -837,7 +838,7 @@ class _WishScreenState extends State<WishScreen>{
                   ):Row(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      FloatingActionButton(
+                      if(!curwish.text.contains("HEADERSI"))FloatingActionButton(
                         onPressed: (){
                           appViewModel.createMainScreenSpherePath(curwish.id, MediaQuery.of(context).size.width);
                           BlocProvider.of<NavigationBloc>(context).clearHistory();
@@ -957,7 +958,7 @@ class _WishScreenState extends State<WishScreen>{
                 Navigator.pop(context, 'OK');
                 curwish.isChecked =
                 !curwish.isChecked;
-                if(curwish.isChecked)showOverlayedAnimations(context, 'assets/lottie/vypolneniezhelaniya.json', fillBackground: true, onControllerCreated: (controller){lottieController = controller;});
+                if(curwish.isChecked&&appVM.settings.animationEnabled)showOverlayedAnimations(context, 'assets/lottie/vypolneniezhelaniya.json', fillBackground: true, onControllerCreated: (controller){lottieController = controller;});
                 appVM.updateWishStatus(
                     appVM.wishScreenState!.wish
                         .id, curwish.isChecked);
@@ -986,6 +987,7 @@ class _WishScreenState extends State<WishScreen>{
     }else{
       curwish.isChecked =
       !curwish.isChecked;
+      if(curwish.isChecked&&appVM.settings.animationEnabled)showOverlayedAnimations(context, 'assets/lottie/vypolneniezhelaniya.json', fillBackground: true, onControllerCreated: (controller){lottieController = controller;});
       appVM.updateWishStatus(
           appVM.wishScreenState!.wish
               .id, curwish.isChecked);

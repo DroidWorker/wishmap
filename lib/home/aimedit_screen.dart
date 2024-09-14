@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:keyboard_attachable/keyboard_attachable.dart';
 import 'package:provider/provider.dart';
 import 'package:wishmap/common/treeview_widget.dart';
 import '../ViewModel.dart';
@@ -224,7 +223,7 @@ class AimEditScreenState extends State<AimEditScreen>{
                             }
                           }
                         ):const SizedBox(),
-                        if(ai!.isActive)OutlinedGradientButton("Достигнуто", filledButtonColor: ai!.isChecked?AppColors.greenButtonBack:null, () async {
+                        if(ai!.isActive&&!HEADERSIMPLETASKHEADER)OutlinedGradientButton("Достигнуто", filledButtonColor: ai!.isChecked?AppColors.greenButtonBack:null, () async {
                           if(ai!=null){
                             if(isParentChecked) {
                               showCantChangeStatus();
@@ -249,7 +248,7 @@ class AimEditScreenState extends State<AimEditScreen>{
                                                     Navigator.pop(
                                                         context, 'OK');
                                                     ai!.isChecked = !ai!.isChecked;
-                                                    if(ai!.isChecked)showOverlayedAnimations(context, 'assets/lottie/dostizhenieceli.json', fillBackground: true, onControllerCreated: (controller){lottieController = controller;});
+                                                    if(ai!.isChecked&&appVM.settings.animationEnabled)showOverlayedAnimations(context, 'assets/lottie/dostizhenieceli.json', fillBackground: true, onControllerCreated: (controller){lottieController = controller;});
                                                     appVM.updateAimStatus(ai!.id, ai!.isChecked);
                                                     showModalBottomSheet<void>(
                                                       backgroundColor: AppColors.backgroundColor,
@@ -275,7 +274,7 @@ class AimEditScreenState extends State<AimEditScreen>{
                                           );
                                         }else {
                                           ai!.isChecked = !ai!.isChecked;
-                                          if(ai!.isChecked)showOverlayedAnimations(context, 'assets/lottie/dostizhenieceli.json', fillBackground: true, onControllerCreated: (controller){lottieController = controller;});
+                                          if(ai!.isChecked&&appVM.settings.animationEnabled)showOverlayedAnimations(context, 'assets/lottie/dostizhenieceli.json', fillBackground: true, onControllerCreated: (controller){lottieController = controller;});
                                           appVM.updateAimStatus(ai!.id, ai!.isChecked);
                                         }
                                         },
@@ -293,7 +292,7 @@ class AimEditScreenState extends State<AimEditScreen>{
                                                           context, 'OK');
                                                       ai!.isChecked = !ai!
                                                           .isChecked;
-                                                      if(ai!.isChecked)showOverlayedAnimations(context, 'assets/lottie/dostizhenieceli.json', fillBackground: true, onControllerCreated: (controller){lottieController = controller;});
+                                                      if(ai!.isChecked&&appVM.settings.animationEnabled)showOverlayedAnimations(context, 'assets/lottie/dostizhenieceli.json', fillBackground: true, onControllerCreated: (controller){lottieController = controller;});
                                                       await appVM.updateAimStatus(
                                                           ai!.id, ai!.isChecked);
                                                       await appVM.getAim(ai!.id);
@@ -326,7 +325,7 @@ class AimEditScreenState extends State<AimEditScreen>{
                                           }else {
                                             ai!.isChecked = !ai!
                                                 .isChecked;
-                                            if(ai!.isChecked)showOverlayedAnimations(context, 'assets/lottie/dostizhenieceli.json', fillBackground: true, onControllerCreated: (controller){lottieController = controller;});
+                                            if(ai!.isChecked&&appVM.settings.animationEnabled==true)showOverlayedAnimations(context, 'assets/lottie/dostizhenieceli.json', fillBackground: true, onControllerCreated: (controller){lottieController = controller;});
                                             await appVM.updateAimStatus(
                                                 ai!.id, ai!.isChecked);
                                             await appVM.getAim(ai!.id);
@@ -353,7 +352,7 @@ class AimEditScreenState extends State<AimEditScreen>{
                                               context, 'OK');
                                           ai!.isChecked = !ai!
                                               .isChecked;
-                                          if(ai!.isChecked)showOverlayedAnimations(context, 'assets/lottie/dostizhenieceli.json', fillBackground: true, onControllerCreated: (controller){lottieController = controller;});
+                                          if(ai!.isChecked&&appVM.settings.animationEnabled)showOverlayedAnimations(context, 'assets/lottie/dostizhenieceli.json', fillBackground: true, onControllerCreated: (controller){lottieController = controller;});
                                           appVM.updateAimStatus(
                                               ai!.id,
                                               ai!.isChecked);
@@ -380,7 +379,7 @@ class AimEditScreenState extends State<AimEditScreen>{
                                 } else {
                                   ai!.isChecked = !ai!
                                       .isChecked;
-                                  if(ai!.isChecked)showOverlayedAnimations(context, 'assets/lottie/dostizhenieceli.json', fillBackground: true, onControllerCreated: (controller){lottieController = controller;});
+                                  if(ai!.isChecked&&appVM.settings.animationEnabled)showOverlayedAnimations(context, 'assets/lottie/dostizhenieceli.json', fillBackground: true, onControllerCreated: (controller){lottieController = controller;});
                                   appVM.updateAimStatus(
                                       ai!.id, ai!.isChecked);
                                   showModalBottomSheet<void>(
@@ -548,7 +547,7 @@ class AimEditScreenState extends State<AimEditScreen>{
                               widgetBeforeText: const Icon(Icons.add_circle_outline_rounded),
                             ),
                           ],),
-                          if(ai?.isActive==false||ai?.isChecked==true)Positioned.fill(
+                          if(ai?.isActive==false||ai?.isChecked==true||HEADERSIMPLETASKHEADER)Positioned.fill(
                               child: Container(
                                 color: AppColors.backgroundColor.withOpacity(0.8),
                               )
@@ -585,7 +584,7 @@ class AimEditScreenState extends State<AimEditScreen>{
               ):Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  FloatingActionButton(
+                  if(!HEADERSIMPLETASKHEADER)FloatingActionButton(
                     onPressed: (){
                       if(ai!=null) {
                         appVM.createMainScreenSpherePath(ai!.parentId, MediaQuery.of(context).size.width);
@@ -597,7 +596,7 @@ class AimEditScreenState extends State<AimEditScreen>{
                     backgroundColor: parentObj?.isActive==true?parentObj?.color:const Color.fromARGB(255, 217, 217, 217),
                     shape: const CircleBorder(),
                     child: Stack(children: [
-                      Center(child: Text(parentObj?.text??"", style: const TextStyle(color: Colors.white),)),
+                      Center(child: Text(parentObj?.text??"", maxLines: 1, overflow: TextOverflow.fade, textAlign: TextAlign.center ,style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w700))),
                       if(parentObj?.isChecked==true)Align(alignment: Alignment.topRight, child: Image.asset('assets/icons/wish_done.png', width: 20, height: 20),)
                     ],),
                   ),

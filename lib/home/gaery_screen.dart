@@ -115,7 +115,7 @@ class GalleryScreenState extends State<GalleryScreen>{
                     child: GestureDetector(
                       onTap: (){
                         setState(() {
-                          appViewModel.lastauthwithfinger=true;
+                          appViewModel.allowSkipAuth=true;
                           screenNumber = 1;
                         });
                       },
