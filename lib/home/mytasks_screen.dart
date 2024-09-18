@@ -1,12 +1,10 @@
 import 'dart:math';
 
-import 'package:capped_progress_indicator/capped_progress_indicator.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
-import 'package:wishmap/common/gallery_widget.dart';
 import '../ViewModel.dart';
 import '../common/bottombar.dart';
 import '../common/taskitem_widget.dart';
@@ -193,7 +191,7 @@ class _TaskScreenState extends State{
                         itemBuilder: (context, index) {
                           final parentaim = appVM.aimItems.firstWhereOrNull((e) => e.id==filteredTaskList[index].parentId);
                           final parentwish = parentaim?.parentId==0?WishItem(id: 0, text: "Я", isChecked: false, isActive: true, isHidden: false):parentaim!=null?appVM.wishItems.firstWhereOrNull((e) => e.id==parentaim.parentId):null;
-                          return TaskItemWidget(ti: filteredTaskList[index],
+                          return TaskItemWidget(key: UniqueKey(), ti: filteredTaskList[index],
                               p: "${parentwish?.text.replaceAll("HEADERSIMPLETASKHEADER", "")} > ${parentaim?.text.replaceAll("HEADERSIMPLETASKHEADER", "")}",
                               onSelect: onItemSelect,
                               onDoubleClick: onDoubleClick,

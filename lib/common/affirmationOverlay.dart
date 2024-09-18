@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:keyboard_attachable/keyboard_attachable.dart';
 import 'package:wishmap/interface_widgets/colorButton.dart';
 
 import '../res/colors.dart';
@@ -92,46 +91,11 @@ class _MyOverlayState extends State<MyAffirmationOverlay> {
                         if(widget.isShuffle)currentIndex=-1;
                       });
                     }, icon: Icon(Icons.shuffle, color: widget.isShuffle?AppColors.gradientEnd:AppColors.darkGrey, size: 28)),
-                    IconButton(onPressed: (){
+                    !widget.isShuffle?IconButton(onPressed: (){
                       setState(() {
                         screenType=1;
                       });
-                    }, icon: const Icon(Icons.edit, size: 28))
-                    /*if(screenType==0)TextButton(
-                        style: TextButton.styleFrom(
-                          backgroundColor: AppColors.greyBackButton,
-                          shape: const RoundedRectangleBorder(
-                            borderRadius: BorderRadius.all(Radius.circular(10)),
-                          ),
-                        ),
-                        onPressed: (){
-                          setState(() {
-                            widget.affirmations.removeWhere((element) => element==currentAffirmation);
-                            currentAffirmation="";
-                            currentEditIndex=-1;
-                            currentIndex=-1;
-                          });
-                        },
-                        child: const Text("Удалить", style: TextStyle(color: AppColors.blueTextColor))
-                    )else TextButton(
-                        style: TextButton.styleFrom(
-                          backgroundColor: currentIndex==currentEditIndex?AppColors.pinkButtonTextColor:AppColors.greyBackButton,
-                          shape: const RoundedRectangleBorder(
-                            borderRadius: BorderRadius.all(Radius.circular(10)),
-                          ),
-                        ),
-                        onPressed: (){
-                          setState(() {
-                            widget.affirmations[currentEditIndex] = controller.text;
-                            widget.isShuffle = false;
-                            widget.onShuffleClick(widget.isShuffle);
-                            currentIndex = currentEditIndex;
-                            currentAffirmation = widget.affirmations[currentIndex];
-                          });
-                        },
-                        child: const Text("Выбрать", style: TextStyle(color: AppColors.blueTextColor))
-                    ),
-                    const SizedBox(width: 19,),*/
+                    }, icon: const Icon(Icons.edit, size: 28)):Container(margin: const EdgeInsets.all(10), child: const Icon(Icons.edit, color: Colors.black12, size: 28))
                   ],
                 ):
                 Row(

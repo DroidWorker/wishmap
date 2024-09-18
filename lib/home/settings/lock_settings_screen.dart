@@ -101,79 +101,101 @@ class LockSettingsScreenState extends State<LockSettingsScreen>{
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  InkWell(borderRadius: BorderRadius.circular(40), child: getButton("1"), onTap: (){if(password.length<4) {
-                    setState(() {
-                    password+="1";
-                  });
-                  }}),
-                  InkWell(borderRadius: BorderRadius.circular(40), child: getButton("2"), onTap: (){if(password.length<4) {
-                    setState(() {
-                    password+="2";
-                  });
-                  }}),
-                  InkWell(borderRadius: BorderRadius.circular(40), child: getButton("3"), onTap: (){if(password.length<4) {
-                    setState(() {
-                    password+="3";
-                  });
-                  }})
+                  Expanded(
+                    child: InkWell(borderRadius: BorderRadius.circular(40), child: getButton("1"), onTap: (){if(password.length<4) {
+                      setState(() {
+                      password+="1";
+                    });
+                    }}),
+                  ),
+                  Expanded(
+                    child: InkWell(borderRadius: BorderRadius.circular(40), child: getButton("2"), onTap: (){if(password.length<4) {
+                      setState(() {
+                      password+="2";
+                    });
+                    }}),
+                  ),
+                  Expanded(
+                    child: InkWell(borderRadius: BorderRadius.circular(40), child: getButton("3"), onTap: (){if(password.length<4) {
+                      setState(() {
+                      password+="3";
+                    });
+                    }}),
+                  )
                 ],),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  InkWell(borderRadius: BorderRadius.circular(40), child: getButton("4"), onTap: (){if(password.length<4) {
-                    setState(() {
-                    password+="4";
-                  });
-                  }}),
-                  InkWell(borderRadius: BorderRadius.circular(40), child: getButton("5"), onTap: (){if(password.length<4) {
-                    setState(() {
-                    password+="5";
-                  });
-                  }}),
-                  InkWell(borderRadius: BorderRadius.circular(40), child: getButton("6"), onTap: (){if(password.length<4) {
-                    setState(() {
-                    password+="6";
-                  });
-                  }})
+                  Expanded(
+                    child: InkWell(borderRadius: BorderRadius.circular(40), child: getButton("4"), onTap: (){if(password.length<4) {
+                      setState(() {
+                      password+="4";
+                    });
+                    }}),
+                  ),
+                  Expanded(
+                    child: InkWell(borderRadius: BorderRadius.circular(40), child: getButton("5"), onTap: (){if(password.length<4) {
+                      setState(() {
+                      password+="5";
+                    });
+                    }}),
+                  ),
+                  Expanded(
+                    child: InkWell(borderRadius: BorderRadius.circular(40), child: getButton("6"), onTap: (){if(password.length<4) {
+                      setState(() {
+                      password+="6";
+                    });
+                    }}),
+                  )
                 ],),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  InkWell(borderRadius: BorderRadius.circular(40), child: getButton("7"), onTap: (){if(password.length<4) {
-                    setState(() {
-                    password+="7";
-                  });
-                  }}),
-                  InkWell(borderRadius: BorderRadius.circular(40), child: getButton("8"), onTap: (){if(password.length<4) {
-                    setState(() {
-                    password+="8";
-                  });
-                  }}),
-                  InkWell(borderRadius: BorderRadius.circular(40), child: getButton("9"), onTap: (){if(password.length<4) {
-                    setState(() {
-                    password+="9";
-                  });
-                  }})
+                  Expanded(
+                    child: InkWell(borderRadius: BorderRadius.circular(40), child: getButton("7"), onTap: (){if(password.length<4) {
+                      setState(() {
+                      password+="7";
+                    });
+                    }}),
+                  ),
+                  Expanded(
+                    child: InkWell(borderRadius: BorderRadius.circular(40), child: getButton("8"), onTap: (){if(password.length<4) {
+                      setState(() {
+                      password+="8";
+                    });
+                    }}),
+                  ),
+                  Expanded(
+                    child: InkWell(borderRadius: BorderRadius.circular(40), child: getButton("9"), onTap: (){if(password.length<4) {
+                      setState(() {
+                      password+="9";
+                    });
+                    }}),
+                  )
                 ],),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  InkWell(borderRadius: BorderRadius.circular(40), child: Container(margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8), width: 50, height: 50, child: const Center(child: Icon(Icons.backspace, color: Colors.white))), onTap: (){setState(() {
-                    password=password.substring(0, password.length-1);
-                  });}),
-                  InkWell(borderRadius: BorderRadius.circular(40), child: getButton("0"), onTap: (){if(password.length<4) {
-                    setState(() {
-                    password+="0";
-                  });
-                  }}),
-                  const SizedBox(width: 80)
+                  Expanded(
+                    child: InkWell(borderRadius: BorderRadius.circular(40), child: Container(margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8), width: 50, height: 50, child: const Center(child: Icon(Icons.backspace, color: Colors.white))), onTap: (){setState(() {
+                      password=password.substring(0, password.length-1);
+                    });}),
+                  ),
+                  Expanded(
+                    child: InkWell(borderRadius: BorderRadius.circular(40), child: getButton("0"), onTap: (){if(password.length<4) {
+                      setState(() {
+                      password+="0";
+                    });
+                    }}),
+                  ),
+                  const Expanded(child: SizedBox(width: 80))
                 ],),
-              const SizedBox(height: 16),
+              /*const SizedBox(height: 16),
               SquareCheckbox("Fingerprint", (state) async {
                 final LocalAuthentication auth = LocalAuthentication();
                 final bool canAuthenticate = await auth.canCheckBiometrics || await auth.isDeviceSupported();
                 lockParams?.allowFingerprint=canAuthenticate?state:false;
-              }),
+              }),*/
               const SizedBox(height: 16),
               ColorRoundedButton(lockParams!.password.isEmpty?"Сохранить":"Сбросить пароль", (){
                 if(lockParams!.password.isEmpty){

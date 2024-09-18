@@ -23,6 +23,7 @@ import 'package:wishmap/home/mytasks_screen.dart';
 import 'package:wishmap/home/qrCheck_screen.dart';
 import 'package:wishmap/home/settings/main_settings.dart';
 import 'package:wishmap/home/settings/personal_settings.dart';
+import 'package:wishmap/home/settings/promocodes_screen.dart';
 import 'package:wishmap/home/settings/proposal_scren.dart';
 import 'package:wishmap/home/settings/q_screen.dart';
 import 'package:wishmap/home/taskcreate_screen.dart';
@@ -307,6 +308,8 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver{
       return AlarmSettingScreen(state.id);
     }else if (state is NavigationLockSettingsScreenState) {
       return LockSettingsScreen();
+    } else if (state is NavigationPromocodesScreenState) {
+      return const PromocodesScreen();
     } else if (state is NavigationAlarmScreenState) {
       return AlarmScreen();
     } else {

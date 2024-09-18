@@ -94,7 +94,7 @@ class _MyOverlayState extends State<MyETOverlay> {
                       ),
               ),
             ),
-            if(MediaQuery.of(context).viewInsets.bottom!=0) SizedBox(height: 30,
+            /*if(MediaQuery.of(context).viewInsets.bottom!=0) SizedBox(height: 30,
               child: FooterLayout(
                 footer: Container(height: 30,color: Colors.white,alignment: Alignment.centerRight, child:
                 GestureDetector(
@@ -102,7 +102,7 @@ class _MyOverlayState extends State<MyETOverlay> {
                   child: const Text("готово", style: TextStyle(fontSize: 20),),
                 )
                   ,),
-              ),),
+              ),),*/
             Container(
               height: MediaQuery.of(context).viewInsets.bottom > 0 ? MediaQuery.of(context).viewInsets.bottom : 1,
             ),

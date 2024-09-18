@@ -149,6 +149,20 @@ class DatabaseHelper {
         answ TEXT
       )
     ''');
+
+    await db.execute('''
+    CREATE TABLE static(
+        key TEXT PRIMARY KEY,
+        value TEXT
+      )
+    ''');
+
+    await db.execute('''
+    CREATE TABLE promocodes(
+        key TEXT PRIMARY KEY,
+        value TEXT
+      )
+    ''');
   }
 
   Future<void> clearDatabase(int moonId) async {
@@ -630,5 +644,41 @@ class DatabaseHelper {
       print("error 54267 $ex");
       return {};
     }
+  }
+
+  Future<int> addAllStatic(Map<String,String> qs) async {
+    Database db = await database;
+    var batch = db.batch();
+    for (var q in qs.entries) {
+      batch.insert('static', {'key': q.key, 'value':q.value});
+    }
+    await batch.commit();
+    return 1;
+  }
+
+  Future<Map<String, String>> getStatic() async {
+    try {
+      Database db = await database;
+      List<Map<String, dynamic>> result = await db.query('static');
+      return Map<String, String>.fromEntries(result.firstOrNull?.entries.map((item)=>MapEntry(item.key, item.value))??[]);
+    } on Exception catch (ex) {
+      print("error 54267 $ex");
+      return {};
+    }
+  }
+
+  Future<void> addPromocode(MapEntry<String, String> promocode) async {
+    Database db = await database;
+    db.insert('promocodes', {"key": promocode.key, "value": promocode.value});
+  }
+
+  Future<Map<String, String>> getPromocodes() async {
+    Database db = await database;
+    List<Map<String, dynamic>> result = await db.query('promocodes');
+    Map<String, String> res = {};
+    for (var e in result) {
+      res[e['key']] = e['value'];
+    }
+    return res;
   }
 }

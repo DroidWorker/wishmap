@@ -113,6 +113,10 @@ class _ProfileScreenState extends State<ProfileScreen>{
                           }),
                           settingsWidget("assets/icons/setting_testing.svg" ,"Мое тестирование", (){}),
                           settingsWidget("assets/icons/setting_level.svg" ,"Уровень", (){}),
+                          settingsWidget("assets/icons/promocode_discount.png" ,"Мои промокоды", (){
+                            BlocProvider.of<NavigationBloc>(context)
+                                .add(NavigateToPromocodesScreenScreenEvent());
+                          }),
                           const SizedBox(height: 24),
                                     const Text("Помощь", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                                     const SizedBox(height: 8),
@@ -123,6 +127,7 @@ class _ProfileScreenState extends State<ProfileScreen>{
                                           .add(NavigateToQuestionsScreenEvent());
                                     }),*/
                                     settingsWidget("assets/icons/setting_mail.svg" ,"Связаться с нами", (){
+                                      appViewModel.fetchStatic();
                                       BlocProvider.of<NavigationBloc>(context)
                                           .add(NavigateToContactScreenEvent());
                                     }),

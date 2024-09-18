@@ -107,6 +107,7 @@ class AppViewModel with ChangeNotifier {
   List<Alarm> alarms = [];
 
   Map<String, String> questions = {};
+  Map<String, String> static = {};
 
   //appcfg
   var isinLoading = false;
@@ -265,6 +266,21 @@ class AppViewModel with ChangeNotifier {
     photoUrls = await GRepository.searchImages(query);
     notifyListeners();
   }
+
+  Future<MapEntry<String, String>?> checkPromocode(String promocode) async{
+    var result = await Connectivity().checkConnectivity();
+    if(result==ConnectivityResult.none) {
+      return null;
+    }
+    final res = await repository.searchPromocode(promocode);
+    if(res==null)return null;
+    localRep.addPromocode(res);
+    return res;
+}
+
+Future<Map<String, String>> getPromocodes() async{
+    return await localRep.getPromocodes();
+}
   
   Future updateMoonSync(int moonId)async{
     final time= DateTime.timestamp().millisecondsSinceEpoch;
@@ -511,6 +527,19 @@ class AppViewModel with ChangeNotifier {
       questions = servQ;
       notifyListeners();
       localRep.commitAddQ(servQ);
+    }
+  }
+
+  Future fetchStatic() async{
+    static = await localRep.getStatic();
+    notifyListeners();
+    var result = await Connectivity().checkConnectivity();
+    if(result == ConnectivityResult.none)  return;
+    final servStatic = await repository.getStatic();
+    if(static.hashCode!=servStatic.hashCode&&servStatic.isNotEmpty) {
+      static = servStatic;
+      notifyListeners();
+      localRep.commitAddStatic(servStatic);
     }
   }
 

@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:ffi';
 import 'dart:typed_data';
 import 'dart:ui';
 import 'package:flutter/cupertino.dart';
@@ -780,7 +779,23 @@ class LocalRepository {
     return await dbHelper.getQuestions();
   }
 
+  Future<Map<String, String>> getStatic() async {
+    return await dbHelper.getStatic();
+  }
+
   void commitAddQ(Map<String, String> questions) {
     dbHelper.addAllQuestions(questions);
+  }
+
+  void commitAddStatic(Map<String, String> static) {
+    dbHelper.addAllStatic(static);
+  }
+
+  Future<void> addPromocode(MapEntry<String, String> promocode) async {
+    dbHelper.addPromocode(promocode);
+  }
+
+  Future<Map<String, String>> getPromocodes() async {
+    return await dbHelper.getPromocodes();
   }
 }

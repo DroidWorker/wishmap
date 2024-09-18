@@ -1,9 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:provider/provider.dart';
 import 'package:wishmap/interface_widgets/colorButton.dart';
 
 import 'package:url_launcher/url_launcher.dart';
+import '../../ViewModel.dart';
 import '../../navigation/navigation_block.dart';
 import '../../res/colors.dart';
 
@@ -14,75 +16,81 @@ class ContactScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    phone.addListener((){
-      if(phone.text.isNotEmpty&&!phone.text.startsWith("+"))phone.text="+${phone.text}";
-      if(phone.text.length>1&&!phone.text.contains(RegExp("^[0-9]\$"), phone.text.length-1))phone.text=phone.text.substring(0, phone.text.length-1);
+    phone.addListener(() {
+      if (phone.text.isNotEmpty && !phone.text.startsWith("+"))
+        phone.text = "+${phone.text}";
+      if (phone.text.length > 1 &&
+          !phone.text.contains(RegExp("^[0-9]\$"), phone.text.length - 1))
+        phone.text = phone.text.substring(0, phone.text.length - 1);
     });
     return Scaffold(
         body: SafeArea(
             child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      IconButton(
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(),
-                          style: const ButtonStyle(
-                            tapTargetSize:
-                            MaterialTapTargetSize.shrinkWrap, // the '2023' part
-                          ),
-                          icon: const Icon(Icons.keyboard_arrow_left,
-                              size: 28, color: AppColors.gradientStart),
-                          onPressed: () {
-                            BlocProvider.of<NavigationBloc>(context).handleBackPress();
-                          }),
-                      const Text("Обращение",
-                          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
-                      const SizedBox(width: 30)
-                    ],
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              IconButton(
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  style: const ButtonStyle(
+                    tapTargetSize:
+                        MaterialTapTargetSize.shrinkWrap, // the '2023' part
                   ),
-                  Expanded(
-                      child: SingleChildScrollView(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const SizedBox(height: 96),
-                            const Text(
-                                "Связаться с нами:",
-                                style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600)),
-                            const SizedBox(height: 15),
-                            const Text(
-                                "Выберите способ связи",
-                                style: TextStyle(fontSize: 16)),
-                            const SizedBox(height: 55),
-                            Row(children: [
-                              Expanded(
-                                child: ColorRoundedButton("Gmail", (){
-                                  final Uri params = Uri(
-                                    scheme: 'mailto',
-                                    path: 'abcd@gmail.com',
-                                    query: 'subject=report',
-                                  );
-                                  final url = params.toString();
-                                  final urlPath = Uri.parse(url);
-                                  launchUrl(urlPath);
-                                }),
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: ColorRoundedButton("Telegram", () async {
-                                  const url = 'tg://resolve?domain=telegram';
-                                  final uri = Uri.parse(url);
-                                  if(await canLaunchUrl(uri)){
-                                    launchUrl(uri);
-                                  }
-                                }),
-                              )
-                            ],)
-                            /*const SizedBox(height: 15),
+                  icon: const Icon(Icons.keyboard_arrow_left,
+                      size: 28, color: AppColors.gradientStart),
+                  onPressed: () {
+                    BlocProvider.of<NavigationBloc>(context).handleBackPress();
+                  }),
+              const Text("Обращение",
+                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+              const SizedBox(width: 30)
+            ],
+          ),
+          Consumer<AppViewModel>(builder: (context, appVM, child) {
+            final static = appVM.static;
+            return static.isNotEmpty?Expanded(
+                child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 96),
+                  const Text("Связаться с нами:",
+                      style:
+                          TextStyle(fontSize: 22, fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 15),
+                  const Text("Выберите способ связи",
+                      style: TextStyle(fontSize: 16)),
+                  const SizedBox(height: 55),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ColorRoundedButton("Gmail", () {
+                          final Uri params = Uri(
+                            scheme: 'mailto',
+                            path: static["email"],
+                            query: 'subject=report',
+                          );
+                          final url = params.toString();
+                          final urlPath = Uri.parse(url);
+                          launchUrl(urlPath);
+                        }),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: ColorRoundedButton("Telegram", () async {
+                          final url = 'tg://resolve?domain=${static["tg"]}';
+                          final uri = Uri.parse(url);
+                          if (await canLaunchUrl(uri)) {
+                            launchUrl(uri);
+                          }
+                        }),
+                      )
+                    ],
+                  )
+                  /*const SizedBox(height: 15),
                             TextField(
                               maxLength: 12,
                               minLines: 1,
@@ -90,7 +98,7 @@ class ContactScreen extends StatelessWidget {
                               controller: phone,
                               keyboardType: TextInputType.phone,
                               onTap: () async {
-                        
+
                               },
                               style: const TextStyle(color: Colors.black), // Черный текст ввода
                               decoration: InputDecoration(
@@ -117,7 +125,7 @@ class ContactScreen extends StatelessWidget {
                               controller: name,
                               keyboardType: TextInputType.name,
                               onTap: () async {
-                        
+
                               },
                               style: const TextStyle(color: Colors.black), // Черный текст ввода
                               decoration: InputDecoration(
@@ -143,7 +151,7 @@ class ContactScreen extends StatelessWidget {
                               maxLines: 20,
                               controller: comment,
                               onTap: () async {
-                        
+
                               },
                               style: const TextStyle(color: Colors.black), // Черный текст ввода
                               decoration: InputDecoration(
@@ -202,11 +210,12 @@ class ContactScreen extends StatelessWidget {
                                   )
                               ),
                             ))*/
-                          ],
-                        ),
-                      ))
                 ],
               ),
-            )));
+            )):const CircularProgressIndicator();
+          })
+        ],
+      ),
+    )));
   }
 }

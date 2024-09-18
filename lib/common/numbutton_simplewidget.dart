@@ -1,13 +1,15 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import '../res/colors.dart';
+
 Widget getButton(String num){
-  return Container(width: 50, height: 50,
-    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+  return Container(
+    margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
     decoration: BoxDecoration(
-        color: Colors.black12.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(25)
+        borderRadius: BorderRadius.circular(10),
+      border: Border.all(width: 1, color: AppColors.grey)
     ),
-    child: Center(child: Text(num, style: const TextStyle(fontSize: 30, color: Colors.white, fontWeight: FontWeight.w600))),
+    child: Center(child: Text(num, style: const TextStyle(fontSize: 30, fontWeight: FontWeight.w600))),
   );
 }

@@ -1,6 +1,5 @@
 import 'dart:math';
 
-import 'package:capped_progress_indicator/capped_progress_indicator.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';

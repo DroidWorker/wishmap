@@ -45,9 +45,9 @@ class MainSettingsState extends State<MainSettings>{
                 ],
               ),
               const SizedBox(height: 10,),
-              const Text("Актуализация Я", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
+              const Text("Актуализация “Я”", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
               const SizedBox(height: 8,),
-              const Center(child: Text("нажатие кнопки 'Осознать' при входе в экран редакции центрального элемента при актуализации карты (последняя из ранее актуальных)", style: TextStyle(fontSize: 12),),),
+              const Center(child: Text("Нажатие кнопки “Осознать” при входе на экран редакции центрального элемента при актуализации карты", style: TextStyle(fontSize: 12),),),
               const SizedBox(height: 10,),
               buildSettingItem("Быстрая актуализация", "Двойное нажатие на лейбл “Я”", appViewModel.settings.fastActMainSphere, (changed){appViewModel.settings.fastActMainSphere=changed;appViewModel.saveSettings();}),
               const SizedBox(height: 24,),
@@ -180,7 +180,7 @@ class MainSettingsState extends State<MainSettings>{
       Expanded(child:Column(
         crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.black),),
+            Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.black)),
             Text(subtitle, maxLines: 2, style: const TextStyle(fontSize: 14, color: Colors.black),)
           ],
       )),

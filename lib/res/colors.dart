@@ -32,4 +32,5 @@ class AppColors {
   static const Color strangeBgColor = Color(0xFFE2F6F5);
   static const Color oceanBgColor = Color(0x1A4344FF);
   static const Color switchBack = Color(0x245330E0);
+  static const Color gold = Color(0xFFED7200);
 }

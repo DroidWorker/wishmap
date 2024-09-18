@@ -37,112 +37,137 @@ class LockScreenState extends State<LockScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.greyBackButton,
+      backgroundColor: AppColors.backgroundColor,
       body: Consumer<AppViewModel>(builder: (context, appVM, child) {
         vm = appVM;
         lp = vm.lockParams;
         return SafeArea(
-            child: Center(
-                child: Column(
-          children: [
-            const Spacer(),
-            TextField(
-              controller: controller,
-              style: const TextStyle(fontSize: 80, fontWeight: FontWeight.w700),
-              textAlign: TextAlign.center,
-              keyboardType: TextInputType.number,
-              obscureText: true,
-              obscuringCharacter: "•",
-              enabled: false,
-              showCursor: false,
-              decoration: InputDecoration(
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10.0),
-                  borderSide: const BorderSide(
-                    width: 0,
-                    style: BorderStyle.none,
-                  ),
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Image.asset('assets/icons/keyimg.png'),
+                          const Text("Пин-код", style: TextStyle(fontWeight: FontWeight.w700, fontSize: 24)),
+                          const Text("Для входа в приложение необходимо ввести пин-код", textAlign: TextAlign.center,),
+                          TextField(
+                            controller: controller,
+                            style: const TextStyle( fontWeight: FontWeight.w700),
+                            textAlign: TextAlign.center,
+                            keyboardType: TextInputType.number,
+                            obscureText: true,
+                            obscuringCharacter: "•",
+                            enabled: false,
+                            showCursor: false,
+                            decoration: InputDecoration(
+              hintText: "Введите пароль",
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10.0),
+                borderSide: const BorderSide(
+                  width: 1,
+                  color: AppColors.etGrey
                 ),
               ),
-            ),
-            const Spacer(),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                InkWell(
+                            ),
+                          ),
+                          const SizedBox(height: 5),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+              Expanded(
+                child: InkWell(
                     borderRadius: BorderRadius.circular(40),
                     child: getButton("1"),
                     onTap: () {
                       controller.text += "1";
                     }),
-                InkWell(
+              ),
+              Expanded(
+                child: InkWell(
                     borderRadius: BorderRadius.circular(40),
                     child: getButton("2"),
                     onTap: () {
                       controller.text += "2";
                     }),
-                InkWell(
+              ),
+              Expanded(
+                child: InkWell(
                     borderRadius: BorderRadius.circular(40),
                     child: getButton("3"),
                     onTap: () {
                       controller.text += "3";
-                    })
-              ],
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                InkWell(
+                    }),
+              )
+                            ],
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+              Expanded(
+                child: InkWell(
                     borderRadius: BorderRadius.circular(40),
                     child: getButton("4"),
                     onTap: () {
                       controller.text += "4";
                     }),
-                InkWell(
+              ),
+              Expanded(
+                child: InkWell(
                     borderRadius: BorderRadius.circular(40),
                     child: getButton("5"),
                     onTap: () {
                       controller.text += "5";
                     }),
-                InkWell(
+              ),
+              Expanded(
+                child: InkWell(
                     borderRadius: BorderRadius.circular(40),
                     child: getButton("6"),
                     onTap: () {
                       controller.text += "6";
-                    })
-              ],
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                InkWell(
+                    }),
+              )
+                            ],
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+              Expanded(
+                child: InkWell(
                     borderRadius: BorderRadius.circular(40),
                     child: getButton("7"),
                     onTap: () {
                       controller.text += "7";
                     }),
-                InkWell(
+              ),
+              Expanded(
+                child: InkWell(
                     borderRadius: BorderRadius.circular(40),
                     child: getButton("8"),
                     onTap: () {
                       controller.text += "8";
                     }),
-                InkWell(
+              ),
+              Expanded(
+                child: InkWell(
                     borderRadius: BorderRadius.circular(40),
                     child: getButton("9"),
                     onTap: () {
                       controller.text += "9";
-                    })
-              ],
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                InkWell(
+                    }),
+              )
+                            ],
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+              Expanded(
+                child: InkWell(
                   borderRadius: BorderRadius.circular(40),
                   child: Container(
                       margin: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 8),
+                          horizontal: 8, vertical: 8),
                       width: 50,
                       height: 50,
                       child: const Center(
@@ -152,14 +177,18 @@ class LockScreenState extends State<LockScreen> {
                         .substring(0, controller.text.length - 1);
                   },
                 ),
-                InkWell(
+              ),
+              Expanded(
+                child: InkWell(
                     borderRadius: BorderRadius.circular(40),
                     child: getButton("0"),
                     onTap: () {
                       controller.text += "0";
                     }),
-                (lp?.allowFingerprint == true)
-                    ? InkWell(
+              ),
+              (lp?.allowFingerprint == true)
+                  ? Expanded(
+                    child: InkWell(
                         borderRadius: BorderRadius.circular(40),
                         child: Container(
                             margin: const EdgeInsets.symmetric(
@@ -189,30 +218,32 @@ class LockScreenState extends State<LockScreen> {
                             }
                           }
                         },
-                      )
-                    : const SizedBox(width: 66),
-              ],
-            ),
-            const Spacer(),
-            InkWell(
-                onTap: () {
-                  showModalBottomSheet<void>(
-                    backgroundColor: AppColors.backgroundColor,
-                    context: context,
-                    isScrollControlled: true,
-                    builder: (BuildContext context) {
-                      return const Padding(
-                          padding: EdgeInsets.all(16),
-                          child: Text(
-                              "для восстановления пароля переустановите приложение и авторизуйтесь"));
-                    },
-                  );
-                },
-                child: const Text("Сбросить пароль",
-                    style: TextStyle(decoration: TextDecoration.underline))),
-            const SizedBox(height: 16)
-          ],
-        )));
+                      ),
+                  )
+                  : const Expanded(child: SizedBox()),
+                            ],
+                          ),
+                          const SizedBox(height: 5),
+                          InkWell(
+              onTap: () {
+                showModalBottomSheet<void>(
+                  backgroundColor: AppColors.backgroundColor,
+                  context: context,
+                  isScrollControlled: true,
+                  builder: (BuildContext context) {
+                    return const Padding(
+                        padding: EdgeInsets.all(16),
+                        child: Text(
+                            "для восстановления пароля переустановите приложение и авторизуйтесь", textAlign: TextAlign.center,));
+                  },
+                );
+              },
+              child: const Text("Сбросить пароль",
+                  style: TextStyle(decoration: TextDecoration.underline))),
+                          const SizedBox(height: 16)
+                        ],
+                      ),
+            ));
       }),
     );
   }
