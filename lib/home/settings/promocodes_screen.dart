@@ -217,7 +217,7 @@ class PromocodesScreenState extends State<PromocodesScreen> {
                                       children: [
                                         Text(promosText[index], style: const TextStyle(fontSize: 18)),
                                         Text(datesText[index], style: const TextStyle(color: AppColors.greytextColor)),
-                                        Text(DateTime.now().isAfter(dates[index])?"Неактивный":"Активный", style: TextStyle(color: DateTime.now().isAfter(dates[index])?AppColors.redTextColor:AppColors.greenButtonBack))
+                                        Text(DateTime.now().isAfter(dates[index])?"Неактивный":"Активный", style: TextStyle(color: DateTime.now().isAfter(dates[index])?AppColors.redTextColor:Colors.green))
                                       ],
                                     );
                                   },

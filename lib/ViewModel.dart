@@ -267,6 +267,15 @@ class AppViewModel with ChangeNotifier {
     notifyListeners();
   }
 
+  Future<bool> hasActivePromocode() async{
+    final promocodes = await localRep.getPromocodes();
+    final now = DateTime.now();
+    for (var e in promocodes.values.toList().reversed) {
+      if(now.isBefore(DateFormat("dd.MM.yyyy").parse(e)))return true;
+    }
+    return false;
+  }
+
   Future<MapEntry<String, String>?> checkPromocode(String promocode) async{
     var result = await Connectivity().checkConnectivity();
     if(result==ConnectivityResult.none) {

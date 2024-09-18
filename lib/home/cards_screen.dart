@@ -22,8 +22,14 @@ class CardsScreen extends StatefulWidget {
 class CardsScreenState extends State<CardsScreen> {
   bool isInSync = false;
   bool deleteMode = false;
+  bool allowActualization = false;
 
   List<int> deleteQ = [];
+
+  Future checkPromocodes(AppViewModel vm) async{
+    allowActualization = await vm.hasActivePromocode();
+    setState(() {});
+  }
 
   @override
   void initState() {
@@ -66,11 +72,10 @@ class CardsScreenState extends State<CardsScreen> {
         ],
         body: Consumer<AppViewModel>(
           builder: (context, appVM, child) {
+            checkPromocodes(appVM);
             List<MoonItem> items = List<MoonItem>.from(appVM.moonItems);
             items = items.reversed.toList();
-            if (items.isNotEmpty /*&&
-                items.first.date !=
-                    "${now.day.toString().padLeft(2, '0')}.${now.month.toString().padLeft(2, '0')}.${now.year}"*/) {
+            if (items.isNotEmpty&&allowActualization) {
               indexPad=1;
               items.insert(
                   0,
@@ -147,11 +152,9 @@ class CardsScreenState extends State<CardsScreen> {
                           setState(() {
                             isInSync = true;
                           });
-                          print("deeeeeeeeel${appVM.moonItems.length}");
                           final len = appVM.moonItems.length;
                             deleteQ.sort((a, b)=>a.compareTo(b));
                             for (var e in deleteQ) {
-                              print("ddd$e  ${appVM.moonItems.length}");
                               realIsDeleteQ.add(appVM.moonItems[len-1-e].id);
                               appVM.moonItems.removeAt(len-1-e);
                             }

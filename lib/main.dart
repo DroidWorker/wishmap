@@ -1,13 +1,10 @@
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:flutter_timezone/flutter_timezone.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:wishmap/home/aim_create.dart';
 import 'package:wishmap/home/aimedit_screen.dart';
@@ -20,7 +17,6 @@ import 'package:wishmap/home/gaery_screen.dart';
 import 'package:wishmap/home/lockscreen.dart';
 import 'package:wishmap/home/mainsphereedit_screen.dart';
 import 'package:wishmap/home/mytasks_screen.dart';
-import 'package:wishmap/home/qrCheck_screen.dart';
 import 'package:wishmap/home/settings/main_settings.dart';
 import 'package:wishmap/home/settings/personal_settings.dart';
 import 'package:wishmap/home/settings/promocodes_screen.dart';
@@ -28,8 +24,6 @@ import 'package:wishmap/home/settings/proposal_scren.dart';
 import 'package:wishmap/home/settings/q_screen.dart';
 import 'package:wishmap/home/taskcreate_screen.dart';
 import 'package:wishmap/home/wish_screen.dart';
-import 'package:wishmap/services/reminder_service.dart';
-import 'package:workmanager/workmanager.dart';
 import 'ViewModel.dart';
 import 'common/error_widget.dart';
 import 'firebase_options.dart';
@@ -290,8 +284,6 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver{
       return DiaryEditScreen(diaryId: state.id);
     } else if (state is NavigationGalleryScreenState) {
       return const GalleryScreen();
-    } else if (state is NavigationQRScreenState) {
-      return QRCheckScreen();
     } else if (state is NavigationMainSettingsScreenState) {
       return MainSettings();
     } else if (state is NavigationPersonalSettingsScreenState) {

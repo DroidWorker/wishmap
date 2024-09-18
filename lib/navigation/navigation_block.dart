@@ -65,8 +65,6 @@ class NavigateToAlarmSettingsScreenEvent extends NavigationEvent {
   NavigateToAlarmSettingsScreenEvent(this.id);
 }
 
-class NavigateToQRScreenEvent extends NavigationEvent {}
-
 class NavigateToPersonalSettingsScreenEvent extends NavigationEvent {}
 class NavigateToMainSettingsScreenEvent extends NavigationEvent {}
 class NavigateToSoundsSettingsScreenEvent extends NavigationEvent {}
@@ -136,9 +134,6 @@ class NavigationAlarmSettingsScreenState extends NavigationState {
   int id = 0;
   NavigationAlarmSettingsScreenState(this.id);
 }
-
-
-class NavigationQRScreenState extends NavigationState {}
 
 class NavigationPersonalSettingsScreenState extends NavigationState {}
 class NavigationMainSettingsScreenState extends NavigationState {}
@@ -244,11 +239,6 @@ class NavigationBloc extends Bloc<NavigationEvent, NavigationState> {
 
     on<NavigateToGalleryScreenEvent>((event, emit) {
       _navigationHistory.add(NavigationGalleryScreenState());
-      emit(_navigationHistory.last);
-    });
-
-    on<NavigateToQRScreenEvent>((event, emit) {
-      _navigationHistory.add(NavigationQRScreenState());
       emit(_navigationHistory.last);
     });
 
