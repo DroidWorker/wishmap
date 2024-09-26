@@ -69,6 +69,8 @@ class _AuthScreen_State extends State<AuthScreen> {
   String selectedMonth = '01';
   String selectedYear = '1990';
 
+  bool agreement = false;
+
   @override
   void initState() {
     _phoneController.addListener(() {
@@ -802,7 +804,7 @@ class _AuthScreen_State extends State<AuthScreen> {
                                       ),
                                     ],
                                     const SizedBox(height: 10.0),
-                                    Row(
+                                    isAuth?Row(
                                       mainAxisAlignment:
                                           MainAxisAlignment.center,
                                       children: [
@@ -838,7 +840,30 @@ class _AuthScreen_State extends State<AuthScreen> {
                                         ),
                                         const Text("Запомнить меня")
                                       ],
-                                    ),],
+                                    ):
+                                    SquareCheckbox("Я согласен (-а) на обработку персональных данных", state: agreement, textStyle: const TextStyle(fontSize: 10, decoration: TextDecoration.underline),(state){
+                                      agreement=state;
+                                      FocusManager.instance.primaryFocus?.unfocus();
+                                      if(state) {
+                                        showModalBottomSheet<void>(
+                                        backgroundColor: AppColors.backgroundColor,
+                                        context: context,
+                                        isScrollControlled: true,
+                                        builder: (BuildContext context) {
+                                          return const Padding(
+                                            padding: EdgeInsets.all(16.0),
+                                            child: Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Text("Согласие на обработку персональных данных", textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.w600,fontSize: 18)),
+                                                Text("lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet")
+                                              ],
+                                            ),
+                                          );
+                                        },
+                                      );
+                                      }
+                                    }),],
                                     const SizedBox(height: 10.0),
                                     SizedBox(
                                         width: double.infinity,
@@ -886,6 +911,10 @@ class _AuthScreen_State extends State<AuthScreen> {
                                                 });
                                               }
                                             } else {
+                                              if(!agreement) {
+                                                vm?.addError("Для регистрации необходимо согласие на обработку персональных данных");
+                                                return;
+                                              }
                                               String name =
                                                   _nameController.text;
                                               String surname =

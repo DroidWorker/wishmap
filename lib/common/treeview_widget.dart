@@ -115,8 +115,9 @@ class MyTreeViewState extends State<MyTreeView> {
           hasChildren: element.children.isNotEmpty,
           hasNextSibling: i != root.length - 1));
       i++;
-      if (element.children.isNotEmpty)
-        buildEntries(element, treeEntries.last, level + 1);
+      if (element.children.isNotEmpty) {
+        buildEntries(element, treeEntries.last, level<5?level + 1:level);
+      }
     }
   }
 
@@ -129,7 +130,7 @@ class MyTreeViewState extends State<MyTreeView> {
         ValueListenableBuilder<double>(
           valueListenable: paddingNotifiers[i],
           builder: (context, padding, _) {
-            String curPath = treeEntries[i].level != 0 ? path.join(">") : findKeyByValue(treeEntries[i].node.title);
+            String curPath = treeEntries[i].level != 0 ? /*path.join(">")*/path.last : findKeyByValue(treeEntries[i].node.title);
             curLvl = treeEntries[i].level;
             if (treeEntries.length > i + 1) {
               if (curLvl < treeEntries[i + 1].level && curLvl != 0) {

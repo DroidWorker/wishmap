@@ -791,11 +791,11 @@ class LocalRepository {
     dbHelper.addAllStatic(static);
   }
 
-  Future<void> addPromocode(MapEntry<String, String> promocode) async {
-    dbHelper.addPromocode(promocode);
+  Future<void> addPromocode(MapEntry<String, String> promocode, String userId) async {
+    dbHelper.addPromocode(promocode, userId);
   }
 
-  Future<Map<String, String>> getPromocodes() async {
-    return await dbHelper.getPromocodes();
+  Future<Map<String, String>> getPromocodes(String userId) async {
+    return await dbHelper.getPromocodes(userId);
   }
 }

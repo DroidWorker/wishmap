@@ -9,7 +9,6 @@ import 'package:wishmap/interface_widgets/colorButton.dart';
 
 import '../../common/numbutton_simplewidget.dart';
 import '../../data/models.dart';
-import '../../interface_widgets/sq_checkbox.dart';
 import '../../navigation/navigation_block.dart';
 import '../../res/colors.dart';
 

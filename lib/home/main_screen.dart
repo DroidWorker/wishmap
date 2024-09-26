@@ -38,7 +38,7 @@ class _MainScreenState extends State<MainScreen>{
   ReceivePort _port = ReceivePort();
   AppViewModel? vm;
 
-  bool isPauseIcon = true;
+  bool isPauseIcon = !AudioPlayerManager().state();
   bool clearData = true;
   int hintId = 0;
 
@@ -175,6 +175,7 @@ class _MainScreenState extends State<MainScreen>{
                                     AudioPlayerManager().playLocal(audioUrl.keys.toList()[appVM.audioNum]);
                                   }
                                     setState(() {
+                                      isPauseIcon=false;
                                       appVM.hint = audioUrl.keys.toList()[appVM.audioNum];
                                     });
                                 },
@@ -217,6 +218,7 @@ class _MainScreenState extends State<MainScreen>{
                                     AudioPlayerManager().playLocal(audioUrl.keys.toList()[appVM.audioNum]);
                                   }
                                     setState(() {
+                                      isPauseIcon=false;
                                       appVM.hint = audioUrl.keys.toList()[appVM.audioNum];
                                     });
                                 },
@@ -224,89 +226,6 @@ class _MainScreenState extends State<MainScreen>{
                             ],),
                         ),
                         const SizedBox(height: 10),
-                        /*!appVM.isinLoading?const Divider(
-                          height: 2,
-                          thickness: 1,
-                          indent: 0,
-                          endIndent: 0,
-                          color: Colors.black,
-                        ):const LinearCappedProgressIndicator(
-                          backgroundColor: Colors.black26,
-                          color: Colors.black,
-                          cornerRadius: 0,
-                        ),
-                        Container(
-                          padding: const EdgeInsets.fromLTRB(5, 3, 5, 0 ),
-                          width: MediaQuery.of(context).size.width,
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              CustomBottomButton(
-                                  onPressed: () {
-                                    _CDWidgetKey.currentState?.stateSnapshot();
-                                    appVM.startMyTasksScreen();
-                                    BlocProvider.of<NavigationBloc>(context)
-                                        .add(NavigateToTasksScreenEvent());
-                                  },
-                                  icon: Image.asset('assets/icons/checklist2665651.png', height: 30, width: 30),
-                                  label: "Задачи"
-                              ),
-                              CustomBottomButton(
-                                  onPressed: () {
-                                    _CDWidgetKey.currentState?.stateSnapshot();
-                                    appVM.startMyAimsScreen();
-                                    BlocProvider.of<NavigationBloc>(context)
-                                        .add(NavigateToAimsScreenEvent());
-                                  },
-                                  icon:  Image.asset('assets/icons/goal6002764.png', height: 30, width: 30),
-                                  label: "Цели"
-                              ),
-                              CustomBottomButton(
-                                  onPressed: () {
-                                    if(appVM.mainScreenState!=null){
-                                      appVM.mainCircles.clear();
-                                      appVM.startMainScreen(appVM.mainScreenState!.moon);
-                                    }
-                                    final pressNum = appVM.getHintStates()["wheelClickNum"]??0;
-                                    if(pressNum>5){
-                                      appVM.backPressedCount++;
-                                      if(appVM.backPressedCount==appVM.settings.quoteupdateFreq){
-                                        appVM.backPressedCount=0;
-                                        appVM.hint=quoteBack[Random().nextInt(367)];
-                                      }
-                                    }else{
-                                      appVM.hint = "Кнопка “карта” возвращает вас на верхний уровень карты “желаний”. Сейчас вы уже здесь!";
-                                    }
-                                    appVM.setHintState("wheelClickNum", (pressNum+1));
-                                    BlocProvider.of<NavigationBloc>(context)
-                                        .add(NavigateToMainScreenEvent());
-                                  },
-                                  icon: Image.asset('assets/icons/wheel2526426.png', height: 35, width: 35),
-                                  label: "Карта"
-                              ),
-                              CustomBottomButton(
-                                  onPressed: () {
-                                    _CDWidgetKey.currentState?.stateSnapshot();
-                                    appVM.startMyWishesScreen();
-                                    BlocProvider.of<NavigationBloc>(context)
-                                        .add(NavigateToWishesScreenEvent());
-                                  },
-                                  icon: Image.asset('assets/icons/notelove1648387.png', height: 30, width: 30),
-                                  label: "Желания"
-                              ),
-                              CustomBottomButton(
-                                  onPressed: () {
-                                    appVM.getDiary();
-                                    _CDWidgetKey.currentState?.stateSnapshot();
-                                    BlocProvider.of<NavigationBloc>(context)
-                                        .add(NavigateToDiaryScreenEvent());
-                                  },
-                                  icon: Image.asset('assets/icons/notepad2725914.png', height: 30, width: 30),
-                                  label: "Дневник"
-                              ),
-                            ],
-                          ),)*/
                       ],
                     ),
                   ),

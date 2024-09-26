@@ -97,7 +97,13 @@ class _WishScreenState extends State<WishScreen>{
     TextEditingController _title = TextEditingController(text: curwish.text.replaceAll("HEADERSIMPLETASKHEADER", ""));
     TextEditingController _description = TextEditingController(text: curwish.description);
     TextEditingController _affirmation = TextEditingController(text: curwish.affirmation.split("|")[0]);
-    _title.addListener(() { if(_title.text!=appViewModel.wishScreenState!.wish.text&&!_title.text.contains("HEADERSIMPLETASKHEADER"))appViewModel.isChanged = true;curwish.text=_title.text;});
+    _title.addListener(() { if(_title.text!=appViewModel.wishScreenState!.wish.text&&!_title.text.contains("HEADERSIMPLETASKHEADER")&&!appViewModel.isChanged) {
+        setState(() {
+          appViewModel.isChanged = true;
+          curwish.text = _title.text;
+        });
+      }
+    });
    _description.addListener(() { if(_description.text!=appViewModel.wishScreenState!.wish.description)appViewModel.isChanged = true;curwish.description=_description.text;});
     _affirmation.addListener(() { });
     myColors = appViewModel.getUserColors();
@@ -821,20 +827,61 @@ class _WishScreenState extends State<WishScreen>{
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  MediaQuery.of(context).viewInsets.bottom!=0? Align(
-                    alignment: Alignment.topRight,
-                    child: Container(height: 50, width: 50,
-                        margin: const EdgeInsets.fromLTRB(0, 0, 16, 16),
-                        alignment: Alignment.center,
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.white,
-                        ), child:
-                        GestureDetector(
-                          onTap: (){FocusManager.instance.primaryFocus?.unfocus();},
-                          child: const Icon(Icons.keyboard_hide_sharp, size: 30, color: AppColors.darkGrey,),
-                        )
-                    ),
+                  MediaQuery.of(context).viewInsets.bottom!=0? Row(
+                    children: [
+                      !curwish.isActive&&curwish.isChecked||!appVM.isChanged?const Spacer():Expanded(
+                        child: ColorRoundedButton("Сохранить", () async {
+                          FocusManager.instance.primaryFocus?.unfocus();
+                          if(_title.text.isEmpty||_affirmation.text.isEmpty){
+                            await showModalBottomSheet<void>(
+                              backgroundColor: AppColors.backgroundColor,
+                              context: context,
+                              isScrollControlled: true,
+                              builder: (BuildContext context) {
+                                return NotifyBS('Необходимо заполнить все поля со знаком *', "", 'OK',
+                                    onOk: () => Navigator.pop(context, 'OK'));
+                              },
+                            );
+                          }else {
+                            appVM.wishScreenState!.wish
+                              ..text = _title.text
+                              ..description = _description.text
+                              ..affirmation = curwish.affirmation
+                              ..color = _color!;
+                            await appViewModel.createNewSphereWish(
+                                appVM.wishScreenState!.wish, false,true);
+                            appViewModel.isChanged = false;
+                            showModalBottomSheet<void>(
+                              backgroundColor: AppColors.backgroundColor,
+                              context: context,
+                              isScrollControlled: true,
+                              builder: (BuildContext context) {
+                                return NotifyBS('сохранено', "", 'OK',
+                                    onOk: () {
+                                      Navigator.pop(context, 'OK');
+                                      setState(() {
+                                        appVM.convertToMyTreeNodeFullBranch(
+                                            curwish.id);
+                                      });
+                                    }
+                                );
+                              },
+                            );
+                          }
+                        },),
+                      ),
+                      Container(height: 50, width: 50,
+                          alignment: Alignment.center,
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.white,
+                          ), child:
+                          GestureDetector(
+                            onTap: (){FocusManager.instance.primaryFocus?.unfocus();},
+                            child: const Icon(Icons.keyboard_hide_sharp, size: 30, color: AppColors.darkGrey,),
+                          )
+                      ),
+                    ],
                   ):Row(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [

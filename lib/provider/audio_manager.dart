@@ -27,6 +27,10 @@ class AudioPlayerManager {
       _audioPlayer.play(DeviceFileSource("${directory.path}/$localFileName"));
     }
 
+    bool state(){
+      return _audioPlayer.state == PlayerState.playing;
+    }
+
     void pause(){
       _audioPlayer.pause();
     }

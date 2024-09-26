@@ -27,8 +27,9 @@ import '../res/colors.dart';
 class TaskEditScreen extends StatefulWidget {
 
   int aimId = 0;
+  Function()? onClose;
 
-  TaskEditScreen({super.key, required this.aimId});
+  TaskEditScreen({super.key, required this.aimId, this.onClose});
 
   @override
   TaskEditScreenState createState() => TaskEditScreenState();
@@ -52,9 +53,17 @@ class TaskEditScreenState extends State<TaskEditScreen>{
 
   AnimationController? lottieController;
 
+
   @override
   Widget build(BuildContext context) {
-    text.addListener(() { if(ai?.text!=text.text)isChanged = true;});
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if(widget.onClose!=null)widget.onClose!();
+    });
+    text.addListener(() { if(ai?.text!=text.text&&!isChanged) {
+      setState(() {
+        isChanged = true;
+      });
+    }});
     description.addListener(() { if(ai?.text!=text.text)isChanged = true;});
     return Consumer<AppViewModel>(
         builder: (context, appVM, child) {
@@ -452,23 +461,30 @@ class TaskEditScreenState extends State<TaskEditScreen>{
             ])),
             bottomSheet: Padding(
               padding: const EdgeInsets.all(16.0),
-              child: MediaQuery.of(context).viewInsets.bottom!=0? Align(
-            alignment: Alignment.bottomRight,
-                child: Container(height: 50, width: 50,
-                    alignment: Alignment.center,
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.white,
-                    ), child:
-                    GestureDetector(
-                      onTap: (){FocusManager.instance.primaryFocus?.unfocus();},
-                      child: const Icon(Icons.keyboard_hide_sharp, size: 30, color: AppColors.darkGrey,),
-                    )
-                ),
+              child: MediaQuery.of(context).viewInsets.bottom!=0? Row(
+                children: [
+                  ai!=null&&!ai!.isActive&&ai!.isChecked||!isChanged?const Spacer():Expanded(
+                    child: ColorRoundedButton("Сохранить", () {
+                      FocusManager.instance.primaryFocus?.unfocus();
+                      (!ai!.isChecked)?onSaveClicked(appVM, ai!):showUnavailable();
+                    }),
+                  ),
+                  Container(height: 50, width: 50,
+                      alignment: Alignment.center,
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white,
+                      ), child:
+                      GestureDetector(
+                        onTap: (){FocusManager.instance.primaryFocus?.unfocus();},
+                        child: const Icon(Icons.keyboard_hide_sharp, size: 30, color: AppColors.darkGrey,),
+                      )
+                  ),
+                ],
               ):Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  FloatingActionButton(
+                  if(!HEADERSIMPLETASKHEADER)FloatingActionButton(
                     onPressed: (){
                       if(parentSphere!=null) {
                         appVM.createMainScreenSpherePath(parentSphere?.id??0, MediaQuery.of(context).size.width);

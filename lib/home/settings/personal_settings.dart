@@ -329,7 +329,26 @@ class PersonalSettingsState extends State<PersonalSettings>{
                 ),
               ),
               const SizedBox(height: 20),
-              SquareCheckbox("Я согласен (-а) на обработку персональных данных", textStyle: const TextStyle(fontSize: 10),(state){ppd=true;}),
+              SquareCheckbox("Я согласен (-а) на обработку персональных данных", state: true, textStyle: const TextStyle(fontSize: 10, decoration: TextDecoration.underline),(state){
+                setState(() {});
+                showModalBottomSheet<void>(
+                  backgroundColor: AppColors.backgroundColor,
+                  context: context,
+                  isScrollControlled: true,
+                  builder: (BuildContext context) {
+                    return const Padding(
+                      padding: EdgeInsets.all(16.0),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text("Согласие на обработку персональных данных", textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.w600,fontSize: 18)),
+                          Text("lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet")
+                        ],
+                      ),
+                    );
+                  },
+                );
+              }),
               const SizedBox(height: 16),
               ColorRoundedButton("сохранить", (){
                 if(pd!=null){

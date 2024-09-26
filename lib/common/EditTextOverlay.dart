@@ -50,63 +50,64 @@ class _MyOverlayState extends State<MyETOverlay> {
       color: AppColors.backgroundColor,
       child: SafeArea(
         maintainBottomViewPadding: true,
-        child: Column(
-          children: [
-            Row(
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.keyboard_arrow_left),
-                  onPressed: () {
-                    widget.onClose(controller.text);
-                  },
-                ),
-                const Spacer(),
-                TextButton(
-                  style: TextButton.styleFrom(
-                    backgroundColor: AppColors.greyBackButton,
-                    shape: const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(10)),
+        child: Padding(
+          padding: const EdgeInsets.all(15.0),
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  IconButton(
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                    style: const ButtonStyle(
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap, // the '2023' part
                     ),
+                    icon: const Icon(Icons.keyboard_arrow_left, size: 28, color: AppColors.gradientStart),
+                    onPressed: () {
+                      widget.onClose(controller.text);
+                    },
                   ),
-                  onPressed: () {
-                    widget.onClose(controller.text);
-                  },
-                  child: const Text("Готово", style: TextStyle(color: AppColors.blueTextColor)),
-                ),
-                const SizedBox(width: 10,),
-              ],
-            ),
-            const SizedBox(height: 4),
-            Expanded(
-                child:
-                    TextField(
-                      controller: controller,
-                      focusNode: _focusNode,
-                      autofocus: true,
-                      maxLines: null,
-                      expands: true,
-                      decoration: InputDecoration(
-                        border: InputBorder.none,
-                        filled: true,
-                        fillColor: AppColors.fieldFillColor,
-                        hintText: 'Введите текст...',
-                        hintStyle: TextStyle(color: Colors.black.withOpacity(0.3)),
-                      ),
+                  const Text("Описание", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+                  const SizedBox(width: 30)
+                ],
               ),
-            ),
-            /*if(MediaQuery.of(context).viewInsets.bottom!=0) SizedBox(height: 30,
-              child: FooterLayout(
-                footer: Container(height: 30,color: Colors.white,alignment: Alignment.centerRight, child:
-                GestureDetector(
-                  onTap: (){FocusManager.instance.primaryFocus?.unfocus();},
-                  child: const Text("готово", style: TextStyle(fontSize: 20),),
-                )
-                  ,),
-              ),),*/
-            Container(
-              height: MediaQuery.of(context).viewInsets.bottom > 0 ? MediaQuery.of(context).viewInsets.bottom : 1,
-            ),
-          ],
+              const SizedBox(height: 4),
+              Expanded(
+                  child:
+                      TextField(
+                        controller: controller,
+                        focusNode: _focusNode,
+                        autofocus: true,
+                        maxLines: null,
+                        expands: true,
+                        decoration: InputDecoration(
+                          border: InputBorder.none,
+                          hintText: 'Введите текст...',
+                          hintStyle: TextStyle(color: Colors.black.withOpacity(0.3)),
+                        ),
+                ),
+              ),
+              if(MediaQuery.of(context).viewInsets.bottom!=0) Align(
+                alignment: Alignment.topRight,
+                child: Container(height: 50, width: 50,
+                    margin: const EdgeInsets.fromLTRB(0, 0, 16, 16),
+                    alignment: Alignment.center,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white,
+                    ), child:
+                    GestureDetector(
+                      onTap: (){FocusManager.instance.primaryFocus?.unfocus();},
+                      child: const Icon(Icons.keyboard_hide_sharp, size: 30, color: AppColors.darkGrey,),
+                    )
+                ),
+              ),
+              Container(
+                height: MediaQuery.of(context).viewInsets.bottom > 0 ? MediaQuery.of(context).viewInsets.bottom : 1,
+              ),
+            ],
+          ),
         ),
       ),
     );

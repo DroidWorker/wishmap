@@ -60,7 +60,7 @@ class _SelectorTextWidgetState extends State<SelectorTextWidget> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                     const Text("Подробнее", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500)),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 16, width: double.infinity),
                     Text(widget.appViewModel.hint)
                   ],
                   ),

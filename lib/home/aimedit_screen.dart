@@ -70,7 +70,11 @@ class AimEditScreenState extends State<AimEditScreen>{
   @override
   Widget build(BuildContext context) {
     _treeViewKey = GlobalKey();
-    text.addListener(() { if(ai?.text!=text.text)isChanged = true;});
+    text.addListener(() { if(ai?.text!=text.text&&!isChanged) {
+      setState(() {
+        isChanged = true;
+      });
+    }});
     description.addListener(() { if(ai?.description!=description.text)isChanged = true;});
     ///return true if lines count > maxLines
     bool _checkLines(int maxlines){
@@ -568,20 +572,31 @@ class AimEditScreenState extends State<AimEditScreen>{
             ),
             bottomSheet: Padding(
               padding: const EdgeInsets.all(16.0),
-                  child: MediaQuery.of(context).viewInsets.bottom!=0? Align(
-                alignment: Alignment.bottomRight,
-                child: Container(height: 50, width: 50,
-                    alignment: Alignment.center,
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.white,
-                    ), child:
-                    GestureDetector(
-                      onTap: (){FocusManager.instance.primaryFocus?.unfocus();},
-                      child: const Icon(Icons.keyboard_hide_sharp, size: 30, color: AppColors.darkGrey,),
-                    )
-                ),
-              ):Row(
+                  child: MediaQuery.of(context).viewInsets.bottom!=0? Row(
+                    children: [
+                      ai!=null&&(!ai!.isActive&&ai!.isChecked||!isChanged)?const Spacer():Expanded(
+                        child: ColorRoundedButton("Сохранить", () {
+                          FocusManager.instance.primaryFocus?.unfocus();
+                          if(ai!=null&&!ai!.isChecked) {
+                            onSaveClick(appVM);
+                          } else{
+                            showUneditable(text: "Невозможно сохранить цель в статусе 'достигнута'");
+                          }
+                        }),
+                      ),
+                      Container(height: 50, width: 50,
+                          alignment: Alignment.center,
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.white,
+                          ), child:
+                          GestureDetector(
+                            onTap: (){FocusManager.instance.primaryFocus?.unfocus();},
+                            child: const Icon(Icons.keyboard_hide_sharp, size: 30, color: AppColors.darkGrey,),
+                          )
+                      ),
+                    ],
+                  ):Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   if(!HEADERSIMPLETASKHEADER)FloatingActionButton(

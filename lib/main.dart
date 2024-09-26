@@ -23,6 +23,7 @@ import 'package:wishmap/home/settings/promocodes_screen.dart';
 import 'package:wishmap/home/settings/proposal_scren.dart';
 import 'package:wishmap/home/settings/q_screen.dart';
 import 'package:wishmap/home/taskcreate_screen.dart';
+import 'package:wishmap/home/todo_screen.dart';
 import 'package:wishmap/home/wish_screen.dart';
 import 'ViewModel.dart';
 import 'common/error_widget.dart';
@@ -109,7 +110,6 @@ Future<void> _requestPermissions(FlutterLocalNotificationsPlugin flutterLocalNot
 }
 
 Future<void> _handleNotificationResponse(NotificationResponse response, AppViewModel vm) async {
-  print('ghghggjygygghg');
   if (response.payload?.contains("alarm") == true) {
     final id = int.parse(response.payload!.split("|")[1]);
     _runAppWithAlarm(id~/100, vm);
@@ -134,16 +134,17 @@ void _runAppWithAlarm(int alarmId, AppViewModel vm) async {
 }
 
 void _runAppWithTask(NotificationResponse response, AppViewModel vm) async {
+  final taskId = int.parse(response.payload!.split("id=")[1]);
   runApp(
     ChangeNotifierProvider(
       create: (context) => vm,
       child: BlocProvider<NavigationBloc>(
         create: (context) {
           final appViewModel = context.read<AppViewModel>();
-          appViewModel.getTask(int.parse(response.payload!.split("id=")[1]));
+          appViewModel.startAppFromTask(taskId);
           return NavigationBloc()..add((appViewModel.profileData!=null&&appViewModel.profileData!.id.isNotEmpty)?NavigateToTaskEditScreenEvent(0):NavigateToAuthScreenEvent());
         },
-        child: MyApp(),
+        child: MyApp(taskId: taskId),
       ),
     ),
   );
@@ -154,7 +155,8 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 class MyApp extends StatefulWidget {
   int? alarmId;
-  MyApp({super.key, this.alarmId});
+  int? taskId;
+  MyApp({super.key, this.alarmId, this.taskId});
 
   @override
   MyAppState createState() => MyAppState();
@@ -224,7 +226,14 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver{
                     .add(NavigateToCardsScreenEvent());
               });
               //SystemNavigator.pop();
-            }), widget.alarmId!) : BlocBuilder<NavigationBloc, NavigationState>(
+            }), widget.alarmId!) : widget.taskId!=null ? TaskEditScreen(aimId: -1, onClose: (){
+              setState(() {
+                widget.taskId=null;
+                BlocProvider.of<NavigationBloc>(context)
+                    .add(NavigateToTaskEditScreenEvent(-1));
+              });
+            },)
+                : BlocBuilder<NavigationBloc, NavigationState>(
               builder: (context, state)
           {
             return Consumer<AppViewModel>(
@@ -300,6 +309,8 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver{
       return AlarmSettingScreen(state.id);
     }else if (state is NavigationLockSettingsScreenState) {
       return LockSettingsScreen();
+    } else if (state is NavigationTodoScreenState) {
+      return TodoScreen();
     } else if (state is NavigationPromocodesScreenState) {
       return const PromocodesScreen();
     } else if (state is NavigationAlarmScreenState) {

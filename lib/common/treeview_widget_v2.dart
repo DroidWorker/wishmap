@@ -102,19 +102,19 @@ class _TreeViewWidgetState extends State<TreeViewWidgetV2> {
                         color: AppColors.lightGrey, // Серый цвет фона
                         borderRadius: BorderRadius.circular(10), // Закругленные края
                       ),
-                      padding: EdgeInsets.all(8), // Отступы внутри контейнера
+                      padding: const EdgeInsets.all(8), // Отступы внутри контейнера
                       child:  Image.asset('assets/icons/folder.png', width: 22, height: 22,),
                     ),
-                    const SizedBox(width: 8,),
+                    const SizedBox(width: 8),
                     RichText(
                       text: TextSpan(
                         children: [
                           TextSpan(
-                            text: "${child.title}\n",
+                            text: "${child.title.replaceAll("HEADERSIMPLETASKHEADER", "")}\n",
                             style: const TextStyle(color: Colors.black, fontSize: 18),
                           ),
                           TextSpan(
-                            text: "$type",
+                            text: type,
                             style: const TextStyle(color: AppColors.textLightGrey, fontSize: 16), // Задайте нужный цвет
                           ),
                         ],
@@ -122,13 +122,13 @@ class _TreeViewWidgetState extends State<TreeViewWidgetV2> {
                     ),
                     const Spacer(),
                     child.type == "w"
-                        ? (child.isHidden
+                        ? (child.title.contains("HEADERSI")?Image.asset('assets/icons/service_wish.png', width: 20, height: 20):child.isHidden
                         ? Image.asset('assets/icons/wish_hidden.png', width: 20, height: 20,)
                         : child.isChecked? Image.asset('assets/icons/wish_done.png', width: 20, height: 20,)
                         : !child.isActive? Image.asset('assets/icons/wish_unactive.png', width: 20, height: 20)
                         :Image.asset('assets/icons/wish_active.png', width: 20, height: 20))
                         : (child.type == "a"
-                        ? (child.isChecked
+                        ? child.title.contains("HEADERSI")? const SizedBox(): (child.isChecked
                         ? Image.asset('assets/icons/target_done.png', width: 20, height: 30)
                         : child.isActive ? Image.asset('assets/icons/target_active.png', width: 20, height: 30)
                         : Image.asset('assets/icons/target_unactive.png', width: 20, height: 30))
@@ -152,13 +152,11 @@ class _TreeViewWidgetState extends State<TreeViewWidgetV2> {
     widgets.addAll(items.entries.map((entry) {
       return GestureDetector(
         onTap: (){
-          //List<String> pathToCurrent = items.take(i + 1).toList();
-          //_onNodePressed(findNodeByTitle(widget.root, pathToCurrent.lastOrNull??"")??MyTreeNode(id: -1, type: "w", title: "title", isChecked: true), pathToCurrent);
-
           final child = findNodeById(widget.root, entry.key);
           if(child!=null)widget.onTap(child.id, child.type);
         },
-        child: Text("  ⟩  ${entry.value}", style: const TextStyle(fontSize: 16),),
+        child: entry.value=="HEADERSIMPLETASKHEADERОбщие задачи"?Image.asset("assets/icons/service_wish.png",
+            height: 20, width: 20):Text("  ⟩  ${entry.value.replaceAll("HEADERSIMPLETASKHEADER", "")}", style: const TextStyle(fontSize: 16)),
       );
     }));
     return widgets;

@@ -160,7 +160,8 @@ class DatabaseHelper {
     await db.execute('''
     CREATE TABLE promocodes(
         key TEXT PRIMARY KEY,
-        value TEXT
+        value TEXT,
+        userId TEXT
       )
     ''');
   }
@@ -667,14 +668,14 @@ class DatabaseHelper {
     }
   }
 
-  Future<void> addPromocode(MapEntry<String, String> promocode) async {
+  Future<void> addPromocode(MapEntry<String, String> promocode, String userId) async {
     Database db = await database;
-    db.insert('promocodes', {"key": promocode.key, "value": promocode.value});
+    db.insert('promocodes', {"key": promocode.key, "value": promocode.value, "userId": userId});
   }
 
-  Future<Map<String, String>> getPromocodes() async {
+  Future<Map<String, String>> getPromocodes(String userId) async {
     Database db = await database;
-    List<Map<String, dynamic>> result = await db.query('promocodes');
+    List<Map<String, dynamic>> result = await db.query('promocodes', where: 'userId = ?', whereArgs: [userId]);
     Map<String, String> res = {};
     for (var e in result) {
       res[e['key']] = e['value'];

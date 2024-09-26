@@ -111,8 +111,14 @@ class _ProfileScreenState extends State<ProfileScreen>{
                             BlocProvider.of<NavigationBloc>(context)
                                 .add(NavigateToPersonalSettingsScreenEvent());
                           }),
-                          settingsWidget("assets/icons/setting_testing.svg" ,"Мое тестирование", (){}),
-                          settingsWidget("assets/icons/setting_level.svg" ,"Уровень", (){}),
+                          settingsWidget("assets/icons/setting_testing.svg" ,"Мое тестирование", (){
+                            BlocProvider.of<NavigationBloc>(context)
+                                .add(NavigateToTodoScreenEvent());
+                          }),
+                          settingsWidget("assets/icons/setting_level.svg" ,"Уровень", (){
+                            BlocProvider.of<NavigationBloc>(context)
+                                .add(NavigateToTodoScreenEvent());
+                          }),
                           settingsWidget("assets/icons/promocode_discount.png" ,"Мои промокоды", (){
                             BlocProvider.of<NavigationBloc>(context)
                                 .add(NavigateToPromocodesScreenScreenEvent());

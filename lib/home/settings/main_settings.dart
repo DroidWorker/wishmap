@@ -72,7 +72,7 @@ class MainSettingsState extends State<MainSettings>{
                 setState(() {});
               }),
               const SizedBox(height: 10),
-              buildSettingItem("Быстая", "Двойное нажатие по лейблу “Сфера”", appViewModel.settings.fastActSphere, (changed){appViewModel.settings.fastActSphere=changed;appViewModel.saveSettings();}),
+              buildSettingItem("Быстрая", "Двойное нажатие по лейблу “Сфера”", appViewModel.settings.fastActSphere, (changed){appViewModel.settings.fastActSphere=changed;appViewModel.saveSettings();}),
               const SizedBox(height: 24),
               const Divider(
                 height: 3,
@@ -93,7 +93,7 @@ class MainSettingsState extends State<MainSettings>{
                 appViewModel.saveSettings();
               });}),
               const SizedBox(height: 10),
-              buildSettingItem("Быстая", "Двойное нажатие по лейблу “Сфера”", appViewModel.settings.fastActWish, (changed){appViewModel.settings.fastActWish=changed;appViewModel.saveSettings();}),
+              buildSettingItem("Быстрая", "Двойное нажатие по лейблу “Сфера”", appViewModel.settings.fastActWish, (changed){appViewModel.settings.fastActWish=changed;appViewModel.saveSettings();}),
               const SizedBox(height: 24),
               const Divider(
                 height: 3,

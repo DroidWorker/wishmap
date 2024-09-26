@@ -268,7 +268,7 @@ class AppViewModel with ChangeNotifier {
   }
 
   Future<bool> hasActivePromocode() async{
-    final promocodes = await localRep.getPromocodes();
+    final promocodes = await localRep.getPromocodes(profileData?.id??"");
     final now = DateTime.now();
     for (var e in promocodes.values.toList().reversed) {
       if(now.isBefore(DateFormat("dd.MM.yyyy").parse(e)))return true;
@@ -283,12 +283,12 @@ class AppViewModel with ChangeNotifier {
     }
     final res = await repository.searchPromocode(promocode);
     if(res==null)return null;
-    localRep.addPromocode(res);
+    localRep.addPromocode(res, profileData?.id??"");
     return res;
 }
 
 Future<Map<String, String>> getPromocodes() async{
-    return await localRep.getPromocodes();
+    return await localRep.getPromocodes(profileData?.id??"");
 }
   
   Future updateMoonSync(int moonId)async{
@@ -1422,6 +1422,16 @@ Future<Map<String, String>> getPromocodes() async{
         currentTask = await localRep.getTask(id, mainScreenState?.moon.id??0);
         notifyListeners();
       }
+    }catch(ex){
+      addError("#2456$ex");
+    }
+  }
+  Future startAppFromTask(int id) async{
+    try{
+        await getReminders(id);
+        await startMainScreen(MoonItem(id: reminders.first.moonId, filling: 0.0, text: "", date: ""));
+        currentTask = await localRep.getTask(id, mainScreenState?.moon.id??0);
+        notifyListeners();
     }catch(ex){
       addError("#2456$ex");
     }

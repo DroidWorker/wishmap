@@ -1,7 +1,10 @@
+import 'dart:io';
+
 import 'package:calendar_date_picker2/calendar_date_picker2.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:flutter/services.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:wishmap/data/date_static.dart';
 import 'package:wishmap/import_extension/custom_string_picker.dart';
 import 'package:wishmap/interface_widgets/colorButton.dart';
@@ -52,6 +55,8 @@ class ReminderBSState extends State<ReminderBS>{
 
   String daysString = "";
 
+  List<File> audioFiles = [];
+
   @override
   void initState() {
     super.initState();
@@ -73,6 +78,9 @@ class ReminderBSState extends State<ReminderBS>{
         ).add(Duration(days: i))):List<DateTime>.generate(62, (i) =>
         selectedDatetime.add(Duration(days: i)));
     daysString = buildDays();
+
+    _copyAudio();
+    _loadAudios();
   }
 
   String buildDays(){
@@ -181,7 +189,7 @@ class ReminderBSState extends State<ReminderBS>{
                 const SizedBox(height: 8),
                 Row(
                   children: [
-                    StringPicker(itemWidth: 130, minValue: 0, maxValue: 60, value: dayList.indexWhere((e)=>e.day==selectedDatetime.day&&e.month==selectedDatetime.month), text: dayList.map((e)=>"${e.day} ${monthOfYear[e.month]?.toLowerCase()}").toList(), onChanged: (v){
+                    StringPicker(itemWidth: 150, minValue: 0, maxValue: 60, value: dayList.indexWhere((e)=>e.day==selectedDatetime.day&&e.month==selectedDatetime.month), text: dayList.map((e)=>"${e.day} ${monthOfYear[e.month]?.toLowerCase()}").toList(), onChanged: (v){
                         selectedDatetime = selectedDatetime.copyWith(day: dayList[v].day, month: dayList[v].month);
                           setState(() {
                             datetime = "${fullDayOfWeek[selectedDatetime.weekday]}, ${selectedDatetime.day} ${monthOfYear[selectedDatetime.month]} ${selectedDatetime.year}";
@@ -233,13 +241,72 @@ class ReminderBSState extends State<ReminderBS>{
                         ),
                       ),
                       const SizedBox(height: 10),
-                      const Row(
-                        children: [
-                          Text("Сигнал напоминания"),
-                          Spacer(),
-                          Text("signal"),
-                          Icon(Icons.arrow_forward_ios)
-                        ],
+                      InkWell(
+                        onTap: (){
+                          showModalBottomSheet(
+                            backgroundColor:
+                            AppColors.backgroundColor,
+                            context: context,
+                            isScrollControlled: true,
+                            builder:
+                                (BuildContext context) {
+                              return Column(
+                                mainAxisSize:
+                                MainAxisSize.min,
+                                children: [
+                                  const Padding(
+                                    padding: EdgeInsets.all(
+                                        16.0),
+                                    child: Center(
+                                        child: Text(
+                                            "Выберите аудио")),
+                                  ),
+                                  ListView.builder(
+                                    shrinkWrap: true,
+                                    itemCount:
+                                    audioFiles.length,
+                                    itemBuilder:
+                                        (context, index) {
+                                      return ListTile(
+                                        title: Text(
+                                            audioFiles[
+                                            index]
+                                                .path
+                                                .split("/")
+                                                .last),
+                                        leading: const Icon(
+                                            Icons
+                                                .audiotrack),
+                                        onTap: () {
+                                          setState(() {
+                                            reminder.music =
+                                                audioFiles[
+                                                index]
+                                                    .path;
+                                          });
+                                          Navigator.pop(
+                                              context);
+                                        },
+                                      );
+                                    },
+                                  )
+                                ],
+                              );
+                            },
+                          );
+                        },
+                        child: Row(
+                          children: [
+                            const Text("Сигнал напоминания"),
+                            const Spacer(),
+                            Text(reminder.music.isEmpty
+                                ? "не выбрано"
+                                : reminder.music
+                                .split("/")
+                                .last),
+                            const Icon(Icons.arrow_forward_ios)
+                          ],
+                        ),
                       ),
                       const SizedBox(height: 10),
                       Row(
@@ -256,7 +323,7 @@ class ReminderBSState extends State<ReminderBS>{
                 ),
                 const SizedBox(height: 32),
                 ColorRoundedButton("Сохранить", (){
-                  reminder.dateTime = selectedDatetime;
+                  reminder.dateTime = selectedDatetime.copyWith(second: 1);
                   reminder.remindEnabled = true;
                   widget.onClose(reminder);
                 })
@@ -317,5 +384,26 @@ class ReminderBSState extends State<ReminderBS>{
           );
         }
     );
+  }
+
+  Future _copyAudio() async {
+    final appDir = await getApplicationDocumentsDirectory();
+    final audioDir = Directory('${appDir.path}/audios');
+    if (!await audioDir.exists()) {
+      await audioDir.create();
+      const audioAsset = 'assets/audio/notification.mp3';
+      final bytes = await rootBundle.load(audioAsset);
+      final audioFile = File('${audioDir.path}/not1.mp3');
+      await audioFile.writeAsBytes(bytes.buffer.asUint8List());
+    }
+  }
+
+  Future _loadAudios() async {
+    final appDir = await getApplicationDocumentsDirectory();
+    final audioDir = Directory('${appDir.path}/audios');
+    if (await audioDir.exists()) {
+      final files = await audioDir.list().toList();
+      audioFiles = files.whereType<File>().toList();
+    }
   }
 }

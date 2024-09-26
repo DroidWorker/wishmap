@@ -12,7 +12,6 @@ import 'package:provider/provider.dart';
 import 'package:wishmap/common/snoozeRepeatsSettings.dart';
 import 'package:wishmap/data/models.dart';
 import 'package:wishmap/data/static.dart';
-import 'package:wishmap/dialog/bottom_sheet_notify.dart';
 import 'package:wishmap/dialog/bottom_sheet_repeat.dart';
 import 'package:wishmap/home/Aalarm_settings_off_screen.dart';
 import 'package:wishmap/home/snooze_settings_screen.dart';

@@ -72,6 +72,7 @@ class NavigateToQuestionsScreenEvent extends NavigationEvent {}
 class NavigateToProposalScreenEvent extends NavigationEvent {}
 class NavigateToContactScreenEvent extends NavigationEvent {}
 class NavigateToLockSettingsScreenEvent extends NavigationEvent {}
+class NavigateToTodoScreenEvent extends NavigationEvent {}
 class NavigateToPromocodesScreenScreenEvent extends NavigationEvent {}
 
 abstract class NavigationState {}
@@ -142,6 +143,7 @@ class NavigationQuestionsSettingsScreenState extends NavigationState {}
 class NavigationProposalScreenState extends NavigationState {}
 class NavigationContactScreenState extends NavigationState {}
 class NavigationLockSettingsScreenState extends NavigationState {}
+class NavigationTodoScreenState extends NavigationState {}
 class NavigationPromocodesScreenState extends NavigationState {}
 
 
@@ -276,6 +278,10 @@ class NavigationBloc extends Bloc<NavigationEvent, NavigationState> {
     });
     on<NavigateToLockSettingsScreenEvent>((event, emit) {
       _navigationHistory.add(NavigationLockSettingsScreenState());
+      emit(_navigationHistory.last);
+    });
+    on<NavigateToTodoScreenEvent>((event, emit) {
+      _navigationHistory.add(NavigationTodoScreenState());
       emit(_navigationHistory.last);
     });
     on<NavigateToPromocodesScreenScreenEvent>((event, emit) {

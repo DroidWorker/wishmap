@@ -128,7 +128,7 @@ class _TaskScreenState extends State{
                                         gradient: LinearGradient(
                                             colors: [AppColors.gradientStart, AppColors.gradientEnd]
                                         )
-                                    ), child: const Center(child: Text("Не выполнены", style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600)))): const SizedBox(height: 34, child: Center(child: Text("Не достигнуты", style: TextStyle(color: AppColors.greytextColor, fontSize: 11, fontWeight: FontWeight.w600)))),
+                                    ), child: const Center(child: Text("Не выполнены", style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600)))): const SizedBox(height: 34, child: Center(child: Text("Не выполнены", style: TextStyle(color: AppColors.greytextColor, fontSize: 11, fontWeight: FontWeight.w600)))),
                                 onTap: () {
                                   setState(() {
                                     page = 2;
@@ -150,7 +150,7 @@ class _TaskScreenState extends State{
                                         gradient: LinearGradient(
                                             colors: [AppColors.gradientStart, AppColors.gradientEnd]
                                         )
-                                    ), child: const Center(child: Text("Выполнены", style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600)))): const SizedBox(height: 34, child: Center(child: Text("Достигнуты", style: TextStyle(color: AppColors.greytextColor, fontSize: 11, fontWeight: FontWeight.w600)))),
+                                    ), child: const Center(child: Text("Выполнены", style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600)))): const SizedBox(height: 34, child: Center(child: Text("Выполнены", style: TextStyle(color: AppColors.greytextColor, fontSize: 11, fontWeight: FontWeight.w600)))),
                                 onTap: () {
                                   setState(() {
                                     page = 1;

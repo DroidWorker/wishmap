@@ -75,8 +75,7 @@ class SoundsSettingsState extends State<SoundsSettings>{
                                 child: Center(child: SizedBox(height: 15, width: 15, child: SvgPicture.asset("assets/icons/music.svg"))),
                               ),
                               const SizedBox(width: 10),
-                              Text(name),
-                              const Spacer(),
+                              Expanded(child: Text(name, overflow: TextOverflow.ellipsis)),
                               IconButton(onPressed: () async {
                                 final loadId = await appViewModel.cacheTrack(name,appViewModel.audioList[name]!);
                                 setState(() {

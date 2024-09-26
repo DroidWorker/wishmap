@@ -127,7 +127,7 @@ class _WishesScreenState extends State<WishesScreen>{
                                       gradient: LinearGradient(
                                           colors: [AppColors.gradientStart, AppColors.gradientEnd]
                                       )
-                                  ), child: const Center(child: Text("Не исполнены", style: TextStyle(color: Colors.white)))): const SizedBox(height: 34, child: Center(child: Text("Не достигнуты", style: TextStyle(color: AppColors.greytextColor)))),
+                                  ), child: const Center(child: Text("Не исполнены", style: TextStyle(color: Colors.white)))): const SizedBox(height: 34, child: Center(child: Text("Не исполнены", style: TextStyle(color: AppColors.greytextColor)))),
                               onTap: () {
                                 setState(() {
                                   page = 2;
@@ -149,7 +149,7 @@ class _WishesScreenState extends State<WishesScreen>{
                                       gradient: LinearGradient(
                                           colors: [AppColors.gradientStart, AppColors.gradientEnd]
                                       )
-                                  ), child: const Center(child: Text("Исполнены", style: TextStyle(color: Colors.white)))): const SizedBox(height: 34, child: Center(child: Text("Достигнуты", style: TextStyle(color: AppColors.greytextColor)))),
+                                  ), child: const Center(child: Text("Исполнены", style: TextStyle(color: Colors.white)))): const SizedBox(height: 34, child: Center(child: Text("Исполнены", style: TextStyle(color: AppColors.greytextColor)))),
                               onTap: () {
                                 setState(() {
                                   page = 1;
@@ -183,6 +183,7 @@ class _WishesScreenState extends State<WishesScreen>{
                       ]
                     ),
                   ),
+                  const SizedBox(height: 4),
                   Expanded(child: SingleChildScrollView(child: LayoutBuilder(
                       builder: (context, constraints) {
                         return Align(
