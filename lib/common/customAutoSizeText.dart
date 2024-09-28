@@ -20,62 +20,75 @@ class WordWrapWidget extends StatelessWidget {
 
   List<Widget> _buildText() {
     List<Widget> textWidgets = [];
-
     List<String> words = text.split(' ');
+    String currentLine = '';
 
     for (String word in words) {
-      if (word.length > maxCharactersPerLine) {
-        // Слово длиннее максимального количества символов
-        int splitIndex = _findVowelSplitIndex(word);
-        if (splitIndex != -1) {
-          String firstPart = word.substring(0, splitIndex + 1); // Включаем гласную букву в первую часть
-          String secondPart = word.substring(splitIndex + 1);
-
-          // Добавляем первую и вторую части слова как отдельные виджеты
-          textWidgets.add(AutoSizeText(
-            textAlign: TextAlign.center,
-            minFontSize: 8,
-            maxFontSize: 18,
-            "$firstPart\n$secondPart",
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ));
-        } else {
-          // Если не найдена подходящая гласная буква, просто добавляем слово как один виджет
-          textWidgets.add(AutoSizeText(
-            minFontSize: 8,
-            maxFontSize: 18,
-            word,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ));
-        }
+      if (currentLine.length + word.length + 1 <= maxCharactersPerLine) {
+        // If the word fits, add it to the current line
+        currentLine += (currentLine.isEmpty ? '' : ' ') + word;
       } else {
-        // Слово помещается в строку без переноса
-        textWidgets.add(AutoSizeText(
-          minFontSize: 8,
-          maxFontSize: 18,
-          word,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ));
+        // If the current line is not empty, add it to the list
+        if (currentLine.isNotEmpty) {
+          textWidgets.add(_buildAutoSizeText(currentLine));
+        }
+
+        // Split the word if it doesn't fit
+        if (word.length > maxCharactersPerLine) {
+          List<String> splitWord = _splitWord(word);
+          for (String part in splitWord) {
+            currentLine = part;
+            textWidgets.add(_buildAutoSizeText(currentLine));
+          }
+        } else {
+          // If the word fits by itself, start a new line
+          currentLine = word;
+        }
       }
     }
 
-    return textWidgets;
+    // Add any remaining text in the current line
+    if (currentLine.isNotEmpty) {
+      textWidgets.add(_buildAutoSizeText(currentLine));
+    }
+
+    return textWidgets.take(2).toList(); // Limit to 2 lines
   }
 
-  int _findVowelSplitIndex(String word) {
-    String vowels = 'aeiouAEIOUаеёиоуыэюяАЕЁИОУЫЭЮЯ';
-    int closestVowelIndex = -1;
+  AutoSizeText _buildAutoSizeText(String text) {
+    return AutoSizeText(
+      text,
+      minFontSize: 8,
+      maxFontSize: 18,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      textAlign: TextAlign.center,
+    );
+  }
 
-    for (int i = maxCharactersPerLine - 1; i >= 0; i--) {
-      if (vowels.contains(word[i])) {
-        closestVowelIndex = i;
-        break;
+  List<String> _splitWord(String word) {
+    String vowels = 'aeiouAEIOUаеёиоуыэюяАЕЁИОУЫЭЮЯ';
+    List<String> parts = [];
+    int lastSplitIndex = 0;
+
+    for (int i = 0; i < word.length; i++) {
+      // If the part length exceeds maxCharactersPerLine
+      if (i - lastSplitIndex >= maxCharactersPerLine) {
+        // Split at the last vowel before exceeding the limit
+        while (lastSplitIndex < i && !vowels.contains(word[i - 1])) {
+          i--;
+        }
+        // Add the part before the split
+        parts.add(word.substring(lastSplitIndex, i));
+        lastSplitIndex = i;
       }
     }
 
-    return closestVowelIndex;
+    // Add any remaining part
+    if (lastSplitIndex < word.length) {
+      parts.add(word.substring(lastSplitIndex));
+    }
+
+    return parts;
   }
 }

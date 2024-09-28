@@ -75,6 +75,7 @@ Future<void> _showNotification(Reminder? reminder) async {
     importance: Importance.max,
     priority: Priority.high,
     enableVibration: reminder?.vibration??false,
+    vibrationPattern: Int64List.fromList([0, 500, 1000, 500, 1000]),
     showWhen: false,
   );
 
@@ -101,11 +102,12 @@ Future<void> _scheduleNotification(FlutterLocalNotificationsPlugin flutterLocalN
     final timeZoneName = await FlutterTimezone.getLocalTimezone();
     tz.setLocalLocation(tz.getLocation(timeZoneName));
 
-    const androidPlatformChannelSpecifics = AndroidNotificationDetails(
+    final androidPlatformChannelSpecifics = AndroidNotificationDetails(
       '87585',
       'wishmap reminder',
       channelDescription: 'channel description',
       importance: Importance.max,
+      vibrationPattern: Int64List.fromList([0, 500, 1000, 500, 1000]),
       icon: "@mipmap/ic_launcher", //<-- Add this parameter
     );
 
@@ -267,6 +269,7 @@ void showFSNotification(int id) async {
     category: AndroidNotificationCategory.alarm,
     visibility: NotificationVisibility.public,
     enableVibration: true,
+    vibrationPattern: Int64List.fromList([0, 500, 1000, 500, 1000]),
     autoCancel: true,
     timeoutAfter: 180000, // Уведомление исчезнет через минуту
   );

@@ -60,10 +60,10 @@ class CardItem extends StatelessWidget {
                               builder: (contest) {
                                 return ActualizeMoonDialog(
                                     onActualizeClick: () async {
-                                  Navigator.pop(contest);
                                   await appViewModel.duplicateLastMoon();
                                   final moonId = appViewModel.moonItems.last;
                                   appViewModel.startMainScreen(moonId);
+                                  Navigator.pop(contest);
                                   BlocProvider.of<NavigationBloc>(context)
                                       .add(NavigateToMainScreenEvent());
                                 }, onCloseDialogClick: () {

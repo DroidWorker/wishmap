@@ -694,7 +694,8 @@ Future<Map<String, String>> getPromocodes() async{
     }
     const radius = 80.0;
     mainCircles = revercecentralPath.reversed.map((e) => MainCircle(id: e.id, coords: Pair(key: screenWidth-radius, value: radius*-0.5), text: e.text, color: e.color, isActive: e.isActive, isChecked: e.isChecked)).toList();
-    mainCircles.removeLast();
+    if(mainCircles.length>1) mainCircles.removeLast();
+    print("gggggggggggggggggg${mainCircles}");
     mainScreenState?.needToUpdateCoords=true;
     openSphere(sphereId);
   }
@@ -755,9 +756,10 @@ Future<Map<String, String>> getPromocodes() async{
     if (mainScreenState != null&&mainScreenState!.allCircles.isNotEmpty) {
       try {
         var mc = mainScreenState!.allCircles.firstWhere((element) => element.id == id);
-        id>mainCircles.last.id?mainCircles.add(MainCircle(id: mc.id, coords: Pair(key: 0.0, value: 0.0), text: mc.text, color: mc.color, isActive: mc.isActive, isChecked: mc.isChecked)):mainCircles.removeLast();
+        id>mainCircles.last.id?mainCircles.add(MainCircle(id: mc.id, coords: Pair(key: 0.0, value: 0.0), text: mc.text, color: mc.color, isActive: mc.isActive, isChecked: mc.isChecked)):id==mainCircles.last.id?mainCircles.last.coords=Pair(key: 0.0, value: 0.0):mainCircles.removeLast();
         var cc = mainScreenState!.allCircles.where((element) => element.parenId == id).toList();
         currentCircles.clear();
+        print("bbbbbbbbbbbbbbbbbb${mainCircles}");
         for (var element in cc) {
           if(element.isHidden==false&&element.text.contains("HEADERSI")==false)currentCircles.add(Circle(id: element.id, parentId: element.parenId, prevId: element.prevId, nextId: element.nextId, text: element.text, color: element.color, isActive: element.isActive, isChecked: element.isChecked));
         }

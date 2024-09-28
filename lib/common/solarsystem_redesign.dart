@@ -1,13 +1,10 @@
 import 'dart:async';
-import 'dart:io';
 import 'dart:ui';
 
-import 'package:auto_size_text/auto_size_text.dart';
 import 'package:collection/collection.dart';
 import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
 import 'package:wishmap/ViewModel.dart';
 import 'package:wishmap/data/models.dart';
@@ -273,8 +270,8 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
         showHideController.reverse();
       }
     });
-    final centerBottomOffset = widget.center.value-((widget.center.value/0.53)*0.03);
-    lineStart=Offset((widget.center.key + (widget.size*0.25) * cos(1)), (centerBottomOffset + widget.size*0.06 * sin(1)));
+    final centerBottomOffset = widget.center.value;
+    lineStart=Offset((widget.center.key + (widget.center.key*0.33)), centerBottomOffset);
     _controllerCenter = ConfettiController(duration: const Duration(seconds: 4));
   }
   @override
@@ -478,8 +475,8 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
                     painter: LinePainter(),
                   ),
                   builder: (context, child){
-                    final top = _cTOa.value.dy+(widget.size)*0.36;
-                    final right = _cTOa.value.dx-(widget.size*0.40);
+                    final top = _cTOa.value.dy+centralCircles.last.radius*2.45;
+                    final right = _cTOa.value.dx-centralCircles.last.radius*2.45;
                     return Stack(children:[ Positioned(
                       left: lineStart.dx,
                       bottom: lineStart.dy,
@@ -511,12 +508,7 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
                       child: Stack(
                         children: [
                           Center(
-                            child:Text(
-                              value.text,
-                              maxLines: 1,
-                              style: const TextStyle(color: Colors.black, fontSize: 20),
-                              textAlign: TextAlign.center,
-                            ),
+                            child: WordWrapWidget(text: value.text),
                           ),
                           if(value.isChecked)Align(
                             alignment: Alignment.topRight,
@@ -767,6 +759,7 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
                                       ),
                                       AnimatedBuilder(animation: movingController,
                                         child: CircleWidget(
+                                          key: ValueKey(circle.text),
                                           itemId: index,
                                           circle: circle,
                                           size: widget.size,
