@@ -10,6 +10,7 @@ import '../ViewModel.dart';
 import '../common/EditTextOverlay.dart';
 import '../common/animation_overlay.dart';
 import '../common/bottombar.dart';
+import '../common/customAutoSizeText.dart';
 import '../common/gradientText.dart';
 import '../common/treeview_widget_v2.dart';
 import '../data/models.dart';
@@ -611,7 +612,7 @@ class AimEditScreenState extends State<AimEditScreen>{
                     backgroundColor: parentObj?.isActive==true?parentObj?.color:const Color.fromARGB(255, 217, 217, 217),
                     shape: const CircleBorder(),
                     child: Stack(children: [
-                      Center(child: Text(parentObj?.text??"", maxLines: 1, overflow: TextOverflow.fade, textAlign: TextAlign.center ,style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w700))),
+                      Center(child: WordWrapWidget(text: parentObj?.text??"", minTextSize: 4, maxTextSize: 12, style: const TextStyle(color: Colors.white))),
                       if(parentObj?.isChecked==true)Align(alignment: Alignment.topRight, child: Image.asset('assets/icons/wish_done.png', width: 20, height: 20),)
                     ],),
                   ),

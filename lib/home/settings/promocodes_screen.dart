@@ -47,22 +47,22 @@ class PromocodesScreenState extends State<PromocodesScreen> {
             isInCheckingPromo = true;
           });
           final result = await vm?.checkPromocode(controller.text);
-          setState(() {
             isInCheckingPromo = false;
             if(result==null) {
-              errorMessage = "Промокод неактивен";
+              setState(() {
+                errorMessage = "Промокод неактивен";
+              });
             } else{
+              setState(() {});
               controller.text='';
               promocodes[result.key]=result.value;
-              print("r ${result.key}  v ${result.value}");
               showModalBottomSheet(backgroundColor: AppColors.backgroundColor,
                   context: context,
                   isScrollControlled: true,
                   builder: (c){
                 return bottomMessageActivated(result.value, ()=>Navigator.of(context).pop());
               });
-            }
-          });
+          }
         } else {
           setState(() {
           errorMessage = "Промокод введен неверно";
@@ -236,17 +236,20 @@ class PromocodesScreenState extends State<PromocodesScreen> {
 
 
   Widget bottomMessageActivated(String date, Function() onClose){
+    final datetime = DateFormat("dd.MM.yyyy").parse(date);
+    bool isActive = DateTime.now().isAfter(datetime);
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         Padding(
           padding: const EdgeInsets.all(8.0),
-          child: Image.asset('assets/icons/green_activated.png'),
+          child: isActive?const Icon(Icons.cancel_outlined, color: AppColors.buttonBackRed, size: 65):Image.asset('assets/icons/green_activated.png'),
         ),
-        const Text("Промокод активирован", style: TextStyle(fontWeight: FontWeight.w700, fontSize: 20)),
+        Text(isActive?"Промокод неактивен":"Промокод активирован", style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 20)),
         const Text("Список всех активных промокодов в “Истории”", style: TextStyle(color: AppColors.greytextColor)),
         const SizedBox(height: 60),
-        Text("Действителен до $date", style: TextStyle(color: AppColors.gold)),
+        Text("Действителен до $date", style: const TextStyle(color: AppColors.gold)),
         const SizedBox(height: 15),
         ColorRoundedButton("Готово", (){onClose();})
       ],

@@ -1,6 +1,9 @@
 // Функция для добавления закругленных углов к пути
 import 'dart:ui';
 
+import 'package:flutter/foundation.dart';
+import 'package:flutter_fancy_tree_view/flutter_fancy_tree_view.dart';
+
 // Функция для добавления закругленных углов к прямоугольному пути
 // Функция для смещения начальной точки пути на 20 пикселей вверх
 Path moveStartPointUp(Path path, double offset) {

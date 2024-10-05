@@ -128,6 +128,8 @@ class AppViewModel with ChangeNotifier {
   bool get alarmChecked {return localRep.alarmsChecked();}
   set alarmChecked(bool v){localRep.setAlarmsChecked =v;}
 
+  Map<String, String> loadIds={};
+
   Future<bool> get alarmsExists async {return profileData!=null?(await localRep.getAlarms(profileData?.id)).isNotEmpty:false;}
 
   void refresh(){
@@ -241,9 +243,17 @@ class AppViewModel with ChangeNotifier {
     if(url=="")return null;
     final directory = await getTemporaryDirectory();
     final loadId = await FileDownloader.downloadFile(url, directory.path);
+    if(loadId!=null)loadIds[loadId] = name;
+    return loadId;
+  }
+  Future saveTrackPath(loadId) async {
+    print("loadid $loadId");
+    print("jjjjjjjjjjjjjjjjjj $loadIds");
+    final name = loadIds[loadId];
+    if(name==null) return;
+    final directory = await getTemporaryDirectory();
     localRep.saveTrack(name, "${directory.path}/$name");
     audios[name]="${directory.path}/$name";
-    return loadId;
   }
   Future saveLocalTrack(String path) async{
     if(path=="")return null;

@@ -5,6 +5,7 @@ import 'package:collection/collection.dart';
 import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import 'package:wishmap/ViewModel.dart';
 import 'package:wishmap/data/models.dart';
@@ -503,12 +504,18 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
                 }).map((entry) {
                   final index = entry.key;
                   final value = entry.value;
+                  double correcton = 0;
+                  //danger animation
+                  if(index==centralCircles.length-2){
+                    value.radius-=5;
+                    correcton=5;
+                  }
                   return AnimatedBuilder(
                       animation: movingController,
                       child: Stack(
                         children: [
                           Center(
-                            child: WordWrapWidget(text: value.text),
+                            child: WordWrapWidget(text: value.text, minTextSize: 16, maxTextSize: 28, style: const TextStyle(fontSize: 22)),
                           ),
                           if(value.isChecked)Align(
                             alignment: Alignment.topRight,
@@ -517,13 +524,14 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
                         ],
                       ),
                       builder: (context, child){
-                        final top = value.id!=0?(centralCircles.length-1==index?_rTOc.value.dy:_cTOa.value.dy):centralCircles.length-1==index?_rTOc.value.dy-65:_cTOa.value.dy-65;
+                        final top = value.id!=0?(centralCircles.length-1==index?_rTOc.value.dy:_cTOa.value.dy+correcton):centralCircles.length-1==index?_rTOc.value.dy-65:_cTOa.value.dy-65;
                         return Positioned(
                             key: ccKeys[index],
-                            left: centralCircles.length-1==index?_rTOc.value.dx:_cTOa.value.dx,
+                            left: centralCircles.length-1==index?_rTOc.value.dx:_cTOa.value.dx+correcton,
                             top: top,
                             child: GestureDetector(
                               child: value.id!=0?AnimatedContainer(
+                                key: UniqueKey(),
                                   curve: Curves.linear,
                                   duration: const Duration(milliseconds: 200),
                                   width: value.radius * 2,
@@ -631,7 +639,7 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
                             )
                         );}
                   );
-                }).toList()
+                })
               ],
             ),
             GestureDetector(
@@ -688,24 +696,17 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
                                 .entries
                                 .map((e) {
                               return Positioned(
-                                  left: plusesPositions[e.key].dx + 25,
-                                  top: plusesPositions[e.key].dy + 25,
+                                  left: plusesPositions[e.key].dx + 33.5,
+                                  top: plusesPositions[e.key].dy + 33.5,
                                   child:
                                   GestureDetector(
                                     behavior: HitTestBehavior.opaque,
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(10), // Увеличьте внешний отступ, чтобы увеличить область срабатывания
-                                      child: Container(
-                                        width: 10, // Ширина контейнера
-                                        height: 10, // Высота контейнера
-                                        decoration: const BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          color: Colors.white,
-                                        ),
-                                        child: Center(
-                                          child: Transform.rotate(angle: -lastRotation.value,
-                                              child: const Text("+", style: TextStyle(fontSize: 8, color: Colors.black))),
-                                        ),
+                                    child: SizedBox(
+                                      width: 13, // Ширина контейнера
+                                      height: 13, // Высота контейнера
+                                      child: Center(
+                                        child: Transform.rotate(angle: -lastRotation.value,
+                                            child: SvgPicture.asset('assets/icons/plus.svg')),
                                       ),
                                     ),
                                     onTap: () {

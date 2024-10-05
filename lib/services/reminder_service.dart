@@ -169,7 +169,7 @@ void setReminder(Reminder reminder) async {
       exact: true,
       wakeup: true,
     );
-    print('Single reminder set for ${reminder.dateTime} with id ${reminder.id} - $result');
+    print('Single reminder set for ${reminder.dateTime} with id ${reminder.id} alarmid - ${reminder.TaskId*100} - $result');
   }
 }
 

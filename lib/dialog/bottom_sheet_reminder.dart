@@ -68,7 +68,7 @@ class ReminderBSState extends State<ReminderBS>{
         if(i!="")checkStates[int.parse(i)]= true;
       });
     }
-    reminder = widget.reminder??Reminder(-1, widget.parentTaskId, widget.moonId, selectedDatetime, [], "default", false);
+    reminder = widget.reminder??Reminder(-1, widget.parentTaskId, widget.moonId, selectedDatetime, [], "", false);
     datetime = "${fullDayOfWeek[selectedDatetime.weekday]}, ${selectedDatetime.day} ${monthOfYear[selectedDatetime.month]} ${selectedDatetime.year}";
     dayList = widget.reminder==null?List<DateTime>.generate(62, (i) =>
         DateTime.utc(
@@ -189,7 +189,7 @@ class ReminderBSState extends State<ReminderBS>{
                 const SizedBox(height: 8),
                 Row(
                   children: [
-                    StringPicker(itemWidth: 150, minValue: 0, maxValue: 60, value: dayList.indexWhere((e)=>e.day==selectedDatetime.day&&e.month==selectedDatetime.month), text: dayList.map((e)=>"${e.day} ${monthOfYear[e.month]?.toLowerCase()}").toList(), onChanged: (v){
+                    StringPicker(itemWidth: 160, minValue: 0, maxValue: 60, value: dayList.indexWhere((e)=>e.day==selectedDatetime.day&&e.month==selectedDatetime.month), text: dayList.map((e)=>"${e.day} ${monthOfYear[e.month]?.toLowerCase()}").toList(), onChanged: (v){
                         selectedDatetime = selectedDatetime.copyWith(day: dayList[v].day, month: dayList[v].month);
                           setState(() {
                             datetime = "${fullDayOfWeek[selectedDatetime.weekday]}, ${selectedDatetime.day} ${monthOfYear[selectedDatetime.month]} ${selectedDatetime.year}";

@@ -114,6 +114,7 @@ Future<void> _handleNotificationResponse(NotificationResponse response, AppViewM
     final id = int.parse(response.payload!.split("|")[1]);
     _runAppWithAlarm(id~/100, vm);
   } else if (response.payload?.contains("WishMap://task") == true) {
+    print("startwithtask - ${response.payload}");
     _runAppWithTask(response, vm);
   }
 }
@@ -141,8 +142,9 @@ void _runAppWithTask(NotificationResponse response, AppViewModel vm) async {
       child: BlocProvider<NavigationBloc>(
         create: (context) {
           final appViewModel = context.read<AppViewModel>();
+          appViewModel.currentTask=null;
           appViewModel.startAppFromTask(taskId);
-          return NavigationBloc()..add((appViewModel.profileData!=null&&appViewModel.profileData!.id.isNotEmpty)?NavigateToTaskEditScreenEvent(0):NavigateToAuthScreenEvent());
+          return NavigationBloc()..add((appViewModel.profileData!=null&&appViewModel.profileData!.id.isNotEmpty)?NavigateToTaskEditScreenEvent(taskId):NavigateToAuthScreenEvent());
         },
         child: MyApp(taskId: taskId),
       ),
@@ -226,8 +228,10 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver{
                     .add(NavigateToCardsScreenEvent());
               });
               //SystemNavigator.pop();
-            }), widget.alarmId!) : widget.taskId!=null ? TaskEditScreen(aimId: -1, onClose: (){
+            }), widget.alarmId!) : widget.taskId!=null ? TaskEditScreen(aimId: widget.taskId!, onClose: (){
               setState(() {
+                vm?.currentTask=null;
+                vm?.startAppFromTask(widget.taskId!);
                 widget.taskId=null;
                 BlocProvider.of<NavigationBloc>(context)
                     .add(NavigateToTaskEditScreenEvent(-1));

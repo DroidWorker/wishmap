@@ -56,10 +56,11 @@ class _MainScreenState extends State<MainScreen>{
       String id = elements[0];
       DownloadTaskStatus status = DownloadTaskStatus.values[int.parse(elements[1])];
       int progress = int.parse(elements[2]);
+      final key = vm?.inProgress.keys.firstWhere((element) => element.contains(id), orElse: ()=>"");
       if(progress>99) {
         vm?.hint = "файл загружен, для загрузки дополнительных треков перейдите в настройки";
+        if(key!="")vm?.saveTrackPath(id);
       }
-      final key = vm?.inProgress.keys.firstWhere((element) => element.contains(id), orElse: ()=>"");
       if(key!="")vm?.setInProgress(key!,progress);
     });
     FlutterDownloader.registerCallback(FileDownloader.downloadCallback);

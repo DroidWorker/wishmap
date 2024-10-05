@@ -3,18 +3,27 @@ import 'package:flutter/material.dart';
 
 class WordWrapWidget extends StatelessWidget {
   final String text;
+  final int minTextSize;
+  final int maxTextSize;
+  final TextStyle? style;
   final int maxCharactersPerLine;
 
-  WordWrapWidget({
+  const WordWrapWidget({super.key,
     required this.text,
+    this.minTextSize = 8,
+    this.maxTextSize= 18,
+    this.style,
     this.maxCharactersPerLine = 8,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: _buildText(),
+    return Padding(
+      padding: const EdgeInsets.all(3.5),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: _buildText(),
+      ),
     );
   }
 
@@ -58,8 +67,9 @@ class WordWrapWidget extends StatelessWidget {
   AutoSizeText _buildAutoSizeText(String text) {
     return AutoSizeText(
       text,
-      minFontSize: 8,
-      maxFontSize: 18,
+      minFontSize: minTextSize.toDouble(),
+      maxFontSize: maxTextSize.toDouble(),
+      style: style,
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
       textAlign: TextAlign.center,

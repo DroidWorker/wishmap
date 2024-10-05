@@ -23,6 +23,7 @@ import '../common/EditTextOverlay.dart';
 import '../common/affirmationOverlay.dart';
 import '../common/bottombar.dart';
 import '../common/collage.dart';
+import '../common/customAutoSizeText.dart';
 import '../common/treeview_widget.dart';
 import '../common/treeview_widget_v2.dart';
 import '../data/static.dart';
@@ -895,7 +896,7 @@ class _WishScreenState extends State<WishScreen>{
                         backgroundColor: curwish.isActive?curwish.color:const Color.fromARGB(255, 217, 217, 217),
                         shape: const CircleBorder(),
                         child: Stack(children: [
-                          Center(child: Text(curwish.text??"", maxLines: 1, overflow: TextOverflow.fade, textAlign: TextAlign.center ,style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w700),)),
+                          Center(child: WordWrapWidget(text: curwish.text, minTextSize: 4, maxTextSize: 12, style: const TextStyle(color: Colors.white))),
                           if(curwish.isChecked)Align(alignment: Alignment.topRight, child: Image.asset('assets/icons/wish_done.png', width: 20, height: 20),)
                         ],),
                       ),

@@ -7,6 +7,7 @@ import 'package:flutter_fancy_tree_view/flutter_fancy_tree_view.dart';
 import 'package:wishmap/res/colors.dart';
 
 import '../data/models.dart';
+import 'customAutoSizeText.dart';
 
 class MyTreeView extends StatefulWidget {
   final List<MyTreeNode> roots;
@@ -39,6 +40,8 @@ class MyTreeViewState extends State<MyTreeView> {
 
   List<TreeEntry<MyTreeNode>> treeEntries = [];
   List<ValueNotifier<double>> paddingNotifiers = [];
+
+  List<int> realLevel = [];
 
   @override
   void initState() {
@@ -94,6 +97,21 @@ class MyTreeViewState extends State<MyTreeView> {
       MyTreeNode node, TreeEntry<MyTreeNode>? parentEntry, int level) {
     final root = node.children;
     int i = 0;
+
+    var lvl = 0;
+    if(level<5){
+      lvl = level+1;
+      realLevel.add(level);
+    } else{
+      if(widget.fillWidth){
+        lvl = level;
+        realLevel.add(realLevel.last++);
+      } else {
+        lvl= level+1;
+        realLevel.add(level);
+      }
+    }
+
     if (parentEntry == null) {
       treeEntries.add(TreeEntry(
           parent: parentEntry,
@@ -102,7 +120,7 @@ class MyTreeViewState extends State<MyTreeView> {
           level: 0,
           isExpanded: true,
           hasChildren: node.children.isNotEmpty));
-      parentEntry = treeEntries.first;
+      parentEntry = treeEntries.last;
     }
     for (var element in root) {
       final newIndex = treeEntries.lastOrNull?.index ?? -1;
@@ -116,7 +134,7 @@ class MyTreeViewState extends State<MyTreeView> {
           hasNextSibling: i != root.length - 1));
       i++;
       if (element.children.isNotEmpty) {
-        buildEntries(element, treeEntries.last, level<5?level + 1:level);
+        buildEntries(element, treeEntries.last, lvl);
       }
     }
   }
@@ -130,12 +148,12 @@ class MyTreeViewState extends State<MyTreeView> {
         ValueListenableBuilder<double>(
           valueListenable: paddingNotifiers[i],
           builder: (context, padding, _) {
-            String curPath = treeEntries[i].level != 0 ? /*path.join(">")*/path.last : findKeyByValue(treeEntries[i].node.title);
+            String curPath = treeEntries[i].level != 0 ? /*path.join(">")*//*path.last*/treeEntries[i].parent?.node.title??path.last : findKeyByValue(treeEntries[i].node.title);
             curLvl = treeEntries[i].level;
             if (treeEntries.length > i + 1) {
               if (curLvl < treeEntries[i + 1].level && curLvl != 0) {
                 path.add(treeEntries[i].node.title);
-              } else if (treeEntries[i + 1].level < curLvl) {
+              }  else if (treeEntries[i + 1].level < curLvl) {
                 final diff = curLvl - treeEntries[i + 1].level;
                 for (var i = 0; i < diff; i++) {
                   path.removeLast();
@@ -258,9 +276,7 @@ class MyTreeTile extends StatelessWidget {
                                 border:
                                     Border.all(color: AppColors.buttonBackRed)),
                             child: Center(
-                                child: Text(entry.node.title,
-                                    maxLines: 2,
-                                    style: const TextStyle(fontSize: 10))),
+                                child: WordWrapWidget(text: entry.node.title, minTextSize: 4, maxTextSize: 16, style: const TextStyle(fontSize: 10))),
                           )
                         : Container(
                             height: fillWidth ? 50 : 25,
