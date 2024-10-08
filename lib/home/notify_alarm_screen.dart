@@ -61,6 +61,7 @@ class NotifyAlarmScreenState extends State<NotifyAlarmScreen>{
       appViewModel.getAlarmById(widget.alarmId).then((v){setState(() {
         alarm = v;
         if(v!=null){
+          appViewModel.alarms.add(v);
           snooze = v.snooze;
         }
       });

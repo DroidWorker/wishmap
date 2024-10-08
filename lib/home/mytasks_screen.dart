@@ -30,6 +30,7 @@ class _TaskScreenState extends State{
 
   var isPBActive = false;
   var trashModeActive = false;
+  var updateList = true;
 
   int page = 3;//2 - не исполнено 1 - Исполнено 0 - Все желания
 
@@ -40,10 +41,18 @@ class _TaskScreenState extends State{
     if(appViewModel.wishItems.isEmpty)appViewModel.startMyWishesScreen();
     return Consumer<AppViewModel>(
         builder: (context, appVM, child) {
-          taskList = appVM.taskItems;
-          page==1?filteredTaskList = taskList.where((element) => element.isChecked).toList():
-          page==2?filteredTaskList = taskList.where((element) => !element.isChecked).toList():
-          page==3?filteredTaskList = taskList.where((element) => element.isActive&&!element.isChecked).toList():filteredTaskList = taskList;
+          if(updateList) {
+            taskList = appVM.taskItems;
+            page == 1 ? filteredTaskList =
+                taskList.where((element) => element.isChecked).toList() :
+            page == 2 ? filteredTaskList =
+                taskList.where((element) => !element.isChecked).toList() :
+            page == 3
+                ? filteredTaskList =
+                taskList.where((element) => element.isActive &&
+                    !element.isChecked).toList()
+                : filteredTaskList = taskList;
+          }
           isPBActive=appVM.isinLoading;
           return Scaffold(
               backgroundColor: AppColors.backgroundColor,
@@ -106,7 +115,7 @@ class _TaskScreenState extends State{
                                         gradient: LinearGradient(
                                             colors: [AppColors.gradientStart, AppColors.gradientEnd]
                                         )
-                                    ), child: const Center(child: Text("Актуальные", style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600)))): const SizedBox(height:34, child: Center(child: Text("Актуальные", style: TextStyle(color: AppColors.greytextColor, fontSize: 11, fontWeight: FontWeight.w600)))),
+                                    ), child: const Center(child: Text("Актуальные", style: TextStyle(color: Colors.white)))): const SizedBox(height:34, child: Center(child: Text("Актуальные", style: TextStyle(color: AppColors.greytextColor)))),
                                 onTap: () {
                                   setState(() {
                                     page = 3;
@@ -128,7 +137,7 @@ class _TaskScreenState extends State{
                                         gradient: LinearGradient(
                                             colors: [AppColors.gradientStart, AppColors.gradientEnd]
                                         )
-                                    ), child: const Center(child: Text("Не выполнены", style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600)))): const SizedBox(height: 34, child: Center(child: Text("Не выполнены", style: TextStyle(color: AppColors.greytextColor, fontSize: 11, fontWeight: FontWeight.w600)))),
+                                    ), child: const Center(child: Text("Не выполнены", style: TextStyle(color: Colors.white)))): const SizedBox(height: 34, child: Center(child: Text("Не выполнены", style: TextStyle(color: AppColors.greytextColor)))),
                                 onTap: () {
                                   setState(() {
                                     page = 2;
@@ -150,7 +159,7 @@ class _TaskScreenState extends State{
                                         gradient: LinearGradient(
                                             colors: [AppColors.gradientStart, AppColors.gradientEnd]
                                         )
-                                    ), child: const Center(child: Text("Выполнены", style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600)))): const SizedBox(height: 34, child: Center(child: Text("Выполнены", style: TextStyle(color: AppColors.greytextColor, fontSize: 11, fontWeight: FontWeight.w600)))),
+                                    ), child: const Center(child: Text("Выполнены", style: TextStyle(color: Colors.white)))): const SizedBox(height: 34, child: Center(child: Text("Выполнены", style: TextStyle(color: AppColors.greytextColor)))),
                                 onTap: () {
                                   setState(() {
                                     page = 1;
@@ -172,7 +181,7 @@ class _TaskScreenState extends State{
                                       gradient: LinearGradient(
                                           colors: [AppColors.gradientStart, AppColors.gradientEnd]
                                       )
-                                  ), child: const Center(child: Text("Все", style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600)))): const SizedBox(height:34, child: Center(child: Text("Все", style: TextStyle(color: AppColors.greytextColor, fontSize: 11, fontWeight: FontWeight.w600)))),
+                                  ), child: const Center(child: Text("Все", style: TextStyle(color: Colors.white)))): const SizedBox(height:34, child: Center(child: Text("Все", style: TextStyle(color: AppColors.greytextColor)))),
                               onTap: () {
                                 setState(() {
                                   page = 0;
@@ -287,12 +296,15 @@ class _TaskScreenState extends State{
         setState(() {
           appViewModel.taskItems.firstWhere((element) => element.id==id).isActive=true;
         });
+      }else{
+        appViewModel.addError("необходимо актуализировать вышестоящую цель");
       }
     }else if(!task.isChecked){//выполнить
       appViewModel.updateTaskStatus(id, true, needUpdate: false);
-      /*setState(() {
+      setState(() {
         appViewModel.taskItems.firstWhere((element) => element.id==id).isChecked=true;
-      });*/
+        updateList = false;
+      });
     }else{//удалить
       showModalBottomSheet<void>(
         backgroundColor: AppColors.backgroundColor,

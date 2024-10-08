@@ -5,7 +5,8 @@ import 'package:flutter_downloader/flutter_downloader.dart';
 
 
 class FileDownloader {
-  static Future<void> downloadCallback(
+  @pragma('vm:entry-point')
+  static void downloadCallback(
       String id,
       int status,
       int progress

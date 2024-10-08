@@ -106,7 +106,7 @@ class _AimsScreenState extends State<AimsScreen>{
                                       gradient: LinearGradient(
                                           colors: [AppColors.gradientStart, AppColors.gradientEnd]
                                       )
-                                  ), child: const Center(child: Text("Актуальные", style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600)))): const Center(child: Text("Актуальные", style: TextStyle(color: AppColors.greytextColor, fontSize: 11, fontWeight: FontWeight.w600))),
+                                  ), child: const Center(child: Text("Актуальные", style: TextStyle(color: Colors.white)))): const Center(child: Text("Актуальные", style: TextStyle(color: AppColors.greytextColor))),
                               onTap: () {
                                 setState(() {
                                   page = 3;
@@ -128,7 +128,7 @@ class _AimsScreenState extends State<AimsScreen>{
                                     gradient: LinearGradient(
                                         colors: [AppColors.gradientStart, AppColors.gradientEnd]
                                     )
-                                ), child: const Center(child: Text("Не достигнуты", style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600)))): const Center(child: Text("Не достигнуты", style: TextStyle(color: AppColors.greytextColor, fontSize: 11, fontWeight: FontWeight.w600))),
+                                ), child: const Center(child: Text("Не достигнуты", style: TextStyle(color: Colors.white)))): const Center(child: Text("Не достигнуты", style: TextStyle(color: AppColors.greytextColor))),
                             onTap: () {
                               setState(() {
                                 page = 2;
@@ -150,7 +150,7 @@ class _AimsScreenState extends State<AimsScreen>{
                                     gradient: LinearGradient(
                                         colors: [AppColors.gradientStart, AppColors.gradientEnd]
                                     )
-                                ), child: const Center(child: Text("Достигнуты", style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600)))): const Center(child: Text("Достигнуты", style: TextStyle(color: AppColors.greytextColor, fontSize: 11, fontWeight: FontWeight.w600))),
+                                ), child: const Center(child: Text("Достигнуты", style: TextStyle(color: Colors.white)))): const Center(child: Text("Достигнуты", style: TextStyle(color: AppColors.greytextColor))),
                             onTap: () {
                               setState(() {
                                 page = 1;
@@ -172,7 +172,7 @@ class _AimsScreenState extends State<AimsScreen>{
                                     gradient: LinearGradient(
                                         colors: [AppColors.gradientStart, AppColors.gradientEnd]
                                     )
-                                ), child: const Center(child: Text("Все", style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600)))): const Center(child: Text("Все", style: TextStyle(color: AppColors.greytextColor, fontSize: 11, fontWeight: FontWeight.w600))),
+                                ), child: const Center(child: Text("Все", style: TextStyle(color: Colors.white)))): const Center(child: Text("Все", style: TextStyle(color: AppColors.greytextColor))),
                             onTap: () {
                               setState(() {
                                 page = 0;

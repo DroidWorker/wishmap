@@ -9,8 +9,6 @@ import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
 import 'package:wishmap/common/bottombar.dart';
-import 'package:wishmap/common/detailsOverlay.dart';
-import 'package:wishmap/common/gradientText.dart';
 import 'package:wishmap/data/static.dart';
 import 'package:wishmap/navigation/navigation_block.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -52,6 +50,7 @@ class _MainScreenState extends State<MainScreen>{
     super.initState();
     IsolateNameServer.registerPortWithName(_port.sendPort, 'downloader_send_port');
     _port.listen((dynamic data) {
+      print("seeeeeeerv geeeeet");
       final elements = data.split(",");
       String id = elements[0];
       DownloadTaskStatus status = DownloadTaskStatus.values[int.parse(elements[1])];

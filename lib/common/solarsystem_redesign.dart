@@ -210,6 +210,7 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
   @override
   void initState() {
     super.initState();
+    print("startttttt centcir - $centralCircles");
     var firstCercle = vm?.mainScreenState?.allCircles.firstWhere((element) => element.id==0);
     if(firstCercle!=null)vm?.mainCircles=[MainCircle(id: 0, coords: Pair(key:0.0,value:0.0), text: firstCercle.text, color: firstCercle.color)];
     ctrl = AnimationController.unbounded(vsync: this);
@@ -317,7 +318,7 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
       circlePositions.add(Offset(x, y));
       final px = centerX + (widget.size/2-40) * cos(plusesRotations[i]);
       final py = centerY + (widget.size/2-40) * sin(plusesRotations[i]);
-      if(centralCircles.isNotEmpty&&!centralCircles.last.isChecked&&centralCircles.last.isActive)plusesPositions.add(Offset(px, py));
+      if(centralCircles.isNotEmpty)plusesPositions.add(Offset(px, py));
     }
     //final initialTop = animationDirectionForward?widget.center.value-centralCircles.last.radius:widget.circles[itemId].radius*-0.5;//centralCircles.last.coords.value;
     //final initialLeft = animationDirectionForward?widget.center.key-centralCircles.last.radius:widget.center.key * 2 - centralCircles.last.radius*1.5;//centralCircles.last.coords.key;
@@ -368,13 +369,13 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
       if(animationDirectionForward){
         widget.circles = vm?.openSphere(centralCircles.last.id)??[];
         setState(() {        });
-        centralCircles.last.coords = Pair(key: _rTOc.value.dx, value: _rTOc.value.dy);
         centralCircles[centralCircles.length-1].coords = Pair(key: _cTOa.value.dx, value: _cTOa.value.dy);
         _cTOa = Tween<Offset>(begin:_cTOa.value, end: _cTOa.value).animate(afterMovingController);
         _rTOc = Tween<Offset>(begin:_rTOc.value, end: _rTOc.value).animate(afterMovingController);
         movingController.reverse();
         allowClick=true;
         vm?.mainScreenState?.needToUpdateCoords=true;
+        vm?.mainCircles.last.coords= Pair(key: _cTOa.value.dx, value: _cTOa.value.dy);
         print("alloew click - true1");
       }else{{
         setState(() {
@@ -384,9 +385,9 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
           circlesHash=0;
           centralCircles.removeLast();
           ccKeys.removeLast();
-          centralCircles.last.coords = Pair(key: _cTOa.value.dx, value: _cTOa.value.dy);
           _rTOc = Tween<Offset>(begin:_cTOa.value, end: _cTOa.value).animate(afterMovingController);
           _cTOa = Tween<Offset>(begin:Offset(centralCircles.first.coords.key,centralCircles.first.coords.value), end: Offset(centralCircles.first.coords.key,centralCircles.first.coords.value)).animate(afterMovingController);
+          centralCircles.first.coords = Pair(key: widget.center.key - centralCircles[0].radius, value: widget.center.value - centralCircles[0].radius);
           allowClick=true;
           print("alloew click - true2");
         });
@@ -401,10 +402,12 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
     print("rebuild widget");
 
     if(centralCircles.isEmpty||(widget.clearData)) {
+      print("gggggggggggggg$centralCircles");
       centralCircles = List<MainCircle>.from(vm!.mainCircles);
       centralCircles.forEach((element) {
         ccKeys.add(UniqueKey());
       });
+      print("gggggggggggggg$centralCircles");
       if(centralCircles.isNotEmpty) {
         _rTOc = Tween<Offset>(begin: Offset(centralCircles.first.coords.key, centralCircles.first.coords.value),
             end: Offset(centralCircles.first.coords.key, centralCircles.first.coords.value)).animate(movingController);
@@ -447,12 +450,12 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
         final px = centerX + (widget.size/2-40) * cos(plusesRotations[i]);
         final py = centerY + (widget.size/2-40) * sin(plusesRotations[i]);
         circlePositions.add(Offset(x, y));
-        if(centralCircles.isNotEmpty&&!centralCircles.last.isChecked&&centralCircles.last.isActive)plusesPositions.add(Offset(px, py));
+        if(centralCircles.isNotEmpty)plusesPositions.add(Offset(px, py));
       }
       if(widget.circles.isEmpty){
         final px = widget.center.key-40 + (widget.size/2-40) * cos(1);
         final py = widget.center.value-40 + (widget.size/2-40) * sin(1);
-        if(centralCircles.isNotEmpty&&!centralCircles.last.isChecked&&centralCircles.last.isActive){plusesPositions.add(Offset(px,py));
+        if(centralCircles.isNotEmpty){plusesPositions.add(Offset(px,py));
         plusesRotations.add(1);}
       }
       if(widget.circles.length>8&&circleRotations.length==widget.circles.length){
@@ -465,6 +468,7 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
 
     var lcent =  widget.center.key + 40 - widget.size / 2;
     var tcent = widget.center.value + 40 - widget.size / 2;
+
     return Container(
         child: Stack(
           children: [
@@ -504,12 +508,7 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
                 }).map((entry) {
                   final index = entry.key;
                   final value = entry.value;
-                  double correcton = 0;
-                  //danger animation
-                  if(index==centralCircles.length-2){
-                    value.radius-=5;
-                    correcton=5;
-                  }
+
                   return AnimatedBuilder(
                       animation: movingController,
                       child: Stack(
@@ -524,10 +523,10 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
                         ],
                       ),
                       builder: (context, child){
-                        final top = value.id!=0?(centralCircles.length-1==index?_rTOc.value.dy:_cTOa.value.dy+correcton):centralCircles.length-1==index?_rTOc.value.dy-65:_cTOa.value.dy-65;
+                        final top = value.id!=0?(centralCircles.length-1==index?_rTOc.value.dy:_cTOa.value.dy):centralCircles.length-1==index?_rTOc.value.dy-65:_cTOa.value.dy-65;
                         return Positioned(
                             key: ccKeys[index],
-                            left: centralCircles.length-1==index?_rTOc.value.dx:_cTOa.value.dx+correcton,
+                            left: centralCircles.length-1==index?_rTOc.value.dx:_cTOa.value.dx,
                             top: top,
                             child: GestureDetector(
                               child: value.id!=0?AnimatedContainer(
@@ -696,21 +695,29 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
                                 .entries
                                 .map((e) {
                               return Positioned(
-                                  left: plusesPositions[e.key].dx + 33.5,
-                                  top: plusesPositions[e.key].dy + 33.5,
+                                  left: plusesPositions[e.key].dx + 30.5,
+                                  top: plusesPositions[e.key].dy + 30.5,
                                   child:
-                                  GestureDetector(
-                                    behavior: HitTestBehavior.opaque,
-                                    child: SizedBox(
-                                      width: 13, // Ширина контейнера
-                                      height: 13, // Высота контейнера
+                                  InkWell(
+                                    child: Container(
+                                      padding: const EdgeInsets.all(3),
+                                      width: 19, // Ширина контейнера
+                                      height: 19, // Высота контейнера
                                       child: Center(
-                                        child: Transform.rotate(angle: -lastRotation.value,
-                                            child: SvgPicture.asset('assets/icons/plus.svg')),
+                                        child: SizedBox(
+                                          width: 13,
+                                          height: 13,
+                                          child: Transform.rotate(angle: -lastRotation.value,
+                                              child: SvgPicture.asset('assets/icons/plus.svg')),
+                                        ),
                                       ),
                                     ),
                                     onTap: () {
                                       print("onplustap");
+                                      if(centralCircles.last.isChecked||!centralCircles.last.isActive){
+                                        vm?.addError(centralCircles.last.isChecked?"Желание уже выполнено! Создание поджеланий запрещено":"Актуализируйте ${centralCircles.last.text} чтобы создавать новые объекты");
+                                        return;
+                                      }
                                       if(centralCircles.last.id==0){
                                         vm?.hint = textNewI[Random().nextInt(18)];
                                       }else if(centralCircles.last.id<900){

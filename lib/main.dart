@@ -51,7 +51,7 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   await _requestPermissions(flutterLocalNotificationsPlugin);
-  await FlutterDownloader.initialize(debug: true);
+  await FlutterDownloader.initialize(debug: false);
   await AndroidAlarmManager.initialize();
   tz.initializeTimeZones();
 
@@ -187,7 +187,10 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver{
       }else {
         vm?.lockState = true;
       }
-    }
+    }/*if(state==AppLifecycleState.hidden){
+      vm?.mainCircles.clear();
+      if(vm!=null&&vm!.mainScreenState!=null)vm?.startMainScreen(vm!.mainScreenState!.moon);
+    }*/
   }
 
   @override
@@ -243,9 +246,10 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver{
             return Consumer<AppViewModel>(
               builder: (context, appViewModel, child) {
                 vm ??= appViewModel;
-                if (appViewModel.messageError.isNotEmpty) {
+                final me = appViewModel.messageError;
+                if (me.isNotEmpty) {
                   WidgetsBinding.instance.addPostFrameCallback((_) {
-                    _showError(context, appViewModel.messageError);
+                    _showError(context, me);
                   });
                 }
                 return WillPopScope(
@@ -327,7 +331,14 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver{
   void _showError(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message),
+        backgroundColor: Colors.white,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(10),
+            topRight: Radius.circular(10)
+          )
+        ),
+        content: Text(message, style: const TextStyle(color: Colors.black)),
         duration: const Duration(seconds: 3),
       ),
     );

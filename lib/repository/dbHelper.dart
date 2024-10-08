@@ -159,7 +159,8 @@ class DatabaseHelper {
 
     await db.execute('''
     CREATE TABLE promocodes(
-        key TEXT PRIMARY KEY,
+        id INTEGER  PRIMARY KEY AUTOINCREMENT,
+        key TEXT,
         value TEXT,
         userId TEXT
       )

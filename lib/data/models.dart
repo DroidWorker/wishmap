@@ -160,7 +160,7 @@ class MainCircle {
 
   @override
   String toString(){
-    return "{MainCircle $id  $text}";
+    return "{MainCircle $id  $text ${coords.key}.${coords.value}";
   }
 }
 

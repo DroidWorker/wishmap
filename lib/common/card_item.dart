@@ -37,16 +37,23 @@ class CardItem extends StatelessWidget {
           child: InkWell(
             child: mi.id != -1
                 ? Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                        MoonWidget(
-                          date: date,
-                          size: 85,
-                          resolution: 800,
+                        Expanded(
+                          flex: 1,
+                          child: Center(
+                            child: MoonWidget(
+                              date: date,
+                              size: 85,
+                              resolution: 800,
+                            ),
+                          ),
                         ),
-                        Text(
-                            "#${mi.id} ${dateToLongString(mi.date) ?? mi.date}")
+                        Expanded(
+                          flex: 2,
+                          child: Text(
+                              "#${mi.id} ${dateToLongString(mi.date) ?? mi.date}"),
+                        )
                       ])
                 : OutlinedGradientButton(
                     "Добавить карту",

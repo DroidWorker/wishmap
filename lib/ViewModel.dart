@@ -27,6 +27,7 @@ class AppViewModel with ChangeNotifier {
   final MessageError _me = MessageError();
   String get messageError {
     final text = _me.text;
+    print("teeeeeeeeeeeee$text");
     _me.text="";
     return text;
   }
@@ -174,6 +175,7 @@ class AppViewModel with ChangeNotifier {
 
   void addError(String text){
     if(text!=messageError) {
+      print("seeeeeeeeeeet $text");
       _me.text = text;
       notifyListeners();
     }
