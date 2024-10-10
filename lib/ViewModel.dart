@@ -24,11 +24,12 @@ class AppViewModel with ChangeNotifier {
   LocalRepository localRep = LocalRepository();
   Repository repository = Repository();
 
+  bool important = false;
   final MessageError _me = MessageError();
   String get messageError {
     final text = _me.text;
-    print("teeeeeeeeeeeee$text");
     _me.text="";
+    //important = false;
     return text;
   }
 
@@ -173,9 +174,9 @@ class AppViewModel with ChangeNotifier {
     notifyListeners();
   }
 
-  void addError(String text){
+  void addError(String text, {important = false}){
     if(text!=messageError) {
-      print("seeeeeeeeeeet $text");
+      this.important=important;
       _me.text = text;
       notifyListeners();
     }
@@ -249,8 +250,6 @@ class AppViewModel with ChangeNotifier {
     return loadId;
   }
   Future saveTrackPath(loadId) async {
-    print("loadid $loadId");
-    print("jjjjjjjjjjjjjjjjjj $loadIds");
     final name = loadIds[loadId];
     if(name==null) return;
     final directory = await getTemporaryDirectory();
@@ -265,6 +264,19 @@ class AppViewModel with ChangeNotifier {
     localRep.saveTrack(name, "${directory.path}/$name");
     audios[name]="${directory.path}/$name";
     audioList[name]="${directory.path}/$name";
+  }
+  Future deleteTracks(List<String> names) async {
+    for (var name in names) {
+      try {
+        final directory = await getTemporaryDirectory();
+        await File('${directory.path}/$name').delete();
+      }catch(ex){
+        print("filenotfound - $ex");
+      }
+      audios.remove(name);
+    }
+    localRep.updateTracks(audios);
+    notifyListeners();
   }
 
   saveUserColor(Color color) {
@@ -705,9 +717,10 @@ Future<Map<String, String>> getPromocodes() async{
       revercecentralPath.add(mainScreenState!.allCircles.firstWhere((element) => element.id==revercecentralPath.last.parenId));
     }
     const radius = 80.0;
-    mainCircles = revercecentralPath.reversed.map((e) => MainCircle(id: e.id, coords: Pair(key: screenWidth-radius, value: radius*-0.5), text: e.text, color: e.color, isActive: e.isActive, isChecked: e.isChecked)).toList();
+    mainCircles = revercecentralPath.reversed.map((e) => MainCircle(id: e.id, coords: Pair(key: 0, value: 0), text: e.text, color: e.color, isActive: e.isActive, isChecked: e.isChecked,isVisible: false)).toList();
     if(mainCircles.length>1) mainCircles.removeLast();
-    print("gggggggggggggggggg${mainCircles}");
+    mainCircles.last.isVisible=true;
+    print("gggggggggggggggaaaaaa${mainCircles}");
     mainScreenState?.needToUpdateCoords=true;
     openSphere(sphereId);
   }
@@ -1028,6 +1041,52 @@ Future<Map<String, String>> getPromocodes() async{
     }catch(ex){
       addError("сфера не была сохранена: $ex");
     }
+  }
+  Future<void> activateBranchFrom(int itemId, String type) async{
+    final moonId = mainScreenState?.moon.id??0;
+    if(type=='t'){
+      activateTask(itemId, true);
+      final task = await localRep.getTask(itemId, moonId);
+      activateAim(task.parentId, true);
+      final aim = await localRep.getAim(itemId, moonId);
+      WishData? wish = await localRep.getSphere(aim.parentId, moonId);
+      do{
+        localRep.activateSphere(wish?.id??-1);
+        repository.activateWish(wish?.id??0, moonId, true);
+        if(wish!=null){
+          mainScreenState?.allCircles.firstWhereOrNull((e)=>e.id==wish?.id)?.isActive=true;
+          wishItems.firstWhereOrNull((e)=>e.id==wish?.id)?.isActive=true;
+          wish = await localRep.getSphere(wish.parentId, moonId);
+        }
+      }while(wish?.parentId!=0&&wish!=null);
+      localRep.commitASpheresActivation(true, moonId);
+    }else if(type=='a'){
+      activateAim(itemId, true);
+      final aim = await localRep.getAim(itemId, moonId);
+      WishData? wish = await localRep.getSphere(aim.parentId, moonId);
+      do{
+        localRep.activateSphere(wish?.id??-1);
+        repository.activateWish(wish?.id??0, moonId, true);
+        if(wish!=null){
+          mainScreenState?.allCircles.firstWhereOrNull((e)=>e.id==wish?.id)?.isActive=true;
+          wishItems.firstWhereOrNull((e)=>e.id==wish?.id)?.isActive=true;
+          wish = await localRep.getSphere(wish.parentId, moonId);
+        }
+      }while(wish?.parentId!=0&&wish!=null);
+      localRep.commitASpheresActivation(true, moonId);
+    }else if(type=='w'||type=='s'){
+      WishData? wish = await localRep.getSphere(itemId, moonId);
+      do{
+        localRep.activateSphere(wish?.id??-1);
+        repository.activateWish(wish?.id??0, moonId, true);
+        if(wish!=null){
+          mainScreenState?.allCircles.firstWhereOrNull((e)=>e.id==wish?.id)?.isActive=true;
+          wishItems.firstWhereOrNull((e)=>e.id==wish?.id)?.isActive=true;
+          wish = await localRep.getSphere(wish.parentId, moonId);
+        }
+      }while(wish?.parentId!=0&&wish!=null);
+    }
+    notifyListeners();
   }
   Future<void> activateSphereWish(int id, bool status, {bool updateScreen = false,bool needToCommit = true}) async{
     try {
@@ -1499,7 +1558,7 @@ Future<Map<String, String>> getPromocodes() async{
       updateMoonSync(mainScreenState?.moon.id??0);
     }catch(ex, s){
       print("eeeeeeeeerrrrrrrrrrr $ex -|__|- $s");
-      addError("сфера не была актуализирована 009: $ex");
+      addError(" не была актуализирована 009: $ex");
     }
   }
 
@@ -1790,7 +1849,7 @@ Future<Map<String, String>> getPromocodes() async{
         wishId = parentId;
         final wish = await localRep.getSphere(wishId, mainScreenState?.moon.id??0);
         if(wish?.isActive == false){
-          addError("актуализируйте карту для добавления задачи!");
+          addError("актуализируйте карту для добавления задачи!", important: true);
           return;
         }
         final allAim = await localRep.getAllAims(mainScreenState?.moon.id??0);

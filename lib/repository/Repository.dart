@@ -827,6 +827,7 @@ class Repository {
         'photosIds': photosId,
         'affirmation': wd.affirmation,
         'isActive': true,
+        'isChecked': wd.isChecked,
         'isHidden': false,
       };
       await userRef

@@ -279,6 +279,10 @@ class _WishScreenState extends State<WishScreen>{
                         child: Column(
                           children: [
                             !curwish.isActive&&!curwish.isChecked?ColorRoundedButton("Представить", () {
+                              if(appVM.settings.actualizeFullBranch){
+                                appVM.activateBranchFrom(curwish.id, 'w');
+                                return;
+                              }
                               if(isParentActive||appVM.settings.wishActualizingMode==1||parentIsSphere) {
                                 if(appVM.settings.sphereActualizingMode==1||appVM.isParentSphereActive(curwish.id)||curwish.parentId==0){
                                   appViewModel.activateSphereWish(curwish.id, true);

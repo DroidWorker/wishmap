@@ -11,7 +11,7 @@ import 'customAutoSizeText.dart';
 
 class MyTreeView extends StatefulWidget {
   final List<MyTreeNode> roots;
-  final Map<String, List<String>>? spheres;
+  final Map<String, List<int>>? spheres;
   final bool applyColorChangibg;
   bool fillWidth = false;
   final bool alignRight;
@@ -148,7 +148,7 @@ class MyTreeViewState extends State<MyTreeView> {
         ValueListenableBuilder<double>(
           valueListenable: paddingNotifiers[i],
           builder: (context, padding, _) {
-            String curPath = treeEntries[i].level != 0 ? /*path.join(">")*//*path.last*/treeEntries[i].parent?.node.title??path.last : findKeyByValue(treeEntries[i].node.title);
+            String curPath = treeEntries[i].level != 0 ? /*path.join(">")*//*path.last*/treeEntries[i].parent?.node.title??path.last : findKeyByValue(treeEntries[i].node.id);
             curLvl = treeEntries[i].level;
             if (treeEntries.length > i + 1) {
               if (curLvl < treeEntries[i + 1].level && curLvl != 0) {
@@ -186,7 +186,7 @@ class MyTreeViewState extends State<MyTreeView> {
     return items;
   }
 
-  String findKeyByValue(String value){
+  String findKeyByValue(int value){
     if(widget.spheres==null) return "";
     for(var entry in widget.spheres!.entries){
       if(entry.value.contains(value)){

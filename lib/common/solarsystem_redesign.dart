@@ -14,8 +14,10 @@ import 'package:flutter/physics.dart';
 
 import '../data/static.dart';
 import '../data/static_affirmations_women.dart';
+import '../dialog/bottom_sheet_notify.dart';
 import '../interface_widgets/confetti_objs.dart';
 import '../navigation/navigation_block.dart';
+import '../res/colors.dart';
 import 'customAutoSizeText.dart';
 
 class CircleWidget extends StatefulWidget {
@@ -273,7 +275,7 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
       }
     });
     final centerBottomOffset = widget.center.value;
-    lineStart=Offset((widget.center.key + (widget.center.key*0.33)), centerBottomOffset);
+    lineStart=Offset((widget.center.key*1.4), centerBottomOffset);
     _controllerCenter = ConfettiController(duration: const Duration(seconds: 4));
   }
   @override
@@ -320,10 +322,6 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
       final py = centerY + (widget.size/2-40) * sin(plusesRotations[i]);
       if(centralCircles.isNotEmpty)plusesPositions.add(Offset(px, py));
     }
-    //final initialTop = animationDirectionForward?widget.center.value-centralCircles.last.radius:widget.circles[itemId].radius*-0.5;//centralCircles.last.coords.value;
-    //final initialLeft = animationDirectionForward?widget.center.key-centralCircles.last.radius:widget.center.key * 2 - centralCircles.last.radius*1.5;//centralCircles.last.coords.key;
-    //final finalTop = animationDirectionForward?widget.circles[itemId].radius*-0.5:widget.center.value-centralCircles[centralCircles.length-2].radius;
-    //final finalRight = animationDirectionForward?widget.center.key * 2 - centralCircles.last.radius*1.5:widget.center.key-centralCircles[centralCircles.length-2].radius;
     final initialTop = animationDirectionForward?widget.center.value-centralCircles.last.radius:centerY-(widget.size/2)-80;//centralCircles.last.coords.value;
     final initialLeft = animationDirectionForward?widget.center.key-centralCircles.last.radius:(widget.center.key-60) * 2;//centralCircles.last.coords.key;
     final finalTop = animationDirectionForward?centerY-(widget.size/2)-80:widget.center.value-centralCircles[centralCircles.length-2].radius;
@@ -429,6 +427,9 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
           _cTOa = Tween<Offset>(begin: Offset((widget.center.key-60) * 2, widget.center.value-40-(widget.size/2)-80), end: Offset(widget.center.key*2-100,-40)).animate(movingController);
         }
       }
+      for(int i = 1; i<vm!.mainCircles.length; i++){
+        vm!.mainCircles[i].coords = Pair(key: (widget.center.key-60) * 2, value:widget.center.value-40-(widget.size/2)-80);
+      }
       circleRotations.clear();
       plusesRotations.clear();
       circlePositions.clear();
@@ -480,8 +481,8 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
                     painter: LinePainter(),
                   ),
                   builder: (context, child){
-                    final top = _cTOa.value.dy+centralCircles.last.radius*2.45;
-                    final right = _cTOa.value.dx-centralCircles.last.radius*2.45;
+                    final top = _cTOa.value.dy+2.4*centralCircles.last.radius;
+                    final right = (widget.size+20)-_cTOa.value.dx-centralCircles.last.radius/2.2;
                     return Stack(children:[ Positioned(
                       left: lineStart.dx,
                       bottom: lineStart.dy,
@@ -523,13 +524,13 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
                         ],
                       ),
                       builder: (context, child){
-                        final top = value.id!=0?(centralCircles.length-1==index?_rTOc.value.dy:_cTOa.value.dy):centralCircles.length-1==index?_rTOc.value.dy-65:_cTOa.value.dy-65;
+                        final top = value.id!=0||centralCircles.length>1?(centralCircles.length-1==index?_rTOc.value.dy:_cTOa.value.dy):centralCircles.length-1==index?_rTOc.value.dy-65:_cTOa.value.dy-65;
                         return Positioned(
                             key: ccKeys[index],
                             left: centralCircles.length-1==index?_rTOc.value.dx:_cTOa.value.dx,
                             top: top,
                             child: GestureDetector(
-                              child: value.id!=0?AnimatedContainer(
+                              child: value.id!=0||centralCircles.length>1?AnimatedContainer(
                                 key: UniqueKey(),
                                   curve: Curves.linear,
                                   duration: const Duration(milliseconds: 200),
@@ -551,7 +552,7 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
                                     ),
                                   ),
                                   child: child!
-                              ):ColorFiltered(colorFilter: ColorFilter.mode(value.color, BlendMode.srcATop),child: Image.asset('assets/icons/people.png', width: 110)),
+                              ):/*ColorFiltered(colorFilter: ColorFilter.mode(value.color, BlendMode.srcATop),child: Image.asset('assets/icons/people.png', width: 110)*/SvgPicture.asset("assets/icons/headtest.svg", width: 180, height: 180)/*)*/,
                               onTap: () {
                                 print("oncentralcircletap - $allowClick");
                                 _timer?.cancel();
@@ -715,7 +716,15 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
                                     onTap: () {
                                       print("onplustap");
                                       if(centralCircles.last.isChecked||!centralCircles.last.isActive){
-                                        vm?.addError(centralCircles.last.isChecked?"Желание уже выполнено! Создание поджеланий запрещено":"Актуализируйте ${centralCircles.last.text} чтобы создавать новые объекты");
+                                        showModalBottomSheet<void>(
+                                          backgroundColor: AppColors.backgroundColor,
+                                          context: context,
+                                          isScrollControlled: true,
+                                          builder: (BuildContext context) {
+                                            return NotifyBS("", centralCircles.last.isChecked?"Желание уже выполнено! Создание поджеланий запрещено":"Актуализируйте ${centralCircles.last.text} чтобы создавать новые объекты", 'OK',
+                                                onOk: () => Navigator.pop(context, 'OK'));
+                                          },
+                                        );
                                         return;
                                       }
                                       if(centralCircles.last.id==0){

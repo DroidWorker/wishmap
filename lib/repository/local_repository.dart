@@ -100,6 +100,7 @@ class LocalRepository {
     if (_prefs == null) {
       await init(); // Дождитесь завершения инициализации
     }
+    _prefs!.setBool("actualizeFullBranch", settings.actualizeFullBranch);
     _prefs!.setBool("fastActMainSphere", settings.fastActMainSphere);
     _prefs!.setInt("taskActualizingMode", settings.taskActualizingMode);
     _prefs!.setInt("wishActualizingMode", settings.wishActualizingMode);
@@ -116,6 +117,7 @@ class LocalRepository {
       await init(); // Дождитесь завершения инициализации
     }
     ActualizingSettingData settings = ActualizingSettingData();
+    settings.actualizeFullBranch = _prefs!.getBool("actualizeFullBranch") ?? false;
     settings.fastActMainSphere = _prefs!.getBool("fastActMainSphere") ?? false;
     settings.sphereActualizingMode =
         _prefs!.getInt("sphereActualizingMode") ?? 0;
@@ -173,6 +175,17 @@ class LocalRepository {
     String resstr = _prefs!.getString("music") ?? "";
     resstr += resstr != "" ? "<<$name|$path" : "$name|$path";
     _prefs!.setString("music", resstr);
+  }
+  Future<void> updateTracks(Map<String, String> trackDatas) async {
+    if (_prefs == null) {
+      await init(); // Дождитесь завершения инициализации
+    }
+    String data = "";
+    trackDatas.forEach((key, value) {
+      if (data != "") data += "<<";
+      data += "$key|$value";
+    });
+    _prefs!.setString("music", data);
   }
 
   Map<String, String> getTracks() {

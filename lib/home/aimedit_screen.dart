@@ -218,6 +218,13 @@ class AimEditScreenState extends State<AimEditScreen>{
                       child: Column(children:[
                         const SizedBox(height: 16),
                         ai!=null&&!ai!.isActive&&!ai!.isChecked?ColorRoundedButton("Представить", () {
+                          if(appVM.settings.actualizeFullBranch){
+                            appVM.activateBranchFrom(ai!.id, "t");
+                            setState(() {
+                              ai!.isActive = true;
+                            });
+                            return;
+                          }
                             if(isParentActive) {
                               setState(() {
                                 appVM.activateAim(ai!.id, true);

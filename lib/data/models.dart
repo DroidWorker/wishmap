@@ -37,6 +37,7 @@ class ProfileData {
 class ActualizingSettingData{
   bool fastActMainSphere = false;
 
+  bool actualizeFullBranch = false;
   int sphereActualizingMode = 0;
   bool fastActSphere = false;
   //0-Автоматическая актуализация всех сфер при актуализации 'Я'

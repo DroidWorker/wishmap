@@ -251,7 +251,12 @@ class PromocodesScreenState extends State<PromocodesScreen> {
         const SizedBox(height: 60),
         Text("Действителен до $date", style: const TextStyle(color: AppColors.gold)),
         const SizedBox(height: 15),
-        ColorRoundedButton("Готово", (){onClose();})
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: ColorRoundedButton("Готово", (){onClose();}
+          ),
+        ),
+        const SizedBox(height: 16)
       ],
     );
   }

@@ -25,8 +25,10 @@ import 'package:wishmap/home/settings/q_screen.dart';
 import 'package:wishmap/home/taskcreate_screen.dart';
 import 'package:wishmap/home/todo_screen.dart';
 import 'package:wishmap/home/wish_screen.dart';
+import 'package:wishmap/res/colors.dart';
 import 'ViewModel.dart';
 import 'common/error_widget.dart';
+import 'dialog/bottom_sheet_notify.dart';
 import 'firebase_options.dart';
 import 'home/my_simple_tasks_screen.dart';
 import 'home/myaims_screen.dart';
@@ -249,7 +251,7 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver{
                 final me = appViewModel.messageError;
                 if (me.isNotEmpty) {
                   WidgetsBinding.instance.addPostFrameCallback((_) {
-                    _showError(context, me);
+                    _showError(context, me, important: vm!.important);
                   });
                 }
                 return WillPopScope(
@@ -328,7 +330,16 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver{
     }
   }
 
-  void _showError(BuildContext context, String message) {
+  void _showError(BuildContext context, String message, {bool important = false}) {
+    important?showModalBottomSheet<void>(
+    backgroundColor: AppColors.backgroundColor,
+    context: context,
+    isScrollControlled: true,
+    builder: (BuildContext context) {
+    return NotifyBS("Внимание", message, 'OK',
+    onOk: () => Navigator.pop(context, 'OK'));
+    },
+    ):
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         backgroundColor: Colors.white,
