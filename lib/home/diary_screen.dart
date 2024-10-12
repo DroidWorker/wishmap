@@ -24,7 +24,7 @@ class DiaryScreen extends StatefulWidget {
     List<CardData> cardData = [];
     return Consumer<AppViewModel>(
         builder: (context, appVM, child) {
-          cardData = appVM.diaryItems;
+          cardData = appVM.diaryItems.reversed.toList();
           return Scaffold(
             backgroundColor: AppColors.backgroundColor,
             body: SafeArea(

@@ -456,7 +456,7 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                           const SizedBox(height: 16),
                           const Divider(color: AppColors.grey, height: 2,),
                           const SizedBox(height: 16),
-                          appVM.settings.treeView==0?MyTreeView(key: UniqueKey(),roots: roots, onTap: (id,type) => onTreeItemTap(appVM, id, type)):
+                          appVM.settings.treeView==0?MyTreeView(key: UniqueKey(),roots: roots, currentId: ai?.id, onTap: (id,type) => onTreeItemTap(appVM, id, type)):
                           TreeViewWidgetV2(key: UniqueKey(), root: roots.firstOrNull??MyTreeNode(id: -1, type: "a", title: "title", isChecked: true), idToOpen: ai?.id??0, onTap: (id,type) => onTreeItemTap(appVM, id, type),),
                           const SizedBox(height: 77)
                         ],

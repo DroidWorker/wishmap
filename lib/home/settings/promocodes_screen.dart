@@ -55,12 +55,12 @@ class PromocodesScreenState extends State<PromocodesScreen> {
             } else{
               setState(() {});
               controller.text='';
-              promocodes[result.key]=result.value;
+              promocodes[result.promocode]=result.expDate;
               showModalBottomSheet(backgroundColor: AppColors.backgroundColor,
                   context: context,
                   isScrollControlled: true,
                   builder: (c){
-                return bottomMessageActivated(result.value, ()=>Navigator.of(context).pop());
+                return bottomMessageActivated(result.expDate, ()=>Navigator.of(context).pop());
               });
           }
         } else {

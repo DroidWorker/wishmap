@@ -281,6 +281,10 @@ class _WishScreenState extends State<WishScreen>{
                             !curwish.isActive&&!curwish.isChecked?ColorRoundedButton("Представить", () {
                               if(appVM.settings.actualizeFullBranch){
                                 appVM.activateBranchFrom(curwish.id, 'w');
+                                setState(() {
+                                  appViewModel.mainCircles.where((element) => element.id == curwish.id).firstOrNull?.isActive = true;
+                                  curwish.isActive = true;
+                                });
                                 return;
                               }
                               if(isParentActive||appVM.settings.wishActualizingMode==1||parentIsSphere) {
@@ -819,7 +823,7 @@ class _WishScreenState extends State<WishScreen>{
                                 child: Column(
                                   children: [
                                   SizedBox(key: _keyToScroll, height: 5),
-                                  appVM.settings.treeView==0?MyTreeView(key: _treeViewKey,roots: root, onTap: (id, type) => onTreeItemTap(appVM, id, type, _title, _description, _affirmation)):
+                                  appVM.settings.treeView==0?MyTreeView(key: _treeViewKey,roots: root, currentId: curwish.id, onTap: (id, type) => onTreeItemTap(appVM, id, type, _title, _description, _affirmation)):
                                   TreeViewWidgetV2(key: UniqueKey(), root: root.firstOrNull??MyTreeNode(id: -1, type: "a", title: "title", isChecked: true), idToOpen: curwish.id, onTap: (id,type) => onTreeItemTap(appVM, id, type, _title, _description, _affirmation)),
                                   const SizedBox(height: 82),
                                 ],),

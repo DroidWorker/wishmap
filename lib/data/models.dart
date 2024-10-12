@@ -60,6 +60,13 @@ class ActualizingSettingData{
 
  bool animationEnabled = true;
 }
+class Promocode{
+  String promocode;
+  String expDate;
+  String type;
+
+  Promocode(this.promocode, this.expDate, this.type);
+}
 
 class CircleData{
   final int id;

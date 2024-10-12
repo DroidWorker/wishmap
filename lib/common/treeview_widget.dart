@@ -15,6 +15,7 @@ class MyTreeView extends StatefulWidget {
   final bool applyColorChangibg;
   bool fillWidth = false;
   final bool alignRight;
+  int? currentId;
   final Function(int id, String type) onTap;
   final Function(int id, String type)? onDoubleTap;
 
@@ -22,6 +23,7 @@ class MyTreeView extends StatefulWidget {
       {super.key,
       required this.roots,
       required this.onTap,
+        this.currentId,
       this.spheres,
       this.onDoubleTap,
       this.applyColorChangibg = true,
@@ -150,17 +152,21 @@ class MyTreeViewState extends State<MyTreeView> {
           builder: (context, padding, _) {
             String curPath = treeEntries[i].level != 0 ? /*path.join(">")*//*path.last*/treeEntries[i].parent?.node.title??path.last : findKeyByValue(treeEntries[i].node.id);
             curLvl = treeEntries[i].level;
-            if (treeEntries.length > i + 1) {
-              if (curLvl < treeEntries[i + 1].level && curLvl != 0) {
-                path.add(treeEntries[i].node.title);
-              }  else if (treeEntries[i + 1].level < curLvl) {
-                final diff = curLvl - treeEntries[i + 1].level;
-                for (var i = 0; i < diff; i++) {
-                  path.removeLast();
+            try {
+              if (treeEntries.length > i + 1) {
+                if (curLvl < treeEntries[i + 1].level && curLvl != 0) {
+                  path.add(treeEntries[i].node.title);
+                } else if (treeEntries[i + 1].level < curLvl) {
+                  final diff = curLvl - treeEntries[i + 1].level;
+                  for (var i = 0; i < diff; i++) {
+                    path.removeLast();
+                  }
+                } else if (curLvl < 1) {
+                  path = [treeEntries[i].node.title];
                 }
-              } else if (curLvl < 1) {
-                path = [treeEntries[i].node.title];
               }
+            }catch(ex){
+              print("TVW error $ex");
             }
             return MyTreeTile(
               p: curPath,
@@ -168,6 +174,7 @@ class MyTreeViewState extends State<MyTreeView> {
               controller: scontroller,
               fillWidth: widget.fillWidth,
               entry: treeEntries[i],
+              selected: widget.currentId==treeEntries[i].node.id,
               applyColorChanging: widget.applyColorChangibg,
               onTap: () {
                 widget.onTap(treeEntries[i].node.id, treeEntries[i].node.type);
@@ -218,11 +225,13 @@ class MyTreeTile extends StatelessWidget {
       required this.applyColorChanging,
       required this.entry,
       required this.onTap,
+        required this.selected,
       this.onDoubleTap})
       : super(key: key);
 
   final String p;
   final bool applyColorChanging;
+  final bool selected;
   final ScrollController controller;
   final bool fillWidth;
   final double padding;
@@ -280,10 +289,11 @@ class MyTreeTile extends StatelessWidget {
                           )
                         : Container(
                             height: fillWidth ? 50 : 25,
-                            decoration: const BoxDecoration(
-                                color: Colors.white,
+                            decoration: BoxDecoration(
+                                color: selected?null:Colors.white,
+                                gradient: selected?const LinearGradient(colors: [AppColors.gradientStart, AppColors.gradientEnd]):null,
                                 borderRadius:
-                                    BorderRadius.all(Radius.circular(6))),
+                                    const BorderRadius.all(Radius.circular(6))),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
@@ -314,7 +324,7 @@ class MyTreeTile extends StatelessWidget {
                                               entry.node.title,
                                               maxLines: 1,
                                               style: entry.node.noClickable
-                                                  ? const TextStyle()
+                                                  ? const TextStyle(color:Colors.white)
                                                   : const TextStyle(
                                                       color: Colors.black,
                                                       fontWeight:
@@ -333,7 +343,7 @@ class MyTreeTile extends StatelessWidget {
                                                 "HEADERSIMPLETASKHEADER", ""),
                                             maxLines: 1,
                                             style: entry.node.noClickable
-                                                ? const TextStyle()
+                                                ? const TextStyle(color:Colors.white)
                                                 : const TextStyle(
                                                     color: Colors.black,
                                                     fontWeight:

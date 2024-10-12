@@ -6,6 +6,7 @@ import 'dart:ui';
 import 'package:collection/collection.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:wishmap/common/gallery_widget.dart';
 import 'package:wishmap/data/models.dart';
 
@@ -1218,12 +1219,14 @@ class Repository {
             'color': element.color.value
           });
         });
+        Map<int, Map<String, dynamic>> indexedDiary = {};
+        diary.asMap().forEach((index, v)=>indexedDiary[index+1]=v);
         userRef
             .child(_auth.currentUser!.uid)
             .child("moonlist")
             .child(moonId.toString())
             .child("diary")
-            .set(diary);
+            .set(indexedDiary);
       } else {
         Map<String, dynamic> dataMap = {
           'id': data.last.id,
@@ -1379,7 +1382,7 @@ class Repository {
     FirebaseAuth.instance.sendPasswordResetEmail(email: email);
   }
 
-  Future<MapEntry<String, String>?> searchPromocode(String promocode) async {
+  Future<Promocode?> searchPromocode(String promocode) async {
     if (_auth.currentUser != null) {
       DataSnapshot dataSnapshot = (await FirebaseDatabase.instance
               .refFromURL(
@@ -1389,7 +1392,9 @@ class Repository {
           .snapshot;
       if (dataSnapshot.value!=null&&dataSnapshot.key!=null) {
         print("dsk ${dataSnapshot.key} dsv ${dataSnapshot.value}");
-        return MapEntry(dataSnapshot.key!, dataSnapshot.value.toString());
+        final Map<dynamic, dynamic> dataList = dataSnapshot.value as Map<dynamic, dynamic>;
+        final date = DateFormat("dd.MM.yyyy").parse(dataList["expiryDate"]).add(const Duration(days: 1));
+        return Promocode(dataSnapshot.key!,DateFormat("dd.MM.yyyy").format(date), dataList['type']);
       }
     }
     return null;

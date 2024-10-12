@@ -11,6 +11,7 @@ import 'package:wishmap/navigation/navigation_block.dart';
 import 'package:wishmap/res/colors.dart';
 
 import '../ViewModel.dart';
+import '../dialog/bottom_sheet_action.dart';
 
 class CardsScreen extends StatefulWidget {
   const CardsScreen({super.key});
@@ -147,24 +148,43 @@ class CardsScreenState extends State<CardsScreen> {
                     ),
                   ),
                   deleteMode&&appVM.connectivity!="No Internet Connection"
-                      ? ColorRoundedButton("Удалить", () async {
-                    List<int> realIsDeleteQ = [];
-                          setState(() {
-                            isInSync = true;
-                          });
-                          final len = appVM.moonItems.length;
-                            deleteQ.sort((a, b)=>a.compareTo(b));
-                            for (var e in deleteQ) {
-                              realIsDeleteQ.add(appVM.moonItems[len-1-e].id);
-                              appVM.moonItems.removeAt(len-1-e);
-                            }
-                            await appViewModel.deleteMoons(realIsDeleteQ);
-                            setState(() {
-                              deleteMode = false;
-                              deleteQ.clear();
-                              isInSync = false;
+                      ? ColorRoundedButton("Удалить", (){
+                    showModalBottomSheet<void>(
+                      backgroundColor: AppColors.backgroundColor,
+                      context: context,
+                      isScrollControlled: true,
+                      builder: (BuildContext context) {
+                        return ActionBS('Внимание', "Выбранные карты будут удалены\nУдалить?", "Да", 'Нет',
+                            onOk: () async {
+                              List<int> realIsDeleteQ = [];
+                              setState(() {
+                                isInSync = true;
+                              });
+                              final len = appVM.moonItems.length;
+                              deleteQ.sort((a, b)=>a.compareTo(b));
+                              for (var e in deleteQ) {
+                                realIsDeleteQ.add(appVM.moonItems[len-1-e].id);
+                                appVM.moonItems.removeAt(len-1-e);
+                              }
+                              await appViewModel.deleteMoons(realIsDeleteQ);
+                              setState(() {
+                                deleteMode = false;
+                                deleteQ.clear();
+                                isInSync = false;
+                              });
+                              Navigator.pop(context, 'Cancel');
+                            },
+                            onCancel: () {
+                              setState(() {
+                                deleteMode = false;
+                                deleteQ.clear();
+                                isInSync = false;
+                              });
+                              Navigator.pop(context, 'Cancel');
                             });
-                        })
+                      },
+                    );
+                  })
                       : const SizedBox()
                 ],
               ),

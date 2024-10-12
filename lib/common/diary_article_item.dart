@@ -54,7 +54,7 @@ class DiaryArticleItem extends StatelessWidget{
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(article.time, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w400)),
-                        buildRichText(article.text, []),
+                        buildRichText(article.text, [],short: true),
                         if(images.isNotEmpty||records.isNotEmpty)const Padding(
                           padding: EdgeInsets.symmetric(vertical: 8.0),
                           child: Divider(color: AppColors.grey, height: 2,),

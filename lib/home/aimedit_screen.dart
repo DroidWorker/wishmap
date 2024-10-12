@@ -219,7 +219,7 @@ class AimEditScreenState extends State<AimEditScreen>{
                         const SizedBox(height: 16),
                         ai!=null&&!ai!.isActive&&!ai!.isChecked?ColorRoundedButton("Представить", () {
                           if(appVM.settings.actualizeFullBranch){
-                            appVM.activateBranchFrom(ai!.id, "t");
+                            appVM.activateBranchFrom(ai!.id, "a");
                             setState(() {
                               ai!.isActive = true;
                             });
@@ -568,7 +568,7 @@ class AimEditScreenState extends State<AimEditScreen>{
                         ),
                         const SizedBox(height: 24),
                         SizedBox(key: _keyToScroll, height: 15,),
-                        appVM.settings.treeView==0?MyTreeView(key: _treeViewKey = GlobalKey(),roots: roots, onTap: (id, type) => onTreeItemTap(appVM, id, type)):
+                        appVM.settings.treeView==0?MyTreeView(key: _treeViewKey = GlobalKey(),roots: roots, currentId: ai?.id, onTap: (id, type) => onTreeItemTap(appVM, id, type)):
                         TreeViewWidgetV2(key: UniqueKey(), root: roots.firstOrNull??MyTreeNode(id: -1, type: "a", title: "title", isChecked: true), idToOpen: ai?.id??0, onTap: (id,type) => onTreeItemTap(appVM, id, type),),
                         const SizedBox(height: 50,)
                       ]),

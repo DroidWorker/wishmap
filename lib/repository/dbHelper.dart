@@ -161,7 +161,8 @@ class DatabaseHelper {
     CREATE TABLE promocodes(
         id INTEGER  PRIMARY KEY AUTOINCREMENT,
         key TEXT,
-        value TEXT,
+        expDate TEXT,
+        type TEXT,
         userId TEXT
       )
     ''');
@@ -669,9 +670,9 @@ class DatabaseHelper {
     }
   }
 
-  Future<void> addPromocode(MapEntry<String, String> promocode, String userId) async {
+  Future<void> addPromocode(Promocode promocode, String userId) async {
     Database db = await database;
-    db.insert('promocodes', {"key": promocode.key, "value": promocode.value, "userId": userId});
+    db.insert('promocodes', {"key": promocode.promocode, "expDate": promocode.expDate, "type": promocode.type, "userId": userId});
   }
 
   Future<Map<String, String>> getPromocodes(String userId) async {
@@ -679,7 +680,7 @@ class DatabaseHelper {
     List<Map<String, dynamic>> result = await db.query('promocodes', where: 'userId = ?', whereArgs: [userId]);
     Map<String, String> res = {};
     for (var e in result) {
-      res[e['key']] = e['value'];
+      res[e['key']] = e['expDate'];
     }
     return res;
   }

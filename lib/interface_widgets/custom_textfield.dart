@@ -195,7 +195,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
   }
 }
 
-Widget buildRichText(String text, List<String> imagePaths) {
+Widget buildRichText(String text, List<String> imagePaths, {bool short = false}) {
   List<InlineSpan> spans = [];
   List<String> lines = text.split('\n');
   if(lines.length == 1) lines = text.split('_attach_');
@@ -240,6 +240,7 @@ Widget buildRichText(String text, List<String> imagePaths) {
     if (i < lines.length - 1) {
       spans.add(const TextSpan(text: '\n'));
     }
+    if(short&&i==5)break;
   }
 
   return RichText(

@@ -804,7 +804,7 @@ class LocalRepository {
     dbHelper.addAllStatic(static);
   }
 
-  Future<void> addPromocode(MapEntry<String, String> promocode, String userId) async {
+  Future<void> addPromocode(Promocode promocode, String userId) async {
     dbHelper.addPromocode(promocode, userId);
   }
 

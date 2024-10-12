@@ -300,7 +300,7 @@ class AppViewModel with ChangeNotifier {
     return false;
   }
 
-  Future<MapEntry<String, String>?> checkPromocode(String promocode) async{
+  Future<Promocode?> checkPromocode(String promocode) async{
     var result = await Connectivity().checkConnectivity();
     if(result==ConnectivityResult.none) {
       return null;
@@ -1048,7 +1048,7 @@ Future<Map<String, String>> getPromocodes() async{
       activateTask(itemId, true);
       final task = await localRep.getTask(itemId, moonId);
       activateAim(task.parentId, true);
-      final aim = await localRep.getAim(itemId, moonId);
+      final aim = await localRep.getAim(task.parentId, moonId);
       WishData? wish = await localRep.getSphere(aim.parentId, moonId);
       do{
         localRep.activateSphere(wish?.id??-1);
@@ -1058,8 +1058,9 @@ Future<Map<String, String>> getPromocodes() async{
           wishItems.firstWhereOrNull((e)=>e.id==wish?.id)?.isActive=true;
           wish = await localRep.getSphere(wish.parentId, moonId);
         }
-      }while(wish?.parentId!=0&&wish!=null);
+      }while(wish?.parentId!=-1&&wish!=null);
       localRep.commitASpheresActivation(true, moonId);
+      myNodes.clear();
     }else if(type=='a'){
       activateAim(itemId, true);
       final aim = await localRep.getAim(itemId, moonId);
@@ -1072,8 +1073,9 @@ Future<Map<String, String>> getPromocodes() async{
           wishItems.firstWhereOrNull((e)=>e.id==wish?.id)?.isActive=true;
           wish = await localRep.getSphere(wish.parentId, moonId);
         }
-      }while(wish?.parentId!=0&&wish!=null);
+      }while(wish?.parentId!=-1&&wish!=null);
       localRep.commitASpheresActivation(true, moonId);
+      if(currentAim!=null)convertToMyTreeNode(CircleData(id: currentAim!.id, prevId: -1, nextId: -1, text: currentAim!.text, color: Colors.transparent, parenId: currentAim!.parentId, isChecked: currentAim!.isChecked, isActive: currentAim!.isActive));
     }else if(type=='w'||type=='s'){
       WishData? wish = await localRep.getSphere(itemId, moonId);
       do{
@@ -1084,7 +1086,9 @@ Future<Map<String, String>> getPromocodes() async{
           wishItems.firstWhereOrNull((e)=>e.id==wish?.id)?.isActive=true;
           wish = await localRep.getSphere(wish.parentId, moonId);
         }
-      }while(wish?.parentId!=0&&wish!=null);
+      }while(wish?.parentId!=-1&&wish!=null);
+      localRep.commitASpheresActivation(true, moonId);
+      if(wishScreenState!=null)convertToMyTreeNodeFullBranch(wishScreenState!.wish.id);
     }
     notifyListeners();
   }
@@ -1699,9 +1703,6 @@ Future<Map<String, String>> getPromocodes() async{
 
   Future convertToMyTreeNodeIncludedAimsTasks(MyTreeNode aimNode, int taskId, int wishId) async {
     final taskList = await getTasksForAim(aimNode.id);
-    taskList?.forEach((element) {
-      print("task element - ${element.id}  -  ${element.text}");
-    });
     List<CircleData> allCircles = getParentTree(wishId);
     List<MyTreeNode> children = <MyTreeNode>[MyTreeNode(id: aimNode.id, type: "a", title: aimNode.title, isChecked: aimNode.isChecked, isActive: aimNode.isActive, children: (taskList?.map((e) =>  MyTreeNode(id: e.id, type: 't', title: e.text, isChecked: e.isChecked, isActive: e.isActive)..noClickable=e.id==taskId))?.toList()??[])];
     for (var element in allCircles) {
