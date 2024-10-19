@@ -13,7 +13,7 @@ class WordWrapWidget extends StatelessWidget {
     this.minTextSize = 8,
     this.maxTextSize= 18,
     this.style,
-    this.maxCharactersPerLine = 8,
+    this.maxCharactersPerLine = 6,
   });
 
   @override
@@ -64,14 +64,20 @@ class WordWrapWidget extends StatelessWidget {
     return textWidgets.take(2).toList(); // Limit to 2 lines
   }
 
-  AutoSizeText _buildAutoSizeText(String text) {
-    return AutoSizeText(
+  Widget _buildAutoSizeText(String text) {
+    /*return AutoSizeText(
       text,
       minFontSize: minTextSize.toDouble(),
       maxFontSize: maxTextSize.toDouble(),
       style: style,
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
+      textAlign: TextAlign.center,
+    );*/
+    return Text(
+      text,
+      style: style,
+      maxLines: 1,
       textAlign: TextAlign.center,
     );
   }

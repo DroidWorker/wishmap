@@ -36,11 +36,6 @@ class _TaskItem extends State<TaskItemWidget>{
         },
         onDoubleTap: (){
           widget.onDoubleClick(widget.ti.id);
-          if(widget.ti.isActive&&!widget.ti.isChecked) {
-            setState(() {
-            widget.ti.isChecked = true;
-          });
-          }
         },
         child: Container(
           margin: const EdgeInsets.symmetric(vertical: 1),

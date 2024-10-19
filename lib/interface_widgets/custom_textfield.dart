@@ -240,7 +240,7 @@ Widget buildRichText(String text, List<String> imagePaths, {bool short = false})
     if (i < lines.length - 1) {
       spans.add(const TextSpan(text: '\n'));
     }
-    if(short&&i==5)break;
+    if(short&&i==4)break;
   }
 
   return RichText(

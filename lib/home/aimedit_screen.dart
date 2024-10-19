@@ -568,7 +568,7 @@ class AimEditScreenState extends State<AimEditScreen>{
                         ),
                         const SizedBox(height: 24),
                         SizedBox(key: _keyToScroll, height: 15,),
-                        appVM.settings.treeView==0?MyTreeView(key: _treeViewKey = GlobalKey(),roots: roots, currentId: ai?.id, onTap: (id, type) => onTreeItemTap(appVM, id, type)):
+                        appVM.settings.treeView==0?MyTreeView(key: _treeViewKey = GlobalKey(),roots: roots, colors: appVM.nodesColors, currentId: ai?.id, onTap: (id, type) => onTreeItemTap(appVM, id, type)):
                         TreeViewWidgetV2(key: UniqueKey(), root: roots.firstOrNull??MyTreeNode(id: -1, type: "a", title: "title", isChecked: true), idToOpen: ai?.id??0, onTap: (id,type) => onTreeItemTap(appVM, id, type),),
                         const SizedBox(height: 50,)
                       ]),
@@ -619,7 +619,7 @@ class AimEditScreenState extends State<AimEditScreen>{
                     backgroundColor: parentObj?.isActive==true?parentObj?.color:const Color.fromARGB(255, 217, 217, 217),
                     shape: const CircleBorder(),
                     child: Stack(children: [
-                      Center(child: WordWrapWidget(text: parentObj?.text??"", minTextSize: 4, maxTextSize: 12, style: const TextStyle(color: Colors.white))),
+                      Center(child: WordWrapWidget(text: parentObj?.text??"", minTextSize: 4, maxTextSize: 12, style: const TextStyle(fontSize: 13,color: Colors.white))),
                       if(parentObj?.isChecked==true)Align(alignment: Alignment.topRight, child: Image.asset('assets/icons/wish_done.png', width: 20, height: 20),)
                     ],),
                   ),

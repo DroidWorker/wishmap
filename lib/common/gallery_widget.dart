@@ -6,8 +6,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_manager/photo_manager.dart';
+import 'package:wishmap/dialog/bottom_sheet_action.dart';
 import 'package:wishmap/interface_widgets/galleriPhotoContainer.dart';
 import 'package:wishmap/res/colors.dart';
+
+import '../dialog/bottom_sheet_notify.dart';
 
 class RoundedPhotoGallery extends StatefulWidget {
   @override
@@ -33,15 +36,56 @@ class _RoundedPhotoGalleryState extends State<RoundedPhotoGallery> {
   }
 
   Future<void> _checkPermissionAndLoadImages() async {
+    if(await Permission.photos.isDenied){
+      await showModalBottomSheet<void>(
+        backgroundColor: AppColors.backgroundColor,
+        context: context,
+        isScrollControlled: true,
+        builder: (BuildContext context) {
+          return NotifyBS("Внимание", "Для работы с галереей необходимо предоставить полный доступ", "OK", onOk: ()
+          {
+            PhotoManager.openSetting();
+            Navigator.pop(context, 'OK');
+          });
+        },
+      );
+    }
     var status = await Permission.photos.request();
     var statusOld = await Permission.storage.request();
     if (status.isGranted||statusOld.isGranted) {
       albums = await PhotoManager.getAssetPathList(type: RequestType.image);
       albumNames=albums.map((e) => e.name).toSet();
+      if(albums.isEmpty){
+        showModalBottomSheet<void>(
+          backgroundColor: AppColors.backgroundColor,
+          context: context,
+          isScrollControlled: true,
+          builder: (BuildContext context) {
+            return ActionBS("Внимание", "Для работы с галереей необходимо предоставить полный доступ", "Предоставить", "Отмена", onOk: (){
+              PhotoManager.openSetting();
+              Navigator.pop(context, 'OK');
+            }, onCancel: (){
+              Navigator.pop(context, 'Cancel');
+            });
+          },
+        );
+      }
       selectedAlbum=albumNames.firstOrNull??"";
       await _loadImages();
     } else {
-      // Handle the case where the user denied permission
+      showModalBottomSheet<void>(
+        backgroundColor: AppColors.backgroundColor,
+        context: context,
+        isScrollControlled: true,
+        builder: (BuildContext context) {
+          return ActionBS("Внимание", "Для работы с галереей необходимо предоставить полный доступ", "Предоставить", "Отмена", onOk: (){
+            PhotoManager.openSetting();
+            Navigator.pop(context, 'OK');
+          }, onCancel: (){
+            Navigator.pop(context, 'Cancel');
+          });
+        },
+      );
     }
   }
 

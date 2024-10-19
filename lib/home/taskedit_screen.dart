@@ -198,12 +198,13 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                       child: Column(
                         children: [
                           const SizedBox(height: 16),
-                          ai!=null&&!ai!.isActive&&!ai!.isChecked?ColorRoundedButton("Представить", () {
+                          ai!=null&&!ai!.isActive&&!ai!.isChecked?ColorRoundedButton("Актуализировать", () {
                             if(appVM.settings.actualizeFullBranch){
                               appVM.activateBranchFrom(ai!.id, "t");
                               setState(() {
                                 ai!.isActive = true;
                               });
+                              if(appVM.settings.animationEnabled)showOverlayedAnimations(context, 'assets/lottie/aktualizaciyazadachi.json', fillBackground: true, onControllerCreated: (controller){lottieController = controller;});
                               return;
                             }
                               if(isParentActive) {
@@ -456,7 +457,7 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                           const SizedBox(height: 16),
                           const Divider(color: AppColors.grey, height: 2,),
                           const SizedBox(height: 16),
-                          appVM.settings.treeView==0?MyTreeView(key: UniqueKey(),roots: roots, currentId: ai?.id, onTap: (id,type) => onTreeItemTap(appVM, id, type)):
+                          appVM.settings.treeView==0?MyTreeView(key: UniqueKey(),roots: roots, colors: appVM.nodesColors, currentId: ai?.id, onTap: (id,type) => onTreeItemTap(appVM, id, type)):
                           TreeViewWidgetV2(key: UniqueKey(), root: roots.firstOrNull??MyTreeNode(id: -1, type: "a", title: "title", isChecked: true), idToOpen: ai?.id??0, onTap: (id,type) => onTreeItemTap(appVM, id, type),),
                           const SizedBox(height: 77)
                         ],
@@ -504,7 +505,7 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                     backgroundColor: parentSphere?.isActive==true?parentSphere?.color:const Color.fromARGB(255, 217, 217, 217),
                     shape: const CircleBorder(),
                     child: Stack(children: [
-                      Center(child: WordWrapWidget(text: parentSphere?.text??"", minTextSize: 4, maxTextSize: 12, style: const TextStyle(color: Colors.white))),
+                      Center(child: WordWrapWidget(text: parentSphere?.text??"", minTextSize: 4, maxTextSize: 12, style: const TextStyle(fontSize: 13, color: Colors.white))),
                       if(parentSphere?.isChecked==true)Align(alignment: Alignment.topRight, child: Image.asset('assets/icons/wish_done.png', width: 20, height: 20),)
                     ],),
                   ),

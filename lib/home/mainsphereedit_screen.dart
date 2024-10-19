@@ -52,8 +52,6 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>
     Color(0xFFFEE600),
     Color(0xFF0029FF),
     Color(0xFF46C7FE),
-    Color(0xFFFEE600),
-    Color(0xFF0029FF),
     Color(0xFF009989)
   ];
   var myColors = [];
@@ -87,9 +85,9 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>
     }
     final ids = curWd.photosIds.split("|") ?? [];
     if (ids.firstOrNull == "") ids.clear();
-    if (appViewModel.cachedImages.length != ids.length) {
+    /*if (appViewModel.cachedImages.length != ids.length) {
       appViewModel.isChanged = true;
-    }
+    }*/
     TextEditingController text = TextEditingController(text: curWd.text);
     TextEditingController affirmation =
         TextEditingController(text: curWd.affirmation.split("|")[0]);
@@ -130,7 +128,7 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>
                     isActive: item.isActive))
                 .toList()));
       }
-      if (root.isNotEmpty)
+      if (root.isNotEmpty) {
         root = [
           MyTreeNode(
               id: 0,
@@ -140,6 +138,9 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>
               children: root)
             ..noClickable = true
         ];
+      }
+      appVM
+      .nodesColors=[curWd.color];
       return Scaffold(
         backgroundColor: AppColors.backgroundColor,
         body: SafeArea(
@@ -580,7 +581,7 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>
                               height: 40.0,
                               child: ListView(
                                 scrollDirection: Axis.horizontal,
-                                children: List.generate(10, (int index) {
+                                children: List.generate(8, (int index) {
                                   return Card(
                                     color: defaultColorList[index],
                                     child: InkWell(
@@ -822,7 +823,7 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>
                                   appVM.settings.treeView == 0
                                       ? MyTreeView(
                                           key: UniqueKey(),
-                                          roots: root,
+                                          roots: root, colors: appVM.nodesColors,
                                           onTap: (id, type) =>
                                               onTreeItemTap(appVM, id, type))
                                       : TreeViewWidgetV2(

@@ -88,7 +88,7 @@ class _MyOverlayState extends State<MyAffirmationOverlay> {
                       setState(() {
                         widget.isShuffle = !widget.isShuffle;
                         widget.onShuffleClick(widget.isShuffle);
-                        if(widget.isShuffle)currentIndex=-1;
+                        widget.isShuffle?currentIndex=-1:currentIndex=0;
                       });
                     }, icon: Icon(Icons.shuffle, color: widget.isShuffle?AppColors.gradientEnd:AppColors.darkGrey, size: 28)),
                     !widget.isShuffle?IconButton(onPressed: (){

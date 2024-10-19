@@ -63,6 +63,7 @@ class CardItem extends StatelessWidget {
                           showModalBottomSheet(
                               backgroundColor: AppColors.backgroundColor,
                               context: context,
+                              isDismissible: false,
                               isScrollControlled: true,
                               builder: (contest) {
                                 return ActualizeMoonDialog(

@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
-import 'package:wishmap/common/gallery_widget.dart';
 import 'package:wishmap/common/reminder_item.dart';
 import 'package:wishmap/data/models.dart';
 import 'package:wishmap/services/reminder_service.dart';

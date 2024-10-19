@@ -117,13 +117,13 @@ class LocalRepository {
       await init(); // Дождитесь завершения инициализации
     }
     ActualizingSettingData settings = ActualizingSettingData();
-    settings.actualizeFullBranch = _prefs!.getBool("actualizeFullBranch") ?? false;
-    settings.fastActMainSphere = _prefs!.getBool("fastActMainSphere") ?? false;
+    settings.actualizeFullBranch = _prefs!.getBool("actualizeFullBranch") ?? true;
+    settings.fastActMainSphere = _prefs!.getBool("fastActMainSphere") ?? true;
     settings.sphereActualizingMode =
-        _prefs!.getInt("sphereActualizingMode") ?? 0;
-    settings.fastActSphere = _prefs!.getBool("fastActualizingSphere") ?? false;
+        _prefs!.getInt("sphereActualizingMode") ?? 1;
+    settings.fastActSphere = _prefs!.getBool("fastActualizingSphere") ?? true;
     settings.wishActualizingMode = _prefs!.getInt("wishActualizingMode") ?? 0;
-    settings.fastActWish = _prefs!.getBool("fastActualizingWish") ?? false;
+    settings.fastActWish = _prefs!.getBool("fastActualizingWish") ?? true;
     settings.taskActualizingMode = _prefs!.getInt("taskActualizingMode") ?? 0;
     settings.quoteupdateFreq = _prefs!.getInt("quoteUpdateFreq") ?? 10;
     settings.treeView = _prefs!.getInt("treeView") ?? 0;
@@ -808,7 +808,7 @@ class LocalRepository {
     dbHelper.addPromocode(promocode, userId);
   }
 
-  Future<Map<String, String>> getPromocodes(String userId) async {
-    return await dbHelper.getPromocodes(userId);
+  Future<Map<String, String>> getPromocodes(String userId, {String? pType}) async {
+    return await dbHelper.getPromocodes(userId, pType);
   }
 }

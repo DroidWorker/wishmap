@@ -289,7 +289,13 @@ class _TaskScreenState extends State{
   }
   onDoubleClick(int id) async {
     final task = taskList.firstWhere((element) => element.id==id);
-    if(!task.isActive&&!task.isChecked){//активировать
+    if(!task.isActive && !task.isChecked&&appViewModel.settings.actualizeFullBranch){
+      appViewModel.activateBranchFrom(id, 't');
+      setState(() {
+        appViewModel.taskItems.firstWhere((element) => element.id==id).isActive=true;
+      });
+    }
+    else if(!task.isActive&&!task.isChecked){//активировать
       final parentAim = await appViewModel.getAimNow(task.parentId);
       if(parentAim!=null&&parentAim.isActive){
         appViewModel.activateTask(id, true);

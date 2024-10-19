@@ -28,7 +28,7 @@ class CardsScreenState extends State<CardsScreen> {
   List<int> deleteQ = [];
 
   Future checkPromocodes(AppViewModel vm) async{
-    allowActualization = await vm.hasActivePromocode();
+    allowActualization = await vm.hasActivePromocode("default");
     setState(() {});
   }
 

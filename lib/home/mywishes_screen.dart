@@ -189,7 +189,7 @@ class _WishesScreenState extends State<WishesScreen>{
                         return Align(
                       alignment: Alignment.centerLeft,
                       child: SizedBox(
-                        child: MyTreeView(key: UniqueKey(), roots: roots, spheres: spheres, applyColorChangibg: false, fillWidth: true, alignRight: true, onTap: (id, type){
+                        child: MyTreeView(key: UniqueKey(), roots: roots, spheres: spheres, colors: appVM.nodesColors, applyColorChangibg: false, fillWidth: true, alignRight: true, onTap: (id, type){
                           if(type=="m"){
                             BlocProvider.of<NavigationBloc>(context).clearHistory();
                             appVM.cachedImages.clear();
@@ -322,6 +322,15 @@ class _WishesScreenState extends State<WishesScreen>{
     final wish = await appViewModel?.getSphereNow(id);
     final parentWish = await appViewModel?.getSphereNow(id);
     if (wish == null|| parentWish==null) return;
+    if(!wish.isActive && !wish.isChecked&&appViewModel!.settings.actualizeFullBranch){
+      appViewModel?.activateBranchFrom(wish.id, 'w');
+      setState(() {
+        appViewModel?.wishItems
+            .firstWhere((element) => element.id == id)
+            .isActive = true;
+      });
+      return;
+    }
     if ((!wish.isActive && !wish.isChecked) && ((appViewModel?.settings.wishActualizingMode==1&&appViewModel?.settings.sphereActualizingMode==1) || (parentWish.isActive))) { //активировать
       if (parentWish.isActive) {
         appViewModel?.activateSphereWish(id, true);

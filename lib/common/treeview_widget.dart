@@ -12,6 +12,7 @@ import 'customAutoSizeText.dart';
 class MyTreeView extends StatefulWidget {
   final List<MyTreeNode> roots;
   final Map<String, List<int>>? spheres;
+  List<Color> colors;
   final bool applyColorChangibg;
   bool fillWidth = false;
   final bool alignRight;
@@ -23,12 +24,13 @@ class MyTreeView extends StatefulWidget {
       {super.key,
       required this.roots,
       required this.onTap,
-        this.currentId,
+      this.currentId,
       this.spheres,
       this.onDoubleTap,
       this.applyColorChangibg = true,
       this.fillWidth = false,
-      this.alignRight = false});
+      this.alignRight = false,
+        this.colors =const [],});
 
   @override
   State<MyTreeView> createState() => MyTreeViewState();
@@ -101,15 +103,15 @@ class MyTreeViewState extends State<MyTreeView> {
     int i = 0;
 
     var lvl = 0;
-    if(level<5){
-      lvl = level+1;
+    if (level < 5) {
+      lvl = level + 1;
       realLevel.add(level);
-    } else{
-      if(widget.fillWidth){
+    } else {
+      if (widget.fillWidth) {
         lvl = level;
         realLevel.add(realLevel.last++);
       } else {
-        lvl= level+1;
+        lvl = level + 1;
         realLevel.add(level);
       }
     }
@@ -150,7 +152,13 @@ class MyTreeViewState extends State<MyTreeView> {
         ValueListenableBuilder<double>(
           valueListenable: paddingNotifiers[i],
           builder: (context, padding, _) {
-            String curPath = treeEntries[i].level != 0 ? /*path.join(">")*//*path.last*/treeEntries[i].parent?.node.title??path.last : findKeyByValue(treeEntries[i].node.id);
+            String curPath = treeEntries[i].level != 0
+                ? /*path.join(">")*/ /*path.last*/ treeEntries[i]
+                        .parent
+                        ?.node
+                        .title ??
+                    path.last
+                : findKeyByValue(treeEntries[i].node.id);
             curLvl = treeEntries[i].level;
             try {
               if (treeEntries.length > i + 1) {
@@ -165,7 +173,7 @@ class MyTreeViewState extends State<MyTreeView> {
                   path = [treeEntries[i].node.title];
                 }
               }
-            }catch(ex){
+            } catch (ex) {
               print("TVW error $ex");
             }
             return MyTreeTile(
@@ -174,8 +182,9 @@ class MyTreeViewState extends State<MyTreeView> {
               controller: scontroller,
               fillWidth: widget.fillWidth,
               entry: treeEntries[i],
-              selected: widget.currentId==treeEntries[i].node.id,
+              selected: widget.currentId == treeEntries[i].node.id,
               applyColorChanging: widget.applyColorChangibg,
+              colors: widget.colors,
               onTap: () {
                 widget.onTap(treeEntries[i].node.id, treeEntries[i].node.type);
               },
@@ -193,10 +202,10 @@ class MyTreeViewState extends State<MyTreeView> {
     return items;
   }
 
-  String findKeyByValue(int value){
-    if(widget.spheres==null) return "";
-    for(var entry in widget.spheres!.entries){
-      if(entry.value.contains(value)){
+  String findKeyByValue(int value) {
+    if (widget.spheres == null) return "";
+    for (var entry in widget.spheres!.entries) {
+      if (entry.value.contains(value)) {
         return entry.key;
       }
     }
@@ -225,8 +234,9 @@ class MyTreeTile extends StatelessWidget {
       required this.applyColorChanging,
       required this.entry,
       required this.onTap,
-        required this.selected,
-      this.onDoubleTap})
+      required this.selected,
+      this.onDoubleTap,
+      required this.colors})
       : super(key: key);
 
   final String p;
@@ -238,6 +248,7 @@ class MyTreeTile extends StatelessWidget {
   final TreeEntry<MyTreeNode> entry;
   final VoidCallback onTap;
   final VoidCallback? onDoubleTap;
+  final List<Color> colors;
 
   @override
   Widget build(BuildContext context) {
@@ -268,8 +279,16 @@ class MyTreeTile extends StatelessWidget {
                 ? Container(
                     width: 40,
                     height: 40,
-                    decoration: const BoxDecoration(
-                        shape: BoxShape.circle, color: AppColors.gradientEnd),
+                    decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white,
+                        border: Border.all(color: colors.firstOrNull??Colors.grey)),
+                    child: Center(
+                        child: WordWrapWidget(
+                            text: entry.node.title,
+                            minTextSize: 4,
+                            maxTextSize: 16,
+                            style: const TextStyle(fontSize: 8))),
                   )
                 : (entry.node.type == 'w' || entry.node.type == 's') &&
                         entry.node.title.contains("HEADERSIMPLETASKHEADER")
@@ -283,15 +302,24 @@ class MyTreeTile extends StatelessWidget {
                                 shape: BoxShape.circle,
                                 color: Colors.white,
                                 border:
-                                    Border.all(color: AppColors.buttonBackRed)),
+                                    Border.all(color: colors.length>1?colors.elementAt(1):Colors.grey)),
                             child: Center(
-                                child: WordWrapWidget(text: entry.node.title, minTextSize: 4, maxTextSize: 16, style: const TextStyle(fontSize: 10))),
+                                child: WordWrapWidget(
+                                    text: entry.node.title,
+                                    minTextSize: 4,
+                                    maxTextSize: 16,
+                                    style: const TextStyle(fontSize: 8))),
                           )
                         : Container(
                             height: fillWidth ? 50 : 25,
                             decoration: BoxDecoration(
-                                color: selected?null:Colors.white,
-                                gradient: selected?const LinearGradient(colors: [AppColors.gradientStart, AppColors.gradientEnd]):null,
+                                color: selected ? null : Colors.white,
+                                gradient: selected && entry.node.noClickable
+                                    ? const LinearGradient(colors: [
+                                        AppColors.gradientStart,
+                                        AppColors.gradientEnd
+                                      ])
+                                    : null,
                                 borderRadius:
                                     const BorderRadius.all(Radius.circular(6))),
                             child: Row(
@@ -324,7 +352,8 @@ class MyTreeTile extends StatelessWidget {
                                               entry.node.title,
                                               maxLines: 1,
                                               style: entry.node.noClickable
-                                                  ? const TextStyle(color:Colors.white)
+                                                  ? const TextStyle(
+                                                      color: Colors.white)
                                                   : const TextStyle(
                                                       color: Colors.black,
                                                       fontWeight:
@@ -343,7 +372,8 @@ class MyTreeTile extends StatelessWidget {
                                                 "HEADERSIMPLETASKHEADER", ""),
                                             maxLines: 1,
                                             style: entry.node.noClickable
-                                                ? const TextStyle(color:Colors.white)
+                                                ? const TextStyle(
+                                                    color: Colors.white)
                                                 : const TextStyle(
                                                     color: Colors.black,
                                                     fontWeight:

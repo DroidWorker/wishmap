@@ -288,6 +288,15 @@ class _AimsScreenState extends State<AimsScreen>{
   }
   onDoubleClick(int id) async {
     final aim = allAims.firstWhere((element) => element.id==id);
+    if(!aim.isActive && !aim.isChecked&&appViewModel.settings.actualizeFullBranch){
+      appViewModel.activateBranchFrom(aim.id, 'a');
+      setState(() {
+        appViewModel.aimItems
+            .firstWhere((element) => element.id == id)
+            .isActive = true;
+      });
+      return;
+    }
     if(!aim.isActive&&!aim.isChecked){//активировать
       final parentWish = await appViewModel.getSphereNow(aim.parentId);
       if(parentWish!=null&&parentWish.isActive){

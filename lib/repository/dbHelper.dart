@@ -675,9 +675,9 @@ class DatabaseHelper {
     db.insert('promocodes', {"key": promocode.promocode, "expDate": promocode.expDate, "type": promocode.type, "userId": userId});
   }
 
-  Future<Map<String, String>> getPromocodes(String userId) async {
+  Future<Map<String, String>> getPromocodes(String userId, String? pType) async {
     Database db = await database;
-    List<Map<String, dynamic>> result = await db.query('promocodes', where: 'userId = ?', whereArgs: [userId]);
+    List<Map<String, dynamic>> result = await db.query('promocodes', where: pType!=null?'userId = ? AND type = ?':'userId = ?', whereArgs: pType!=null?[userId, pType]:[userId]);
     Map<String, String> res = {};
     for (var e in result) {
       res[e['key']] = e['expDate'];

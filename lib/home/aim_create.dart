@@ -128,7 +128,7 @@ class AimScreen extends StatelessWidget {
                     hintStyle: TextStyle(color: Colors.black.withOpacity(0.3)), // Полупрозрачный черный базовый текст
                   ),
                 ),
-                ColorRoundedButton("Создать задачу", (){
+                /*ColorRoundedButton("Создать задачу", (){
                   showModalBottomSheet<void>(
                     backgroundColor: AppColors.backgroundColor,
                     context: context,
@@ -138,7 +138,7 @@ class AimScreen extends StatelessWidget {
                           onOk: () => Navigator.pop(context, 'OK'));
                     },
                   );
-                }),
+                }),*/
               ],
             ),),
         )),

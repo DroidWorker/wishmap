@@ -35,22 +35,23 @@ class ProfileData {
 }
 
 class ActualizingSettingData{
-  bool fastActMainSphere = false;
+  bool fastActMainSphere = true;
 
-  bool actualizeFullBranch = false;
-  int sphereActualizingMode = 0;
-  bool fastActSphere = false;
+  bool actualizeFullBranch = true;
+
+  int sphereActualizingMode = 1;
+  bool fastActSphere = true;
   //0-Автоматическая актуализация всех сфер при актуализации 'Я'
   //1-автоматическая актуализация конкретной сферы при актуализации нижестоящего желания (верхнего уровня)
   int wishActualizingMode = 0;
-  bool fastActWish = false;
+  bool fastActWish = true;
   //0-режим автоматическая актуализация желания сверху вниз каскадом
   //1-автоматическая актуализация снизу вверх по ветке
   int taskActualizingMode = 0;
   bool fastActtask = false;
   //0-taskAutoActualizingOff
   //1-"автоматически актуализировать невыполненные задачи  при актуализации новой карты, то задач, которые потребуют ручной актуализации не будет, они все автоматом будут актуализированы при актуализации вышестоящей цели, а значит и желания.
-  ActualizingSettingData({this.sphereActualizingMode = 0, this.wishActualizingMode = 0, this.taskActualizingMode = 0});
+  ActualizingSettingData({this.sphereActualizingMode = 1, this.wishActualizingMode = 0, this.taskActualizingMode = 0});
 
   int quoteupdateFreq=10;
 

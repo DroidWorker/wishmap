@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -6,6 +8,7 @@ import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:wishmap/home/aim_create.dart';
 import 'package:wishmap/home/aimedit_screen.dart';
 import 'package:wishmap/home/alarm_screen.dart';
@@ -45,7 +48,8 @@ import 'home/auth_screen.dart';
 
 import 'package:timezone/data/latest.dart' as tz;
 
-final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+    FlutterLocalNotificationsPlugin();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -57,7 +61,8 @@ void main() async {
   await AndroidAlarmManager.initialize();
   tz.initializeTimeZones();
 
-  const AndroidInitializationSettings initializationSettingsAndroid = AndroidInitializationSettings('@mipmap/ic_launcher');
+  const AndroidInitializationSettings initializationSettingsAndroid =
+      AndroidInitializationSettings('@mipmap/ic_launcher');
   final InitializationSettings initializationSettings = InitializationSettings(
     android: initializationSettingsAndroid,
   );
@@ -69,52 +74,62 @@ void main() async {
 
   await flutterLocalNotificationsPlugin.initialize(
     initializationSettings,
-    onDidReceiveNotificationResponse:(response)=> _handleNotificationResponse(response, appViewModel),
+    onDidReceiveNotificationResponse: (response) =>
+        _handleNotificationResponse(response, appViewModel),
   );
 
   // Проверка, было ли приложение запущено через уведомление
-  initialNotificationResponse = (await flutterLocalNotificationsPlugin.getNotificationAppLaunchDetails())?.notificationResponse;
+  initialNotificationResponse =
+      (await flutterLocalNotificationsPlugin.getNotificationAppLaunchDetails())
+          ?.notificationResponse;
 
-  if(initialNotificationResponse==null){
-  runApp(
-    ChangeNotifierProvider(
-      create: (context) => appViewModel,
-      child: BlocProvider<NavigationBloc>(
-        create: (context) {
-          final appViewModel = context.read<AppViewModel>();
-          return NavigationBloc()..add(
-              appViewModel.profileData != null && appViewModel.profileData!.id.isNotEmpty
+  if (initialNotificationResponse == null) {
+    runApp(
+      ChangeNotifierProvider(
+        create: (context) => appViewModel,
+        child: BlocProvider<NavigationBloc>(
+          create: (context) {
+            final appViewModel = context.read<AppViewModel>();
+            return NavigationBloc()
+              ..add(appViewModel.profileData != null &&
+                      appViewModel.profileData!.id.isNotEmpty
                   ? NavigateToCardsScreenEvent()
-                  : NavigateToAuthScreenEvent()
-          );
-        },
-        child: MyApp(),
+                  : NavigateToAuthScreenEvent());
+          },
+          child: MyApp(),
+        ),
       ),
-    ),
-  );
-  }else {
+    );
+  } else {
     if (initialNotificationResponse.payload?.contains("alarm") == true) {
       final id = int.parse(initialNotificationResponse.payload!.split("|")[1]);
       _runAppWithAlarm(id ~/ 100, appViewModel);
-    } else if (initialNotificationResponse.payload?.contains("WishMap://task") == true) {
+    } else if (initialNotificationResponse.payload
+            ?.contains("WishMap://task") ==
+        true) {
       _runAppWithTask(initialNotificationResponse, appViewModel);
-    };
+    }
+    ;
   }
 }
 
-Future<void> _requestPermissions(FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin) async {
+Future<void> _requestPermissions(
+    FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin) async {
   try {
-    flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<
-        AndroidFlutterLocalNotificationsPlugin>()?.requestNotificationsPermission();
+    flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>()
+        ?.requestNotificationsPermission();
   } catch (e) {
     print('Error while requesting permissions: $e');
   }
 }
 
-Future<void> _handleNotificationResponse(NotificationResponse response, AppViewModel vm) async {
+Future<void> _handleNotificationResponse(
+    NotificationResponse response, AppViewModel vm) async {
   if (response.payload?.contains("alarm") == true) {
     final id = int.parse(response.payload!.split("|")[1]);
-    _runAppWithAlarm(id~/100, vm);
+    _runAppWithAlarm(id ~/ 100, vm);
   } else if (response.payload?.contains("WishMap://task") == true) {
     print("startwithtask - ${response.payload}");
     _runAppWithTask(response, vm);
@@ -144,9 +159,13 @@ void _runAppWithTask(NotificationResponse response, AppViewModel vm) async {
       child: BlocProvider<NavigationBloc>(
         create: (context) {
           final appViewModel = context.read<AppViewModel>();
-          appViewModel.currentTask=null;
+          appViewModel.currentTask = null;
           appViewModel.startAppFromTask(taskId);
-          return NavigationBloc()..add((appViewModel.profileData!=null&&appViewModel.profileData!.id.isNotEmpty)?NavigateToTaskEditScreenEvent(taskId):NavigateToAuthScreenEvent());
+          return NavigationBloc()
+            ..add((appViewModel.profileData != null &&
+                    appViewModel.profileData!.id.isNotEmpty)
+                ? NavigateToTaskEditScreenEvent(taskId)
+                : NavigateToAuthScreenEvent());
         },
         child: MyApp(taskId: taskId),
       ),
@@ -156,18 +175,20 @@ void _runAppWithTask(NotificationResponse response, AppViewModel vm) async {
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
-
 class MyApp extends StatefulWidget {
   int? alarmId;
   int? taskId;
+
   MyApp({super.key, this.alarmId, this.taskId});
 
   @override
   MyAppState createState() => MyAppState();
 }
 
-class MyAppState extends State<MyApp> with WidgetsBindingObserver{
+class MyAppState extends State<MyApp> with WidgetsBindingObserver {
   AppViewModel? vm;
+  Timer? _timer;
+  bool isMessageShown = false;
 
   @override
   void initState() {
@@ -183,89 +204,125 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver{
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if(state==AppLifecycleState.resumed){
-      if(vm?.allowSkipAuth==true){
-        vm?.allowSkipAuth=false;
-      }else {
+    if (state == AppLifecycleState.resumed) {
+      if (vm?.allowSkipAuth == true) {
+        vm?.allowSkipAuth = false;
+      } else {
         vm?.lockState = true;
       }
-    }/*if(state==AppLifecycleState.hidden){
-      vm?.mainCircles.clear();
-      if(vm!=null&&vm!.mainScreenState!=null)vm?.startMainScreen(vm!.mainScreenState!.moon);
-    }*/
+    }
+    if (state == AppLifecycleState.hidden) {
+      _timer?.cancel();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-          return MaterialApp(
-            theme: ThemeData(
-              fontFamily: 'Gilroy',
-              bottomSheetTheme:  BottomSheetThemeData(
-                backgroundColor: Colors.black.withOpacity(0)
-              )
-            ),
-              localizationsDelegates: GlobalMaterialLocalizations.delegates,
-              supportedLocales: const [
-                Locale('ru', ''),
-              ],
-              onGenerateRoute: (settings) {
-                if (settings.name == '/task') {
-                  // Extract id parameter from URL
-                  final String id = settings.arguments.toString().split('?id=')[1];
-                  return MaterialPageRoute(
-                    builder: (context) => TaskEditScreen(aimId: int.parse(id)),
-                  );
-                }
-                return null;
-              },
-            title: 'wishMap',
-              builder: (BuildContext context, Widget? widget) {
-                ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
-                  print("fatal error: ${errorDetails.exception} /n ${errorDetails.stack}");
-                  return CustomError(errorDetails: errorDetails);
-                };
-                return widget!;
-              },
-            home: widget.alarmId!=null ? NotifyAlarmScreen(((){
-              setState(() {
-                widget.alarmId = null;
-                BlocProvider.of<NavigationBloc>(context)
-                    .add(NavigateToCardsScreenEvent());
-              });
-              //SystemNavigator.pop();
-            }), widget.alarmId!) : widget.taskId!=null ? TaskEditScreen(aimId: widget.taskId!, onClose: (){
-              setState(() {
-                vm?.currentTask=null;
-                vm?.startAppFromTask(widget.taskId!);
-                widget.taskId=null;
-                BlocProvider.of<NavigationBloc>(context)
-                    .add(NavigateToTaskEditScreenEvent(-1));
-              });
-            },)
-                : BlocBuilder<NavigationBloc, NavigationState>(
-              builder: (context, state)
-          {
-            return Consumer<AppViewModel>(
-              builder: (context, appViewModel, child) {
-                vm ??= appViewModel;
-                final me = appViewModel.messageError;
-                if (me.isNotEmpty) {
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    _showError(context, me, important: vm!.important);
-                  });
-                }
-                return WillPopScope(
-                  onWillPop: () async {
-                    final shouldPop = await context.read<NavigationBloc>()
-                        .handleBackPress();
-                    return shouldPop;
-                  },
-                  child: appViewModel.lockEnabled&&appViewModel.lockState?LockScreen():_buildScreenForState(state),
-                );
-              },
+    return MaterialApp(
+        theme: ThemeData(
+            fontFamily: 'Gilroy',
+            bottomSheetTheme: BottomSheetThemeData(
+                backgroundColor: Colors.black.withOpacity(0))),
+        localizationsDelegates: GlobalMaterialLocalizations.delegates,
+        supportedLocales: const [
+          Locale('ru', ''),
+        ],
+        onGenerateRoute: (settings) {
+          if (settings.name == '/task') {
+            // Extract id parameter from URL
+            final String id = settings.arguments.toString().split('?id=')[1];
+            return MaterialPageRoute(
+              builder: (context) => TaskEditScreen(aimId: int.parse(id)),
             );
-          })
-          );
+          }
+          return null;
+        },
+        title: 'wishMap',
+        builder: (BuildContext context, Widget? widget) {
+          ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
+            print(
+                "fatal error: ${errorDetails.exception} /n ${errorDetails.stack}");
+            return CustomError(errorDetails: errorDetails);
+          };
+          return widget!;
+        },
+        home: widget.alarmId != null
+            ? NotifyAlarmScreen((() {
+                setState(() {
+                  widget.alarmId = null;
+                  BlocProvider.of<NavigationBloc>(context)
+                      .add(NavigateToCardsScreenEvent());
+                });
+                //SystemNavigator.pop();
+              }), widget.alarmId!)
+            : widget.taskId != null
+                ? TaskEditScreen(
+                    aimId: widget.taskId!,
+                    onClose: () {
+                      setState(() {
+                        vm?.currentTask = null;
+                        vm?.startAppFromTask(widget.taskId!);
+                        widget.taskId = null;
+                        BlocProvider.of<NavigationBloc>(context)
+                            .add(NavigateToTaskEditScreenEvent(-1));
+                      });
+                    },
+                  )
+                : BlocBuilder<NavigationBloc, NavigationState>(
+                    builder: (context, state) {
+                    _startPeriodicMessage(context);
+                    return Consumer<AppViewModel>(
+                      builder: (context, appViewModel, child) {
+                        vm ??= appViewModel;
+                        final me = appViewModel.messageError;
+                        if (me.isNotEmpty) {
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            _showError(context, me, important: vm!.important);
+                          });
+                        }
+                        return WillPopScope(
+                          onWillPop: () async {
+                            final shouldPop = await context
+                                .read<NavigationBloc>()
+                                .handleBackPress();
+                            return shouldPop;
+                          },
+                          child:
+                              appViewModel.lockEnabled && appViewModel.lockState
+                                  ? LockScreen()
+                                  : _buildScreenForState(state),
+                        );
+                      },
+                    );
+                  }));
+  }
+
+  _startPeriodicMessage(BuildContext c) async {
+    vm?.promocodeMessageActive = await vm?.hasActivePromocode(null)??false;
+    _timer = Timer.periodic(const Duration(minutes: 1), (t) {
+      if (vm?.promocodeMessageActive == true) {
+        return;
+      }
+      if(!isMessageShown) {
+        showModalBottomSheet<void>(
+        backgroundColor: AppColors.backgroundColor,
+        context: c,
+        isScrollControlled: true,
+        builder: (BuildContext context) {
+          return NotifyBS("", "Подпишись на тг канал", 'OK', onOk: () async {
+            final url = 'tg://resolve?domain=${vm?.static["tg"]}';
+            final uri = Uri.parse(url);
+            Navigator.pop(context, 'OK');
+            if (await canLaunchUrl(uri)) {
+              launchUrl(uri);
+            }
+            isMessageShown=false;
+          });
+        },
+      );
+        isMessageShown=true;
+      }
+    });
   }
 
   Widget _buildScreenForState(NavigationState state) {
@@ -283,7 +340,7 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver{
       return AimEditScreen(aimId: state.aimId);
     } else if (state is NavigationTasksScreenState) {
       return const TasksScreen();
-    }else if (state is NavigationSimpleTasksScreenState) {
+    } else if (state is NavigationSimpleTasksScreenState) {
       return const SimpleTasksScreen();
     } else if (state is NavigationWishesScreenState) {
       return WishesScreen();
@@ -292,12 +349,15 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver{
     } else if (state is NavigationProfileScreenState) {
       return const ProfileScreen();
     } else if (state is NavigationTaskCreateScreenState) {
-      return TaskScreen(parentAimId: state.parentAimId, isSimpleTask: state.isSimple, simpleParentType: state.type);
+      return TaskScreen(
+          parentAimId: state.parentAimId,
+          isSimpleTask: state.isSimple,
+          simpleParentType: state.type);
     } else if (state is NavigationTaskEditScreenState) {
       return TaskEditScreen(aimId: state.aimId);
     } else if (state is NavigationMainSphereEditScreenState) {
       return const MainSphereEditScreen();
-    }  else if (state is NavigationDiaryScreenState) {
+    } else if (state is NavigationDiaryScreenState) {
       return DiaryScreen();
     } else if (state is NavigationDiaryEditScreenState) {
       return DiaryEditScreen(diaryId: state.id);
@@ -307,17 +367,17 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver{
       return MainSettings();
     } else if (state is NavigationPersonalSettingsScreenState) {
       return PersonalSettings();
-    }else if (state is NavigationSoundsSettingsScreenState) {
+    } else if (state is NavigationSoundsSettingsScreenState) {
       return SoundsSettings();
-    }else if (state is NavigationQuestionsSettingsScreenState) {
+    } else if (state is NavigationQuestionsSettingsScreenState) {
       return QScreen();
-    }else if (state is NavigationProposalScreenState) {
+    } else if (state is NavigationProposalScreenState) {
       return ProposalScreen();
     } else if (state is NavigationContactScreenState) {
       return ContactScreen();
-    }else if (state is NavigationAlarmSettingsScreenState) {
+    } else if (state is NavigationAlarmSettingsScreenState) {
       return AlarmSettingScreen(state.id);
-    }else if (state is NavigationLockSettingsScreenState) {
+    } else if (state is NavigationLockSettingsScreenState) {
       return LockSettingsScreen();
     } else if (state is NavigationTodoScreenState) {
       return TodoScreen();
@@ -330,28 +390,29 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver{
     }
   }
 
-  void _showError(BuildContext context, String message, {bool important = false}) {
-    important?showModalBottomSheet<void>(
-    backgroundColor: AppColors.backgroundColor,
-    context: context,
-    isScrollControlled: true,
-    builder: (BuildContext context) {
-    return NotifyBS("Внимание", message, 'OK',
-    onOk: () => Navigator.pop(context, 'OK'));
-    },
-    ):
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        backgroundColor: Colors.white,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(10),
-            topRight: Radius.circular(10)
+  void _showError(BuildContext context, String message,
+      {bool important = false}) {
+    important
+        ? showModalBottomSheet<void>(
+            backgroundColor: AppColors.backgroundColor,
+            context: context,
+            isScrollControlled: true,
+            builder: (BuildContext context) {
+              return NotifyBS("Внимание", message, 'OK',
+                  onOk: () => Navigator.pop(context, 'OK'));
+            },
           )
-        ),
-        content: Text(message, style: const TextStyle(color: Colors.black)),
-        duration: const Duration(seconds: 3),
-      ),
-    );
+        : ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              backgroundColor: Colors.white,
+              shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(10),
+                      topRight: Radius.circular(10))),
+              content:
+                  Text(message, style: const TextStyle(color: Colors.black)),
+              duration: const Duration(seconds: 3),
+            ),
+          );
   }
 }
