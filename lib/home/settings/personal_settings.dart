@@ -33,7 +33,7 @@ class PersonalSettingsState extends State<PersonalSettings>{
   String selectedYear = '1990';
 
   bool? male;
-  bool ppd = false;
+  bool ppd = true;
 
   ProfileData? pd;
 
@@ -258,11 +258,13 @@ class PersonalSettingsState extends State<PersonalSettings>{
               SquareCheckbox("Мужской", state: male==true, (state){
                 setState(() {
                   male = true;
+                  pd!.male = true;
                 });
               }),
               SquareCheckbox("Женский", state: male==false, (state){
                 setState(() {
                   male = false;
+                  pd!.male = false;
                 });
               }),
               const SizedBox(height: 16),

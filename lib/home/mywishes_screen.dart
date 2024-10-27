@@ -319,51 +319,6 @@ class _WishesScreenState extends State<WishesScreen>{
         .add(NavigateToWishScreenEvent());
   }
   onDoubleClick(int id) async {
-    final wish = await appViewModel?.getSphereNow(id);
-    final parentWish = await appViewModel?.getSphereNow(id);
-    if (wish == null|| parentWish==null) return;
-    if(!wish.isActive && !wish.isChecked&&appViewModel!.settings.actualizeFullBranch){
-      appViewModel?.activateBranchFrom(wish.id, 'w');
-      setState(() {
-        appViewModel?.wishItems
-            .firstWhere((element) => element.id == id)
-            .isActive = true;
-      });
-      return;
-    }
-    if ((!wish.isActive && !wish.isChecked) && ((appViewModel?.settings.wishActualizingMode==1&&appViewModel?.settings.sphereActualizingMode==1) || (parentWish.isActive))) { //активировать
-      if (parentWish.isActive) {
-        appViewModel?.activateSphereWish(id, true);
-        setState(() {
-          appViewModel?.wishItems
-              .firstWhere((element) => element.id == id)
-              .isActive = true;
-        });
-      }
-    } else if (!wish.isChecked) { //выполнить
-      appViewModel?.activateSphereWish(id, true);
-      setState(() {
-        appViewModel?.wishItems
-            .firstWhere((element) => element.id == id)
-            .isChecked = true;
-      });
-    } else { //удалить
-      showModalBottomSheet<void>(
-        backgroundColor: AppColors.backgroundColor,
-        context: context,
-        isScrollControlled: true,
-        builder: (BuildContext context) {
-          return ActionBS('Внимание', "Желание будет удалена\nУдалить?", "Да", 'Нет',
-              onOk: () {
-                Navigator.pop(context, 'OK');
-                appViewModel?.deleteSphereWish(
-                    id, wish.prevId, wish.nextId);
-                allWishList.removeWhere((element) => element.id == id);
-              },
-              onCancel: () { Navigator.pop(context, 'Cancel');
-              });
-        },
-      );
-    }
+
   }
 }

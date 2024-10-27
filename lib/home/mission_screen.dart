@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 import 'package:wishmap/common/gradientText.dart';
 import 'package:wishmap/data/models.dart';
 import 'package:wishmap/data/static_affirmations_men.dart';
+import 'package:wishmap/data/static_affirmations_women.dart';
 
 import '../ViewModel.dart';
 import '../interface_widgets/outlined_button.dart';
@@ -93,7 +94,7 @@ class MissionScreenState extends State<MissionScreen>
     });
 
     if (widget.type == 2) {
-      final affs = IMenAffirmations;
+      final affs = vm.profileData?.male==true?IMenAffirmations:IWomenAffirmations;
       final List<String> selectedAfss = [];
       for (var i = 0; i < 5; i++) {
         selectedAfss.add(affs[Random().nextInt(affs.length)]);
@@ -615,7 +616,7 @@ class MissionScreenState extends State<MissionScreen>
                       const SizedBox(height: 24),
                       InkWell(
                         onTap: () {
-                          final affs = IMenAffirmations;
+                          final affs = vm.profileData?.male==true?IMenAffirmations:IWomenAffirmations;
                           final List<String> selectedAfss = [];
                           for (var i = 0; i < 5; i++) {
                             selectedAfss.add(affs[Random().nextInt(

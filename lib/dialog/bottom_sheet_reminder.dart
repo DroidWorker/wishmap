@@ -91,10 +91,12 @@ class ReminderBSState extends State<ReminderBS>{
     for (var e in reminder.remindDays) {
       final day = int.parse(e);
       if(day!=0){
-        daysString+="${shortDayOfWeek[day-1]}";
+        daysString+="${shortDayOfWeek[day]}";
         if(day==prevDay+1){
           prevDay = day;
           isInterval=true;
+        }else{
+          isInterval = false;
         }
       }
     }
@@ -362,13 +364,13 @@ class ReminderBSState extends State<ReminderBS>{
                     checkStates[0]=false;
                   }
                 }),
-                SquareCheckbox(state: checkStates[1], "Воскресенье", (state){checkStates[7]=state;}),
-                SquareCheckbox(state: checkStates[2], "Понедельник", (state){checkStates[1]=state;}),
-                SquareCheckbox(state: checkStates[3], "Вторник", (state){checkStates[2]=state;}),
-                SquareCheckbox(state: checkStates[4], "Среда", (state){checkStates[3]=state;}),
-                SquareCheckbox(state: checkStates[5], "Четверг", (state){checkStates[4]=state;}),
-                SquareCheckbox(state: checkStates[6], "Пятница", (state){checkStates[5]=state;}),
-                SquareCheckbox(state: checkStates[7], "Суббота", (state){checkStates[6]=state;}),
+                SquareCheckbox(state: checkStates[7], "Воскресенье", (state){checkStates[7]=state;}),
+                SquareCheckbox(state: checkStates[1], "Понедельник", (state){checkStates[1]=state;}),
+                SquareCheckbox(state: checkStates[2], "Вторник", (state){checkStates[2]=state;}),
+                SquareCheckbox(state: checkStates[3], "Среда", (state){checkStates[3]=state;}),
+                SquareCheckbox(state: checkStates[4], "Четверг", (state){checkStates[4]=state;}),
+                SquareCheckbox(state: checkStates[5], "Пятница", (state){checkStates[5]=state;}),
+                SquareCheckbox(state: checkStates[6], "Суббота", (state){checkStates[6]=state;}),
                 const SizedBox(height: 20),
                 ColorRoundedButton("Готово", (){
                   reminder.remindDays.clear();

@@ -233,6 +233,18 @@ class Repository {
     }
   }
 
+  Future deleteImages(String ids) async {
+    if (_auth.currentUser != null) {
+      if(ids.isNotEmpty)for (var e in ids.split("|")) {
+        userRef
+            .child(_auth.currentUser!.uid)
+            .child("images")
+            .child(e.toString())
+            .remove();
+      }
+    }
+  }
+
   Future addReport(String date, String json) async {
     if (_auth.currentUser != null) {
       userRef

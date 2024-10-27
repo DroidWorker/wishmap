@@ -77,6 +77,7 @@ class _MyOverlayState extends State<MyAffirmationOverlay> {
                             if (element != currentAffirmation)
                               finalAffs += "|$element";
                           }
+                          print("fiiiiiiiiinal $finalAffs");
                           widget.onClose(finalAffs);
                       },
                     ),
@@ -220,10 +221,12 @@ class _MyOverlayState extends State<MyAffirmationOverlay> {
                           screenType = 0;
                           if(!isAdding) {
                             widget.affirmations[currentIndex] = controller.text;
+                            currentAffirmation=controller.text;
                             if(widget.affirmations[currentIndex].isEmpty)widget.affirmations.removeAt(currentIndex);
                           } else{
                             widget.affirmations.add(controller.text);
                             currentIndex = widget.affirmations.length-1;
+                            currentAffirmation = controller.text;
                             isAdding = false;
                             }
                           controller.clear();

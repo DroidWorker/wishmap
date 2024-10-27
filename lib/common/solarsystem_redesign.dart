@@ -524,7 +524,7 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
                         ],
                       ),
                       builder: (context, child){
-                        final top = value.id!=0||centralCircles.length>1?(centralCircles.length-1==index?_rTOc.value.dy:_cTOa.value.dy):centralCircles.length-1==index?_rTOc.value.dy-65:_cTOa.value.dy-65;
+                        final top = value.id!=0||centralCircles.length>1?(centralCircles.length-1==index?_rTOc.value.dy:_cTOa.value.dy):centralCircles.length-1==index?_rTOc.value.dy-45:_cTOa.value.dy-45;
                         return Positioned(
                             key: ccKeys[index],
                             left: centralCircles.length-1==index?_rTOc.value.dx:_cTOa.value.dx,
@@ -552,7 +552,7 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles> with
                                     ),
                                   ),
                                   child: child!
-                              ):/*ColorFiltered(colorFilter: ColorFilter.mode(value.color, BlendMode.srcATop),child: Image.asset('assets/icons/people.png', width: 110)*/SvgPicture.asset("assets/icons/headtest.svg", width: 180, height: 180)/*)*/,
+                              ):Container(padding: const EdgeInsets.only(left: 10) ,child: Image.asset(vm?.profileData?.male==true?(value.isActive?'assets/icons/man_actualized.png':'assets/icons/man_unactualized.png'):(value.isActive?'assets/icons/woman_actualized.png':'assets/icons/woman_unactualized.png') ,width: 90)),
                               onTap: () {
                                 print("oncentralcircletap - $allowClick");
                                 _timer?.cancel();

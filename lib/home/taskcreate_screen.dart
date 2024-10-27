@@ -52,9 +52,17 @@ class TaskScreenState extends State<TaskScreen>{
                           builder: (BuildContext context) {
                             return ActionBS('Внимание', "Вы изменили поля но не нажали 'Сохранить'\nСохранить изменения?", "Да", 'Нет',
                                 onOk: () async { Navigator.pop(context, 'OK');
-                                await onSaveClicked(appViewModel);
-                                BlocProvider.of<NavigationBloc>(context)
-                                    .handleBackPress();
+                                if(!widget.isSimpleTask) {
+                                  if (!taskCreateClicked) {
+                                    taskCreateClicked = true;
+                                    await onSaveClicked(appViewModel);
+                                  }
+                                  BlocProvider.of<NavigationBloc>(context)
+                                      .handleBackPress();
+                                }else{
+                                  appViewModel.addSimpleTask(widget.parentAimId, widget.simpleParentType, "HEADERSIMPLETASKHEADER${text.text}", taskDescription: description.text);
+                                  BlocProvider.of<NavigationBloc>(context).handleBackPress();
+                                }
                                 },
                                 onCancel: () { Navigator.pop(context, 'Cancel');
                                 BlocProvider.of<NavigationBloc>(context)

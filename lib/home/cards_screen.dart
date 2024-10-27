@@ -27,7 +27,7 @@ class CardsScreenState extends State<CardsScreen> {
 
   List<int> deleteQ = [];
 
-  Future checkPromocodes(AppViewModel vm) async{
+  Future checkPromocodes(AppViewModel vm) async {
     allowActualization = await vm.hasActivePromocode("default");
     setState(() {});
   }
@@ -76,8 +76,8 @@ class CardsScreenState extends State<CardsScreen> {
             checkPromocodes(appVM);
             List<MoonItem> items = List<MoonItem>.from(appVM.moonItems);
             items = items.reversed.toList();
-            if (items.isNotEmpty&&allowActualization) {
-              indexPad=1;
+            if (items.isNotEmpty && allowActualization) {
+              indexPad = 1;
               items.insert(
                   0,
                   MoonItem(
@@ -94,41 +94,47 @@ class CardsScreenState extends State<CardsScreen> {
                     child: ListView.builder(
                       itemCount: items.length,
                       itemBuilder: (context, index) {
-                        return CardItem(items[index], deleteQ.contains(index-indexPad),
+                        return CardItem(
+                            items[index], deleteQ.contains(index - indexPad),
                             () async {
                           if (deleteMode == true) {
                             setState(() {
-                              if (deleteQ.contains(index-indexPad)) {
-                                deleteQ.remove(index-indexPad);
-                                if(deleteQ.isEmpty)deleteMode=false;
+                              if (deleteQ.contains(index - indexPad)) {
+                                deleteQ.remove(index - indexPad);
+                                if (deleteQ.isEmpty) deleteMode = false;
                               } else {
-                                deleteQ.add(index-indexPad);
+                                deleteQ.add(index - indexPad);
                               }
                             });
                           } else {
                             try {
-                              var result =
-                                  await Connectivity().checkConnectivity();
-                              if (result == ConnectivityResult.none)
-                                appViewModel.connectivity =
-                                    'No Internet Connection';
-                              if (items[index].id != -1 &&
-                                  appViewModel.moonItems.isNotEmpty) {
-                                final moonId = appVM.moonItems
-                                    .where((e) => e.id == items[index].id)
-                                    .first;
-                                setState(() {
-                                  isInSync = true;
-                                });
-                                await appViewModel.fetchDatas(moonId.id);
-                                appViewModel.startMainScreen(moonId);
-                                appViewModel.hint =
-                                    "Отлично! Теперь пришло время заполнить все сферы жизни. Ты можешь настроить состав и название сфер так, как считаешь нужным. И помни, что максимальное количество сфер ограничено и равно 13.";
-                                BlocProvider.of<NavigationBloc>(context)
-                                    .add(NavigateToMainScreenEvent());
-                              } else {
-                                appViewModel.addError(
-                                    "Ошибка! нет соединения с сервером");
+                              if (!isInSync) {
+                                var result =
+                                    await Connectivity().checkConnectivity();
+                                if (result == ConnectivityResult.none)
+                                  appViewModel.connectivity =
+                                      'No Internet Connection';
+                                if (items[index].id != -1 &&
+                                    appViewModel.moonItems.isNotEmpty) {
+                                  final moonId = appVM.moonItems
+                                      .where((e) => e.id == items[index].id)
+                                      .first;
+                                  setState(() {
+                                    isInSync = true;
+                                  });
+                                  await appViewModel.fetchDatas(moonId.id);
+                                  appViewModel.mainScreenState=null;
+                                  appViewModel.aimItems.clear();
+                                  appViewModel.taskItems.clear();
+                                  appViewModel.startMainScreen(moonId);
+                                  appViewModel.hint =
+                                      "Отлично! Теперь пришло время заполнить все сферы жизни. Ты можешь настроить состав и название сфер так, как считаешь нужным. И помни, что максимальное количество сфер ограничено и равно 13.";
+                                  BlocProvider.of<NavigationBloc>(context)
+                                      .add(NavigateToMainScreenEvent());
+                                } else {
+                                  appViewModel.addError(
+                                      "Ошибка! нет соединения с сервером");
+                                }
                               }
                             } catch (ex, s) {
                               print("eeeeeeeeeeeeeeeeeeeeeeeeeeee $ex --- $s");
@@ -137,7 +143,7 @@ class CardsScreenState extends State<CardsScreen> {
                         }, () {
                           setState(() {
                             deleteMode = true;
-                            deleteQ.add(index-indexPad);
+                            deleteQ.add(index - indexPad);
                           });
                         }, () {
                           setState(() {
@@ -147,44 +153,47 @@ class CardsScreenState extends State<CardsScreen> {
                       },
                     ),
                   ),
-                  deleteMode&&appVM.connectivity!="No Internet Connection"
-                      ? ColorRoundedButton("Удалить", (){
-                    showModalBottomSheet<void>(
-                      backgroundColor: AppColors.backgroundColor,
-                      context: context,
-                      isScrollControlled: true,
-                      builder: (BuildContext context) {
-                        return ActionBS('Внимание', "Выбранные карты будут удалены\nУдалить?", "Да", 'Нет',
-                            onOk: () async {
-                              List<int> realIsDeleteQ = [];
-                              setState(() {
-                                isInSync = true;
+                  deleteMode && appVM.connectivity != "No Internet Connection"
+                      ? ColorRoundedButton("Удалить", () {
+                          showModalBottomSheet<void>(
+                            backgroundColor: AppColors.backgroundColor,
+                            context: context,
+                            isScrollControlled: true,
+                            builder: (BuildContext context) {
+                              return ActionBS(
+                                  'Внимание',
+                                  "Выбранные карты будут удалены\nУдалить?",
+                                  "Да",
+                                  'Нет', onOk: () async {
+                                List<int> realIsDeleteQ = [];
+                                setState(() {
+                                  isInSync = true;
+                                });
+                                final len = appVM.moonItems.length;
+                                deleteQ.sort((a, b) => a.compareTo(b));
+                                for (var e in deleteQ) {
+                                  realIsDeleteQ
+                                      .add(appVM.moonItems[len - 1 - e].id);
+                                  appVM.moonItems.removeAt(len - 1 - e);
+                                }
+                                await appViewModel.deleteMoons(realIsDeleteQ);
+                                setState(() {
+                                  deleteMode = false;
+                                  deleteQ.clear();
+                                  isInSync = false;
+                                });
+                                Navigator.pop(context, 'Cancel');
+                              }, onCancel: () {
+                                setState(() {
+                                  deleteMode = false;
+                                  deleteQ.clear();
+                                  isInSync = false;
+                                });
+                                Navigator.pop(context, 'Cancel');
                               });
-                              final len = appVM.moonItems.length;
-                              deleteQ.sort((a, b)=>a.compareTo(b));
-                              for (var e in deleteQ) {
-                                realIsDeleteQ.add(appVM.moonItems[len-1-e].id);
-                                appVM.moonItems.removeAt(len-1-e);
-                              }
-                              await appViewModel.deleteMoons(realIsDeleteQ);
-                              setState(() {
-                                deleteMode = false;
-                                deleteQ.clear();
-                                isInSync = false;
-                              });
-                              Navigator.pop(context, 'Cancel');
                             },
-                            onCancel: () {
-                              setState(() {
-                                deleteMode = false;
-                                deleteQ.clear();
-                                isInSync = false;
-                              });
-                              Navigator.pop(context, 'Cancel');
-                            });
-                      },
-                    );
-                  })
+                          );
+                        })
                       : const SizedBox()
                 ],
               ),

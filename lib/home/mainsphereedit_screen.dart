@@ -95,7 +95,9 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>
     text.addListener(() {
       if (text.text != curWd.text) {
         if (appViewModel.isChanged == false) {
-          appViewModel.isChanged = true;
+          setState(() {
+            appViewModel.isChanged = true;
+          });
         }
       }
       curWd.text = text.text;
@@ -139,8 +141,7 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>
             ..noClickable = true
         ];
       }
-      appVM
-      .nodesColors=[curWd.color];
+      appVM.nodesColors = [curWd.color];
       return Scaffold(
         backgroundColor: AppColors.backgroundColor,
         body: SafeArea(
@@ -228,179 +229,140 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>
                                 },
                               ),
                             const SizedBox(height: 16),
-                            TextField(
-                              controller: text,
-                              style: const TextStyle(color: Colors.black),
-                              // Черный текст ввода
-                              onTap: () {
-                                if (!curWd.isActive) showUneditable();
-                              },
-                              showCursor: true,
-                              readOnly: curWd.isActive ? false : true,
-                              decoration: InputDecoration(
-                                contentPadding:
-                                    const EdgeInsets.fromLTRB(16, 8, 16, 12),
-                                filled: true,
-                                suffixIconConstraints: const BoxConstraints(
-                                  minWidth: 32,
-                                  minHeight: 2,
-                                ),
-                                suffixIcon: const Text("*",
-                                    style: TextStyle(
-                                        fontSize: 30,
-                                        color: AppColors.greytextColor)),
-                                fillColor: Colors.white,
-                                hintText: 'Название',
-                                hintStyle: TextStyle(
-                                    color: Colors.black.withOpacity(0.3)),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(10.0),
-                                  borderSide: const BorderSide(
-                                    width: 0,
-                                    style: BorderStyle.none,
+                            Stack(children: [
+                              Column(children: [
+                                TextField(
+                                  controller: text,
+                                  style: const TextStyle(color: Colors.black),
+                                  // Черный текст ввода
+                                  onTap: () {
+                                    if (!curWd.isActive) showUneditable();
+                                  },
+                                  showCursor: true,
+                                  readOnly: curWd.isActive ? false : true,
+                                  decoration: InputDecoration(
+                                    contentPadding: const EdgeInsets.fromLTRB(
+                                        16, 8, 16, 12),
+                                    filled: true,
+                                    suffixIconConstraints: const BoxConstraints(
+                                      minWidth: 32,
+                                      minHeight: 2,
+                                    ),
+                                    suffixIcon: const Text("*",
+                                        style: TextStyle(
+                                            fontSize: 30,
+                                            color: AppColors.greytextColor)),
+                                    fillColor: Colors.white,
+                                    hintText: 'Название',
+                                    hintStyle: TextStyle(
+                                        color: Colors.black.withOpacity(0.3)),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(10.0),
+                                      borderSide: const BorderSide(
+                                        width: 0,
+                                        style: BorderStyle.none,
+                                      ),
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            TextField(
-                              maxLines: null,
-                              controller: affirmation,
-                              readOnly: true,
-                              showCursor: false,
-                              onTap: () async {
-                                if (curWd.isActive) {
-                                  final affirmationsStr =
-                                      curWd.affirmation == ""
-                                          ? await showOverlayedAffirmations(
-                                              context,
-                                              defaultAffirmations,
-                                              false,
-                                              curWd.shuffle,
-                                              onShuffleClick: (value) {
-                                              curWd.shuffle = value;
-                                            })
-                                          : await showOverlayedAffirmations(
-                                              context,
-                                              curWd.affirmation.split("|"),
-                                              true,
-                                              curWd.shuffle,
-                                              onShuffleClick: (value) {
-                                              curWd.shuffle = value;
-                                            });
-                                  if (curWd.shuffle)
-                                    curWd.lastShuffle =
-                                        "|${DateTime.now().weekday.toString()}";
-                                  affirmation.text =
-                                      affirmationsStr?.split("|")[0] ?? "";
-                                  curWd.affirmation = affirmationsStr ?? "";
-                                  appViewModel.isChanged = true;
-                                } else {
-                                  showUneditable();
-                                }
-                              },
-                              style: const TextStyle(color: Colors.black),
-                              // Черный текст ввода
-                              decoration: InputDecoration(
-                                contentPadding:
-                                    const EdgeInsets.fromLTRB(16, 8, 16, 12),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(10.0),
-                                  borderSide: const BorderSide(
-                                    width: 0,
-                                    style: BorderStyle.none,
+                                const SizedBox(height: 8),
+                                TextField(
+                                  maxLines: null,
+                                  controller: affirmation,
+                                  readOnly: true,
+                                  showCursor: false,
+                                  onTap: () async {
+                                    if (curWd.isActive) {
+                                      final affirmationsStr =
+                                          curWd.affirmation == ""
+                                              ? await showOverlayedAffirmations(
+                                                  context,
+                                                  defaultAffirmations,
+                                                  false,
+                                                  curWd.shuffle,
+                                                  onShuffleClick: (value) {
+                                                  curWd.shuffle = value;
+                                                })
+                                              : await showOverlayedAffirmations(
+                                                  context,
+                                                  curWd.affirmation.split("|"),
+                                                  true,
+                                                  curWd.shuffle,
+                                                  onShuffleClick: (value) {
+                                                  curWd.shuffle = value;
+                                                });
+                                      if (curWd.shuffle) {
+                                        curWd.lastShuffle =
+                                            "|${DateTime.now().weekday.toString()}";
+                                      }
+                                      affirmation.text =
+                                          affirmationsStr?.split("|")[0] ?? "";
+                                      curWd.affirmation = affirmationsStr ?? "";
+                                      appViewModel.isChanged = true;
+                                    } else {
+                                      showUneditable();
+                                    }
+                                  },
+                                  style: const TextStyle(color: Colors.black),
+                                  // Черный текст ввода
+                                  decoration: InputDecoration(
+                                    contentPadding: const EdgeInsets.fromLTRB(
+                                        16, 8, 16, 12),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(10.0),
+                                      borderSide: const BorderSide(
+                                        width: 0,
+                                        style: BorderStyle.none,
+                                      ),
+                                    ),
+                                    suffix: const Icon(
+                                        Icons.keyboard_arrow_down_sharp,
+                                        color: Colors.black45),
+                                    filled: true,
+                                    // Заливка фона
+                                    fillColor: !curWd.isActive
+                                        ? AppColors.fieldLockColor
+                                        : Colors.white,
+                                    hintText: 'Выбери аффирмацию',
+                                    // Базовый текст
+                                    hintStyle: TextStyle(
+                                        color: Colors.black.withOpacity(
+                                            0.3)), // Полупрозрачный черный базовый текст
                                   ),
                                 ),
-                                suffix: const Icon(
-                                    Icons.keyboard_arrow_down_sharp,
-                                    color: Colors.black45),
-                                filled: true,
-                                // Заливка фона
-                                fillColor: !curWd.isActive
-                                    ? AppColors.fieldLockColor
-                                    : Colors.white,
-                                hintText: 'Выбери аффирмацию',
-                                // Базовый текст
-                                hintStyle: TextStyle(
-                                    color: Colors.black.withOpacity(
-                                        0.3)), // Полупрозрачный черный базовый текст
-                              ),
-                            ),
-                            const SizedBox(height: 24),
-                            const Divider(
-                              color: AppColors.grey,
-                              height: 2,
-                            ),
-                            const SizedBox(height: 16),
-                            LayoutBuilder(
-                              builder: (context, constraints) {
-                                double fullWidth = constraints.maxWidth - 9;
-                                double leftWidth =
-                                    (constraints.maxWidth / 2) - 9;
-                                double rightWidth =
-                                    constraints.maxWidth - leftWidth - 9;
-                                List<List<Uint8List>> imagesSet = [];
-                                for (var element in appViewModel.cachedImages) {
-                                  if (imagesSet.isNotEmpty &&
-                                      imagesSet.last.length < 3) {
-                                    imagesSet.last.add(element);
-                                  } else {
-                                    imagesSet.add([element]);
-                                  }
-                                }
-                                if (imagesSet.isNotEmpty) imagesSet.removeAt(0);
-                                return Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Row(
+                                const SizedBox(height: 24),
+                                const Divider(
+                                  color: AppColors.grey,
+                                  height: 2,
+                                ),
+                                const SizedBox(height: 16),
+                                LayoutBuilder(
+                                  builder: (context, constraints) {
+                                    double fullWidth = constraints.maxWidth - 9;
+                                    double leftWidth =
+                                        (constraints.maxWidth / 2) - 9;
+                                    double rightWidth =
+                                        constraints.maxWidth - leftWidth - 9;
+                                    List<List<Uint8List>> imagesSet = [];
+                                    for (var element
+                                        in appViewModel.cachedImages) {
+                                      if (imagesSet.isNotEmpty &&
+                                          imagesSet.last.length < 3) {
+                                        imagesSet.last.add(element);
+                                      } else {
+                                        imagesSet.add([element]);
+                                      }
+                                    }
+                                    if (imagesSet.isNotEmpty)
+                                      imagesSet.removeAt(0);
+                                    return Column(
+                                        mainAxisSize: MainAxisSize.min,
                                         children: [
-                                          SizedBox(
-                                            width: leftWidth,
-                                            height: leftWidth * 1.5,
-                                            child: appViewModel.isinLoading
-                                                ? const Align(
-                                                    alignment:
-                                                        Alignment.bottomCenter,
-                                                    child:
-                                                        LinearCappedProgressIndicator(
-                                                      backgroundColor:
-                                                          Colors.black26,
-                                                      color: Colors.black,
-                                                      cornerRadius: 0,
-                                                    ),
-                                                  )
-                                                : appViewModel
-                                                        .cachedImages.isNotEmpty
-                                                    ? Image.memory(
-                                                        appViewModel
-                                                            .cachedImages.first,
-                                                        fit: BoxFit.cover)
-                                                    : DottedBorder(
-                                                        color:
-                                                            AppColors.darkGrey,
-                                                        dashPattern: const [
-                                                          5,
-                                                          3
-                                                        ],
-                                                        borderType:
-                                                            BorderType.RRect,
-                                                        radius: const Radius
-                                                            .circular(10),
-                                                        child: const Center(
-                                                            child: Icon(
-                                                          Icons
-                                                              .photo_camera_outlined,
-                                                          size: 38,
-                                                          color: AppColors
-                                                              .darkGrey,
-                                                        ))),
-                                          ),
-                                          const SizedBox(width: 9),
-                                          Column(
+                                          Row(
                                             children: [
                                               SizedBox(
-                                                width: rightWidth,
-                                                height: leftWidth * 1.5 / 2 - 9,
+                                                width: leftWidth,
+                                                height: leftWidth * 1.5,
                                                 child: appViewModel.isinLoading
                                                     ? const Align(
                                                         alignment: Alignment
@@ -414,12 +376,11 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>
                                                         ),
                                                       )
                                                     : appViewModel.cachedImages
-                                                                .length >
-                                                            1
+                                                            .isNotEmpty
                                                         ? Image.memory(
                                                             appViewModel
-                                                                    .cachedImages[
-                                                                1],
+                                                                .cachedImages
+                                                                .first,
                                                             fit: BoxFit.cover)
                                                         : DottedBorder(
                                                             color: AppColors
@@ -442,263 +403,352 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>
                                                                   .darkGrey,
                                                             ))),
                                               ),
-                                              const SizedBox(height: 9),
-                                              SizedBox(
-                                                width: rightWidth,
-                                                height: leftWidth * 1.5 / 2 - 1,
-                                                child: appViewModel.isinLoading
-                                                    ? const Align(
-                                                        alignment: Alignment
-                                                            .bottomCenter,
-                                                        child:
-                                                            LinearCappedProgressIndicator(
-                                                          backgroundColor:
-                                                              Colors.black26,
-                                                          color: Colors.black,
-                                                          cornerRadius: 0,
-                                                        ),
-                                                      )
-                                                    : appViewModel.cachedImages
-                                                                .length >
-                                                            2
-                                                        ? Image.memory(
-                                                            appViewModel
-                                                                    .cachedImages[
-                                                                2],
-                                                            fit: BoxFit.cover)
-                                                        : DottedBorder(
-                                                            color: AppColors
-                                                                .darkGrey,
-                                                            dashPattern: const [
-                                                              5,
-                                                              3
-                                                            ],
-                                                            borderType:
-                                                                BorderType
-                                                                    .RRect,
-                                                            radius: const Radius
-                                                                .circular(10),
-                                                            child: const Center(
-                                                                child: Icon(
-                                                              Icons
-                                                                  .photo_camera_outlined,
-                                                              size: 38,
-                                                              color: AppColors
-                                                                  .darkGrey,
-                                                            ))),
-                                              ),
+                                              const SizedBox(width: 9),
+                                              Column(
+                                                children: [
+                                                  SizedBox(
+                                                    width: rightWidth,
+                                                    height:
+                                                        leftWidth * 1.5 / 2 - 9,
+                                                    child: appViewModel
+                                                            .isinLoading
+                                                        ? const Align(
+                                                            alignment: Alignment
+                                                                .bottomCenter,
+                                                            child:
+                                                                LinearCappedProgressIndicator(
+                                                              backgroundColor:
+                                                                  Colors
+                                                                      .black26,
+                                                              color:
+                                                                  Colors.black,
+                                                              cornerRadius: 0,
+                                                            ),
+                                                          )
+                                                        : appViewModel
+                                                                    .cachedImages
+                                                                    .length >
+                                                                1
+                                                            ? Image.memory(
+                                                                appViewModel
+                                                                        .cachedImages[
+                                                                    1],
+                                                                fit:
+                                                                    BoxFit
+                                                                        .cover)
+                                                            : DottedBorder(
+                                                                color: AppColors
+                                                                    .darkGrey,
+                                                                dashPattern: const [
+                                                                  5,
+                                                                  3
+                                                                ],
+                                                                borderType:
+                                                                    BorderType
+                                                                        .RRect,
+                                                                radius:
+                                                                    const Radius
+                                                                        .circular(
+                                                                        10),
+                                                                child:
+                                                                    const Center(
+                                                                        child:
+                                                                            Icon(
+                                                                  Icons
+                                                                      .photo_camera_outlined,
+                                                                  size: 38,
+                                                                  color: AppColors
+                                                                      .darkGrey,
+                                                                ))),
+                                                  ),
+                                                  const SizedBox(height: 9),
+                                                  SizedBox(
+                                                    width: rightWidth,
+                                                    height:
+                                                        leftWidth * 1.5 / 2 - 1,
+                                                    child: appViewModel
+                                                            .isinLoading
+                                                        ? const Align(
+                                                            alignment: Alignment
+                                                                .bottomCenter,
+                                                            child:
+                                                                LinearCappedProgressIndicator(
+                                                              backgroundColor:
+                                                                  Colors
+                                                                      .black26,
+                                                              color:
+                                                                  Colors.black,
+                                                              cornerRadius: 0,
+                                                            ),
+                                                          )
+                                                        : appViewModel
+                                                                    .cachedImages
+                                                                    .length >
+                                                                2
+                                                            ? Image.memory(
+                                                                appViewModel
+                                                                        .cachedImages[
+                                                                    2],
+                                                                fit:
+                                                                    BoxFit
+                                                                        .cover)
+                                                            : DottedBorder(
+                                                                color: AppColors
+                                                                    .darkGrey,
+                                                                dashPattern: const [
+                                                                  5,
+                                                                  3
+                                                                ],
+                                                                borderType:
+                                                                    BorderType
+                                                                        .RRect,
+                                                                radius:
+                                                                    const Radius
+                                                                        .circular(
+                                                                        10),
+                                                                child:
+                                                                    const Center(
+                                                                        child:
+                                                                            Icon(
+                                                                  Icons
+                                                                      .photo_camera_outlined,
+                                                                  size: 38,
+                                                                  color: AppColors
+                                                                      .darkGrey,
+                                                                ))),
+                                                  ),
+                                                ],
+                                              )
                                             ],
-                                          )
-                                        ],
+                                          ),
+                                          ...imagesSet.map((e) {
+                                            Map<Uint8List, int?> em = {
+                                              for (var v in e) v: null
+                                            };
+                                            if (e.length == 1) {
+                                              return buildSingle(
+                                                  fullWidth,
+                                                  e.first,
+                                                  appVM.isinLoading,
+                                                  !curWd.isActive);
+                                            } else if (e.length == 2)
+                                              return buildTwin(
+                                                  leftWidth,
+                                                  rightWidth,
+                                                  em,
+                                                  appVM.isinLoading,
+                                                  false);
+                                            else if (imagesSet.indexOf(e) % 2 !=
+                                                0)
+                                              return buildTriple(
+                                                  leftWidth,
+                                                  rightWidth,
+                                                  em,
+                                                  appVM.isinLoading,
+                                                  false);
+                                            else
+                                              return buildTripleReverce(
+                                                  leftWidth,
+                                                  rightWidth,
+                                                  em,
+                                                  appVM.isinLoading,
+                                                  false);
+                                          })
+                                        ]);
+                                  },
+                                ),
+                                const SizedBox(height: 24),
+                                OutlinedGradientButton(" Добавить фото", () {
+                                  if (curWd.isActive) {
+                                    appViewModel.photoUrls.clear();
+                                    BlocProvider.of<NavigationBloc>(context)
+                                        .add(NavigateToGalleryScreenEvent());
+                                  } else {
+                                    showUneditable();
+                                  }
+                                },
+                                    widgetBeforeText: const Icon(
+                                      Icons.add_circle_outline_sharp,
+                                      size: 20,
+                                    )),
+                                const SizedBox(height: 16),
+                                const Divider(
+                                  color: AppColors.grey,
+                                  height: 2,
+                                ),
+                                const SizedBox(height: 24),
+                                Align(
+                                  alignment: Alignment.center,
+                                  child: Column(
+                                    children: [
+                                      const Text(
+                                        "Выберите цвет",
+                                        style: TextStyle(
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.w500),
                                       ),
-                                      ...imagesSet.map((e) {
-                                        Map<Uint8List, int?> em =
-                                            Map.fromIterable(e,
-                                                key: (v) => v,
-                                                value: (v) => null);
-                                        if (e.length == 1) {
-                                          return buildSingle(
-                                              fullWidth,
-                                              e.first,
-                                              appVM.isinLoading,
-                                              !curWd.isActive);
-                                        } else if (e.length == 2)
-                                          return buildTwin(
-                                              leftWidth,
-                                              rightWidth,
-                                              em,
-                                              appVM.isinLoading,
-                                              !curWd.isActive);
-                                        else if (imagesSet.indexOf(e) % 2 != 0)
-                                          return buildTriple(
-                                              leftWidth,
-                                              rightWidth,
-                                              em,
-                                              appVM.isinLoading,
-                                              !curWd.isActive);
-                                        else
-                                          return buildTripleReverce(
-                                              leftWidth,
-                                              rightWidth,
-                                              em,
-                                              appVM.isinLoading,
-                                              !curWd.isActive);
-                                      }).toList()
-                                    ]);
-                              },
-                            ),
-                            const SizedBox(height: 24),
-                            OutlinedGradientButton(" Добавить фото", () {
-                              if (curWd.isActive) {
-                                appViewModel.photoUrls.clear();
-                                BlocProvider.of<NavigationBloc>(context)
-                                    .add(NavigateToGalleryScreenEvent());
-                              } else {
-                                showUneditable();
-                              }
-                            },
-                                widgetBeforeText: const Icon(
-                                  Icons.add_circle_outline_sharp,
-                                  size: 20,
-                                )),
-                            const SizedBox(height: 16),
-                            const Divider(
-                              color: AppColors.grey,
-                              height: 2,
-                            ),
-                            const SizedBox(height: 24),
-                            Align(
-                              alignment: Alignment.center,
-                              child: Column(
-                                children: [
-                                  const Text(
-                                    "Выберите цвет",
-                                    style: TextStyle(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w500),
+                                      const SizedBox(height: 10),
+                                      Container(
+                                          width: 64.0, // Ширина круга
+                                          height: 64.0, // Высота круга
+                                          decoration: BoxDecoration(
+                                              border: Border.all(
+                                                  color:
+                                                      shotColor ?? Colors.white,
+                                                  width: 2),
+                                              shape: BoxShape.circle,
+                                              color: Colors.white))
+                                    ],
                                   ),
-                                  const SizedBox(height: 10),
-                                  Container(
-                                      width: 64.0, // Ширина круга
-                                      height: 64.0, // Высота круга
-                                      decoration: BoxDecoration(
-                                          border: Border.all(
-                                              color: shotColor ?? Colors.white,
-                                              width: 2),
-                                          shape: BoxShape.circle,
-                                          color: Colors.white))
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 24),
-                            const Align(
-                                alignment: Alignment.centerLeft,
-                                child: Text("По умолчанию",
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.w500))),
-                            const SizedBox(height: 13),
-                            SizedBox(
-                              height: 40.0,
-                              child: ListView(
-                                scrollDirection: Axis.horizontal,
-                                children: List.generate(8, (int index) {
-                                  return Card(
-                                    color: defaultColorList[index],
-                                    child: InkWell(
-                                      onTap: () {
-                                        setState(() {
-                                          if (shotColor !=
-                                              defaultColorList[index])
-                                            appViewModel.isChanged = true;
-                                          shotColor = defaultColorList[index];
-                                          curWd.color = defaultColorList[index];
-                                        });
-                                      },
-                                      child: SizedBox(
-                                        width: 34.0,
-                                        height: 34.0,
-                                        child:
-                                            shotColor == defaultColorList[index]
+                                ),
+                                const SizedBox(height: 24),
+                                const Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: Text("По умолчанию",
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.w500))),
+                                const SizedBox(height: 13),
+                                SizedBox(
+                                  height: 40.0,
+                                  child: ListView(
+                                    scrollDirection: Axis.horizontal,
+                                    children: List.generate(8, (int index) {
+                                      return Card(
+                                        color: defaultColorList[index],
+                                        child: InkWell(
+                                          onTap: () {
+                                            setState(() {
+                                              if (shotColor !=
+                                                  defaultColorList[index])
+                                                appViewModel.isChanged = true;
+                                              shotColor =
+                                                  defaultColorList[index];
+                                              curWd.color =
+                                                  defaultColorList[index];
+                                            });
+                                          },
+                                          child: SizedBox(
+                                            width: 34.0,
+                                            height: 34.0,
+                                            child: shotColor ==
+                                                    defaultColorList[index]
                                                 ? const Icon(
                                                     Icons.check,
                                                     color: Colors.white,
                                                     size: 20,
                                                   )
                                                 : const SizedBox(),
-                                      ),
-                                    ),
-                                  );
-                                }),
-                              ),
-                            ),
-                            const SizedBox(height: 21),
-                            const Align(
-                                alignment: Alignment.centerLeft,
-                                child: Text("Свой цвет",
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.w500))),
-                            const SizedBox(height: 13),
-                            SizedBox(
-                              height: 40.0,
-                              child: ListView(
-                                scrollDirection: Axis.horizontal,
-                                children:
-                                    List.generate(myColors.length, (int index) {
-                                  return myColors[index] != Colors.transparent
-                                      ? Card(
-                                          color: myColors[index],
-                                          child: InkWell(
-                                            onTap: () {
-                                              setState(() {
-                                                if (shotColor !=
-                                                    myColors[index])
-                                                  appViewModel.isChanged = true;
-                                                shotColor = myColors[index];
-                                                curWd.color = myColors[index];
-                                              });
-                                            },
-                                            child: SizedBox(
-                                              width: 34.0,
-                                              height: 34.0,
-                                              child:
-                                                  shotColor == myColors[index]
+                                          ),
+                                        ),
+                                      );
+                                    }),
+                                  ),
+                                ),
+                                const SizedBox(height: 21),
+                                const Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: Text("Свой цвет",
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.w500))),
+                                const SizedBox(height: 13),
+                                SizedBox(
+                                  height: 40.0,
+                                  child: ListView(
+                                    scrollDirection: Axis.horizontal,
+                                    children: List.generate(myColors.length,
+                                        (int index) {
+                                      return myColors[index] !=
+                                              Colors.transparent
+                                          ? Card(
+                                              color: myColors[index],
+                                              child: InkWell(
+                                                onTap: () {
+                                                  setState(() {
+                                                    if (shotColor !=
+                                                        myColors[index])
+                                                      appViewModel.isChanged =
+                                                          true;
+                                                    shotColor = myColors[index];
+                                                    curWd.color =
+                                                        myColors[index];
+                                                  });
+                                                },
+                                                child: SizedBox(
+                                                  width: 34.0,
+                                                  height: 34.0,
+                                                  child: shotColor ==
+                                                          myColors[index]
                                                       ? const Icon(
                                                           Icons.check,
                                                           color: Colors.white,
                                                           size: 20,
                                                         )
                                                       : const SizedBox(),
-                                            ),
-                                          ),
-                                        )
-                                      : InkWell(
-                                          onTap: () {
-                                            final _color = shotColor?.value;
-                                            !curWd.isActive
-                                                ? showUneditable()
-                                                : showModalBottomSheet(
-                                                    context: context,
-                                                    isScrollControlled: true,
-                                                    builder:
-                                                        (BuildContext context) {
-                                                      return ColorPickerBS(
-                                                          shotColor ??
-                                                              Colors.white,
-                                                          (c) {
-                                                        setState(() {
-                                                          if (_color != c.value)
-                                                            appViewModel
-                                                                    .isChanged =
-                                                                true;
-                                                          shotColor = c;
-                                                          curWd.color = c;
-                                                          appViewModel
-                                                              .saveUserColor(c);
+                                                ),
+                                              ),
+                                            )
+                                          : InkWell(
+                                              onTap: () {
+                                                final _color = shotColor?.value;
+                                                !curWd.isActive
+                                                    ? showUneditable()
+                                                    : showModalBottomSheet(
+                                                        context: context,
+                                                        isScrollControlled:
+                                                            true,
+                                                        builder: (BuildContext
+                                                            context) {
+                                                          return ColorPickerBS(
+                                                              shotColor ??
+                                                                  Colors.white,
+                                                              (c) {
+                                                            setState(() {
+                                                              if (_color !=
+                                                                  c.value)
+                                                                appViewModel
+                                                                        .isChanged =
+                                                                    true;
+                                                              shotColor = c;
+                                                              curWd.color = c;
+                                                              appViewModel
+                                                                  .saveUserColor(
+                                                                      c);
+                                                            });
+                                                            Navigator.pop(
+                                                                context);
+                                                          });
                                                         });
-                                                        Navigator.pop(context);
-                                                      });
-                                                    });
-                                          },
-                                          child: Center(
-                                            child: Container(
-                                              width: 34.0,
-                                              height: 34.0,
-                                              decoration: BoxDecoration(
-                                                  borderRadius:
-                                                      const BorderRadius.all(
-                                                          Radius.circular(12)),
-                                                  border: Border.all(
-                                                      color:
-                                                          AppColors.darkGrey)),
-                                              child: const Icon(Icons.add,
-                                                  color: AppColors.darkGrey,
-                                                  size: 14),
-                                            ),
-                                          ),
-                                        );
-                                }),
-                              ),
-                            ),
+                                              },
+                                              child: Center(
+                                                child: Container(
+                                                  width: 34.0,
+                                                  height: 34.0,
+                                                  decoration: BoxDecoration(
+                                                      borderRadius:
+                                                          const BorderRadius
+                                                              .all(
+                                                              Radius.circular(
+                                                                  12)),
+                                                      border: Border.all(
+                                                          color: AppColors
+                                                              .darkGrey)),
+                                                  child: const Icon(Icons.add,
+                                                      color: AppColors.darkGrey,
+                                                      size: 14),
+                                                ),
+                                              ),
+                                            );
+                                    }),
+                                  ),
+                                ),
+                              ]),
+                              if (!curWd.isActive)
+                                Positioned.fill(
+                                    child: Container(
+                                  color: AppColors.backgroundColor
+                                      .withOpacity(0.8),
+                                ))
+                            ]),
                             const SizedBox(height: 24),
                             const Divider(
                               color: AppColors.grey,
@@ -775,7 +825,8 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>
                                                         .join("|")
                                                         .toString()),
                                                 color: Colors.red),
-                                            true, true)
+                                            true,
+                                            true)
                                         .then((value) {
                                       BlocProvider.of<NavigationBloc>(context)
                                           .clearHistory();
@@ -823,7 +874,8 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>
                                   appVM.settings.treeView == 0
                                       ? MyTreeView(
                                           key: UniqueKey(),
-                                          roots: root, colors: appVM.nodesColors,
+                                          roots: root,
+                                          colors: appVM.nodesColors,
                                           onTap: (id, type) =>
                                               onTreeItemTap(appVM, id, type))
                                       : TreeViewWidgetV2(
@@ -845,101 +897,109 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>
           ),
         ),
         bottomSheet: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16),
-          child:
-              MediaQuery.of(context).viewInsets.bottom != 0
-                  ? Align(
-                      alignment: Alignment.topRight,
-                      child: Container(
-                          height: 50,
-                          width: 50,
-                          margin: const EdgeInsets.fromLTRB(0, 0, 16, 16),
-                          alignment: Alignment.center,
-                          decoration: const BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.white,
-                          ),
-                          child: GestureDetector(
-                            onTap: () {
-                              FocusManager.instance.primaryFocus?.unfocus();
-                            },
-                            child: const Icon(
-                              Icons.keyboard_hide_sharp,
-                              size: 30,
-                              color: AppColors.darkGrey,
-                            ),
-                          )),
-                    )
-                  : Row(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        FloatingActionButton(
-                          onPressed: () {
-                            appViewModel.mainCircles.clear();
-                            appViewModel.startMainScreen(
-                                appViewModel.mainScreenState!.moon);
-                            BlocProvider.of<NavigationBloc>(context)
-                                .add(NavigateToMainScreenEvent());
-                          },
-                          backgroundColor: curWd.isActive
-                              ? curWd.color
-                              : const Color.fromARGB(255, 217, 217, 217),
-                          shape: const CircleBorder(),
-                          child: const Stack(
-                            children: [
-                              Center(
-                                  child: AutoSizeText(
-                                "Я",
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  color: Colors.white,
-                                ),
-                              )),
-                            ],
-                          ),
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16),
+            child: MediaQuery.of(context).viewInsets.bottom != 0
+                ? Row(
+              children: [
+                !curWd.isActive && curWd.isChecked ||
+                    !appVM.isChanged
+                    ? const Spacer()
+                    : Expanded(
+                  child: ColorRoundedButton(
+                    "Сохранить",
+                        () async {
+                      FocusManager.instance.primaryFocus
+                          ?.unfocus();
+                      onSaveClicked(appViewModel);
+                    },
+                  ),
+                ),
+                Container(
+                    height: 50,
+                    width: 50,
+                    alignment: Alignment.center,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white,
+                    ),
+                    child: GestureDetector(
+                      onTap: () {
+                        FocusManager.instance.primaryFocus?.unfocus();
+                      },
+                      child: const Icon(
+                        Icons.keyboard_hide_sharp,
+                        size: 30,
+                        color: AppColors.darkGrey,
+                      ),
+                    )),
+              ],
+            )
+                : Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      FloatingActionButton(
+                        onPressed: () {
+                          appViewModel.mainCircles.clear();
+                          appViewModel.startMainScreen(
+                              appViewModel.mainScreenState!.moon);
+                          BlocProvider.of<NavigationBloc>(context)
+                              .add(NavigateToMainScreenEvent());
+                        },
+                        backgroundColor: curWd.isActive
+                            ? curWd.color
+                            : const Color.fromARGB(255, 217, 217, 217),
+                        shape: const CircleBorder(),
+                        child: const Stack(
+                          children: [
+                            Center(
+                                child: AutoSizeText(
+                              "Я",
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Colors.white,
+                              ),
+                            )),
+                          ],
                         ),
-                        const SizedBox(width: 16),
-                        curWd.isActive && appVM.isChanged
-                            ? Expanded(
-                                child:
-                                    ColorRoundedButton("Сохранить", () async {
-                                  if (appViewModel.isChanged) {
-                                    onSaveClicked(appVM);
-                                  } else {
-                                    await appViewModel.updateSphereWish(
-                                        WishData(
-                                            id: curWd.id,
-                                            prevId: curWd.prevId,
-                                            nextId: curWd.nextId,
-                                            parentId: curWd.parenId,
-                                            text: curWd.text,
-                                            description: curWd.subText,
-                                            affirmation: curWd.affirmation,
-                                            color: curWd.color));
-                                    if (appViewModel.mainScreenState != null)
-                                      await appViewModel.startMainScreen(
-                                          appViewModel.mainScreenState!.moon);
-                                    appViewModel.hint =
-                                        "Отлично! Теперь пришло время заполнить все сферы жизни. Ты можешь настроить состав и название сфер так, как считаешь нужным. И помни, что максимальное количество сфер ограничено и равно 1.";
-                                    appViewModel.isChanged = false;
-                                    showModalBottomSheet<void>(
-                                      backgroundColor:
-                                          AppColors.backgroundColor,
-                                      context: context,
-                                      isScrollControlled: true,
-                                      builder: (BuildContext context) {
-                                        return NotifyBS('Сохранено', "", 'OK',
-                                            onOk: () =>
-                                                Navigator.pop(context, 'OK'));
-                                      },
-                                    );
-                                  }
-                                }),
-                              )
-                            : const SizedBox(),
-                      ],
-                    )
-        ),
+                      ),
+                      const SizedBox(width: 16),
+                      curWd.isActive && appVM.isChanged
+                          ? Expanded(
+                              child: ColorRoundedButton("Сохранить", () async {
+                                if (appViewModel.isChanged) {
+                                  onSaveClicked(appVM);
+                                } else {
+                                  await appViewModel.updateSphereWish(WishData(
+                                      id: curWd.id,
+                                      prevId: curWd.prevId,
+                                      nextId: curWd.nextId,
+                                      parentId: curWd.parenId,
+                                      text: curWd.text,
+                                      description: curWd.subText,
+                                      affirmation: curWd.affirmation,
+                                      color: curWd.color));
+                                  if (appViewModel.mainScreenState != null)
+                                    await appViewModel.startMainScreen(
+                                        appViewModel.mainScreenState!.moon);
+                                  appViewModel.hint =
+                                      "Отлично! Теперь пришло время заполнить все сферы жизни. Ты можешь настроить состав и название сфер так, как считаешь нужным. И помни, что максимальное количество сфер ограничено и равно 1.";
+                                  appViewModel.isChanged = false;
+                                  showModalBottomSheet<void>(
+                                    backgroundColor: AppColors.backgroundColor,
+                                    context: context,
+                                    isScrollControlled: true,
+                                    builder: (BuildContext context) {
+                                      return NotifyBS('Сохранено', "", 'OK',
+                                          onOk: () =>
+                                              Navigator.pop(context, 'OK'));
+                                    },
+                                  );
+                                }
+                              }),
+                            )
+                          : const SizedBox(),
+                    ],
+                  )),
       );
     });
   }
@@ -965,7 +1025,9 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>
         text: curWd.text,
         description: curWd.subText,
         affirmation: curWd.affirmation,
-        color: curWd.color));
+        color: curWd.color,
+      photoIds: curWd.photosIds
+    ));
     if (appViewModel.mainScreenState != null)
       appViewModel.startMainScreen(appViewModel.mainScreenState!.moon);
     appViewModel.hint =

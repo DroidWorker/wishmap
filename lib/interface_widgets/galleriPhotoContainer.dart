@@ -56,7 +56,7 @@ class GalleryPhotoContainerState extends State<GalleryPhotoContainer> {
         }
       },
       child: imageData != null ? Container(
-        decoration: isSelected ? BoxDecoration(
+        decoration: isSelected&&widget.needtoSelect ? BoxDecoration(
           borderRadius: BorderRadius.circular(10),
           gradient: const LinearGradient(
               colors: [AppColors.gradientStart, AppColors.gradientEnd]),

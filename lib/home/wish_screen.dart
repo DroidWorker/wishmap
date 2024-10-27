@@ -298,9 +298,9 @@ class _WishScreenState extends State<WishScreen> {
                                         ? "Если в данном желании создавались желания, цели и задачи, то они также будут удалены"
                                         : "Если в данной сфере\n создавались желания,\n цели и задачи, то они\n также будут удалены",
                                 "Да",
-                                'Нет', onOk: () {
+                                'Нет', onOk: () async {
                               Navigator.pop(context, 'OK');
-                              appViewModel.deleteSphereWish(
+                              await appViewModel.deleteSphereWish(
                                   appVM.wishScreenState!.wish.id,
                                   curwish.prevId,
                                   curwish.nextId);
@@ -660,8 +660,10 @@ class _WishScreenState extends State<WishScreen> {
                                 if (curwish.shuffle)
                                   curwish.lastShuffle =
                                       "|${DateTime.now().weekday.toString()}";
-                                _affirmation.text =
-                                    affirmationsStr?.split("|")[0] ?? "";
+                                setState(() {
+                                  _affirmation.text =
+                                      affirmationsStr?.split("|")[0] ?? "";
+                                });
                                 if (affirmationsStr != curwish.affirmation)
                                   appViewModel.isChanged = true;
                                 curwish.affirmation = affirmationsStr ?? "";
@@ -841,7 +843,7 @@ class _WishScreenState extends State<WishScreen> {
                           if (curwish.parentId > 1)
                             LayoutBuilder(
                               builder: (context, constraints) {
-                                double fullWidth = constraints.maxWidth - 9;
+                                double fullWidth = constraints.maxWidth;
                                 double leftWidth =
                                     (constraints.maxWidth / 2) - 9;
                                 double rightWidth =

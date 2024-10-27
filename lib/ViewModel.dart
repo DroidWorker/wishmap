@@ -950,14 +950,14 @@ class AppViewModel with ChangeNotifier {
         }
         if (mainScreenState!.allCircles.isEmpty) return;
         var ms = mainScreenState!.allCircles.first;
-        mainCircles.add(MainCircle(
+        mainCircles=[MainCircle(
             id: ms.id,
             coords: Pair(key: 0.0, value: 0.0),
             text: ms.text,
             substring: ms.subText,
             color: ms.color,
             isActive: ms.isActive,
-            isChecked: ms.isChecked));
+            isChecked: ms.isChecked)];
         var cc = mainScreenState!.allCircles
             .where((element) => element.parenId == mainCircles.last.id)
             .toList();
@@ -1384,6 +1384,7 @@ class AppViewModel with ChangeNotifier {
 
   Future<void> updateSphereWish(WishData wd) async {
     try {
+      repository.deleteImages(wd.photoIds);
       Map<int, Uint8List> photos = {};
       String photosIds = "";
       for (var element in cachedImages) {
@@ -2083,7 +2084,20 @@ class AppViewModel with ChangeNotifier {
       await getReminders(id);
       await startMainScreen(MoonItem(
           id: reminders.first.moonId, filling: 0.0, text: "", date: ""));
+      final mainsphere = mainScreenState?.allCircles.first;
+      if(mainsphere!=null) mainCircles = [MainCircle(id: mainsphere.id, coords: Pair(key: 0.0, value: 0.0), text: mainsphere.text, color: mainsphere.color)];
+      openSphere(0);
       currentTask = await localRep.getTask(id, mainScreenState?.moon.id ?? 0);
+      if(reminders.first.remindDays.isNotEmpty){
+        final dayOffset = getDayOffsetToClosest(reminders.first.remindDays.map((e)=> int.parse(e)).toList(), reminders.first.dateTime.add(const Duration(days: 1)).weekday);
+        reminders.first.dateTime = reminders.first.dateTime.add(Duration(days: dayOffset==0?1:dayOffset));
+        localRep.updateReminder(reminders.first);
+        setReminder(reminders.first);
+      }
+      else{
+        reminders.first.remindEnabled=false;
+        localRep.updateReminder(reminders.first);
+      }
       notifyListeners();
     } catch (ex) {
       addError("#2456$ex");
@@ -2369,8 +2383,8 @@ class AppViewModel with ChangeNotifier {
     final taskList = await getTasksForAim(circle.id);
     List<CircleData> allCircles = getParentTree(circle.parenId);
     nodesColors = [
-      mainScreenState?.allCircles.firstWhere((e) => e.id == 0 && e.isActive).color ?? Colors.grey,
-      mainScreenState?.allCircles.firstWhere((e) => e.parenId == 0 && e.isActive).color ??
+      mainScreenState?.allCircles.firstWhereOrNull((e) => e.id == 0 && e.isActive)?.color ?? Colors.grey,
+      mainScreenState?.allCircles.firstWhereOrNull((e) => e.parenId == 0 && e.isActive)?.color ??
           Colors.grey
     ];
     List<MyTreeNode> children = <MyTreeNode>[
@@ -2413,8 +2427,8 @@ class AppViewModel with ChangeNotifier {
     final taskList = await getTasksForAim(aimNode.id);
     List<CircleData> allCircles = getParentTree(wishId);
     nodesColors = [
-      mainScreenState?.allCircles.firstWhere((e) => e.id == 0 && e.isActive).color ?? Colors.grey,
-      mainScreenState?.allCircles.firstWhere((e) => e.parenId == 0 && e.isActive).color ??
+      mainScreenState?.allCircles.firstWhereOrNull((e) => e.id == 0 && e.isActive)?.color ?? Colors.grey,
+      mainScreenState?.allCircles.firstWhereOrNull((e) => e.parenId == 0 && e.isActive)?.color ??
           Colors.grey
     ];
     List<MyTreeNode> children = <MyTreeNode>[

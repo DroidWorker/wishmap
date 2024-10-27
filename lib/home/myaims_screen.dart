@@ -31,6 +31,7 @@ class _AimsScreenState extends State<AimsScreen>{
 
   late AppViewModel appViewModel;
 
+  var updateList = true;
   var isPBActive = false;
   var trashModeActive = false;
 
@@ -40,10 +41,18 @@ class _AimsScreenState extends State<AimsScreen>{
     if(appViewModel.wishItems.isEmpty)appViewModel.startMyWishesScreen();
     return Consumer<AppViewModel>(
         builder: (context, appVM, child) {
-          allAims = appVM.aimItems.where((item)=>!item.text.contains("HEADERSIMPLETASKHEADER")).toList();
-          page==1?filteredAimList = allAims.where((element) => element.isChecked).toList():
-          page==2?filteredAimList = allAims.where((element) => !element.isChecked).toList():
-          page==3?filteredAimList = allAims.where((element) => element.isActive&&!element.isChecked).toList():filteredAimList = allAims;
+          if(updateList) {
+            allAims = appVM.aimItems.where((item) => !item.text.contains(
+                "HEADERSIMPLETASKHEADER")).toList();
+            page == 1 ? filteredAimList =
+                allAims.where((element) => element.isChecked).toList() :
+            page == 2 ? filteredAimList =
+                allAims.where((element) => !element.isChecked).toList() :
+            page == 3 ? filteredAimList =
+                allAims.where((element) => element.isActive &&
+                    !element.isChecked).toList() : filteredAimList = allAims;
+          }
+          updateList=true;
           isPBActive=appVM.isinLoading;
           return Scaffold(
             backgroundColor: AppColors.backgroundColor,
@@ -306,10 +315,8 @@ class _AimsScreenState extends State<AimsScreen>{
         });
       }
     }else if(!aim.isChecked){//выполнить
+      updateList=false;
       appViewModel.updateAimStatus(id, true);
-      setState(() {
-        appViewModel.aimItems.firstWhere((element) => element.id==id).isChecked=true;
-      });
     }else{//удалить
       showModalBottomSheet<void>(
         backgroundColor: AppColors.backgroundColor,

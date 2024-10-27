@@ -140,27 +140,7 @@ Future<void> _scheduleNotification(FlutterLocalNotificationsPlugin flutterLocalN
 }
 
 void setReminder(Reminder reminder) async {
-  if (reminder.remindDays.isNotEmpty) {
-    int reminderId = reminder.TaskId*100;
 
-    reminder.remindDays.indexed.forEach((v) async {
-      final DateTime now = DateTime.now();
-      final int dayOffset = getDayOffset(int.parse(v.$2), now.weekday);
-      DateTime firstAlarmTime = now.add(Duration(days: dayOffset));
-      firstAlarmTime = firstAlarmTime.copyWith(hour: reminder.dateTime.hour, minute: reminder.dateTime.minute);
-
-      await AndroidAlarmManager.periodic(
-        const Duration(days: 7),
-        reminderId+v.$1,
-        showRemindNotification,
-        startAt: firstAlarmTime,
-        exact: true,
-        wakeup: true,
-      );
-
-      print('Repeating reminder ${reminderId+v.$1} set for ${v.$2} starting at $firstAlarmTime');
-    });
-  } else {
     final result = await AndroidAlarmManager.oneShotAt(
       reminder.dateTime,
       reminder.TaskId*100,
@@ -170,7 +150,6 @@ void setReminder(Reminder reminder) async {
       wakeup: true,
     );
     print('Single reminder set for ${reminder.dateTime} with id ${reminder.id} alarmid - ${reminder.TaskId*100} - $result');
-  }
 }
 
 Future<bool> cancelAlarmManager(int id) async{

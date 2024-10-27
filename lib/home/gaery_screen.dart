@@ -291,7 +291,6 @@ class GalleryScreenState extends State<GalleryScreen>{
                     ColorRoundedButton("Удалить", c: AppColors.buttonBackRed, () async {
                       setState(() {
                         deleteIndexes.sort((a,b)  => b.compareTo(a));
-                        print(deleteIndexes);
                         for (var index in deleteIndexes) {
                           appViewModel.cachedImages.removeAt(index);
                           appViewModel.isChanged=true;

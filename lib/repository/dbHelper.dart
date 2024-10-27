@@ -208,6 +208,7 @@ class DatabaseHelper {
     await db.delete("tasks");
     await db.delete("diary");
     await db.delete("moons");
+    await db.delete("images");
   }
   Future clearMoons()async{
     Database db = await database;

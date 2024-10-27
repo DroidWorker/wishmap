@@ -61,6 +61,7 @@ class ReminderItemState extends State<ReminderItem>{
       },
       child: Container(
         padding: const EdgeInsets.all(8),
+        margin: const EdgeInsets.symmetric(vertical: 4),
         decoration: BoxDecoration(
           borderRadius: const BorderRadius.all(Radius.circular(14)),
           border: widget.outlined?Border.all(color: AppColors.gradientStart, width: 2):null,

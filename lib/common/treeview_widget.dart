@@ -313,7 +313,7 @@ class MyTreeTile extends StatelessWidget {
                         : Container(
                             height: fillWidth ? 50 : 25,
                             decoration: BoxDecoration(
-                                color: selected ? null : Colors.white,
+                                color: selected && entry.node.noClickable ? null : Colors.white,
                                 gradient: selected && entry.node.noClickable
                                     ? const LinearGradient(colors: [
                                         AppColors.gradientStart,
