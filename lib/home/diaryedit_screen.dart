@@ -91,13 +91,15 @@ class DiaryEditScreenState extends State<DiaryEditScreen>{
                               BlocProvider.of<NavigationBloc>(context).handleBackPress();
                             }
                         ),
-                        TextButton(onPressed: () async {
-                          currentTitle = (await showDiaryOverlayedEdittext(context, currentTitle, null, false)).keys.firstOrNull??"";
-                          setState(() {});
-                        },
-                            child: Text(currentTitle, style: const TextStyle(color: Colors.black, fontWeight: FontWeight.w600, fontSize: 16))
+                        Expanded(
+                          child: TextButton(onPressed: () async {
+                            currentTitle = (await showDiaryOverlayedEdittext(context, currentTitle, null, false)).keys.firstOrNull??"";
+                            setState(() {});
+                          },
+                              child: Text(currentTitle, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Colors.black, fontWeight: FontWeight.w600, fontSize: 16))
+                          ),
                         ),
-                        IconButton(
+                        if(widget.diaryId > 6)IconButton(
                           padding: EdgeInsets.zero,
                           constraints: const BoxConstraints(),
                           style: const ButtonStyle(
@@ -207,16 +209,25 @@ class DiaryEditScreenState extends State<DiaryEditScreen>{
                                     errorText: isDescripttionOver? 'максимальная длина текста 130 символов':null,
                                   ),
                                   style: const TextStyle(color:  AppColors.greytextColor, fontSize: 16),
-                                ):Container(
-                                  height: 60,
-                                  width: double.infinity,
-                                  padding: const EdgeInsets.all(14),
-                                  alignment: Alignment.centerLeft,
-                                  decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(8),
-                                      border: Border.all(color: AppColors.etGrey)
+                                ):GestureDetector(
+                                  onTap: () async {
+                                    currentSubtitle =
+                                        (await showDiaryOverlayedEdittext(
+                                            context, currentSubtitle, null,
+                                            false)).keys.firstOrNull ?? "";
+                                    setState(() {});
+                                  },
+                                  child: Container(
+                                    height: 60,
+                                    width: double.infinity,
+                                    padding: const EdgeInsets.all(14),
+                                    alignment: Alignment.centerLeft,
+                                    decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(color: AppColors.etGrey)
+                                    ),
+                                    child: const Text("Описание", style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: AppColors.etGrey),),
                                   ),
-                                  child: const Text("Описание", style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: AppColors.etGrey),),
                                 ),
                                 const SizedBox(height: 14)
                               ],

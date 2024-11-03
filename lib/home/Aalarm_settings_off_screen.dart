@@ -90,7 +90,7 @@ class AlarmSettingsOffScreen extends StatelessWidget{
                     ),
                   ),
                   const SizedBox(height: 8),
-                  InkWell(
+                  if(offMods.contains(2))InkWell(
                     onTap: () async {
                       final p = await _showBottomSheet(context, 2);
                       if(p==null) return;

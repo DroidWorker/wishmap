@@ -29,27 +29,34 @@ class LocalRepository {
   }
 
   //lockScreen
-  Future saveLockParams(LockParams lp) async{
-    String sstr(String input){
-      final h = (input.hashCode%100).toInt();
-      return "${(h-int.parse(input[0])).toString().padLeft(2, "0")}${(h-int.parse(input[1])).toString().padLeft(2, "0")}${(h-int.parse(input[2])).toString().padLeft(2, "0")}${(h-int.parse(input[3])).toString().padLeft(2, "0")}${h}";
+  Future saveLockParams(LockParams lp) async {
+    String sstr(String input) {
+      final h = (input.hashCode % 100).toInt();
+      return "${(h - int.parse(input[0])).toString().padLeft(2, "0")}${(h - int.parse(input[1])).toString().padLeft(2, "0")}${(h - int.parse(input[2])).toString().padLeft(2, "0")}${(h - int.parse(input[3])).toString().padLeft(2, "0")}${h}";
     }
+
     if (_prefs == null) {
       await init();
     }
-    _prefs!.setString("appPassword", lp.password.isNotEmpty?sstr(lp.password):lp.password);
-    _prefs!.setInt("enableFingerprint", lp.allowFingerprint?1:0);
+    _prefs!.setString("appPassword",
+        lp.password.isNotEmpty ? sstr(lp.password) : lp.password);
+    _prefs!.setInt("enableFingerprint", lp.allowFingerprint ? 1 : 0);
   }
-  LockParams getLockParams(){
-    String unsstr(String input){
+
+  LockParams getLockParams() {
+    String unsstr(String input) {
       final h = int.parse(input.substring(8, 10));
-      return "${h-int.parse(input.substring(0, 2))}${h-int.parse(input.substring(2, 4))}${h-int.parse(input.substring(4, 6))}${h-int.parse(input.substring(6, 8))}";
+      return "${h - int.parse(input.substring(0, 2))}${h - int.parse(input.substring(2, 4))}${h - int.parse(input.substring(4, 6))}${h - int.parse(input.substring(6, 8))}";
     }
+
     final pass = _prefs!.getString("appPassword");
     final enableFingerprint = _prefs!.getInt("enableFingerprint");
-    return LockParams(password: pass!=null&&pass.isNotEmpty?unsstr(pass):"", allowFingerprint: enableFingerprint==1?true:false);
+    return LockParams(
+        password: pass != null && pass.isNotEmpty ? unsstr(pass) : "",
+        allowFingerprint: enableFingerprint == 1 ? true : false);
   }
-  Future<String> getLockPass() async{
+
+  Future<String> getLockPass() async {
     if (_prefs == null) {
       await init();
     }
@@ -117,7 +124,8 @@ class LocalRepository {
       await init(); // Дождитесь завершения инициализации
     }
     ActualizingSettingData settings = ActualizingSettingData();
-    settings.actualizeFullBranch = _prefs!.getBool("actualizeFullBranch") ?? true;
+    settings.actualizeFullBranch =
+        _prefs!.getBool("actualizeFullBranch") ?? true;
     settings.fastActMainSphere = _prefs!.getBool("fastActMainSphere") ?? true;
     settings.sphereActualizingMode =
         _prefs!.getInt("sphereActualizingMode") ?? 1;
@@ -176,6 +184,7 @@ class LocalRepository {
     resstr += resstr != "" ? "<<$name|$path" : "$name|$path";
     _prefs!.setString("music", resstr);
   }
+
   Future<void> updateTracks(Map<String, String> trackDatas) async {
     if (_prefs == null) {
       await init(); // Дождитесь завершения инициализации
@@ -263,7 +272,18 @@ class LocalRepository {
     String? phone = _prefs!.getString("phone");
     String? tg = _prefs!.getString("tg");
     return (id != null && name != null && surname != null)
-        ? ProfileData(id: id, name: name, surname: surname, birtday: birthday!=null?DateTime.parse(birthday):DateTime(2000, 9, 7, 17, 30), male: male??true, email: email??"", thirdname: lastname??"", phone: phone??"", tg: tg??"")
+        ? ProfileData(
+            id: id,
+            name: name,
+            surname: surname,
+            birtday: birthday != null
+                ? DateTime.parse(birthday)
+                : DateTime(2000, 9, 7, 17, 30),
+            male: male ?? true,
+            email: email ?? "",
+            thirdname: lastname ?? "",
+            phone: phone ?? "",
+            tg: tg ?? "")
         : null;
   }
 
@@ -379,7 +399,9 @@ class LocalRepository {
           ..photoIds = result['photosIds']
           ..isChecked = result['isChecked'] == "1" ? true : false
           ..isActive = result["isActive"] == "1" ? true : false
-          ..isHidden = result['isHidden'] == 1 ? true : false)
+          ..isHidden = result['isHidden'] == 1 ? true : false
+          ..shuffle = result['shuffle'] == 1 ? true : false
+          ..lastShuffle = result['lastShuffle'])
         : null);
   }
 
@@ -400,21 +422,26 @@ class LocalRepository {
   Future<List<CircleData>> getAllMoonSpheres(int moonId) async {
     final result = await dbHelper.getAllMoonSpheres(moonId);
     List<CircleData> list = result
-        .map((e) => CircleData(
-            id: e['id'],
-            prevId: e['prevId'],
-            nextId: e['nextId'],
-            parenId: e['parentId'],
-            text: e['text'],
-            affirmation: e['affirmation'],
-            color: Color(e['color']),
-            subText: e['subtext'],
-            photosIds: e['photosIds'],
-            isHidden: e['isHidden'] == 1 ? true : false,
-            isActive: e['isActive'] == "1" ? true : false,
-            isChecked: e['isChecked'] == "1" ? true : false))
+        .map((e) {
+              var t = CircleData(
+                id: e['id'],
+                prevId: e['prevId'],
+                nextId: e['nextId'],
+                parenId: e['parentId'],
+                text: e['text'],
+                affirmation: e['affirmation'],
+                color: Color(e['color']),
+                subText: e['subtext'],
+                photosIds: e['photosIds'],
+                isHidden: e['isHidden'] == 1 ? true : false,
+                isActive: e['isActive'] == "1" ? true : false,
+                isChecked: e['isChecked'] == "1" ? true : false,
+              );
+                t.shuffle = e['shuffle'] == 1 ? true : false;
+                t.lastShuffle = e['lastShuffle'];
+              return t;
+            })
         .toList();
-    print("circleslist   ${list.length}");
     //filter list for queqe displaying
     return sortList(list);
   }
@@ -711,6 +738,10 @@ class LocalRepository {
         .toList();
   }
 
+  duplicateArticles(int oldMoonId, newMoonId){
+    dbHelper.duplicateArticles(oldMoonId, newMoonId);
+  }
+
   addDiary(CardData cd, int moonId) {
     dbHelper.insertDiary(cd, moonId);
   }
@@ -808,7 +839,8 @@ class LocalRepository {
     dbHelper.addPromocode(promocode, userId);
   }
 
-  Future<Map<String, String>> getPromocodes(String userId, {String? pType}) async {
+  Future<Map<String, String>> getPromocodes(String userId,
+      {String? pType}) async {
     return await dbHelper.getPromocodes(userId, pType);
   }
 }

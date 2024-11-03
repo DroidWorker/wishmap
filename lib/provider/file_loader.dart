@@ -14,7 +14,7 @@ class FileDownloader {
     final SendPort? send = IsolateNameServer.lookupPortByName(
       'downloader_send_port',
     );
-    print("seeeeeeerv$send");
+    print("seeeeeeerv$send - $status");
     send?.send("$id,$status,$progress");
   }
   static Future<String?> downloadFile(String url, String savedDir) async {

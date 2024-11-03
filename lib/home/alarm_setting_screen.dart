@@ -138,9 +138,13 @@ class AlarmSettingScreenState extends State<AlarmSettingScreen> {
                       settingScreen = 0;
                     });
                   }, [
-                    appVM.wishItems.isEmpty ? -1 : 0,
-                    appVM.taskItems.isEmpty ? -1 : 1,
-                    2
+                    appVM.wishItems.isEmpty || alarm.offMods.contains(0)
+                        ? -1
+                        : 0,
+                    appVM.taskItems.isEmpty || alarm.offMods.contains(1)
+                        ? -1
+                        : 1,
+                    alarm.offMods.contains(2) ? -1 : 2
                   ])
                 : settingScreen == 1
                     ? SnoozeSettingsScreen(alarm.snooze, (snooze) {
@@ -170,17 +174,27 @@ class AlarmSettingScreenState extends State<AlarmSettingScreen> {
                                           .shrinkWrap, // the '2023' part
                                     ),
                                     icon: const Icon(Icons.keyboard_arrow_left,
-                                        size: 28, color: AppColors.gradientStart),
+                                        size: 28,
+                                        color: AppColors.gradientStart),
                                     onPressed: () async {
                                       if (alarm.dateTime
                                           .isBefore(DateTime.now())) {
-                                        if(alarm.remindDays.isNotEmpty){
-                                          final dayOffset = getDayOffsetToClosest(alarm.remindDays.map((e)=> int.parse(e)).toList(), alarm.dateTime.add(const Duration(days: 1)).weekday);
-                                          alarm.dateTime.add(Duration(days: dayOffset));
-                                        }else {
-                                          alarm.dateTime = alarm.dateTime.add(const Duration(days: 1));
+                                        if (alarm.remindDays.isNotEmpty) {
+                                          final dayOffset =
+                                              getDayOffsetToClosest(
+                                                  alarm.remindDays
+                                                      .map((e) => int.parse(e))
+                                                      .toList(),
+                                                  alarm.dateTime
+                                                      .add(const Duration(
+                                                          days: 1))
+                                                      .weekday);
+                                          alarm.dateTime
+                                              .add(Duration(days: dayOffset));
+                                        } else {
+                                          alarm.dateTime = alarm.dateTime
+                                              .add(const Duration(days: 1));
                                         }
-                                        return;
                                       }
                                       if (alarm.remindDays.isNotEmpty) {
                                         final dayOffset = getDayOffsetToClosest(
@@ -192,11 +206,13 @@ class AlarmSettingScreenState extends State<AlarmSettingScreen> {
                                             .add(Duration(days: dayOffset));
                                       }
                                       List<int> alarmIds = [];
-                                      alarm.dateTime = alarm.dateTime.copyWith(second: 0);
+                                      alarm.dateTime =
+                                          alarm.dateTime.copyWith(second: 0);
                                       alarm.remindEnabled = true;
                                       alarmIds = await setAlarm(alarm, false);
                                       if (alarm.notificationIds.isNotEmpty)
-                                        cancelAlarmManager(alarm.notificationIds.first);
+                                        cancelAlarmManager(
+                                            alarm.notificationIds.first);
                                       if (alarmIds.isEmpty) return;
                                       shouldUpdate
                                           ? appVM.updateAlarm(Alarm(
@@ -210,7 +226,8 @@ class AlarmSettingScreenState extends State<AlarmSettingScreen> {
                                               vibration: alarm.vibration,
                                               notificationIds: alarmIds,
                                               offMods: alarm.offMods,
-                                              offModsParams: alarm.offModsParams,
+                                              offModsParams:
+                                                  alarm.offModsParams,
                                               snooze: alarm.snooze))
                                           : appVM.addAlarm(Alarm(
                                               alarm.id,
@@ -223,7 +240,8 @@ class AlarmSettingScreenState extends State<AlarmSettingScreen> {
                                               vibration: alarm.vibration,
                                               notificationIds: alarmIds,
                                               offMods: alarm.offMods,
-                                              offModsParams: alarm.offModsParams,
+                                              offModsParams:
+                                                  alarm.offModsParams,
                                               snooze: alarm.snooze));
                                       BlocProvider.of<NavigationBloc>(context)
                                           .handleBackPress();
@@ -280,7 +298,7 @@ class AlarmSettingScreenState extends State<AlarmSettingScreen> {
                                           MainAxisAlignment.center,
                                       children: [
                                         StringPicker(
-                                          zeroPad: true,
+                                            zeroPad: true,
                                             infiniteLoop: true,
                                             itemWidth: 70,
                                             minValue: 0,
@@ -371,6 +389,8 @@ class AlarmSettingScreenState extends State<AlarmSettingScreen> {
                                                     ? Positioned(
                                                         right: -7,
                                                         top: -7,
+                                                        width: 20,
+                                                        height: 20,
                                                         child: InkWell(
                                                           onTap: () {
                                                             setState(() {

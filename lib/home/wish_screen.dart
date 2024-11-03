@@ -54,7 +54,8 @@ class _WishScreenState extends State<WishScreen> {
     Color(0xFFFEE600),
     Color(0xFF0029FF),
     Color(0xFF46C7FE),
-    Color(0xFF009989)
+    Color(0xFF009989),
+  Color(0xFFC522FF)
   ];
   var myColors = [];
 
@@ -62,6 +63,7 @@ class _WishScreenState extends State<WishScreen> {
   ScrollController _scrollController = ScrollController();
   final GlobalKey _keyToScroll = GlobalKey();
   late GlobalKey _treeViewKey;
+  var noScroll=false;
 
   TaskItem? wishTasks;
   AimItem? wishAims;
@@ -210,8 +212,9 @@ class _WishScreenState extends State<WishScreen> {
             );
           }
           if (root.isNotEmpty) appVM.needAutoScrollBottom = false;
-        } else {
+        } else if(!noScroll) {
           _scrollController.jumpTo(0.0);
+          noScroll=false;
         }
       });
 
@@ -646,6 +649,7 @@ class _WishScreenState extends State<WishScreen> {
                                         false,
                                         curwish.shuffle,
                                         onShuffleClick: (value) {
+                                          appVM.isChanged=true;
                                         curwish.shuffle = value;
                                       })
                                     : await showOverlayedAffirmations(
@@ -655,6 +659,7 @@ class _WishScreenState extends State<WishScreen> {
                                         true,
                                         curwish.shuffle,
                                         onShuffleClick: (value) {
+                                          appVM.isChanged=true;
                                         curwish.shuffle = value;
                                       });
                                 if (curwish.shuffle)
@@ -1098,6 +1103,7 @@ class _WishScreenState extends State<WishScreen> {
                                   child: InkWell(
                                     onTap: () {
                                       setState(() {
+                                        noScroll=true;
                                         if (_color != defaultColorList[index])
                                           appViewModel.isChanged = true;
                                         _color = defaultColorList[index];
@@ -1139,6 +1145,7 @@ class _WishScreenState extends State<WishScreen> {
                                         child: InkWell(
                                           onTap: () {
                                             setState(() {
+                                              noScroll=true;
                                               if (_color != myColors[index])
                                                 appViewModel.isChanged = true;
                                               _color = myColors[index];
@@ -1178,6 +1185,7 @@ class _WishScreenState extends State<WishScreen> {
                                                                 Colors.white,
                                                             (c) {
                                                           setState(() {
+                                                            noScroll=true;
                                                             if (shotColor !=
                                                                 c.value)
                                                               appViewModel
@@ -1266,7 +1274,7 @@ class _WishScreenState extends State<WishScreen> {
                               () async {
                                 if (appVM.mainScreenState!.allCircles
                                         .where((element) =>
-                                            element.parenId == curwish.id)
+                                            element.parenId == curwish.id && !element.isHidden)
                                         .toList()
                                         .length >=
                                     12) {
@@ -1459,6 +1467,8 @@ class _WishScreenState extends State<WishScreen> {
                                         ..text = _title.text
                                         ..description = _description.text
                                         ..affirmation = curwish.affirmation
+                                        ..shuffle = curwish.shuffle
+                                        ..lastShuffle = curwish.lastShuffle
                                         ..color = _color!;
                                       await appViewModel.createNewSphereWish(
                                           appVM.wishScreenState!.wish,
@@ -1509,7 +1519,7 @@ class _WishScreenState extends State<WishScreen> {
                   : Row(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        if (!curwish.text.contains("HEADERSI"))
+                        if (!curwish.text.contains("HEADERSI")&&!curwish.isHidden)
                           FloatingActionButton(
                             onPressed: () {
                               appViewModel.createMainScreenSpherePath(
@@ -1574,6 +1584,8 @@ class _WishScreenState extends State<WishScreen> {
                                         ..text = _title.text
                                         ..description = _description.text
                                         ..affirmation = curwish.affirmation
+                                        ..shuffle = curwish.shuffle
+                                        ..lastShuffle = curwish.lastShuffle
                                         ..color = _color!;
                                       await appViewModel.createNewSphereWish(
                                           appVM.wishScreenState!.wish,
@@ -1745,9 +1757,12 @@ class _WishScreenState extends State<WishScreen> {
       ..text = title.text
       ..description = description.text
       ..affirmation = curwish.affirmation
+      ..shuffle = curwish.shuffle
+      ..lastShuffle = curwish.lastShuffle
       ..color = _color!;
     await appVM.createNewSphereWish(appVM.wishScreenState!.wish, false, true);
     appVM.isChanged = false;
+    appVM.mainScreenState?.allCircles.firstWhereOrNull((e) => e.id==curwish.id)?.text=title.text;
     appVM.convertToMyTreeNodeFullBranch(curwish.id);
     showModalBottomSheet<void>(
       backgroundColor: AppColors.backgroundColor,

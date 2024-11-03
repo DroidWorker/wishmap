@@ -218,6 +218,7 @@ class _WishesScreenState extends State<WishesScreen>{
                   );}))),
                   const SizedBox(height: 3),
                   !trashModeActive?ColorRoundedButton("Добавить желание", (){
+                    appVM.mainCircles.clear();
                     if(appVM.mainScreenState!=null)appVM.startMainScreen(appVM.mainScreenState!.moon);
                     appVM.hint="Добавление ЖЕЛАНИЙ происходит из карты сферы. Определи нужную сферу и создай желание, поставь цели и выполняй задачи. Твои желания обязательно сбудутся";
                     BlocProvider.of<NavigationBloc>(context)

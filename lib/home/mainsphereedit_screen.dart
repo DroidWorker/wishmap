@@ -52,7 +52,8 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>
     Color(0xFFFEE600),
     Color(0xFF0029FF),
     Color(0xFF46C7FE),
-    Color(0xFF009989)
+    Color(0xFF009989),
+    Color(0xFFC522FF)
   ];
   var myColors = [];
 
@@ -530,7 +531,7 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>
                                                   fullWidth,
                                                   e.first,
                                                   appVM.isinLoading,
-                                                  !curWd.isActive);
+                                                  false);
                                             } else if (e.length == 2)
                                               return buildTwin(
                                                   leftWidth,
@@ -693,9 +694,10 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>
                                                 !curWd.isActive
                                                     ? showUneditable()
                                                     : showModalBottomSheet(
-                                                        context: context,
-                                                        isScrollControlled:
-                                                            true,
+                                                    backgroundColor: AppColors
+                                                        .backgroundColor,
+                                                    context: context,
+                                                    isScrollControlled: true,
                                                         builder: (BuildContext
                                                             context) {
                                                           return ColorPickerBS(
@@ -949,13 +951,13 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>
                             ? curWd.color
                             : const Color.fromARGB(255, 217, 217, 217),
                         shape: const CircleBorder(),
-                        child: const Stack(
+                        child: Stack(
                           children: [
                             Center(
                                 child: AutoSizeText(
-                              "Я",
+                              curWd.text,
                               textAlign: TextAlign.center,
-                              style: TextStyle(
+                              style: const TextStyle(
                                 color: Colors.white,
                               ),
                             )),
@@ -977,7 +979,9 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>
                                       text: curWd.text,
                                       description: curWd.subText,
                                       affirmation: curWd.affirmation,
-                                      color: curWd.color));
+                                      color: curWd.color)
+                                    ..shuffle=curWd.shuffle
+                                  ..lastShuffle=curWd.lastShuffle);
                                   if (appViewModel.mainScreenState != null)
                                     await appViewModel.startMainScreen(
                                         appViewModel.mainScreenState!.moon);
@@ -1027,7 +1031,8 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>
         affirmation: curWd.affirmation,
         color: curWd.color,
       photoIds: curWd.photosIds
-    ));
+    )..shuffle=curWd.shuffle
+      ..lastShuffle=curWd.lastShuffle);
     if (appViewModel.mainScreenState != null)
       appViewModel.startMainScreen(appViewModel.mainScreenState!.moon);
     appViewModel.hint =

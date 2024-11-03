@@ -132,7 +132,6 @@ Future<void> _handleNotificationResponse(
     final id = int.parse(response.payload!.split("|")[1]);
     _runAppWithAlarm(id ~/ 100, vm);
   } else if (response.payload?.contains("WishMap://task") == true) {
-    print("startwithtask - ${response.payload}");
     _runAppWithTask(response, vm);
   }
 }

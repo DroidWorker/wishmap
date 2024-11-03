@@ -389,6 +389,65 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                                   ),
                                 ),
                               ),
+                              const SizedBox(height: 24),
+                              const Divider(color: AppColors.grey, height: 2,),
+                              const SizedBox(height: 16),
+                              ...appVM.reminders.map((e){
+                                return ReminderItem(e, onTap: (id){
+                                  showModalBottomSheet(context: context,backgroundColor: AppColors.backgroundColor, isScrollControlled: true, builder: (BuildContext context){
+                                    return ReminderBS(reminder: e, (reminder){
+                                      setState(() {
+                                        appVM.updateReminder(reminder);
+                                        setReminder(reminder);
+                                        Navigator.pop(context, 'OK');
+                                      });
+                                    }, ai?.id??-1, appVM.mainScreenState?.moon.id??0);
+                                  });
+                                },
+                                  onDelete: (id){
+                                    final taskId = e.TaskId;
+                                    appVM.deleteReminder(id);
+                                    if(e.remindDays.isNotEmpty){
+                                      for (var i = 0; i<e.remindDays.length; i++) {
+                                        cancelAlarmManager(taskId*100+i);
+                                      }
+                                    }else {
+                                      cancelAlarmManager(taskId*100);
+                                    }
+                                  },
+                                  onChangeState: (id, v){
+                                    if(v){
+                                      e.remindEnabled=true;
+                                      appVM.updateReminder(e);
+                                      setReminder(e);
+                                    }else{
+                                      final taskId = e.TaskId;
+                                      e.remindEnabled=false;
+                                      appVM.updateReminder(e);
+                                      if(e.remindDays.isNotEmpty){
+                                        for (var i = 0; i<e.remindDays.length; i++) {
+                                          cancelAlarmManager(taskId*100+i);
+                                        }
+                                      }else {
+                                        cancelAlarmManager(taskId*100);
+                                      }
+                                    }
+                                  },
+                                );
+                              }),
+                              const SizedBox(height: 16),
+                              OutlinedGradientButton("Напоминание", widgetBeforeText: const Icon(Icons.add_circle_outline_rounded), (){
+                                showModalBottomSheet(context: context,backgroundColor: AppColors.backgroundColor, isScrollControlled: true, builder: (BuildContext context){
+                                  return ReminderBS((reminder){
+                                    setState(() {
+                                      appVM.addReminder(reminder);
+                                      setReminder(reminder);
+                                      Navigator.pop(context, 'OK');
+                                    });
+                                  }, ai?.id??-1, appVM.mainScreenState?.moon.id??0);
+                                });
+                              }),
+                              const SizedBox(height: 16),
                             ],),
                             if(ai?.isActive==false||ai?.isChecked==true)Positioned.fill(
                                 child: Container(
@@ -396,65 +455,7 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                                 )
                             )
                           ],),
-                          const SizedBox(height: 24),
-                          const Divider(color: AppColors.grey, height: 2,),
-                          const SizedBox(height: 16),
-                          ...appVM.reminders.map((e){
-                            return ReminderItem(e, onTap: (id){
-                              showModalBottomSheet(context: context,backgroundColor: AppColors.backgroundColor, isScrollControlled: true, builder: (BuildContext context){
-                                return ReminderBS(reminder: e, (reminder){
-                                  setState(() {
-                                    appVM.updateReminder(reminder);
-                                    setReminder(reminder);
-                                    Navigator.pop(context, 'OK');
-                                  });
-                                }, ai?.id??-1, appVM.mainScreenState?.moon.id??0);
-                              });
-                            },
-                            onDelete: (id){
-                              final taskId = e.TaskId;
-                              appVM.deleteReminder(id);
-                              if(e.remindDays.isNotEmpty){
-                                for (var i = 0; i<e.remindDays.length; i++) {
-                                  cancelAlarmManager(taskId*100+i);
-                                }
-                              }else {
-                                cancelAlarmManager(taskId*100);
-                              }
-                            },
-                              onChangeState: (id, v){
-                                if(v){
-                                  e.remindEnabled=true;
-                                  appVM.updateReminder(e);
-                                  setReminder(e);
-                                }else{
-                                  final taskId = e.TaskId;
-                                  e.remindEnabled=false;
-                                  appVM.updateReminder(e);
-                                  if(e.remindDays.isNotEmpty){
-                                    for (var i = 0; i<e.remindDays.length; i++) {
-                                      cancelAlarmManager(taskId*100+i);
-                                    }
-                                  }else {
-                                    cancelAlarmManager(taskId*100);
-                                  }
-                                }
-                              },
-                            );
-                          }),
-                          const SizedBox(height: 16),
-                          OutlinedGradientButton("Напоминание", widgetBeforeText: const Icon(Icons.add_circle_outline_rounded), (){
-                            showModalBottomSheet(context: context,backgroundColor: AppColors.backgroundColor, isScrollControlled: true, builder: (BuildContext context){
-                              return ReminderBS((reminder){
-                                  setState(() {
-                                    appVM.addReminder(reminder);
-                                    setReminder(reminder);
-                                    Navigator.pop(context, 'OK');
-                                  });
-                              }, ai?.id??-1, appVM.mainScreenState?.moon.id??0);
-                            });
-                          }),
-                          const SizedBox(height: 16),
+
                           const Divider(color: AppColors.grey, height: 2,),
                           const SizedBox(height: 16),
                           appVM.settings.treeView==0?MyTreeView(key: UniqueKey(),roots: roots, colors: appVM.nodesColors, currentId: ai?.id, onTap: (id,type) => onTreeItemTap(appVM, id, type)):

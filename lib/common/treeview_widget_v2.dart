@@ -35,10 +35,15 @@ class _TreeViewWidgetState extends State<TreeViewWidgetV2> {
     }
     Map<int, String> path = {widget.root.id: widget.root.title};
     MyTreeNode node = widget.root;
-    do {
-      node = getChild(node);
+    if(widget.idToOpen==0) {
       path[node.id] = node.title;
-    }while(node.id!=widget.idToOpen&&node.children.isNotEmpty);
+    }
+    else {
+      do {
+        node = getChild(node);
+        path[node.id] = node.title;
+      } while (node.id != widget.idToOpen && node.children.isNotEmpty);
+    }
 
     _onNodePressed(node, path);
 

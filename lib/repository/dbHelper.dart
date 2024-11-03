@@ -270,6 +270,19 @@ class DatabaseHelper {
     }
   }
 
+  Future duplicateArticles(int oldMooon, int newMoon) async {
+    Database db = await database;
+    return await db.transaction((txn) async {
+          await txn.rawInsert('''
+            INSERT INTO articles (moonId, text, parentDiaryId, date, time, attacments)
+            SELECT ?, text, parentDiaryId, date, time, attacments
+            FROM articles
+            WHERE moonId = ?
+          ''', [newMoon, oldMooon]);
+        }
+    );
+  }
+
   Future<int> insertDiary(CardData cd, int moonid) async {
     Database db = await database;
     return await db.insert('diary', {'id': cd.id, 'moonId':moonid,  'title': cd.title, 'description': cd.description, 'text': cd.text, 'emoji': cd.emoji, 'color': cd.color.value});

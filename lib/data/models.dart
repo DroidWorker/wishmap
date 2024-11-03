@@ -96,7 +96,7 @@ class CircleData{
   }
 
   CircleData copy(){
-    return CircleData(
+    return (CircleData(
     id: id,
     prevId: prevId,
     nextId: nextId,
@@ -108,7 +108,9 @@ class CircleData{
     photosIds:  photosIds,
     isChecked: isChecked,
     isActive: isActive,
-    );
+    )
+    ..shuffle=shuffle
+    ..lastShuffle=lastShuffle);
   }
 }
 

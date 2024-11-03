@@ -53,6 +53,7 @@ class _TaskScreenState extends State{
                     !element.isChecked).toList()
                 : filteredTaskList = taskList;
           }
+          updateList=true;
           isPBActive=appVM.isinLoading;
           return Scaffold(
               backgroundColor: AppColors.backgroundColor,
@@ -308,8 +309,9 @@ class _TaskScreenState extends State{
     }else if(!task.isChecked){//выполнить
       appViewModel.updateTaskStatus(id, true, needUpdate: false);
       setState(() {
-        appViewModel.taskItems.firstWhere((element) => element.id==id).isChecked=true;
         updateList = false;
+        appViewModel.taskItems.firstWhere((element) => element.id==id).isChecked=true;
+        taskList.firstWhere((element)=>element.id==id).isChecked=true;
       });
     }else{//удалить
       showModalBottomSheet<void>(
@@ -322,6 +324,7 @@ class _TaskScreenState extends State{
                 Navigator.pop(context, 'OK');
                 appViewModel.deleteTask(id ,task.parentId);
                 setState(() {
+                 updateList=true;
                   taskList.removeWhere((element) => element.id==id);
                 });
               },

@@ -192,14 +192,14 @@ class ReminderBSState extends State<ReminderBS>{
                 Row(
                   children: [
                     StringPicker(itemWidth: 160, minValue: 0, maxValue: 60, value: dayList.indexWhere((e)=>e.day==selectedDatetime.day&&e.month==selectedDatetime.month), text: dayList.map((e)=>"${e.day} ${monthOfYear[e.month]?.toLowerCase()}").toList(), onChanged: (v){
-                        selectedDatetime = selectedDatetime.copyWith(day: dayList[v].day, month: dayList[v].month);
+                        selectedDatetime = selectedDatetime.copyWith(day: dayList[v].day, month: dayList[v].month, year: dayList[v].year);
                           setState(() {
                             datetime = "${fullDayOfWeek[selectedDatetime.weekday]}, ${selectedDatetime.day} ${monthOfYear[selectedDatetime.month]} ${selectedDatetime.year}";
                           selectedItem = IntervalLabel.none;
                         });
                     }),
                     const Spacer(),
-                    StringPicker(itemWidth: 70, minValue: 0, maxValue: 23, value: selectedDatetime.hour, onChanged: (v){
+                    StringPicker(itemWidth: 70, minValue: 0, maxValue: 23, infiniteLoop: true, value: selectedDatetime.hour, onChanged: (v){
                         selectedDatetime = selectedDatetime.copyWith(hour: v);
                         if(selectedItem!=IntervalLabel.none) {
                           setState(() {

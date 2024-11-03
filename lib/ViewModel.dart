@@ -204,7 +204,7 @@ class AppViewModel with ChangeNotifier {
         prevId: 100,
         nextId: 300,
         text: 'Любовь',
-        color: const Color(0xFFFF006B),
+        color: const Color(0xFFC522FF),
         affirmation: defaultAffirmations.join("|"),
         parenId: 0)
       ..shuffle = true
@@ -419,6 +419,10 @@ class AppViewModel with ChangeNotifier {
   Future<String?> cacheTrack(String name, String url) async {
     if (url == "") return null;
     final directory = await getTemporaryDirectory();
+    final file = File('${directory.path}/$name');
+    if(await file.exists()){
+      await file.delete();
+    }
     final loadId = await FileDownloader.downloadFile(url, directory.path);
     if (loadId != null) loadIds[loadId] = name;
     return loadId;
@@ -447,6 +451,7 @@ class AppViewModel with ChangeNotifier {
       try {
         final directory = await getTemporaryDirectory();
         await File('${directory.path}/$name').delete();
+        audios.remove(name);
       } catch (ex) {
         print("filenotfound - $ex");
       }
@@ -703,12 +708,18 @@ class AppViewModel with ChangeNotifier {
     });
     await localRep.commitTasksAdd(moonId);
     final diary = await localRep.getAllDiary(moonId - 1);
+    List<Article> articles = [];
     diary.forEach((element) async {
       await localRep.addDiary(element, moonId);
+      articles.addAll(await localRep.getArticles(element.id, moonId));
     });
+    localRep.duplicateArticles(moonId - 1, moonId);
     await repository.addAllAims(aims, moonId);
     await repository.addAllTasks(tasks, moonId);
     repository.addDiary(diary, moonId);
+    for (var e in articles) {
+      repository.addDiaryArticle(e, moonId);
+    }
     updateMoonSync(moonId);
     notifyListeners();
   }
@@ -930,7 +941,6 @@ class AppViewModel with ChangeNotifier {
         .toList();
     if (mainCircles.length > 1) mainCircles.removeLast();
     mainCircles.last.isVisible = true;
-    print("gggggggggggggggaaaaaa${mainCircles}");
     mainScreenState?.needToUpdateCoords = true;
     openSphere(sphereId);
   }
@@ -942,6 +952,8 @@ class AppViewModel with ChangeNotifier {
       try {
         //mainScreenState!.allCircles = (await repository.getSpheres(mi.id)) ?? [];
         final spheres = (await localRep.getAllMoonSpheres(mi.id));
+
+        print("gggggggggggggggaaaaaa${spheres.first.shuffle}");
         mainScreenState?.allCircles = spheres;
         if (spheres.isEmpty) {
           mainScreenState!.allCircles =
@@ -1236,7 +1248,10 @@ class AppViewModel with ChangeNotifier {
           .where((e) => e.isActive)
           .toList();
       notifyListeners();
-      startMainScreen(MoonItem(id: moonId, filling: 0.3, text: "", date: ""));
+      await startMainScreen(MoonItem(id: moonId, filling: 0.3, text: "", date: ""));
+      final mainsphere = mainScreenState?.allCircles.first;
+      if(mainsphere!=null) mainCircles = [MainCircle(id: mainsphere.id, coords: Pair(key: 0.0, value: 0.0), text: mainsphere.text, color: mainsphere.color)];
+      openSphere(0);
     } catch (ex) {
       addError("#5665${ex.toString()}");
     }
@@ -1259,7 +1274,6 @@ class AppViewModel with ChangeNotifier {
 
   Future<void> createNewSphereWish(
       WishData wd, bool updateNeighbours, bool updateOrbitalPosition) async {
-    print("uuuuuuuuuuuuuupdaaaaaaate555 create");
     try {
       Map<int, Uint8List> photos = {};
       String photosIds = "";
@@ -1271,7 +1285,6 @@ class AppViewModel with ChangeNotifier {
         localRep.addImage(lastImageId, element);
       }
       wd.photos = photos;
-      wd.shuffle = false;
       if (connectivity != 'No Internet Connection') /*await*/
         repository.createSphereWish(wd, mainScreenState?.moon.id ?? 0);
       await localRep.insertORudateSphere(wd, mainScreenState?.moon.id ?? 0);
@@ -2661,8 +2674,9 @@ class AppViewModel with ChangeNotifier {
           wishId = simpleWish.first.id;
           final allAims =
               await localRep.getAllAims(mainScreenState?.moon.id ?? 0);
+
           final simpleAim = allAims.where((e) =>
-              (e.text == "HEADERSIMPLETASKHEADERОбщие задачи" &&
+              (e.text.contains("HEADERSIMPLETASKHEADERОбщие задачи") &&
                   e.parentId == wishId));
           if (simpleAim.isEmpty) {
             //await adding aim
