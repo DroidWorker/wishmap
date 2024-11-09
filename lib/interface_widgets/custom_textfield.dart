@@ -127,10 +127,10 @@ class _CustomTextFieldState extends State<CustomTextField> {
                     setState(() { });
                   });
                 },
-                child: Image.file(
+                child: !widget.attachments[imageIndex].contains("firebasestorage")? Image.file(
                   File(widget.attachments[imageIndex]),
                   fit: BoxFit.fitWidth,
-                ),
+                ):Image.network(widget.attachments[imageIndex]),
               ),
             ),
           ): Row(
@@ -150,7 +150,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
                 print("error ${err.toString()}");
               },
               maxDuration: const Duration(seconds: 60),
-              isFile: true,
+              isFile: !widget.attachments[imageIndex].contains("firebasestorage"),
             ),
               innerPadding: 4,
               cornerRadius: 12,

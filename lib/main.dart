@@ -212,6 +212,12 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
       }
     }
     if (state == AppLifecycleState.hidden) {
+      if(vm?.autoLogout==true) {
+        BlocProvider.of<NavigationBloc>(context).clearHistory();
+        BlocProvider.of<NavigationBloc>(context)
+            .add(NavigateToAuthScreenEvent());
+        vm?.signOut();
+      }
       _timer?.cancel();
     }
   }
@@ -299,11 +305,11 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
   _startPeriodicMessage(BuildContext c) async {
     vm?.promocodeMessageActive = await vm?.hasActivePromocode(null)??false;
-    _timer = Timer.periodic(const Duration(minutes: 1), (t) {
+    _timer = Timer.periodic(const Duration(minutes: 5), (t) {
       if (vm?.promocodeMessageActive == true) {
         return;
       }
-      if(!isMessageShown) {
+      if(!isMessageShown&&BlocProvider.of<NavigationBloc>(context).state is! NavigationAuthScreenState) {
         showModalBottomSheet<void>(
         backgroundColor: AppColors.backgroundColor,
         context: c,
@@ -319,7 +325,9 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
             isMessageShown=false;
           });
         },
-      );
+      ).then((val){
+          isMessageShown=false;
+        });
         isMessageShown=true;
       }
     });

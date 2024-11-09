@@ -80,7 +80,7 @@ class TaskEditScreenState extends State<TaskEditScreen>{
             AimData ad = appVM.currentAim!;
             parentSphere = ad.id!=-1?appVM.mainScreenState!.allCircles.where((element) => element.id ==ad.parentId).firstOrNull:null;
             isParentChecked = ad.isChecked;
-            isParentActive = ad.isActive;
+            isParentActive = parentSphere?.isActive==true;
             var childNodes = MyTreeNode(id: ad.id, type: 'a', title: ad.text, isChecked: ad.isChecked, isActive: ad.isActive , children: []);
             if(roots.isEmpty&&ai!=null&&ai?.id!=-1)appVM.convertToMyTreeNodeIncludedAimsTasks(childNodes, ai!.id, ad.parentId);
           }else {
@@ -209,6 +209,7 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                             }
                               if(isParentActive) {
                                 setState(() {
+                                  appVM.activateAim(ai!.parentId, true);
                                   appVM.activateTask(ai!.id, true);
                                   ai!.isActive = true;
                                 });

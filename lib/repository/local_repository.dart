@@ -710,8 +710,9 @@ class LocalRepository {
     tasksToActivate.clear();
   }
 
-  Future<List<CardData>> getAllDiary(int moonId) async {
-    final result = await dbHelper.getAllDiary(moonId);
+  Future<List<CardData>> getAllDiary() async {
+    final result = await dbHelper.getAllDiary();
+    print("result - $result");
     return result
         .map((e) => CardData(
             id: e['id'],
@@ -723,8 +724,8 @@ class LocalRepository {
         .toList();
   }
 
-  Future<List<Article>> getArticles(int diaryId, int moonId) async {
-    final result = await dbHelper.getDiaryArticles(diaryId, moonId);
+  Future<List<Article>> getArticles(int diaryId) async {
+    final result = await dbHelper.getDiaryArticles(diaryId);
     return result
         .map((e) => Article(
             e['rowId'],
@@ -742,35 +743,37 @@ class LocalRepository {
     dbHelper.duplicateArticles(oldMoonId, newMoonId);
   }
 
-  addDiary(CardData cd, int moonId) {
-    dbHelper.insertDiary(cd, moonId);
+  addDiary(CardData cd) {
+    print("inseeert diary ${cd}");
+    dbHelper.insertDiary(cd);
   }
 
-  Future<int> addDiaryArticle(Article article, int moonId) async {
-    return await dbHelper.insertDiaryArticle(article, moonId);
+  Future<int> addDiaryArticle(Article article) async {
+    return await dbHelper.insertDiaryArticle(article);
   }
 
-  Future addAllDiary(List<CardData> cd, int moonId) async {
+  Future addAllDiary(List<CardData> cd) async {
     for (var element in cd) {
-      await dbHelper.insertDiary(element, moonId);
+      print("addddddiary - ${element}");
+      await dbHelper.insertDiary(element);
     }
   }
 
-  Future updateDiary(CardData cd, int moonId) async {
-    await dbHelper.updateDiary(cd, moonId);
+  Future updateDiary(CardData cd) async {
+    await dbHelper.updateDiary(cd);
   }
 
   Future updateDiaryArticle(String text, List<String> attachmentsList,
-      int articleId, int moonId) async {
-    await dbHelper.updateArticle(text, attachmentsList, articleId, moonId);
+      int articleId) async {
+    await dbHelper.updateArticle(text, attachmentsList, articleId);
   }
 
-  void deleteDiary(int diaryId, int moonId) async {
-    await dbHelper.deleteDiary(diaryId, moonId);
+  void deleteDiary(int diaryId) async {
+    await dbHelper.deleteDiary(diaryId);
   }
 
-  void deleteArticle(articleId, int moonId) async {
-    await dbHelper.deleteArticle(articleId, moonId);
+  void deleteArticle(articleId) async {
+    await dbHelper.deleteArticle(articleId);
   }
 
   Future<List<Reminder>> getReminders(int taskId) async {

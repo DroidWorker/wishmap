@@ -65,7 +65,7 @@ class DiaryArticleItem extends StatelessWidget{
                               padding: const EdgeInsets.only(right: 4.0),
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(8.0),
-                                child: Image.file(File(e), fit: BoxFit.cover, width: 50, height: 50,),
+                                child: !e.contains("firebasestorage")?Image.file(File(e), fit: BoxFit.cover, width: 50, height: 50):Image.network(e, fit: BoxFit.cover, width: 50, height: 50),
                               )
                             );
                           })
@@ -90,7 +90,7 @@ class DiaryArticleItem extends StatelessWidget{
                                     print("error ${err.toString()}");
                                   },
                                   maxDuration: const Duration(seconds: 60),
-                                  isFile: true,
+                                  isFile: !records[index].contains("firebasestorage"),
                                 ),
                                   innerPadding: 4,
                                   cornerRadius: 12,

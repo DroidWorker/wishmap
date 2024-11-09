@@ -91,7 +91,6 @@ class DatabaseHelper {
       CREATE TABLE diary(
         rowId INTEGER  PRIMARY KEY AUTOINCREMENT,
         id INTEGER,
-        moonId INTEGER,
         title TEXT,
         description TEXT,
         text TEXT,
@@ -179,9 +178,6 @@ class DatabaseHelper {
 
     // Удаление всех данных из таблицы tasks
     await db.delete('tasks', where: "moonId = ?", whereArgs: [moonId]);
-
-    // Удаление всех данных из таблицы diary
-    await db.delete('diary', where: "moonId = ?", whereArgs: [moonId]);
   }
   Future<void> clearDatabaseFolMoons(String ids) async {
     Database db = await database;
@@ -197,7 +193,7 @@ class DatabaseHelper {
     count += await db.rawDelete('DELETE FROM tasks WHERE moonId IN ($ids)');
 
     // Удаление всех данных из таблицы diary
-    count += await db.rawDelete('DELETE FROM diary WHERE moonId IN ($ids)');
+    count += await db.rawDelete('DELETE FROM diary');
 
     print("removed $count rows");
   }
@@ -209,6 +205,7 @@ class DatabaseHelper {
     await db.delete("diary");
     await db.delete("moons");
     await db.delete("images");
+    await db.delete("articles");
   }
   Future clearMoons()async{
     Database db = await database;
@@ -283,45 +280,46 @@ class DatabaseHelper {
     );
   }
 
-  Future<int> insertDiary(CardData cd, int moonid) async {
+  Future<int> insertDiary(CardData cd) async {
     Database db = await database;
-    return await db.insert('diary', {'id': cd.id, 'moonId':moonid,  'title': cd.title, 'description': cd.description, 'text': cd.text, 'emoji': cd.emoji, 'color': cd.color.value});
+    return await db.insert('diary', {'id': cd.id,  'title': cd.title, 'description': cd.description, 'text': cd.text, 'emoji': cd.emoji, 'color': cd.color.value});
   }
 
-  Future<int> insertDiaryArticle(Article article, int moonId) async {
+  Future<int> insertDiaryArticle(Article article) async {
     Database db = await database;
-    await db.insert('articles', {'moonId':moonId,  'text': article.text, 'parentDiaryId': article.parentId, 'date': article.date, 'time': article.time, 'attacments': article.attachments.join("|")});
+    await db.insert('articles', { 'text': article.text, 'parentDiaryId': article.parentId, 'date': article.date, 'time': article.time, 'attacments': article.attachments.join("|")});
     return (await db.query('articles', where: "time = ?", whereArgs: [article.time])).firstOrNull?['rowId'] as int;
   }
 
-  Future<int> updateDiary(CardData cd, int moonId) async {
+  Future<int> updateDiary(CardData cd) async {
     Database db = await database;
-    return await db.update("diary", {'title': cd.title, 'description': cd.description, 'text': cd.text, 'emoji': cd.emoji, 'color': cd.color.value}, where: "id = ? AND moonId = ?", whereArgs: [cd.id, moonId]);
+    return await db.update("diary", {'title': cd.title, 'description': cd.description, 'text': cd.text, 'emoji': cd.emoji, 'color': cd.color.value}, where: "id = ?", whereArgs: [cd.id]);
   }
 
-  Future updateArticle(String text, List<String> attachmentsList, int articleId, int moonId) async {
+  Future updateArticle(String text, List<String> attachmentsList, int articleId) async {
     Database db = await database;
-    await db.update("articles", {'text': text, 'attacments': attachmentsList.join('|')}, where: "moonId == ? AND rowId == ?", whereArgs: [moonId, articleId]);
+    await db.update("articles", {'text': text, 'attacments': attachmentsList.join('|')}, where: "rowId == ?", whereArgs: [articleId]);
   }
 
-  Future deleteDiary(int diaryId, int moonId) async{
+  Future deleteDiary(int diaryId) async{
     Database db = await database;
-    await db.delete("diary", where: "id = ? AND moonId = ?", whereArgs: [diaryId,moonId]);
+    await db.delete("diary", where: "id = ?", whereArgs: [diaryId]);
   }
 
-  deleteArticle(int articleId, int moonId) async{
+  deleteArticle(int articleId) async{
     Database db = await database;
-    await db.delete("articles", where: "rowId = ? AND moonId = ?", whereArgs: [articleId,moonId]);
+    await db.delete("articles", where: "rowId = ?", whereArgs: [articleId]);
   }
 
-  Future<List<Map<String, dynamic>>> getAllDiary(int moonid) async {
+  Future<List<Map<String, dynamic>>> getAllDiary() async {
     Database db = await database;
-    return await db.query('diary', where: "moonId = ?", whereArgs: [moonid]);
+    print("reeeeeeesssss_ ${await db.query('diary')}");
+    return await db.query('diary');
   }
 
-  Future<List<Map<String, dynamic>>> getDiaryArticles(int diaryId, int moonId) async {
+  Future<List<Map<String, dynamic>>> getDiaryArticles(int diaryId) async {
     Database db = await database;
-    return await db.query('articles', where: "moonId = ? AND parentDiaryId = ?", whereArgs: [moonId, diaryId]);
+    return await db.query('articles', where: "parentDiaryId = ?", whereArgs: [diaryId]);
   }
 
   Future<int> insertTask(TaskData td, int moonid) async {

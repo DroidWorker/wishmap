@@ -217,7 +217,7 @@ class AimEditScreenState extends State<AimEditScreen>{
                       controller: _scrollController,
                       child: Column(children:[
                         const SizedBox(height: 16),
-                        ai!=null&&!ai!.isActive&&!ai!.isChecked?ColorRoundedButton("Представить", () {
+                        /*ai!=null&&!ai!.isActive&&!ai!.isChecked?ColorRoundedButton("Представить", () {
                           if(appVM.settings.actualizeFullBranch){
                             appVM.activateBranchFrom(ai!.id, "a");
                             setState(() {
@@ -234,7 +234,7 @@ class AimEditScreenState extends State<AimEditScreen>{
                               showUneditable(text: "Чтобы актуализировать цели и задачи необходимо актуализировать вышестоящее желание нажав кнопку 'воплотить'");
                             }
                           }
-                        ):const SizedBox(),
+                        ):const SizedBox(),*/
                         if(ai!.isActive&&!HEADERSIMPLETASKHEADER)OutlinedGradientButton("Достигнуто", filledButtonColor: ai!.isChecked?AppColors.greenButtonBack:null, () async {
                           if(ai!=null){
                             if(isParentChecked) {

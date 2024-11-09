@@ -402,7 +402,7 @@ class _AuthScreen_State extends State<AuthScreen> {
                                             fontWeight: FontWeight.w600),
                                       ),
                                       const SizedBox(height: 4),
-                                      TextField(
+                                      TextFormField(
                                         controller: _nameController,
                                         style: const TextStyle(
                                             color: Colors.black),
@@ -423,13 +423,20 @@ class _AuthScreen_State extends State<AuthScreen> {
                                             ),
                                           ),
                                         ),
+                                        validator: (value) {
+                                          if (value!.isEmpty) {
+                                            return 'Введите имя';
+                                          }
+
+                                          return null; // Возвращаем null в случае успешной валидации
+                                        },
                                       ),
                                       const SizedBox(height: 16),
                                       const Text("Фамилия",
                                           style: TextStyle(
                                               fontWeight: FontWeight.w600)),
                                       const SizedBox(height: 4),
-                                      TextField(
+                                      TextFormField(
                                         controller: _surnameController,
                                         style: const TextStyle(
                                             color: Colors.black),
@@ -450,6 +457,13 @@ class _AuthScreen_State extends State<AuthScreen> {
                                             ),
                                           ),
                                         ),
+                                        validator: (value) {
+                                          if (value!.isEmpty) {
+                                            return 'Введите фамилию';
+                                          }
+
+                                          return null; // Возвращаем null в случае успешной валидации
+                                        },
                                       ),
                                       const SizedBox(height: 16),
                                       const Text(
@@ -873,6 +887,8 @@ class _AuthScreen_State extends State<AuthScreen> {
                                                 ? 'Войти'
                                                 : 'Зарегистрироваться',
                                             () async {
+                                              vm?.autoLogout = !isChecked;
+                                              print("autologout ${vm?.autoLogout}");
                                           if (_formKey.currentState!
                                               .validate()) {
                                             if(isPassRestore){
@@ -930,6 +946,11 @@ class _AuthScreen_State extends State<AuthScreen> {
                                                   _passwordController.text;
                                               String repPass =
                                                   _repPassController.text;
+                                              if(male==null) {
+                                                vm?.addError(
+                                                    "Выберите ваш пол");
+                                                return;
+                                              }
                                               if (password == repPass) {
                                                 await vm?.register(
                                                     ProfileData(

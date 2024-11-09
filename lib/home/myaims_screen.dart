@@ -201,7 +201,7 @@ class _AimsScreenState extends State<AimsScreen>{
                         return AimItemWidget(ai: filteredAimList[index],
                             parent: parent,
                             onItemSelect: onItemSelect,
-                            onDoubleClick: onDoubleClick,
+                            onDoubleClick: (id){},//onDoubleClick,
                             outlined: deleteQueue.contains(filteredAimList[index].id));
                       }
                   ),),

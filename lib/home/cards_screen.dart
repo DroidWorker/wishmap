@@ -44,8 +44,6 @@ class CardsScreenState extends State<CardsScreen> {
     final appViewModel = Provider.of<AppViewModel>(context);
     if (appViewModel.moonItems.isEmpty) {
       appViewModel.getMoons();
-    } else {
-      appViewModel.fetchImages();
     }
     int indexPad = 0;
 

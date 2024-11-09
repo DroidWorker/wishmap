@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:wishmap/ViewModel.dart';
 
 import '../../interface_widgets/colorButton.dart';
@@ -50,6 +51,7 @@ class PromocodesScreenState extends State<PromocodesScreen> {
             isInCheckingPromo = false;
             if(result==null) {
               setState(() {
+                controller.text = "";
                 errorMessage = "Промокод неактивен";
               });
             } else{
@@ -206,6 +208,14 @@ class PromocodesScreenState extends State<PromocodesScreen> {
                                   ),
                                 ),
                               ),
+                              ColorRoundedButton("Получить промокод", () async {
+                                final url = 'tg://resolve?domain=${vm?.static["tg"]}';
+                                final uri = Uri.parse(url);
+                                Navigator.pop(context, 'OK');
+                                if (await canLaunchUrl(uri)) {
+                                  launchUrl(uri);
+                                }
+                              })
                             ],
                           ):
                               ListView.separated(

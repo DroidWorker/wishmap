@@ -41,6 +41,7 @@ class AppViewModel with ChangeNotifier {
   bool lockEnabled = false;
   bool _lockState = true;
   bool allowSkipAuth = false;
+  bool autoLogout = false;
 
   set lockState(v) {
     _lockState = v;
@@ -420,7 +421,7 @@ class AppViewModel with ChangeNotifier {
     if (url == "") return null;
     final directory = await getTemporaryDirectory();
     final file = File('${directory.path}/$name');
-    if(await file.exists()){
+    if (await file.exists()) {
       await file.delete();
     }
     final loadId = await FileDownloader.downloadFile(url, directory.path);
@@ -451,7 +452,7 @@ class AppViewModel with ChangeNotifier {
       try {
         final directory = await getTemporaryDirectory();
         await File('${directory.path}/$name').delete();
-        audios.remove(name);
+        audioList.remove(name);
       } catch (ex) {
         print("filenotfound - $ex");
       }
@@ -475,7 +476,8 @@ class AppViewModel with ChangeNotifier {
   }
 
   Future<bool> hasActivePromocode(String? pType) async {
-    final promocodes = await localRep.getPromocodes(profileData?.id ?? "", pType: pType);
+    final promocodes =
+        await localRep.getPromocodes(profileData?.id ?? "", pType: pType);
     final now = DateTime.now();
     for (var e in promocodes.values.toList().reversed) {
       if (now.isBefore(DateFormat("dd.MM.yyyy").parse(e))) return true;
@@ -491,7 +493,7 @@ class AppViewModel with ChangeNotifier {
     final res = await repository.searchPromocode(promocode);
     if (res == null) return null;
     localRep.addPromocode(res, profileData?.id ?? "");
-    if(res.type=="subscription")promocodeMessageActive=false;
+    if (res.type == "subscription") promocodeMessageActive = false;
     return res;
   }
 
@@ -511,6 +513,7 @@ class AppViewModel with ChangeNotifier {
     try {
       ProfileData? pd = await repository.signIn(login, password);
       if (pd != null) {
+        await fetchDiary();
         await localRep.saveProfile(pd);
         await init();
       } else {
@@ -707,19 +710,8 @@ class AppViewModel with ChangeNotifier {
       localRep.addAllTasks(element);
     });
     await localRep.commitTasksAdd(moonId);
-    final diary = await localRep.getAllDiary(moonId - 1);
-    List<Article> articles = [];
-    diary.forEach((element) async {
-      await localRep.addDiary(element, moonId);
-      articles.addAll(await localRep.getArticles(element.id, moonId));
-    });
-    localRep.duplicateArticles(moonId - 1, moonId);
     await repository.addAllAims(aims, moonId);
     await repository.addAllTasks(tasks, moonId);
-    repository.addDiary(diary, moonId);
-    for (var e in articles) {
-      repository.addDiaryArticle(e, moonId);
-    }
     updateMoonSync(moonId);
     notifyListeners();
   }
@@ -790,9 +782,9 @@ class AppViewModel with ChangeNotifier {
     }
   }
 
-  Future fetchImages() async {
+  Future fetchImages(int moonId) async {
     final lastId = await localRep.getImageLastId();
-    final images = await repository.fetchImages(lastId + 1);
+    final images = await repository.fetchImages(lastId + 1, moonId);
     images.forEach((key, value) {
       localRep.addImageStr(key, value);
     });
@@ -856,20 +848,26 @@ class AppViewModel with ChangeNotifier {
     isDataFetched--;
   }
 
-  Future fetchDiary(int moonId) async {
-    final diary = await repository.getDiaryList(moonId);
-    diary?.forEach((element, article) {
-      localRep.addDiary(element, mainScreenState?.moon.id ?? -1);
-      articles.forEach((art) {
-        localRep.addDiaryArticle(art, moonId);
+  Future fetchDiary() async {
+    try {
+      final diary = await repository.getDiaryList();
+      print("feeeeeeeeeetch - ${diary}");
+      diary?.forEach((element, farticle) {
+        localRep.addDiary(element);
+        for (var art in farticle) {
+          localRep.addDiaryArticle(art);
+        }
       });
-    });
-    isDataFetched--;
+      isDataFetched--;
+    }catch(eex, s){
+      print("ex $eex");
+      print("aaaaaaaaaaaaaaaa $s");
+    }
   }
 
-  Future pushDiary(int moonId) async {
-    final diary = await localRep.getAllDiary(moonId);
-    repository.addDiary(diary, moonId);
+  Future pushDiary() async {
+    final diary = await localRep.getAllDiary();
+    repository.addDiary(diary);
     isDataFetched--;
   }
 
@@ -884,13 +882,13 @@ class AppViewModel with ChangeNotifier {
         await fetchSpheres(moonId);
         fetchAims(moonId);
         fetchTasks(moonId);
-        fetchDiary(moonId);
+        fetchImages(moonId);
       } else if (dDB != null && dDB < dLoc) {
         debugPrint("pushDatas");
         await pushSpheres(moonId);
         await pushAims(moonId);
         await pushTasks(moonId);
-        await pushDiary(moonId);
+        await pushDiary();
       } else if (dDB == -1 && dLoc == -1) {
         addError("Данные повреждены! Синхронизация невозможна");
       }
@@ -962,14 +960,16 @@ class AppViewModel with ChangeNotifier {
         }
         if (mainScreenState!.allCircles.isEmpty) return;
         var ms = mainScreenState!.allCircles.first;
-        mainCircles=[MainCircle(
-            id: ms.id,
-            coords: Pair(key: 0.0, value: 0.0),
-            text: ms.text,
-            substring: ms.subText,
-            color: ms.color,
-            isActive: ms.isActive,
-            isChecked: ms.isChecked)];
+        mainCircles = [
+          MainCircle(
+              id: ms.id,
+              coords: Pair(key: 0.0, value: 0.0),
+              text: ms.text,
+              substring: ms.subText,
+              color: ms.color,
+              isActive: ms.isActive,
+              isChecked: ms.isChecked)
+        ];
         var cc = mainScreenState!.allCircles
             .where((element) => element.parenId == mainCircles.last.id)
             .toList();
@@ -1248,9 +1248,17 @@ class AppViewModel with ChangeNotifier {
           .where((e) => e.isActive)
           .toList();
       notifyListeners();
-      await startMainScreen(MoonItem(id: moonId, filling: 0.3, text: "", date: ""));
+      await startMainScreen(
+          MoonItem(id: moonId, filling: 0.3, text: "", date: ""));
       final mainsphere = mainScreenState?.allCircles.first;
-      if(mainsphere!=null) mainCircles = [MainCircle(id: mainsphere.id, coords: Pair(key: 0.0, value: 0.0), text: mainsphere.text, color: mainsphere.color)];
+      if (mainsphere != null)
+        mainCircles = [
+          MainCircle(
+              id: mainsphere.id,
+              coords: Pair(key: 0.0, value: 0.0),
+              text: mainsphere.text,
+              color: mainsphere.color)
+        ];
       openSphere(0);
     } catch (ex) {
       addError("#5665${ex.toString()}");
@@ -1275,6 +1283,7 @@ class AppViewModel with ChangeNotifier {
   Future<void> createNewSphereWish(
       WishData wd, bool updateNeighbours, bool updateOrbitalPosition) async {
     try {
+      repository.deleteImages(wd.photoIds, mainScreenState?.moon.id);
       Map<int, Uint8List> photos = {};
       String photosIds = "";
       for (var element in cachedImages) {
@@ -1397,7 +1406,7 @@ class AppViewModel with ChangeNotifier {
 
   Future<void> updateSphereWish(WishData wd) async {
     try {
-      repository.deleteImages(wd.photoIds);
+      repository.deleteImages(wd.photoIds, mainScreenState?.moon.id);
       Map<int, Uint8List> photos = {};
       String photosIds = "";
       for (var element in cachedImages) {
@@ -1442,7 +1451,7 @@ class AppViewModel with ChangeNotifier {
       do {
         await localRep.activateSphere(wish?.id ?? -1);
         repository.activateWish(wish?.id ?? 0, moonId, true);
-        if (wish != null&&wish.parentId!=-1) {
+        if (wish != null && wish.parentId != -1) {
           mainScreenState?.allCircles
               .firstWhereOrNull((e) => e.id == wish?.id)
               ?.isActive = true;
@@ -1453,9 +1462,9 @@ class AppViewModel with ChangeNotifier {
       localRep.commitASpheresActivation(true, moonId);
       myNodes.clear();
       final parentAim = await getAimNow(task.parentId);
-      if(parentAim!=null&&parentAim.isActive){
+      if (parentAim != null && parentAim.isActive) {
         activateTask(itemId, true);
-      }else{
+      } else {
         addError("необходимо актуализировать вышестоящую цель");
       }
     } else if (type == 'a') {
@@ -1596,6 +1605,31 @@ class AppViewModel with ChangeNotifier {
         localRep.commitAimsActivation(status, mainScreenState!.moon.id);
         localRep.commitTasksActivation(status, mainScreenState!.moon.id);
       } else if (wi?.parenId == 0) {
+        final childTecWishId = mainScreenState?.allCircles.firstWhereOrNull(
+            (e) => e.parenId == id && e.text.contains("HEADERSIM"))?.id;
+        if (childTecWishId != null) {
+          await activateSphereWish(childTecWishId, true,
+              updateScreen: updateScreen, needToCommit: false);
+          List<int> childAims = aimItems.where((e)=>e.parentId==childTecWishId).map((e)=>e.id).toList();
+          print("object aaaa - $childAims");
+          List<int> childTasks = [];
+          for (var eid in childAims) {
+            activateAim(eid, true, needToCommit: false);
+            if (settings.taskActualizingMode == 0) {
+              final ts = await localRep.getAimsChildTasks(
+                  eid, mainScreenState?.moon.id ?? 0);
+              childTasks.addAll(ts);
+            }
+          }
+          //actualize childTasks
+          if (settings.taskActualizingMode == 0) {
+            for (var eid in childTasks) {
+              await activateTask(eid, true, needToCommit: false);
+            }
+            localRep.commitTasksActivation(status, mainScreenState!.moon.id);
+          }
+          localRep.commitAimsActivation(status, mainScreenState!.moon.id);
+        }
       } else {
         if (settings.sphereActualizingMode == 1) {
           int parentSphereid = mainScreenState?.allCircles
@@ -1641,12 +1675,12 @@ class AppViewModel with ChangeNotifier {
             childTasks.addAll(ts);
           }
         }
-        //actualize childTasks
-        for (var eid in childTasks) {
-          await activateTask(eid, true, needToCommit: false);
-        }
+        //actualize childTask
+          for (var eid in childTasks) {
+            await activateTask(eid, true, needToCommit: false);
+          }
+          localRep.commitTasksActivation(status, mainScreenState!.moon.id);
         localRep.commitAimsActivation(status, mainScreenState!.moon.id);
-        localRep.commitTasksActivation(status, mainScreenState!.moon.id);
       }
       if (myNodes.isNotEmpty) toggleActive(myNodes.first, 'w', id, status);
       if (updateScreen) {
@@ -2098,17 +2132,26 @@ class AppViewModel with ChangeNotifier {
       await startMainScreen(MoonItem(
           id: reminders.first.moonId, filling: 0.0, text: "", date: ""));
       final mainsphere = mainScreenState?.allCircles.first;
-      if(mainsphere!=null) mainCircles = [MainCircle(id: mainsphere.id, coords: Pair(key: 0.0, value: 0.0), text: mainsphere.text, color: mainsphere.color)];
+      if (mainsphere != null)
+        mainCircles = [
+          MainCircle(
+              id: mainsphere.id,
+              coords: Pair(key: 0.0, value: 0.0),
+              text: mainsphere.text,
+              color: mainsphere.color)
+        ];
       openSphere(0);
       currentTask = await localRep.getTask(id, mainScreenState?.moon.id ?? 0);
-      if(reminders.first.remindDays.isNotEmpty){
-        final dayOffset = getDayOffsetToClosest(reminders.first.remindDays.map((e)=> int.parse(e)).toList(), reminders.first.dateTime.add(const Duration(days: 1)).weekday);
-        reminders.first.dateTime = reminders.first.dateTime.add(Duration(days: dayOffset==0?1:dayOffset));
+      if (reminders.first.remindDays.isNotEmpty) {
+        final dayOffset = getDayOffsetToClosest(
+            reminders.first.remindDays.map((e) => int.parse(e)).toList(),
+            reminders.first.dateTime.add(const Duration(days: 1)).weekday);
+        reminders.first.dateTime = reminders.first.dateTime
+            .add(Duration(days: dayOffset == 0 ? 1 : dayOffset));
         localRep.updateReminder(reminders.first);
         setReminder(reminders.first);
-      }
-      else{
-        reminders.first.remindEnabled=false;
+      } else {
+        reminders.first.remindEnabled = false;
         localRep.updateReminder(reminders.first);
       }
       notifyListeners();
@@ -2185,7 +2228,8 @@ class AppViewModel with ChangeNotifier {
         repository.activateTask(id, mainScreenState!.moon.id, status);
       localRep.activateTask(id);
       if (myNodes.isNotEmpty) toggleActive(myNodes.first, 't', id, status);
-      taskItems.firstWhereOrNull((element) => element.id == id)?.isActive = true;
+      taskItems.firstWhereOrNull((element) => element.id == id)?.isActive =
+          true;
       if (needToCommit)
         localRep.commitTasksActivation(status, mainScreenState!.moon.id);
       updateMoonSync(mainScreenState?.moon.id ?? 0);
@@ -2248,11 +2292,11 @@ class AppViewModel with ChangeNotifier {
     ];
     try {
       /*diaryItems = isDataFetched!=0?(await repository.getDiaryList(mainScreenState!.moon.id))??[CardData(id: 0, emoji: "⚽", title: "ничего не найдено", description: "", text: "", color: Colors.transparent),]:*/
-      diaryItems = await localRep.getAllDiary(mainScreenState?.moon.id ?? 0);
+      diaryItems = await localRep.getAllDiary();
       if (diaryItems.isEmpty) {
         if (connectivity != 'No Internet Connection')
-          repository.addDiary(cardData, mainScreenState!.moon.id);
-        localRep.addAllDiary(cardData, mainScreenState?.moon.id ?? -1);
+          repository.addDiary(cardData);
+        localRep.addAllDiary(cardData);
         diaryItems = cardData;
       }
       updateMoonSync(mainScreenState?.moon.id ?? 0);
@@ -2265,7 +2309,7 @@ class AppViewModel with ChangeNotifier {
   getDiaryArticles(int diaryId) async {
     try {
       articles =
-          (await localRep.getArticles(diaryId, mainScreenState?.moon.id ?? 0))
+          (await localRep.getArticles(diaryId))
               .reversed
               .toList();
       notifyListeners();
@@ -2279,8 +2323,8 @@ class AppViewModel with ChangeNotifier {
     try {
       diaryItems.add(cd);
       if (connectivity != 'No Internet Connection')
-        await repository.addDiary([cd], mainScreenState!.moon.id);
-      await localRep.addDiary(cd, mainScreenState?.moon.id ?? -1);
+        await repository.addDiary([cd]);
+      await localRep.addDiary(cd);
       updateMoonSync(mainScreenState?.moon.id ?? 0);
       notifyListeners();
     } catch (ex) {
@@ -2297,13 +2341,11 @@ class AppViewModel with ChangeNotifier {
       final time =
           "${DateFormat('HH:mm').format(now)}, ${fullDayOfWeek[now.weekday]}";
       final uniqueId = await localRep.addDiaryArticle(
-          Article(
-              articles.length, parentId, title, date, time, attachmentsPaths),
-          mainScreenState!.moon.id);
+          Article(articles.length, parentId, title, date, time, attachmentsPaths),);
       final article =
           Article(uniqueId, parentId, title, date, time, attachmentsPaths);
       if (connectivity != 'No Internet Connection')
-        await repository.addDiaryArticle(article, mainScreenState!.moon.id);
+        await repository.addDiaryArticle(article);
       articles.insert(0, article);
       updateMoonSync(mainScreenState?.moon.id ?? 0);
       notifyListeners();
@@ -2316,8 +2358,10 @@ class AppViewModel with ChangeNotifier {
   Future updateDiaryArticle(
       String text, List<String> attachmentsList, int articleId) async {
     try {
+      final diaryId = articles.firstWhere((e) => e.id == articleId).parentId;
+      if(connectivity != 'No Internet Connection')repository.updateDiaryArticle(text, articleId, diaryId);
       await localRep.updateDiaryArticle(
-          text, attachmentsList, articleId, mainScreenState?.moon.id ?? 0);
+          text, attachmentsList, articleId);
       articles.firstWhere((e) => e.id == articleId)
         ..text = text
         ..attachments = attachmentsList;
@@ -2333,8 +2377,8 @@ class AppViewModel with ChangeNotifier {
       if (index == -1) throw Exception("error#vm6794");
       diaryItems[index] = cd;
       if (connectivity != 'No Internet Connection')
-        await repository.updateDiary(cd, mainScreenState!.moon.id);
-      await localRep.updateDiary(cd, mainScreenState?.moon.id ?? 0);
+        await repository.updateDiary(cd);
+      await localRep.updateDiary(cd);
       updateMoonSync(mainScreenState?.moon.id ?? 0);
       notifyListeners();
     } catch (ex) {
@@ -2344,8 +2388,8 @@ class AppViewModel with ChangeNotifier {
 
   deleteDiary(int diaryId) {
     try {
-      localRep.deleteDiary(diaryId, mainScreenState?.moon.id ?? 0);
-      repository.deleteDiary(diaryId, mainScreenState?.moon.id ?? 0);
+      localRep.deleteDiary(diaryId);
+      repository.deleteDiary(diaryId);
       diaryItems.removeWhere((diary) => diary.id == diaryId);
       notifyListeners();
     } catch (ex) {
@@ -2355,7 +2399,7 @@ class AppViewModel with ChangeNotifier {
 
   deleteDiaryArticle(int articleId) {
     try {
-      localRep.deleteArticle(articleId, mainScreenState?.moon.id ?? 0);
+      localRep.deleteArticle(articleId);
       articles.removeWhere((article) => article.id == articleId);
     } catch (ex) {
       addError('#648$ex');
@@ -2396,8 +2440,13 @@ class AppViewModel with ChangeNotifier {
     final taskList = await getTasksForAim(circle.id);
     List<CircleData> allCircles = getParentTree(circle.parenId);
     nodesColors = [
-      mainScreenState?.allCircles.firstWhereOrNull((e) => e.id == 0 && e.isActive)?.color ?? Colors.grey,
-      mainScreenState?.allCircles.firstWhereOrNull((e) => e.parenId == 0 && e.isActive)?.color ??
+      mainScreenState?.allCircles
+              .firstWhereOrNull((e) => e.id == 0 && e.isActive)
+              ?.color ??
+          Colors.grey,
+      mainScreenState?.allCircles
+              .firstWhereOrNull((e) => e.parenId == 0 && e.isActive)
+              ?.color ??
           Colors.grey
     ];
     List<MyTreeNode> children = <MyTreeNode>[
@@ -2440,8 +2489,13 @@ class AppViewModel with ChangeNotifier {
     final taskList = await getTasksForAim(aimNode.id);
     List<CircleData> allCircles = getParentTree(wishId);
     nodesColors = [
-      mainScreenState?.allCircles.firstWhereOrNull((e) => e.id == 0 && e.isActive)?.color ?? Colors.grey,
-      mainScreenState?.allCircles.firstWhereOrNull((e) => e.parenId == 0 && e.isActive)?.color ??
+      mainScreenState?.allCircles
+              .firstWhereOrNull((e) => e.id == 0 && e.isActive)
+              ?.color ??
+          Colors.grey,
+      mainScreenState?.allCircles
+              .firstWhereOrNull((e) => e.parenId == 0 && e.isActive)
+              ?.color ??
           Colors.grey
     ];
     List<MyTreeNode> children = <MyTreeNode>[
@@ -2549,9 +2603,10 @@ class AppViewModel with ChangeNotifier {
             children: childNodes,
             isHidden: melement.isHidden)
           ..noClickable = melement.id == wishId ? true : false;
-        if (melement.id == 0&&melement.isActive) {
+        if (melement.id == 0 && melement.isActive) {
           nodesColors[0] = melement.color;
-        } else if (melement.parenId == 0&&melement.isActive) nodesColors[1] = melement.color;
+        } else if (melement.parenId == 0 && melement.isActive)
+          nodesColors[1] = melement.color;
         if (melement.id == wishId) addChildTasksAims = false;
       }
       if (loclRoot != null) {
@@ -2602,9 +2657,10 @@ class AppViewModel with ChangeNotifier {
             isActive: melement.isActive,
             children: childNodes)
           ..noClickable = melement.id == wishId ? true : false;
-        if (melement.id == 0&&melement.isActive) {
+        if (melement.id == 0 && melement.isActive) {
           nodesColors[0] = melement.color;
-        } else if (melement.parenId == 0&&melement.isActive) nodesColors[1] = melement.color;
+        } else if (melement.parenId == 0 && melement.isActive)
+          nodesColors[1] = melement.color;
         if (melement.id == wishId) addChildTasksAims = false;
       }
     }

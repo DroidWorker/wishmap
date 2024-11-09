@@ -212,7 +212,7 @@ class _WishesScreenState extends State<WishesScreen>{
                           }
                         },
                         onDoubleTap: (id, type){
-                          onDoubleClick(id);
+                          //onDoubleClick(id);
                         },),
                       )
                   );}))),

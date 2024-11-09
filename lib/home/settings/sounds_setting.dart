@@ -141,7 +141,6 @@ class SoundsSettingsState extends State<SoundsSettings> {
                                                 .isNotEmpty ||
                                             appViewModel.audios.keys
                                                 .contains(name)) return;
-
                                         final loadId =
                                             await appViewModel.cacheTrack(name,
                                                 appViewModel.audioList[name]!);
