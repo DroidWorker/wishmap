@@ -386,8 +386,8 @@ class DatabaseHelper {
       Map<String, dynamic> tmp = jsonDecode(sphere['childAims']);
       chAims = tmp.map((key, value) =>
           MapEntry(key, int.parse(value.toString())));
-      chAims["${ad.id}nvjvdjh"] = ad.id;
     }
+    chAims["${ad.id}nvjvdjh"] = ad.id;
     if(chAims.isNotEmpty)await db.update("spheres", {"childAims": jsonEncode(chAims)}, where: "id = ? AND moonId = ?", whereArgs: [ad.parentId, moonid]);
     return await db.insert("aims", {'id': ad.id, 'moonId':moonid, 'text': ad.text, 'subtext': ad.description, 'parentId': ad.parentId, 'childTasks':chTasks, 'isChecked': ad.isChecked?1:0,  'isActive': ad.isActive?1:0});
   }

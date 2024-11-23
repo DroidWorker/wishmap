@@ -36,6 +36,7 @@ Widget buildTwin(double leftwidth, double rightwidth, Map<Uint8List, int?> image
               ),): Image.memory(images.keys.toList()[0], fit: BoxFit.cover, color: !filtered?null:Colors.redAccent),
           ),
         ),
+        const SizedBox(width: 9),
         InkWell(
           onTap: (){if(onTap!=null)onTap(images.values.toList()[1]!);},
           child: Container(width: rightwidth, height: leftwidth, color: AppColors.fieldFillColor,

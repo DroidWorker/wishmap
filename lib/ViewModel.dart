@@ -1515,7 +1515,7 @@ class AppViewModel with ChangeNotifier {
     final wish = await localRep.getSphere(id, mainScreenState!.moon.id);
     mainScreenState?.allCircles.firstWhere((e) => e.id == id).isActive = true;
     wishItems.firstWhereOrNull((e) => e.id == id)?.isActive = true;
-    if (wish != null) activateParentSpheres(wish.parentId);
+    if (wish != null && wish.parentId>0) activateParentSpheres(wish.parentId);
   }
 
   Future activateChildWishes(WishData wish) async {
@@ -1576,7 +1576,7 @@ class AppViewModel with ChangeNotifier {
       currentCircles.firstWhereOrNull((element) => element.id == id)?.isActive =
           status;
       if (id == 0) {
-        if (settings.sphereActualizingMode == 0) {
+        if (settings.sphereActualizingMode == 0&&!settings.actualizeFullBranch) {
           List<int> childSpheres = mainScreenState?.allCircles
                   .where((element) => element.parenId == 0)
                   .map((e) => e.id)
@@ -1592,7 +1592,7 @@ class AppViewModel with ChangeNotifier {
         List<int> childTasks = [];
         for (var eid in childAims) {
           activateAim(eid, true, needToCommit: false);
-          if (settings.taskActualizingMode == 0) {
+          if (settings.taskActualizingMode == 0||settings.actualizeFullBranch) {
             final ts = await localRep.getAimsChildTasks(
                 eid, mainScreenState?.moon.id ?? 0);
             childTasks.addAll(ts);

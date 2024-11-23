@@ -1032,8 +1032,8 @@ class _WishScreenState extends State<WishScreen> {
                                               !curwish.isActive);
                                         else
                                           return buildTripleReverce(
-                                              leftWidth,
                                               rightWidth,
+                                              leftWidth,
                                               em,
                                               appVM.isinLoading,
                                               !curwish.isActive);

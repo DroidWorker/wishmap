@@ -19,11 +19,17 @@ class RepeatBSState extends State<RepeatBS>{
   late List<DateTime> dayList;
 
   List<bool> checkStates = List.generate(8, (i)=> false);
+  @override
+  void initState() {
+    checkStates.indexed.forEach((item){
+      if(widget.remindDays.contains(item.$1.toString())) (checkStates[item.$1] = true);
+    });
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
     final daysString = buildDays(widget.remindDays);
-
     return LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
           return Padding(
@@ -37,7 +43,7 @@ class RepeatBSState extends State<RepeatBS>{
                   Expanded(child: ColorRoundedButton("Выходные", c: AppColors.transPink, radius: 6, textColor: AppColors.gradientStart, (){
                     setState(() {
                       checkStates = List.generate(8, (i)=>false);
-                      checkStates[1]=true;
+                      checkStates[6]=true;
                       checkStates[7]=true;
                     });
                   })),
@@ -46,7 +52,7 @@ class RepeatBSState extends State<RepeatBS>{
                     setState(() {
                       checkStates = List.generate(8, (i)=>true);
                       checkStates[0]=false;
-                      checkStates[1]=false;
+                      checkStates[6]=false;
                       checkStates[7]=false;
                     });
                   }))
@@ -61,13 +67,13 @@ class RepeatBSState extends State<RepeatBS>{
                     checkStates[0]=false;
                   }
                 }),
-                SquareCheckbox(state: checkStates[1], "Воскресенье", (state){checkStates[7]=state;}),
-                SquareCheckbox(state: checkStates[2], "Понедельник", (state){checkStates[1]=state;}),
-                SquareCheckbox(state: checkStates[3], "Вторник", (state){checkStates[2]=state;}),
-                SquareCheckbox(state: checkStates[4], "Среда", (state){checkStates[3]=state;}),
-                SquareCheckbox(state: checkStates[5], "Четверг", (state){checkStates[4]=state;}),
-                SquareCheckbox(state: checkStates[6], "Пятница", (state){checkStates[5]=state;}),
-                SquareCheckbox(state: checkStates[7], "Суббота", (state){checkStates[6]=state;}),
+                SquareCheckbox(state: checkStates[1], "Понедельник", (state){checkStates[1]=state;}),
+                SquareCheckbox(state: checkStates[2], "Вторник", (state){checkStates[2]=state;}),
+                SquareCheckbox(state: checkStates[3], "Среда", (state){checkStates[3]=state;}),
+                SquareCheckbox(state: checkStates[4], "Четверг", (state){checkStates[4]=state;}),
+                SquareCheckbox(state: checkStates[5], "Пятница", (state){checkStates[5]=state;}),
+                SquareCheckbox(state: checkStates[6], "Суббота", (state){checkStates[6]=state;}),
+                SquareCheckbox(state: checkStates[7], "Воскресенье", (state){checkStates[7]=state;}),
                 const SizedBox(height: 20),
                 ColorRoundedButton("Готово", (){
                   widget.remindDays.clear();

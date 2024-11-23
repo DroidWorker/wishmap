@@ -339,7 +339,7 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>
                                 const SizedBox(height: 16),
                                 LayoutBuilder(
                                   builder: (context, constraints) {
-                                    double fullWidth = constraints.maxWidth - 9;
+                                    double fullWidth = constraints.maxWidth;
                                     double leftWidth =
                                         (constraints.maxWidth / 2) - 9;
                                     double rightWidth =
@@ -549,8 +549,8 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>
                                                   false);
                                             else
                                               return buildTripleReverce(
-                                                  leftWidth,
                                                   rightWidth,
+                                              leftWidth,
                                                   em,
                                                   appVM.isinLoading,
                                                   false);

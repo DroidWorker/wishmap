@@ -228,10 +228,12 @@ class NotifyAlarmScreenState extends State<NotifyAlarmScreen> {
                       }
                     }
                     if (alarm != null && alarm?.remindDays.isNotEmpty == true) {
-                      final dayOffset = getDayOffsetToClosest(
+
+                      var dayOffset = getDayOffsetToClosest(
                           alarm!.remindDays.map((e) => int.parse(e)).toList(),
                           alarm!.dateTime.weekday);
-                      alarm!.dateTime.add(Duration(days: dayOffset));
+                      if(dayOffset==0)dayOffset = 1;
+                      alarm!.dateTime = alarm!.dateTime.add(Duration(days: dayOffset));
                       final notifId = await setAlarm(alarm!, false);
                       if (notifId.isEmpty) {
                         showModalBottomSheet<void>(

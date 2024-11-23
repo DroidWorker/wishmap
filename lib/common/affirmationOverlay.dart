@@ -77,7 +77,6 @@ class _MyOverlayState extends State<MyAffirmationOverlay> {
                             if (element != currentAffirmation)
                               finalAffs += "|$element";
                           }
-                          print("fiiiiiiiiinal $finalAffs");
                           widget.onClose(finalAffs);
                       },
                     ),
@@ -115,7 +114,17 @@ class _MyOverlayState extends State<MyAffirmationOverlay> {
                     const Spacer(),
                     Text(isAdding?"Новая аффирмация":"Редактировать", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                     const Spacer(),
-                    const SizedBox(width: 40)
+                    IconButton(
+                      icon: const Icon(Icons.delete, size: 28, color: AppColors.buttonBackRed),
+                      onPressed: () {
+                        setState(() {
+                          screenType = 0;
+                          if(currentIndex<widget.affirmations.length)widget.affirmations.removeAt(currentIndex);
+                          isAdding = false;
+                          controller.clear();
+                        });
+                      },
+                    ),
                   ],
                 ),
                 const SizedBox(height: 10),
@@ -223,7 +232,7 @@ class _MyOverlayState extends State<MyAffirmationOverlay> {
                             widget.affirmations[currentIndex] = controller.text;
                             currentAffirmation=controller.text;
                             if(widget.affirmations[currentIndex].isEmpty)widget.affirmations.removeAt(currentIndex);
-                          } else{
+                          } else if(controller.text.isNotEmpty){
                             widget.affirmations.add(controller.text);
                             currentIndex = widget.affirmations.length-1;
                             currentAffirmation = controller.text;

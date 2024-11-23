@@ -189,7 +189,7 @@ class AlarmSettingScreenState extends State<AlarmSettingScreen> {
                                                       .add(const Duration(
                                                           days: 1))
                                                       .weekday);
-                                          alarm.dateTime
+                                          alarm.dateTime=alarm.dateTime
                                               .add(Duration(days: dayOffset));
                                         } else {
                                           alarm.dateTime = alarm.dateTime
@@ -202,7 +202,7 @@ class AlarmSettingScreenState extends State<AlarmSettingScreen> {
                                                 .map((e) => int.parse(e))
                                                 .toList(),
                                             alarm.dateTime.weekday);
-                                        alarm.dateTime
+                                        alarm.dateTime=alarm.dateTime
                                             .add(Duration(days: dayOffset));
                                       }
                                       List<int> alarmIds = [];

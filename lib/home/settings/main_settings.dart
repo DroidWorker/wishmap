@@ -47,7 +47,11 @@ class MainSettingsState extends State<MainSettings>{
               const SizedBox(height: 10,),
               const Text("Актуализация дерева", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
               const SizedBox(height: 10,),
-              buildSettingItem("Быстрая актуализация", "Актуализация всего дерева при актуализации его объекта", appViewModel.settings.actualizeFullBranch, (changed){appViewModel.settings.actualizeFullBranch=changed;appViewModel.saveSettings();}),
+              buildSettingItem("Быстрая актуализация", "Актуализация всего дерева при актуализации его объекта", appViewModel.settings.actualizeFullBranch, (changed){
+                setState(() {
+                  appViewModel.settings.actualizeFullBranch=changed;appViewModel.saveSettings();
+                });
+              }),
               const SizedBox(height: 24,),
               const Divider(
                 height: 3,
@@ -69,16 +73,20 @@ class MainSettingsState extends State<MainSettings>{
               const SizedBox(height: 8,),
               const Center(child: Text("При нажатии кнопки “Представить” экран редакции сферы при активации наследственных задач из последней актуальной карты", style: TextStyle(fontSize: 12),),),
               const SizedBox(height: 10,),
-              buildSettingItem("Автоматическая", "При актуализации вышестоящего “Я”", appViewModel.settings.sphereActualizingMode==0, (changed){
+              buildSettingItem("Автоматическая", "При актуализации вышестоящего “Я”", isEnabled: !appViewModel.settings.actualizeFullBranch, appViewModel.settings.sphereActualizingMode==0, (changed){
                 appViewModel.settings.sphereActualizingMode=changed?0:1;
                 appViewModel.saveSettings();
-                setState(() {});
+                setState(() {
+                  appViewModel.settings.actualizeFullBranch=false;
+                });
               }),
               const SizedBox(height: 10),
-              buildSettingItem("Автоматическая", "При актуализации нижестоящего желания", appViewModel.settings.sphereActualizingMode==1, (changed){
+              buildSettingItem("Автоматическая", "При актуализации нижестоящего желания", isEnabled: !appViewModel.settings.actualizeFullBranch, appViewModel.settings.sphereActualizingMode==1, (changed){
                 appViewModel.settings.sphereActualizingMode=changed?1:0;
                 appViewModel.saveSettings();
-                setState(() {});
+                setState(() {
+                  appViewModel.settings.actualizeFullBranch=false;
+                });
               }),
               const SizedBox(height: 10),
               buildSettingItem("Быстрая", "Двойное нажатие по лейблу “Сфера”", appViewModel.settings.fastActSphere, (changed){appViewModel.settings.fastActSphere=changed;appViewModel.saveSettings();}),
@@ -92,14 +100,20 @@ class MainSettingsState extends State<MainSettings>{
               const SizedBox(height: 8,),
               const Center(child: Text("Нажатие кнопки “Воплотить” при входе на экран редакции желания при актуализации наследственных желаний из последней ранее актуальной карты", style: TextStyle(fontSize: 12),),),
               const SizedBox(height: 10,),
-              buildSettingItem("Автоматическая", "При актуализации вышестоящего “наджелания”", appViewModel.settings.wishActualizingMode==0, (changed){setState(() {
+              buildSettingItem("Автоматическая", "При актуализации вышестоящего “наджелания”", isEnabled: !appViewModel.settings.actualizeFullBranch, appViewModel.settings.wishActualizingMode==0, (changed){setState(() {
                 appViewModel.settings.wishActualizingMode=changed?0:1;
                 appViewModel.saveSettings();
+                setState(() {
+                  appViewModel.settings.actualizeFullBranch=false;
+                });
               });}),
               const Center(child: Text("или")),
-              buildSettingItem("Автоматическая", "При актуализации нижестоящего “поджелания”", appViewModel.settings.wishActualizingMode==1, (changed){setState(() {
+              buildSettingItem("Автоматическая", "При актуализации нижестоящего “поджелания”", isEnabled: !appViewModel.settings.actualizeFullBranch, appViewModel.settings.wishActualizingMode==1, (changed){setState(() {
                 appViewModel.settings.wishActualizingMode=changed?1:0;
                 appViewModel.saveSettings();
+                setState(() {
+                  appViewModel.settings.actualizeFullBranch=false;
+                });
               });}),
               const SizedBox(height: 10),
               buildSettingItem("Быстрая", "Двойное нажатие по лейблу “Сфера”", appViewModel.settings.fastActWish, (changed){appViewModel.settings.fastActWish=changed;appViewModel.saveSettings();}),
@@ -113,14 +127,20 @@ class MainSettingsState extends State<MainSettings>{
               const SizedBox(height: 8,),
               const Center(child: Text("Нажатие кнопки “Актуализировать” при входе на экран редакции желания при актуализации наследственных желаний из последней ранее актуальной карты", style: TextStyle(fontSize: 14, color: AppColors.greytextColor),),),
               const SizedBox(height: 10,),
-              buildSettingItem("Автоматическая", "При актуализации вышестоящего “наджелания”", appViewModel.settings.taskActualizingMode==0, (changed){setState(() {
+              buildSettingItem("Автоматическая", "При актуализации вышестоящего “наджелания”", isEnabled: !appViewModel.settings.actualizeFullBranch, appViewModel.settings.taskActualizingMode==0, (changed){setState(() {
                 appViewModel.settings.taskActualizingMode=changed?0:1;
                 appViewModel.saveSettings();
+                setState(() {
+                  appViewModel.settings.actualizeFullBranch=false;
+                });
               });}),
               const Center(child: Text("или")),
-              buildSettingItem("Ручная", "При актуализации вышестоящего “желания”", appViewModel.settings.taskActualizingMode==1, (changed){setState(() {
+              buildSettingItem("Ручная", "При актуализации вышестоящего “желания”", isEnabled: !appViewModel.settings.actualizeFullBranch, appViewModel.settings.taskActualizingMode==1, (changed){setState(() {
                 appViewModel.settings.taskActualizingMode=changed?1:0;
                 appViewModel.saveSettings();
+                setState(() {
+                  appViewModel.settings.actualizeFullBranch=false;
+                });
               });}),
               const SizedBox(height: 24),
               const Divider(
@@ -182,7 +202,7 @@ class MainSettingsState extends State<MainSettings>{
     );
   }
 
-  Widget buildSettingItem(String title, String subtitle, bool isActive, Function(bool changed) onChanged){
+  Widget buildSettingItem(String title, String subtitle, bool isActive, Function(bool changed) onChanged, {bool isEnabled = true}){
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -195,6 +215,7 @@ class MainSettingsState extends State<MainSettings>{
       )),
       MySwitch(
         value: isActive,
+        enabled: isEnabled,
         onChanged: (changed){onChanged(changed);}
       )
     ],);

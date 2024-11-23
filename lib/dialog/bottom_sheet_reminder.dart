@@ -340,7 +340,7 @@ class ReminderBSState extends State<ReminderBS>{
                   Expanded(child: ColorRoundedButton("Выходные", c: AppColors.transPink, radius: 6, textColor: AppColors.gradientStart, (){
                     setState(() {
                       checkStates = List.generate(8, (i)=>false);
-                      checkStates[1]=true;
+                      checkStates[6]=true;
                       checkStates[7]=true;
                     });
                   })),
@@ -349,7 +349,7 @@ class ReminderBSState extends State<ReminderBS>{
                     setState(() {
                       checkStates = List.generate(8, (i)=>true);
                       checkStates[0]=false;
-                      checkStates[1]=false;
+                      checkStates[6]=false;
                       checkStates[7]=false;
                     });
                   }))
@@ -358,19 +358,19 @@ class ReminderBSState extends State<ReminderBS>{
                 SquareCheckbox(state: checkStates[0], "Выбрать все", (state){
                   if(state) {
                     setState(() {
-                    checkStates = List.generate(8, (i)=>true);
-                  });
+                      checkStates = List.generate(8, (i)=>true);
+                    });
                   }else{
                     checkStates[0]=false;
                   }
                 }),
-                SquareCheckbox(state: checkStates[7], "Воскресенье", (state){checkStates[7]=state;}),
                 SquareCheckbox(state: checkStates[1], "Понедельник", (state){checkStates[1]=state;}),
                 SquareCheckbox(state: checkStates[2], "Вторник", (state){checkStates[2]=state;}),
                 SquareCheckbox(state: checkStates[3], "Среда", (state){checkStates[3]=state;}),
                 SquareCheckbox(state: checkStates[4], "Четверг", (state){checkStates[4]=state;}),
                 SquareCheckbox(state: checkStates[5], "Пятница", (state){checkStates[5]=state;}),
                 SquareCheckbox(state: checkStates[6], "Суббота", (state){checkStates[6]=state;}),
+                SquareCheckbox(state: checkStates[7], "Воскресенье", (state){checkStates[7]=state;}),
                 const SizedBox(height: 20),
                 ColorRoundedButton("Готово", (){
                   reminder.remindDays.clear();

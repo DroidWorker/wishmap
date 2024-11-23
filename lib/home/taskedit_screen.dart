@@ -274,14 +274,13 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                             Column(children: [
                               TextField(
                                 onTap: (){
-                                  if(HEADERSIMPLETASKHEADER)return;
                                   if(ai!.isChecked&&!ai!.isActive) showUnavailable(text : "3адача выполнена в прошлой карте. Изменению не подлежит. Вы можете видеть ее в журнале задач в разделах 'выполненные' и 'все задачи', а также в иерархии цели и желания.\n\nВы можете удалить задачу. Если вам нужна подобная, просто создайте новую задачу.");
                                   else if(ai!.isChecked) {showUnavailable();}
                                   else if(!ai!.isActive) {showUnavailable(text : "Невозможно изменить неактуализированную задачу");}
                                 },
                                 controller: text,
                                 showCursor: true,
-                                readOnly: ai!=null?(ai!.isChecked||!ai!.isActive||HEADERSIMPLETASKHEADER?true:false):false,
+                                readOnly: ai!=null?(ai!.isChecked||!ai!.isActive?true:false):false,
                                 style: const TextStyle(color: Colors.black), // Черный текст ввода
                                 decoration: InputDecoration(
                                   contentPadding: const EdgeInsets.fromLTRB(16, 16, 16, 19),
@@ -441,6 +440,34 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                                 showModalBottomSheet(context: context,backgroundColor: AppColors.backgroundColor, isScrollControlled: true, builder: (BuildContext context){
                                   return ReminderBS((reminder){
                                     setState(() {
+                                      if (reminder.dateTime
+                                          .isBefore(DateTime.now())) {
+                                        if (reminder.remindDays.isNotEmpty) {
+                                          final dayOffset =
+                                          getDayOffsetToClosest(
+                                              reminder.remindDays
+                                                  .map((e) => int.parse(e))
+                                                  .toList(),
+                                              reminder.dateTime
+                                                  .add(const Duration(
+                                                  days: 1))
+                                                  .weekday);
+                                          reminder.dateTime=reminder.dateTime
+                                              .add(Duration(days: dayOffset));
+                                        } else {
+                                          reminder.dateTime = reminder.dateTime
+                                              .add(const Duration(days: 1));
+                                        }
+                                      }
+                                      if (reminder.remindDays.isNotEmpty) {
+                                        final dayOffset = getDayOffsetToClosest(
+                                            reminder.remindDays
+                                                .map((e) => int.parse(e))
+                                                .toList(),
+                                            reminder.dateTime.weekday);
+                                        reminder.dateTime=reminder .dateTime
+                                            .add(Duration(days: dayOffset));
+                                      }
                                       appVM.addReminder(reminder);
                                       setReminder(reminder);
                                       Navigator.pop(context, 'OK');

@@ -216,11 +216,11 @@ class _MainScreenState extends State<MainScreen>{
                                     final num = appVM.audioNum;
                                     appVM.audioNum = num+1>audioUrl.length-1?0:num+1;
                                     AudioPlayerManager().playLocal(audioUrl.keys.toList()[appVM.audioNum]);
-                                  }
                                     setState(() {
                                       isPauseIcon=false;
-                                      appVM.hint = audioUrl.keys.toList()[appVM.audioNum];
+                                      appVM.hint = audioUrl.keys.toList()[appVM.audioNum];print("aaaaaaaaaaaaaaaaa${appVM.hint}");
                                     });
+                                  }
                                 },
                               )
                             ],),

@@ -311,7 +311,7 @@ class _TaskScreenState extends State{
       setState(() {
         updateList = false;
         appViewModel.taskItems.firstWhere((element) => element.id==id).isChecked=true;
-        taskList.firstWhere((element)=>element.id==id).isChecked=true;
+
       });
     }else{//удалить
       showModalBottomSheet<void>(

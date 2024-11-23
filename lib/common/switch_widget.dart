@@ -4,8 +4,9 @@ import '../res/colors.dart';
 
   class MySwitch extends StatefulWidget {
   bool value = false;
+  bool enabled = true;
   Function(bool state) onChanged;
-  MySwitch({super.key, required this.onChanged, this.value = false});
+  MySwitch({super.key, required this.onChanged, this.value = false, this.enabled = true});
   @override
   _MyCustomSwitchState createState() => _MyCustomSwitchState();
 }
@@ -56,9 +57,9 @@ class _MyCustomSwitchState extends State<MySwitch> {
                   width: 25.0, // Adjust the width of the thumb
                   height: 25.0, // Adjust the height of the thumb
                   decoration: BoxDecoration(
-                    gradient: switchValue?const LinearGradient(colors: [AppColors.gradientStart, AppColors.gradientEnd]):null,
+                    gradient: switchValue&&widget.enabled?const LinearGradient(colors: [AppColors.gradientStart, AppColors.gradientEnd]):null,
                     shape: BoxShape.circle,
-                    color: switchValue ? null : AppColors.darkGrey,
+                    color: switchValue&&widget.enabled ? null : AppColors.darkGrey,
                   ),
                 ),
               ],
