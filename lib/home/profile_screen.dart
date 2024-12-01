@@ -113,7 +113,7 @@ class _ProfileScreenState extends State<ProfileScreen>{
                           }),
                           settingsWidget("assets/icons/setting_testing.svg" ,"Мое тестирование", (){
                             BlocProvider.of<NavigationBloc>(context)
-                                .add(NavigateToTodoScreenEvent());
+                                .add(NavigateToTestScreenEvent());
                           }),
                           settingsWidget("assets/icons/setting_level.svg" ,"Уровень", (){
                             BlocProvider.of<NavigationBloc>(context)

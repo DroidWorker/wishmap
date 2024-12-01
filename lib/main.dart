@@ -31,6 +31,8 @@ import 'package:wishmap/home/wish_screen.dart';
 import 'package:wishmap/provider/audio_manager.dart';
 import 'package:wishmap/res/colors.dart';
 import 'package:wishmap/services/reminder_service.dart';
+import 'package:wishmap/testModule/testingEngine/ViewModel.dart';
+import 'package:wishmap/testModule/testingEngine/pages/main_page.dart';
 import 'ViewModel.dart';
 import 'common/error_widget.dart';
 import 'dialog/bottom_sheet_notify.dart';
@@ -71,13 +73,15 @@ void main() async {
 
   final appViewModel = AppViewModel();
   await appViewModel.init();
+  final tvm = TestViewModel();
+  await tvm.init();
 
   NotificationResponse? initialNotificationResponse;
 
   await flutterLocalNotificationsPlugin.initialize(
     initializationSettings,
     onDidReceiveNotificationResponse: (response) =>
-        _handleNotificationResponse(response, appViewModel),
+        _handleNotificationResponse(response, appViewModel, tvm),
   );
 
   // Проверка, было ли приложение запущено через уведомление
@@ -87,29 +91,36 @@ void main() async {
 
   if (initialNotificationResponse == null) {
     runApp(
-      ChangeNotifierProvider(
-        create: (context) => appViewModel,
-        child: BlocProvider<NavigationBloc>(
-          create: (context) {
-            final appViewModel = context.read<AppViewModel>();
-            return NavigationBloc()
-              ..add(appViewModel.profileData != null &&
-                      appViewModel.profileData!.id.isNotEmpty
-                  ? NavigateToCardsScreenEvent()
-                  : NavigateToAuthScreenEvent());
-          },
-          child: MyApp(),
-        ),
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider<AppViewModel>(
+            create: (context) => appViewModel,
+          ),
+          ChangeNotifierProvider<TestViewModel>(
+            create: (context) => tvm,
+          ),
+          BlocProvider<NavigationBloc>(
+            create: (context) {
+              final appViewModel = context.read<AppViewModel>();
+              return NavigationBloc()
+                ..add(appViewModel.profileData != null &&
+                        appViewModel.profileData!.id.isNotEmpty
+                    ? NavigateToCardsScreenEvent()
+                    : NavigateToAuthScreenEvent());
+            },
+          ),
+        ],
+        child: MyApp(),
       ),
     );
   } else {
     if (initialNotificationResponse.payload?.contains("alarm") == true) {
       final id = int.parse(initialNotificationResponse.payload!.split("|")[1]);
-      _runAppWithAlarm(id ~/ 100, appViewModel);
+      _runAppWithAlarm(id ~/ 100, appViewModel, tvm);
     } else if (initialNotificationResponse.payload
             ?.contains("WishMap://task") ==
         true) {
-      _runAppWithTask(initialNotificationResponse, appViewModel);
+      _runAppWithTask(initialNotificationResponse, appViewModel, tvm);
     }
     ;
   }
@@ -128,37 +139,48 @@ Future<void> _requestPermissions(
 }
 
 Future<void> _handleNotificationResponse(
-    NotificationResponse response, AppViewModel vm) async {
+    NotificationResponse response, AppViewModel vm, TestViewModel tvm) async {
   AudioPlayerManager().stop();
   if (response.payload?.contains("alarm") == true) {
     final id = int.parse(response.payload!.split("|")[1]);
-    _runAppWithAlarm(id ~/ 100, vm);
+    _runAppWithAlarm(id ~/ 100, vm, tvm);
   } else if (response.payload?.contains("WishMap://task") == true) {
-    _runAppWithTask(response, vm);
+    _runAppWithTask(response, vm, tvm);
   }
 }
 
-void _runAppWithAlarm(int alarmId, AppViewModel vm) async {
+void _runAppWithAlarm(int alarmId, AppViewModel vm, TestViewModel tvm) async {
   vm.getLastObjectsForAlarm();
   runApp(
-    ChangeNotifierProvider(
-      create: (context) => vm,
-      child: BlocProvider<NavigationBloc>(
+    MultiProvider(providers: [
+      ChangeNotifierProvider<AppViewModel>(
+        create: (context) => vm,
+      ),
+      ChangeNotifierProvider<TestViewModel>(
+        create: (context) => tvm,
+      ),
+      BlocProvider<NavigationBloc>(
         create: (context) {
           return NavigationBloc();
         },
         child: MyApp(alarmId: alarmId),
       ),
-    ),
+    ]),
   );
 }
 
-void _runAppWithTask(NotificationResponse response, AppViewModel vm) async {
+void _runAppWithTask(
+    NotificationResponse response, AppViewModel vm, TestViewModel tvm) async {
   final taskId = int.parse(response.payload!.split("id=")[1]);
   runApp(
-    ChangeNotifierProvider(
-      create: (context) => vm,
-      child: BlocProvider<NavigationBloc>(
+    MultiProvider(providers: [
+      ChangeNotifierProvider<AppViewModel>(
+        create: (context) => vm,
+      ),
+      ChangeNotifierProvider<TestViewModel>(
+        create: (context) => tvm,
+      ),
+      BlocProvider<NavigationBloc>(
         create: (context) {
           final appViewModel = context.read<AppViewModel>();
           appViewModel.currentTask = null;
@@ -171,7 +193,7 @@ void _runAppWithTask(NotificationResponse response, AppViewModel vm) async {
         },
         child: MyApp(taskId: taskId),
       ),
-    ),
+    ]),
   );
 }
 
@@ -214,7 +236,7 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
       }
     }
     if (state == AppLifecycleState.hidden) {
-      if(vm?.autoLogout==true) {
+      if (vm?.autoLogout == true) {
         BlocProvider.of<NavigationBloc>(context).clearHistory();
         BlocProvider.of<NavigationBloc>(context)
             .add(NavigateToAuthScreenEvent());
@@ -306,31 +328,33 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
   }
 
   _startPeriodicMessage(BuildContext c) async {
-    vm?.promocodeMessageActive = await vm?.hasActivePromocode(null)??false;
+    vm?.promocodeMessageActive = await vm?.hasActivePromocode(null) ?? false;
     _timer = Timer.periodic(const Duration(minutes: 30), (t) {
       if (vm?.promocodeMessageActive == true) {
         return;
       }
-      if(!isMessageShown&&BlocProvider.of<NavigationBloc>(context).state is! NavigationAuthScreenState) {
+      if (!isMessageShown &&
+          BlocProvider.of<NavigationBloc>(context).state
+              is! NavigationAuthScreenState) {
         showModalBottomSheet<void>(
-        backgroundColor: AppColors.backgroundColor,
-        context: c,
-        isScrollControlled: true,
-        builder: (BuildContext context) {
-          return NotifyBS("", "Подпишись на тг канал", 'OK', onOk: () async {
-            final url = 'tg://resolve?domain=${vm?.static["tg"]}';
-            final uri = Uri.parse(url);
-            Navigator.pop(context, 'OK');
-            if (await canLaunchUrl(uri)) {
-              launchUrl(uri);
-            }
-            isMessageShown=false;
-          });
-        },
-      ).then((val){
-          isMessageShown=false;
+          backgroundColor: AppColors.backgroundColor,
+          context: c,
+          isScrollControlled: true,
+          builder: (BuildContext context) {
+            return NotifyBS("", "Подпишись на тг канал", 'OK', onOk: () async {
+              final url = 'tg://resolve?domain=${vm?.static["tg"]}';
+              final uri = Uri.parse(url);
+              Navigator.pop(context, 'OK');
+              if (await canLaunchUrl(uri)) {
+                launchUrl(uri);
+              }
+              isMessageShown = false;
+            });
+          },
+        ).then((val) {
+          isMessageShown = false;
         });
-        isMessageShown=true;
+        isMessageShown = true;
       }
     });
   }
@@ -395,6 +419,8 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
       return const PromocodesScreen();
     } else if (state is NavigationAlarmScreenState) {
       return AlarmScreen();
+    } else if (state is NavigationTestScreenState) {
+      return const MainPage();
     } else {
       return Container(); // По умолчанию или для других состояний.
     }
