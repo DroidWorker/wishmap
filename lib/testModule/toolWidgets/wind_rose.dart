@@ -9,7 +9,7 @@ class WindRose extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CustomPaint(
-      size: Size(200, 200),
+      size: const Size(200, 200),
       painter: WindRosePainter(values: values),
     );
   }
@@ -159,7 +159,6 @@ class WindRosePainter extends CustomPainter {
 
       i++;
     }
-
     // Рисуем окружности, представляющие уровни розы ветров
     final Paint circlePaint = Paint()
       ..color = Colors.black

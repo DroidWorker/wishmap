@@ -31,6 +31,7 @@ import 'package:wishmap/home/wish_screen.dart';
 import 'package:wishmap/provider/audio_manager.dart';
 import 'package:wishmap/res/colors.dart';
 import 'package:wishmap/services/reminder_service.dart';
+import 'package:wishmap/testModule/adminPanel/CalculationResultScreen.dart';
 import 'package:wishmap/testModule/testingEngine/ViewModel.dart';
 import 'package:wishmap/testModule/testingEngine/pages/main_page.dart';
 import 'ViewModel.dart';
@@ -421,6 +422,8 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
       return AlarmScreen();
     } else if (state is NavigationTestScreenState) {
       return const MainPage();
+    } else if (state is NavigationAdminPanelScreenState) {
+      return CalculationStepsScreen();
     } else {
       return Container(); // По умолчанию или для других состояний.
     }

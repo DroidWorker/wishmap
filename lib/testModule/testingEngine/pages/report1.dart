@@ -1,202 +1,297 @@
-import 'package:wishmap/testModule/testingEngine/pages/registration.dart';
-import 'package:wishmap/testModule/testingEngine/pages/report2.dart';
-import 'package:wishmap/testModule/toolWidgets/wind_rose.dart';
+import 'package:collection/collection.dart';
+import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:wishmap/common/gradientText.dart';
+import 'package:wishmap/interface_widgets/colorButton.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:wishmap/res/colors.dart';
-import '../../toolWidgets/wavwChart.dart';
-import '../../tools/tools.dart';
+import '../../../navigation/navigation_block.dart';
+import '../../toolWidgets/circularDiagram.dart';
 import '../ViewModel.dart';
 
 class Report1 extends StatelessWidget {
-
   bool isVideoVisible = true;
+
   @override
   Widget build(BuildContext context) {
-    return Consumer<TestViewModel>(builder: (context, viewModel, child)
-    {
+    return Consumer<TestViewModel>(builder: (context, viewModel, child) {
       final testResult = viewModel.resultM1.values.toList();
-      return testResult.isNotEmpty?
-      Scaffold(
-          appBar: AppBar(
-              backgroundColor: appbarColor,
-              scrolledUnderElevation: 0,
-              toolbarHeight: 90,
-              title: Center(
-                child: Image.asset(
-                  'assets/res/images/logo.png',
-                  height: 90,
-                ),
-              )
-          ),
-          body: LayoutBuilder(
-              builder: (context, constraints) {
-                const exp = [0.20,0.30,0.50,0.75,1.00,1.25,1.50,1.75,2.00,2.50,3.10,3.50,4.00,5.00,5.40,6.00];
-                final expectation = calculateExpectation(viewModel.hokinsResultM1.values.toList(), exp);
-                String expectationStatus = "";
-                double minDifference = double.infinity;
-
-                for (int i = 0; i < exp.length; i++) {
-                  double difference = (exp[i]*100 - expectation*10.0).abs();
-                  if (difference < minDifference) {
-                    minDifference = difference;
-                    expectationStatus = viewModel.hokinsResultM1.keys.toList()[i];
+      final hokinsResult = viewModel.hokinsResultM1;
+      return testResult.isNotEmpty
+          ? Scaffold(
+        backgroundColor: AppColors.backgroundColor,
+              body: SafeArea(
+                child: LayoutBuilder(builder: (context, constraints) {
+                  var avg = 0.0;
+                  for (var v in testResult) {
+                    avg += v;
                   }
-                }
-                return SingleChildScrollView(
-                    child: Column(children: [Container(
+                  avg = (avg / testResult.length);
+                  const colors = {
+                    "Красота и здоровье": Color(0xFF00EA8C),
+                    "Отношения и любовь": Color(0xFFFF0000),
+                    "Призвание и карьера": Color(0xFF70D9FF),
+                    "Твое окружение": Color(0xFFFF9500),
+                    "Богатство и деньги": Color(0xFF007304),
+                    "Яркость жизни": Color(0xFFFFE331),
+                    "Самосознание": Color(0xFFAE42F6),
+                  };
+                  const hokColors = {
+                    "Стыд": Color(0xFF5589ED),
+                    "Вина": Color(0xFFD23538),
+                    "Апатия": Color(0xFFEEBF2F),
+                    "Горе": Color(0xFF4FB658),
+                    "Страх": Color(0xFFE6651F),
+                    "Жажда": Color(0xFF63C8C1),
+                    "Гнев": Color(0xFF84ABF0),
+                    "Гордыня": Color(0xFFDD7173),
+                    "Смелость": Color(0xFFF0D35D),
+                    "Нейтралитет": Color(0xFF7FCC8B),
+                    "Готовность": Color(0xFFED9258),
+                    "Принятие": Color(0xFF92DAD4),
+                    "Разум": Color(0xFFB9CEF7),
+                    "Любовь": Color(0xFFECB1AF),
+                    "Гармония": Color(0xFFF5E7A2),
+                  };
+
+                  return SingleChildScrollView(
+                      child: Column(
+                          children: [
+                            Container(
+                              padding: EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  IconButton(
+                                      padding: EdgeInsets.zero,
+                                      constraints: const BoxConstraints(),
+                                      style: const ButtonStyle(
+                                        tapTargetSize:
+                                        MaterialTapTargetSize.shrinkWrap, // the '2023' part
+                                      ),
+                                      icon: const Icon(Icons.keyboard_arrow_left,
+                                          size: 28, color: AppColors.gradientStart),
+                                      onPressed: () {
+                                        BlocProvider.of<NavigationBloc>(context)
+                                            .handleBackPress();
+                                      }),
+                                  const Text("Сферы жизни",
+                                      style:
+                                      TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+                                  const SizedBox(
+                                    width: 29
+                                  )
+                                ],
+                              ),
+                            ),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 6),
+                      child: Text(
+                        "Цель данного отчета — предоставить комплексный обзор текущего состояния этих сфер, выявить ключевые проблемы и предложить рекомендации для их оптимизации, что позволит каждому человеку стремиться к более гармоничной и полноценной жизни",
+                        style: TextStyle(
+                          color: Color(0xFFB2B2BF)
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    Container(
                         width: constraints.maxWidth,
-                        color: bgMainColor,
-                        padding: constraints.maxWidth > 600 ? const EdgeInsets
-                            .all(100.0) : const EdgeInsets.all(20.0),
+                        decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), color: Colors.white),
+                        margin: const EdgeInsets.symmetric(horizontal: 10),
+                        padding: const EdgeInsets.all(10.0),
                         child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Center(child: Text(
-                                'Вы прошли Модуль 1:  Сферы жизни',
-                                style: TextStyle(fontSize: 20),),),
-                              const SizedBox(height: 10,),
-                              const Center(child: Text(
-                                'Промежуточные результаты', style: TextStyle(
-                                  fontSize: 16),),),
-                              const SizedBox(height: 40,),
-                              Row(children: [
-                                Expanded(child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text("Колесо баланса",
-                                      style: TextStyle(fontSize: 24),),
-                                    const SizedBox(height: 30,),
-                                    Text('''
-Отношения          ${(testResult[0].toInt()~/10)} из 10
-Богатство          ${(testResult[1].toInt()~/10)} из 10
-Здоровье           ${(testResult[2].toInt()~/10)} из 10
-Призвание          ${(testResult[3].toInt()~/10)} из 10
-Окружение          ${(testResult[4].toInt()~/10)} из 10
-Саморазвитие       ${(testResult[5].toInt()~/10)} из 10
-Яркость жизни      ${(testResult[6].toInt()~/10)} из 10
-Духовность         ${(testResult[7].toInt()~/10)} из 10'''),
-                                    const SizedBox(height: 30,),
-                                    const Text(
-                                        'Важно пройти следующие модули для получения более реалистичных показателей.')
-                                  ],)),
-                                if(constraints.maxWidth > 600) WindRose(
-                                    values: [
-                                      testResult[0],
-                                      testResult[1],
-                                      testResult[2],
-                                      testResult[3],
-                                      testResult[4],
-                                      testResult[5],
-                                      testResult[6],
-                                      testResult[7]
-                                    ])
-                              ],),
-                              if(constraints.maxWidth <= 600) WindRose(
-                                  values: [
-                                    testResult[0],
-                                    testResult[1],
-                                    testResult[2],
-                                    testResult[3],
-                                    testResult[4],
-                                    testResult[5],
-                                    testResult[6],
-                                    testResult[7]
-                                  ]),
-                              const SizedBox(height: 70,),
-                              const Center(child: Text(
-                                  "Волновая функция", style: TextStyle(
-                                  fontSize: 24))),
-                              const SizedBox(height: 20,),
-                              CustomLineChart(data: viewModel.hokinsResultM1, expectations: const [0.20,0.30,0.50,0.75,1.00,1.25,1.50,1.75,2.00,2.50,3.10,3.50,4.00,5.00,5.40,6.00]),
-                              const SizedBox(height: 70,),
-                              if(constraints.maxWidth <= 600)const Text("""На основании результатов теста строится распределение плотности вероятности ваших энергетических состоятний. 
-
-С помощью вычислений мы определяем в каком наиболее вероятном чувстве вы пребываете в тех или иных условиях реальности соприкаясь с разными сферами жизни.
-
-Наиболее веротяное состотяние, так называемое математическое ожидание, определяет численное значение на графике и наиболее близкое чувство по значению."""),
-                              Row(children: [
-                                if(constraints.maxWidth > 600)const Expanded(
-                                  child: Text("""На основании результатов теста строится распределение плотности вероятности ваших энергетических состоятний. 
-
-С помощью вычислений мы определяем в каком наиболее вероятном чувстве вы пребываете в тех или иных условиях реальности соприкаясь с разными сферами жизни.
-
-Наиболее веротяное состотяние, так называемое математическое ожидание, определяет численное значение на графике и наиболее близкое чувство по значению."""),),
-                                if(constraints.maxWidth > 600)const SizedBox(
-                                    width: 40),
-                                Column(children: [
-                                  const Text("Ваш индекс:",
-                                    style: TextStyle(fontSize: 20),),
-                                  Text((expectation.toInt()*10).toString(), style: TextStyle(fontSize: 28)),
-                                  const Text("Ваше “наиболее вероятное” состояние: ",
-                                      style: TextStyle(fontSize: 18)),
-                                  Text(expectationStatus,
-                                      style: const TextStyle(fontSize: 26))
-                                ],)
-                              ],),
-                              const SizedBox(height: 50,),
-                              const Center(child: Text(
-                                "Чтобы сохранить промежуточные результаты - зарегистрируйтесь",
-                                style: TextStyle(fontSize: 20),),),
-                              const SizedBox(height: 70,),
-                              Row(mainAxisAlignment: MainAxisAlignment
-                                  .spaceAround,
+                              const Text(
+                                  "Диаграмма сфер",
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold
+                                ),
+                              ),
+                              const SizedBox(height: 30),
+                              Center(child: RadialChart(filledSections: [
+                                (testResult[0]/10).toInt(),
+                                (testResult[1]/10).toInt(),
+                                (testResult[2]/10).toInt(),
+                                (testResult[3]/10).toInt(),
+                                (testResult[4]/10).toInt(),
+                                (testResult[5]/10).toInt(),
+                                (testResult[6]/10).toInt(),
+                                  (testResult[7]/10).toInt()
+                              ])),
+                              const SizedBox(height: 20),
+                              Center(
+                                child: Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), border: Border.all(color: AppColors.grey)),
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      GradientText(
+                                        "${avg.toInt()}%",
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 30
+                                        ),
+                                        gradient: const LinearGradient(colors: [AppColors.gradientStart, AppColors.gradientEnd]),
+                                      ),
+                                      const GradientText(
+                                        "Средний уровень",
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold
+                                        ),
+                                        gradient: LinearGradient(colors: [AppColors.gradientStart, AppColors.gradientEnd]),
+                                      )
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              Center(
+                                child: Text(
+                                  "Ты находишься на среднем уровне полноценности жизни. Некоторые сферы развиты лучше других",
+                                  style: TextStyle(color: AppColors.greytextColor),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                              const SizedBox(height: 15),
+                              const Center(
+                                child: Text(
+                                  "Однако, ты тут чтобы все изменить!",
+                                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                                ),
+                              ),
+                              const SizedBox(height: 21),
+                              ...colors.keys.mapIndexed((i, e){
+                                final value = i<3?testResult[i]:i==3?(testResult[i]+testResult[i+1])/2:testResult[i+1];
+                                return SphereButtonItem(colors[e]??Colors.blue, value.toInt(), e, (){
+                
+                                });
+                              }),
+                            ])),
+                    const SizedBox(height: 25),
+                    Container(
+                      width: constraints.maxWidth,
+                      decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), color: Colors.white),
+                      margin: const EdgeInsets.symmetric(horizontal: 10),
+                      padding: const EdgeInsets.all(10.0),
+                      child: Column(
+crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Container(
+                            width: constraints.maxWidth,
+                            child: Text("Общий уровень сознания", style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 20),),
+                          ),
+                          SizedBox(height: 24),
+                          Center(
+                            child: Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), border: Border.all(color: AppColors.grey)),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  TextButton(
-                                    onPressed: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                            builder: (context) => Report2()),
-                                      );
-                                    },
-                                    child: Text(
-                                      'Продолжить тест\nмодуль2: Шкала Эмоций',
-                                      style: TextStyle(
-                                          fontSize: constraints.maxWidth > 600
-                                              ? 20.0
-                                              : 14, color: Colors.black),
-                                      textAlign: TextAlign.center,
+                                  GradientText(
+                                    "${avg.toInt()}%",
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 30
                                     ),
+                                    gradient: const LinearGradient(colors: [AppColors.gradientStart, AppColors.gradientEnd]),
                                   ),
-                                  TextButton(
-                                    onPressed: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(builder: (context) =>
-                                            Registration()),
-                                      );
-                                    },
-                                    child: Text(
-                                      'Пройти оставшиеся\nтесты потом',
-                                      style: TextStyle(
-                                          fontSize: constraints.maxWidth > 600
-                                              ? 20.0
-                                              : 14, color: Colors.black),
-                                      textAlign: TextAlign.center,
+                                  const GradientText(
+                                    "Средний уровеньUjhlsyz",
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.bold
                                     ),
-                                  ),
-                                ],)
-                            ]
-                        )
-                    ),
-                      Container(
-                        height: 100,
-                        color: footerColor,
-                      )
-                    ]
+                                    gradient: LinearGradient(colors: [AppColors.gradientStart, AppColors.gradientEnd]),
+                                  )
+                                ],
+                              ),
+                            ),
+                          ),
+SizedBox(height: 25),
+                          SizedBox(
+                            width: constraints.maxWidth-60,
+                            height: 200,
+                            child: LineChart(
+                              LineChartData(
+                                lineBarsData: hokinsResult.entries.mapIndexed((index, entry) {
+                                  return LineChartBarData(
+                                    spots: [FlSpot(index.toDouble(), entry.value), FlSpot(index.toDouble(), 0)].toList(),
+                                    isCurved: true,
+                                    color: hokColors[entry.key],
+                                    barWidth: (constraints.maxWidth-30-30)/16,
+                                    isStrokeCapRound: false,
+                                    dotData: const FlDotData(show: false),
+                                  );
+                                }).toList(),
+                                titlesData: const FlTitlesData(
+                                  show: false
+                                ),
+                                gridData: const FlGridData(show: false),
+                                borderData: FlBorderData(show: false),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          Container(
+                            margin: const EdgeInsets.only(bottom: 10),
+                            width: constraints.maxWidth,
+                            child: const Text(
+                              "Уровень сознания",
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold
+                              ),
+                            ),
+                          ),
+                          Container(
+                            width: constraints.maxWidth,
+                            child: const Text(
+                              "У тебя сейчас такой период, когда т"
+                            ),
+                          ),
+                        ShaderMask(
+                          blendMode: BlendMode.srcIn,
+                          shaderCallback: (bounds) => const LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter,colors: [AppColors.greytextColor, AppColors.grey]).createShader(
+                            Rect.fromLTWH(0, 0, bounds.width, bounds.height),
+                          ),
+                          child: Container(
+                            width: constraints.maxWidth,
+                            child: Text(
+                                "ы неустанно ищешь идеальные способы, чтобы достичь желаемой внешности и крепкого здоровья. Ты представляешь себя..."
+                            ),
+                          )
+                        ),
+                          const SizedBox(height: 25),
+                          RichText(
+                            textAlign: TextAlign.center,
+                            text: const TextSpan(text: "Блок доступен для пользователей,\n достигших", style: TextStyle(fontSize: 12, color: AppColors.greytextColor),
+                            children: [
+                              TextSpan(text: " средний уровень", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black))
+                            ]),
+                          ),
+                          const SizedBox(height: 15),
+                          ColorRoundedButton("Изучить", (){
+
+                          })
+                        ],
+                      ),
                     )
-                )
-                ;
-              }
-          )
-      ):
-      inCalculating();
+                  ]));
+                }),
+              ))
+          : inCalculating();
     });
   }
 
-  Widget inCalculating(){
+  Widget inCalculating() {
     return Scaffold(
       appBar: AppBar(
           backgroundColor: appbarColor,
@@ -207,10 +302,39 @@ class Report1 extends StatelessWidget {
               'assets/res/images/logo.png',
               height: 90,
             ),
-          )
-      ),
+          )),
       body: const Center(
         child: Text("Вычисляем результаты"),
+      ),
+    );
+  }
+
+  Widget SphereButtonItem(Color boxBGColor, int percentValue, String sphereName, Function onClick){
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 4),
+      decoration: BoxDecoration(borderRadius: BorderRadius.circular(10), border: Border.all(color: AppColors.grey)),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Container(
+            margin: const EdgeInsets.all(10),
+            decoration: BoxDecoration(color: boxBGColor, borderRadius: BorderRadius.circular(10)),
+            width: 77,
+            height: 50,
+            child: Center(
+              child: Text(
+                  "${percentValue.toString()}%",
+                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)
+              ),
+            ),
+          ),
+          Text(
+            sphereName
+          ),
+          const Spacer(),
+          const Icon(Icons.keyboard_arrow_right, size: 28),
+          const SizedBox(width: 5)
+        ],
       ),
     );
   }

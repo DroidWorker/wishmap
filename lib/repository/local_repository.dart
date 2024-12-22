@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wishmap/repository/dbHelper.dart';
 
 import '../data/models.dart';
+import '../testModule/testingEngine/data/adminModule.dart';
 
 class LocalRepository {
   SharedPreferences? _prefs;
@@ -27,6 +28,30 @@ class LocalRepository {
     _prefs = await SharedPreferences.getInstance();
     dbHelper = DatabaseHelper();
   }
+
+  //<--admin prefs
+  saveCalculation(List<CalculationStep> steps) async {
+    String stepsJson = jsonEncode(steps.map((step) => step.toJson()).toList());
+    if (_prefs == null) {
+      await init();
+    }
+    _prefs!.setString("CircularDiagramCalculation",
+        stepsJson);
+  }
+
+  List<CalculationStep> getCalculation() {
+    try {
+      final stepsJson = _prefs!.getString("CircularDiagramCalculation") ?? "";
+      List<dynamic> jsonResponse = jsonDecode(stepsJson);
+      List<CalculationStep> steps = jsonResponse.map((json) =>
+          CalculationStep.fromJson(json)).toList();
+      return steps;
+    }catch(ex, s){
+      print("paaaaaarce - $ex - $s");
+      return [];
+    }
+  }
+  //-->admin prefs
 
   //lockScreen
   Future saveLockParams(LockParams lp) async {

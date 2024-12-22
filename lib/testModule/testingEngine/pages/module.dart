@@ -142,6 +142,7 @@ class Module1State extends State{
                                           if(step!=maxStep) {
                                             step++;
                                           } else{
+                                            print(";;;;;;;;;;");
                                             viewModel.calculateResult();
                                             Navigator.push(
                                               context,

@@ -91,6 +91,7 @@ dependencies:
   syncfusion_flutter_charts: ^25.2.7
   chewie: ^1.8.5
   video_player: ^2.9.2
+  fl_chart: ^0.69.2
 
 
 dev_dependencies:
@@ -121,6 +122,7 @@ flutter:
     - assets/lottie/
     - assets/audio/
     - assets/res/config.json
+    - assets/res/config_hokins.json
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

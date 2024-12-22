@@ -117,7 +117,7 @@ class _ProfileScreenState extends State<ProfileScreen>{
                           }),
                           settingsWidget("assets/icons/setting_level.svg" ,"Уровень", (){
                             BlocProvider.of<NavigationBloc>(context)
-                                .add(NavigateToTodoScreenEvent());
+                                .add(NavigateToAdminPanelScreenEvent());
                           }),
                           settingsWidget("assets/icons/promocode_discount.png" ,"Мои промокоды", (){
                             BlocProvider.of<NavigationBloc>(context)

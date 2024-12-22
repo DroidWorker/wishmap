@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../navigation/navigation_block.dart';
 import '../../../res/colors.dart';
 import 'module.dart';
 
@@ -19,11 +21,13 @@ class MainPageState extends State{
             scrolledUnderElevation: 0,
             toolbarHeight: 90,
             title: Center(
-              child: Image.asset(
-                'assets/res/images/logo.png',
-                    height: 90,
-              ),
-            )
+              child: Text(
+                "Выход из теста -->"
+              )
+            ),
+          actions: [
+            IconButton(onPressed: (){BlocProvider.of<NavigationBloc>(context).handleBackPress();}, icon: const Icon(Icons.close, color: Colors.red,))
+          ],
         ),
         body: LayoutBuilder(
             builder: (context, constraints) {

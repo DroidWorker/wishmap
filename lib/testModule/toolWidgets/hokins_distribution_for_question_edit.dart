@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 class HokinsDistributionForQuestionEdit extends StatefulWidget {
   final List<String> answers;
-  final List<List<int>> koeffs;
+  final List<List<double>> koeffs;
   final List<String> indexTitle;
 
   HokinsDistributionForQuestionEdit({Key? key, required this.answers, required this.koeffs, this.indexTitle =
@@ -40,7 +40,7 @@ class _EditableTableState extends State<HokinsDistributionForQuestionEdit> {
   Widget build(BuildContext context) {
     summ = [];
     for (var element in widget.koeffs) {
-      summ.add(element.reduce((a, b) => a + b));
+      summ.add(element.reduce((a, b) => a + b).toInt());
     }
     return Scrollbar(
       controller: scrollController,
@@ -150,7 +150,7 @@ class _EditableTableState extends State<HokinsDistributionForQuestionEdit> {
                           int columnIndex = controllers.indexOf(controller);
                           int rowIndex = widget.koeffs.indexOf(row);
                           setState(() {
-                            widget.koeffs[rowIndex][columnIndex] = int.tryParse(value) ?? 0;
+                            widget.koeffs[rowIndex][columnIndex] = double.tryParse(value) ?? 0;
                           });
                         },
                       )),

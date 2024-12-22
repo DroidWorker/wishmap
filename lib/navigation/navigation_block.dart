@@ -66,6 +66,7 @@ class NavigateToAlarmSettingsScreenEvent extends NavigationEvent {
 }
 
 class NavigateToTestScreenEvent extends NavigationEvent {}
+class NavigateToAdminPanelScreenEvent extends NavigationEvent {}
 
 class NavigateToPersonalSettingsScreenEvent extends NavigationEvent {}
 class NavigateToMainSettingsScreenEvent extends NavigationEvent {}
@@ -139,6 +140,7 @@ class NavigationAlarmSettingsScreenState extends NavigationState {
 }
 
 class NavigationTestScreenState extends NavigationState {}
+class NavigationAdminPanelScreenState extends NavigationState {}
 
 class NavigationPersonalSettingsScreenState extends NavigationState {}
 class NavigationMainSettingsScreenState extends NavigationState {}
@@ -300,6 +302,11 @@ class NavigationBloc extends Bloc<NavigationEvent, NavigationState> {
 
     on<NavigateToTestScreenEvent>((event, emit) {
       _navigationHistory.add(NavigationTestScreenState());
+      emit(_navigationHistory.last);
+    });
+
+    on<NavigateToAdminPanelScreenEvent>((event, emit) {
+      _navigationHistory.add(NavigationAdminPanelScreenState());
       emit(_navigationHistory.last);
     });
 

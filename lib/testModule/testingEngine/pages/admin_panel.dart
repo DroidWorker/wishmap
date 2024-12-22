@@ -115,7 +115,7 @@ class AdminPanelState extends State {
                                 const SizedBox(height: 30),
                                 ...questions.map((e) => Column(children:[
                                   Row(children: [Text(e.question), IconButton(onPressed: (){setState(() {expandedIndex=questions.indexOf(e);});}, icon: const Icon(Icons.arrow_drop_down))],),
-                                  if(expandedIndex==questions.indexOf(e)) SizedBox(width:constraints.maxWidth-40, child: HokinsDistributionForQuestionEdit(answers: e.answers, koeffs: hokinsKoefs[expandedIndex]))
+                                  if(expandedIndex==questions.indexOf(e)) SizedBox(width:constraints.maxWidth-40, child: HokinsDistributionForQuestionEdit(answers: e.answers, koeffs: hokinsKoefs.values.first[expandedIndex]))
                                 ])),
                                 const SizedBox(height: 50),
                                 Center(
