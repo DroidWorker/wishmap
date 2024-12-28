@@ -123,6 +123,8 @@ flutter:
     - assets/audio/
     - assets/res/config.json
     - assets/res/config_hokins.json
+    - assets/res/config_hokins_beautyhealth_w.json
+    - assets/res/config_texts.json
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

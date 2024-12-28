@@ -1,10 +1,12 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 
 import 'package:wishmap/res/colors.dart';
 import 'package:wishmap/testModule/testingEngine/pages/report1.dart';
 
+import '../../../navigation/navigation_block.dart';
 import '../../toolWidgets/EmojiText.dart';
 import '../../toolWidgets/video_player.dart';
 import '../ViewModel.dart';
@@ -142,12 +144,9 @@ class Module1State extends State{
                                           if(step!=maxStep) {
                                             step++;
                                           } else{
-                                            print(";;;;;;;;;;");
                                             viewModel.calculateResult();
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(builder: (context) => Report1()),
-                                            );
+                                            BlocProvider.of<NavigationBloc>(context)
+                                                .add(NavigateToReport1ScreenEvent());
                                           }
                                         });
                                       },
@@ -172,10 +171,8 @@ class Module1State extends State{
                                             step++;
                                           } else{
                                             viewModel.calculateResult();
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(builder: (context) => Report1()),
-                                            );
+                                            BlocProvider.of<NavigationBloc>(context)
+                                                .add(NavigateToReport1ScreenEvent());
                                           }
                                         });
                                       },
@@ -200,10 +197,8 @@ class Module1State extends State{
                                             step++;
                                           } else{
                                             viewModel.calculateResult();
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(builder: (context) => Report1()),
-                                            );
+                                            BlocProvider.of<NavigationBloc>(context)
+                                                .add(NavigateToReport1ScreenEvent());
                                           }
                                         });
                                       },
@@ -228,10 +223,8 @@ class Module1State extends State{
                                             step++;
                                           } else{
                                             viewModel.calculateResult();
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(builder: (context) => Report1()),
-                                            );
+                                            BlocProvider.of<NavigationBloc>(context)
+                                                .add(NavigateToReport1ScreenEvent());
                                           }
                                         });
                                       },
@@ -256,10 +249,8 @@ class Module1State extends State{
                                             step++;
                                           } else{
                                             viewModel.calculateResult();
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(builder: (context) => Report1()),
-                                            );
+                                            BlocProvider.of<NavigationBloc>(context)
+                                                .add(NavigateToReport1ScreenEvent());
                                           }
                                         });
                                       },

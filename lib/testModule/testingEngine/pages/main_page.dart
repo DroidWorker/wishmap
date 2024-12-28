@@ -150,10 +150,8 @@ class MainPageState extends State{
                               setState(() {
                                 isToggled = 1;
                               });
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (context) => const Module1()),
-                              );
+                              BlocProvider.of<NavigationBloc>(context).add(
+                                  NavigateToModuleScreenEvent());
                             },
                             child: const Text(
                               'мужчина',
@@ -172,10 +170,8 @@ class MainPageState extends State{
                               setState(() {
                                 isToggled = 2;
                               });
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (context) => const Module1()),
-                              );
+                              BlocProvider.of<NavigationBloc>(context).add(
+                                  NavigateToModuleScreenEvent());
                             },
                             child: const Text(
                               'женщина',

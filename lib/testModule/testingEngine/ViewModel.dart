@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/services.dart';
 
 import '../../repository/local_repository.dart';
 import 'data/adminModule.dart';
@@ -9,9 +12,12 @@ class TestViewModel extends ChangeNotifier {
   final repository = TestingRepository();
   LocalRepository localRep = LocalRepository();
   bool isInLoading = false;
+  int avg = 0;
 
   init() async {
     hokinsKoefs = await repository.getHokins();
+    mainData = await getMainReportData();
+    configEmotionSphere = await getHokinsSphere();
   }
 
   List<Question> questionsAndKoeffs = [];
@@ -20,6 +26,8 @@ class TestViewModel extends ChangeNotifier {
   //test1
   List<double> ansversM1 = [];
   Map<String, List<List<List<double>>>> hokinsKoefs = {};
+  MainData? mainData;
+  EmotionData? configEmotionSphere;
   Map<String, double> resultM1 = {};
   Map<String, double> hokinsResultM1 = {};
 
@@ -102,6 +110,38 @@ class TestViewModel extends ChangeNotifier {
 
       notifyListeners();
     }
+  }
+
+  String buildStringByAnswers(String sphere){
+    //mainData
+    var result = "";
+    final textsData = mainData?.conclusionCommonInSphere.spheres[sphere];
+
+    ansversM1.forEach((e){
+
+    });
+    textsData?.combinationQuestions.entries.forEach((e){
+      if(e.key=="COMBINATIONQUESTIONS" || e.key == "COMBINATION"){
+
+      }else {
+        result = e.value[ansversM1[int.parse(e.key)].toInt()];
+      }
+    });
+    return result;
+  }
+
+  Future<MainData> getMainReportData() async {
+    String jsonString = await rootBundle.loadString('assets/res/config_texts.json');
+    Map<String, dynamic> jsonResponse = jsonDecode(jsonString);
+    MainData mainData = MainData.fromJson(jsonResponse);
+    return mainData;
+  }
+
+  Future<EmotionData> getHokinsSphere() async {
+    String jsonString = await rootBundle.loadString('assets/res/config_hokins_beautyhealth_w.json');
+    Map<String, dynamic> jsonResponse = jsonDecode(jsonString);
+    EmotionData emotionData = EmotionData.fromJson(jsonResponse);
+    return emotionData;
   }
 
   List<List<double>> getHokinsForQuestion(int qNumber) {

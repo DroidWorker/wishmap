@@ -78,6 +78,13 @@ class NavigateToLockSettingsScreenEvent extends NavigationEvent {}
 class NavigateToTodoScreenEvent extends NavigationEvent {}
 class NavigateToPromocodesScreenScreenEvent extends NavigationEvent {}
 
+class NavigateToModuleScreenEvent extends NavigationEvent {}
+class NavigateToReport1ScreenEvent extends NavigationEvent {}
+class NavigateToReportInfoScreenScreenEvent extends NavigationEvent {
+  String sphere = "";
+  NavigateToReportInfoScreenScreenEvent(this.sphere);
+}
+
 abstract class NavigationState {}
 
 class NavigationAuthScreenState extends NavigationState {}
@@ -151,6 +158,13 @@ class NavigationContactScreenState extends NavigationState {}
 class NavigationLockSettingsScreenState extends NavigationState {}
 class NavigationTodoScreenState extends NavigationState {}
 class NavigationPromocodesScreenState extends NavigationState {}
+
+class NavigationModuleScreenState extends NavigationState {}
+class NavigationReport1ScreenState extends NavigationState {}
+class NavigationReportInfoScreenScreenState extends NavigationState {
+  String sphere = "";
+  NavigationReportInfoScreenScreenState(this.sphere);
+}
 
 
 class NavigationBloc extends Bloc<NavigationEvent, NavigationState> {
@@ -307,6 +321,21 @@ class NavigationBloc extends Bloc<NavigationEvent, NavigationState> {
 
     on<NavigateToAdminPanelScreenEvent>((event, emit) {
       _navigationHistory.add(NavigationAdminPanelScreenState());
+      emit(_navigationHistory.last);
+    });
+
+    on<NavigateToModuleScreenEvent>((event, emit) {
+      _navigationHistory.add(NavigationModuleScreenState());
+      emit(_navigationHistory.last);
+    });
+
+    on<NavigateToReport1ScreenEvent>((event, emit) {
+      _navigationHistory.add(NavigationReport1ScreenState());
+      emit(_navigationHistory.last);
+    });
+
+    on<NavigateToReportInfoScreenScreenEvent>((event, emit) {
+      _navigationHistory.add(NavigationReportInfoScreenScreenState(event.sphere));
       emit(_navigationHistory.last);
     });
 

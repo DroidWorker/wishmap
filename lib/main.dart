@@ -34,6 +34,9 @@ import 'package:wishmap/services/reminder_service.dart';
 import 'package:wishmap/testModule/adminPanel/CalculationResultScreen.dart';
 import 'package:wishmap/testModule/testingEngine/ViewModel.dart';
 import 'package:wishmap/testModule/testingEngine/pages/main_page.dart';
+import 'package:wishmap/testModule/testingEngine/pages/module.dart';
+import 'package:wishmap/testModule/testingEngine/pages/report1.dart';
+import 'package:wishmap/testModule/testingEngine/pages/reportInfoScreen.dart';
 import 'ViewModel.dart';
 import 'common/error_widget.dart';
 import 'dialog/bottom_sheet_notify.dart';
@@ -424,6 +427,12 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
       return const MainPage();
     } else if (state is NavigationAdminPanelScreenState) {
       return CalculationStepsScreen();
+    } else if (state is NavigationModuleScreenState) {
+      return const Module1();
+    } else if (state is NavigationReport1ScreenState) {
+      return Report1();
+    } else if (state is NavigationReportInfoScreenScreenState) {
+      return ReportInfoScreen(state.sphere, key: UniqueKey(),);
     } else {
       return Container(); // По умолчанию или для других состояний.
     }
