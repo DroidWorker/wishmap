@@ -33,6 +33,7 @@ import 'package:wishmap/res/colors.dart';
 import 'package:wishmap/services/reminder_service.dart';
 import 'package:wishmap/testModule/adminPanel/CalculationResultScreen.dart';
 import 'package:wishmap/testModule/testingEngine/ViewModel.dart';
+import 'package:wishmap/testModule/testingEngine/pages/kin_screen.dart';
 import 'package:wishmap/testModule/testingEngine/pages/main_page.dart';
 import 'package:wishmap/testModule/testingEngine/pages/module.dart';
 import 'package:wishmap/testModule/testingEngine/pages/report1.dart';
@@ -427,7 +428,9 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
       return const MainPage();
     } else if (state is NavigationAdminPanelScreenState) {
       return CalculationStepsScreen();
-    } else if (state is NavigationModuleScreenState) {
+    } else if (state is NavigationKinScreenState) {
+      return KinScreen();
+    }  else if (state is NavigationModuleScreenState) {
       return const Module1();
     } else if (state is NavigationReport1ScreenState) {
       return Report1();

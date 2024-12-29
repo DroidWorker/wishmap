@@ -303,6 +303,7 @@ class ReportInfoScreen extends StatelessWidget {
                       return SphereButtonItem(
                           colors[e] ?? Colors.blue, value.toInt(), e,
                               () {
+                                viewModel.buildConfigAsync(e);
                                 BlocProvider.of<NavigationBloc>(context).handleBackPress();
                             BlocProvider.of<NavigationBloc>(context).add(
                                 NavigateToReportInfoScreenScreenEvent(e));

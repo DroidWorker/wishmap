@@ -17,7 +17,7 @@ class TestViewModel extends ChangeNotifier {
   init() async {
     hokinsKoefs = await repository.getHokins();
     mainData = await getMainReportData();
-    configEmotionSphere = await getHokinsSphere();
+    configEmotionSphere = await getHokinsSphere("Красота и здоровье");
   }
 
   List<Question> questionsAndKoeffs = [];
@@ -71,14 +71,15 @@ class TestViewModel extends ChangeNotifier {
           weights: questionsAndKoeffs[i].indexes,
           coefficient: koeff,
           result: List<double>.from(result),
-          hokinsStep: hokinsKoefs.map((k,v) =>
-              MapEntry(k, v[i].map((e)=> e[answerWeights.indexOf(koeff)]).toList())),
+          hokinsStep: hokinsKoefs.map((k, v) =>
+              MapEntry(k,
+                  v[i].map((e) => e[answerWeights.indexOf(koeff)]).toList())),
           hokinsResult: hokinsResult.map((key, value) =>
               MapEntry(key, List<double>.from(value))),
           intermediateValue: List<double>.from(intermediateValue),
         ));
       }
-        localRep.saveCalculation(steps);
+      localRep.saveCalculation(steps);
       resultM1["Здоровье"] = result[0];
       resultM1["Отношения"] = result[1];
       resultM1["Окружение"] = result[2];
@@ -112,18 +113,15 @@ class TestViewModel extends ChangeNotifier {
     }
   }
 
-  String buildStringByAnswers(String sphere){
+  String buildStringByAnswers(String sphere) {
     //mainData
     var result = "";
     final textsData = mainData?.conclusionCommonInSphere.spheres[sphere];
 
-    ansversM1.forEach((e){
+    textsData?.combinationQuestions.entries.forEach((e) {
+      if (e.key == "COMBINATIONQUESTIONS" || e.key == "COMBINATION") {
 
-    });
-    textsData?.combinationQuestions.entries.forEach((e){
-      if(e.key=="COMBINATIONQUESTIONS" || e.key == "COMBINATION"){
-
-      }else {
+      } else {
         result = e.value[ansversM1[int.parse(e.key)].toInt()];
       }
     });
@@ -131,17 +129,49 @@ class TestViewModel extends ChangeNotifier {
   }
 
   Future<MainData> getMainReportData() async {
-    String jsonString = await rootBundle.loadString('assets/res/config_texts.json');
+    String jsonString = await rootBundle.loadString(
+        'assets/res/config_texts.json');
     Map<String, dynamic> jsonResponse = jsonDecode(jsonString);
     MainData mainData = MainData.fromJson(jsonResponse);
     return mainData;
   }
 
-  Future<EmotionData> getHokinsSphere() async {
-    String jsonString = await rootBundle.loadString('assets/res/config_hokins_beautyhealth_w.json');
+  Future<EmotionData> getHokinsSphere(String sphere) async {
+    String jsonString = await loadJsonString(sphere);
     Map<String, dynamic> jsonResponse = jsonDecode(jsonString);
     EmotionData emotionData = EmotionData.fromJson(jsonResponse);
     return emotionData;
+  }
+
+  void buildConfigAsync(String sphere)async {
+    configEmotionSphere = await getHokinsSphere(sphere);
+  }
+  Future<String> loadJsonString(String sphere) async {
+    switch (sphere) {
+      case "Красота и здоровье":
+        return await rootBundle.loadString(
+            'assets/res/config_hokins_beautyhealth_w.json');
+      case "Отношения и любовь":
+        return await rootBundle.loadString(
+            'assets/res/config_hokins_love_w.json');
+      case "Призвание и карьера":
+        return await rootBundle.loadString(
+            'assets/res/config_hokins_relationships_w.json');
+      case "Твое окружение":
+        return await rootBundle.loadString(
+            'assets/res/config_hokins_ikigai_w.json');
+      case "Богатство и деньги":
+        return await rootBundle.loadString(
+            'assets/res/config_hokins_finance_w.json');
+      case "Яркость жизни":
+        return await rootBundle.loadString(
+            'assets/res/config_hokins_highlife_w.json');
+      case "Самосознание":
+        return await rootBundle.loadString(
+            'assets/res/config_hokins_selfmade_w.json');
+      default:
+        throw Exception('Неизвестная сфера: $sphere');
+    }
   }
 
   List<List<double>> getHokinsForQuestion(int qNumber) {

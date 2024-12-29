@@ -78,6 +78,7 @@ class NavigateToLockSettingsScreenEvent extends NavigationEvent {}
 class NavigateToTodoScreenEvent extends NavigationEvent {}
 class NavigateToPromocodesScreenScreenEvent extends NavigationEvent {}
 
+class NavigateToKinScreenEvent extends NavigationEvent {}
 class NavigateToModuleScreenEvent extends NavigationEvent {}
 class NavigateToReport1ScreenEvent extends NavigationEvent {}
 class NavigateToReportInfoScreenScreenEvent extends NavigationEvent {
@@ -159,6 +160,7 @@ class NavigationLockSettingsScreenState extends NavigationState {}
 class NavigationTodoScreenState extends NavigationState {}
 class NavigationPromocodesScreenState extends NavigationState {}
 
+class NavigationKinScreenState extends NavigationState {}
 class NavigationModuleScreenState extends NavigationState {}
 class NavigationReport1ScreenState extends NavigationState {}
 class NavigationReportInfoScreenScreenState extends NavigationState {
@@ -321,6 +323,11 @@ class NavigationBloc extends Bloc<NavigationEvent, NavigationState> {
 
     on<NavigateToAdminPanelScreenEvent>((event, emit) {
       _navigationHistory.add(NavigationAdminPanelScreenState());
+      emit(_navigationHistory.last);
+    });
+
+    on<NavigateToKinScreenEvent>((event, emit) {
+      _navigationHistory.add(NavigationKinScreenState());
       emit(_navigationHistory.last);
     });
 
