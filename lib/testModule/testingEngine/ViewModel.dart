@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:ffi';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
@@ -116,11 +117,23 @@ class TestViewModel extends ChangeNotifier {
   String buildStringByAnswers(String sphere) {
     //mainData
     var result = "";
+    var combinationIndex = -1;
+
     final textsData = mainData?.conclusionCommonInSphere.spheres[sphere];
 
     textsData?.combinationQuestions.entries.forEach((e) {
       if (e.key == "COMBINATIONQUESTIONS" || e.key == "COMBINATION") {
-
+        if (e.key == "COMBINATIONQUESTIONS") {
+          final answers = e.value.map((e) {
+            return double.parse(e);
+          }).toList();
+          combinationIndex = getCombinationIndex(answers);
+        }
+        else {
+          if (combinationIndex != -1 && combinationIndex < e.value.length) {
+            result += e.value.elementAt(combinationIndex);
+          }
+        }
       } else {
         result = e.value[ansversM1[int.parse(e.key)].toInt()];
       }
@@ -143,9 +156,24 @@ class TestViewModel extends ChangeNotifier {
     return emotionData;
   }
 
-  void buildConfigAsync(String sphere)async {
+  int getCombinationIndex(List<double> combination) {
+    List<double> possibleValues = [0, 0.25, 0.5, 0.75, 1];
+    int base = possibleValues.length;
+    int index = 0;
+    for (int i = 0; i < combination.length; i++) {
+      int position = possibleValues.indexOf(combination[i]);
+      if (position == -1) {
+        return -1;
+      }
+      index = index * base + position;
+    }
+    return index;
+  }
+
+  void buildConfigAsync(String sphere) async {
     configEmotionSphere = await getHokinsSphere(sphere);
   }
+
   Future<String> loadJsonString(String sphere) async {
     switch (sphere) {
       case "Красота и здоровье":

@@ -973,6 +973,10 @@ class _AuthScreen_State extends State<AuthScreen> {
                                                         context)
                                                     .add(
                                                         NavigateToCardsScreenEvent());
+                                                BlocProvider.of<NavigationBloc>(
+                                                    context)
+                                                    .add(
+                                                    NavigateToInitialOnboardingScreenEvent());
                                               } else {
                                                 _showError(
                                                     "Пароли не совпадают");

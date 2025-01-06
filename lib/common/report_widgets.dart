@@ -31,7 +31,7 @@ Widget SphereButtonItem(Color boxBGColor, int percentValue, String sphereName,
                       fontSize: 16)),
             ),
           ),
-          Text(sphereName),
+          Text(sphereName, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),),
           const Spacer(),
           const Icon(Icons.keyboard_arrow_right, size: 28),
           const SizedBox(width: 5)

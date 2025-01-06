@@ -92,6 +92,7 @@ dependencies:
   chewie: ^1.8.5
   video_player: ^2.9.2
   fl_chart: ^0.69.2
+  flutter_stories: ^0.3.1
 
 
 dev_dependencies:
@@ -119,6 +120,7 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/icons/
+    - assets/res/onboarding/
     - assets/lottie/
     - assets/audio/
     - assets/res/config.json

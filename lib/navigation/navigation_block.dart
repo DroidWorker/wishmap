@@ -77,6 +77,7 @@ class NavigateToContactScreenEvent extends NavigationEvent {}
 class NavigateToLockSettingsScreenEvent extends NavigationEvent {}
 class NavigateToTodoScreenEvent extends NavigationEvent {}
 class NavigateToPromocodesScreenScreenEvent extends NavigationEvent {}
+class NavigateToInitialOnboardingScreenEvent extends NavigationEvent {}
 
 class NavigateToKinScreenEvent extends NavigationEvent {}
 class NavigateToModuleScreenEvent extends NavigationEvent {}
@@ -159,6 +160,7 @@ class NavigationContactScreenState extends NavigationState {}
 class NavigationLockSettingsScreenState extends NavigationState {}
 class NavigationTodoScreenState extends NavigationState {}
 class NavigationPromocodesScreenState extends NavigationState {}
+class NavigationInitialOnboardingScreenState extends NavigationState {}
 
 class NavigationKinScreenState extends NavigationState {}
 class NavigationModuleScreenState extends NavigationState {}
@@ -343,6 +345,11 @@ class NavigationBloc extends Bloc<NavigationEvent, NavigationState> {
 
     on<NavigateToReportInfoScreenScreenEvent>((event, emit) {
       _navigationHistory.add(NavigationReportInfoScreenScreenState(event.sphere));
+      emit(_navigationHistory.last);
+    });
+
+    on<NavigateToInitialOnboardingScreenEvent>((event, emit) {
+      _navigationHistory.add(NavigationInitialOnboardingScreenState());
       emit(_navigationHistory.last);
     });
 

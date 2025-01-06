@@ -9,6 +9,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:wishmap/common/initial_onboarding.dart';
 import 'package:wishmap/home/aim_create.dart';
 import 'package:wishmap/home/aimedit_screen.dart';
 import 'package:wishmap/home/alarm_screen.dart';
@@ -422,6 +423,8 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
       return TodoScreen();
     } else if (state is NavigationPromocodesScreenState) {
       return const PromocodesScreen();
+    } else if (state is NavigationInitialOnboardingScreenState) {
+      return const InitialOnboardingScreen();
     } else if (state is NavigationAlarmScreenState) {
       return AlarmScreen();
     } else if (state is NavigationTestScreenState) {

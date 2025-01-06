@@ -1,7 +1,6 @@
 import 'dart:ffi';
 
 import 'package:collection/collection.dart';
-import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -69,6 +68,8 @@ class ReportInfoScreen extends StatelessWidget {
                 child: Column(
                   children: [
                     const SizedBox(height: 20),
+                    const Text("Описание", style: TextStyle(fontSize: 18),),
+                    const SizedBox(height: 20),
                     Text(commonText),
                     const SizedBox(height: 10),
                     Container(
@@ -97,7 +98,7 @@ class ReportInfoScreen extends StatelessWidget {
                               borderRadius: BorderRadius.circular(10),
                               border: Border.all(color: AppColors.grey)),
                           child: Padding(
-                            padding: const EdgeInsets.all(16.0),
+                            padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 32.0),
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
@@ -115,6 +116,7 @@ class ReportInfoScreen extends StatelessWidget {
                                     AppColors.gradientEnd
                                   ]),
                                 ),
+                                const SizedBox(width: 55,child: Divider(),),
                                 GradientText(
                                   maxHokinsResultEntry.key,
                                   style: const TextStyle(
@@ -129,7 +131,7 @@ class ReportInfoScreen extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 20),
-                        SizedBox(
+                        /*SizedBox(
                           width: constraints.maxWidth - 60,
                           height: 200,
                           child: LineChart(
@@ -154,7 +156,7 @@ class ReportInfoScreen extends StatelessWidget {
                               borderData: FlBorderData(show: false),
                             ),
                           ),
-                        ),
+                        ),*/
                         const SizedBox(height: 16),
                         Padding(
                           padding: const EdgeInsets.all(8.0),
@@ -163,6 +165,7 @@ class ReportInfoScreen extends StatelessWidget {
                               Row(
                                 children: [
                                   Expanded(
+                                    flex: 5,
                                     child: Container(
                                       padding: const EdgeInsets.all(6),
                                       decoration: BoxDecoration(
@@ -196,6 +199,7 @@ class ReportInfoScreen extends StatelessWidget {
                                   ),
                                   const SizedBox(width: 8),
                                   Expanded(
+                                    flex: 6,
                                     child: Container(
                                       padding: const EdgeInsets.all(6),
                                       decoration: BoxDecoration(
@@ -212,14 +216,10 @@ class ReportInfoScreen extends StatelessWidget {
                                                   fontSize: 13,
                                                   color: AppColors.greytextColor),
                                             ),
-                                            GradientText(
+                                            Text(
                                               configEmotion?.perception ?? "",
                                               style: const TextStyle(
-                                                  fontWeight: FontWeight.bold),
-                                              gradient: const LinearGradient(colors: [
-                                                AppColors.gradientStart,
-                                                AppColors.gradientEnd
-                                              ]),
+                                                  fontWeight: FontWeight.bold, color: Colors.green),
                                             )
                                           ],
                                         ),
@@ -241,74 +241,86 @@ class ReportInfoScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 15),
                     Container(
-                      padding: const EdgeInsets.all(6),
+                      width: double.infinity,
                       decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
-                          border:
-                          Border.all(color: AppColors.grey)),
+                        borderRadius: BorderRadius.circular(10),
+                        color: Colors.white,
+                      ),
                       child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          GradientText(
-                            "${viewModel.avg.toInt()}%",
-                            style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 30),
-                            gradient: const LinearGradient(colors: [
-                              AppColors.gradientStart,
-                              AppColors.gradientEnd
-                            ]),
+                          SizedBox(height: 16),
+                          Container(
+                            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 32),
+                            decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(10),
+                                border:
+                                Border.all(color: AppColors.grey)),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                GradientText(
+                                  "${viewModel.avg.toInt()}%",
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 30),
+                                  gradient: const LinearGradient(colors: [
+                                    AppColors.gradientStart,
+                                    AppColors.gradientEnd
+                                  ]),
+                                ),
+                                const GradientText(
+                                  "Средний уровень",
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold),
+                                  gradient: LinearGradient(colors: [
+                                    AppColors.gradientStart,
+                                    AppColors.gradientEnd
+                                  ]),
+                                )
+                              ],
+                            ),
                           ),
-                          const GradientText(
-                            "Средний уровень",
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold),
-                            gradient: LinearGradient(colors: [
-                              AppColors.gradientStart,
-                              AppColors.gradientEnd
-                            ]),
-                          )
+                          const SizedBox(height: 16),
+                          Center(
+                            child: Text(
+                              viewModel.mainData?.conclusionByPercent
+                                  .conclusionByPercent.values
+                                  .toList()[viewModel.avg.toInt() ~/ 10] ??
+                                  "",
+                              style: const TextStyle(
+                                  color: AppColors.greytextColor),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                          const SizedBox(height: 15),
+                          const Center(
+                            child: Text(
+                              "Однако, ты тут чтобы все изменить!",
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16),
+                            ),
+                          ),
+                          const SizedBox(height: 21),
+                          ...colors.keys.mapIndexed((i, e) {
+                            final value = i < 3
+                                ? testResult[i]
+                                : i == 3
+                                ? (testResult[i] + testResult[i + 1]) /
+                                2
+                                : testResult[i + 1];
+                            return SphereButtonItem(
+                                colors[e] ?? Colors.blue, value.toInt(), e,
+                                    () {
+                                  viewModel.buildConfigAsync(e);
+                                  BlocProvider.of<NavigationBloc>(context).handleBackPress();
+                                  BlocProvider.of<NavigationBloc>(context).add(
+                                      NavigateToReportInfoScreenScreenEvent(e));
+                                });
+                          })
                         ],
                       ),
                     ),
-                    const SizedBox(height: 16),
-                    Center(
-                      child: Text(
-                        viewModel.mainData?.conclusionByPercent
-                            .conclusionByPercent.values
-                            .toList()[viewModel.avg.toInt() ~/ 10] ??
-                            "",
-                        style: const TextStyle(
-                            color: AppColors.greytextColor),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                    const SizedBox(height: 15),
-                    const Center(
-                      child: Text(
-                        "Однако, ты тут чтобы все изменить!",
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16),
-                      ),
-                    ),
-                    const SizedBox(height: 21),
-                    ...colors.keys.mapIndexed((i, e) {
-                      final value = i < 3
-                          ? testResult[i]
-                          : i == 3
-                          ? (testResult[i] + testResult[i + 1]) /
-                          2
-                          : testResult[i + 1];
-                      return SphereButtonItem(
-                          colors[e] ?? Colors.blue, value.toInt(), e,
-                              () {
-                                viewModel.buildConfigAsync(e);
-                                BlocProvider.of<NavigationBloc>(context).handleBackPress();
-                            BlocProvider.of<NavigationBloc>(context).add(
-                                NavigateToReportInfoScreenScreenEvent(e));
-                          });
-                    }),
                   ],
                 ),
               ),
@@ -349,9 +361,9 @@ class ExpandedItemState extends State<ExpandedItem>{
             children: [
               Row(
                 children: [
-                  Expanded(child: Text(widget.title)),
-                  const Icon(
-                    Icons.keyboard_arrow_down,
+                  Expanded(child: Text(widget.title, style: const TextStyle(fontWeight: FontWeight.bold),)),
+                  Icon(
+                    expanded?Icons.keyboard_arrow_up:Icons.keyboard_arrow_down,
                     color: AppColors.darkGrey,
                   )
                 ],
