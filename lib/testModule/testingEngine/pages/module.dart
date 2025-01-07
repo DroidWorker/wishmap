@@ -47,9 +47,9 @@ class Module1State extends State {
             scrolledUnderElevation: 0,
             toolbarHeight: 50,
             title: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                IconButton(
+                /*IconButton(
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
                     style: const ButtonStyle(
@@ -61,17 +61,16 @@ class Module1State extends State {
                     onPressed: () {
                       BlocProvider.of<NavigationBloc>(context)
                           .handleBackPress();
-                    }),
+                    }),*/
                 Text(viewModel.moduleName,
                     style: const TextStyle(
                         fontWeight: FontWeight.w600, fontSize: 16)),
-                const SizedBox(width: 29)
+                //const SizedBox(width: 29)
               ],
             ),
           ),
           body: LayoutBuilder(builder: (context, constraints) {
-            return SingleChildScrollView(
-                child: Column(children: [
+            return Column(children: [
               const SizedBox(height: 15),
               Container(
                   width: constraints.maxWidth,
@@ -135,9 +134,7 @@ class Module1State extends State {
                         style: const TextStyle(
                             fontSize: 22, fontWeight: FontWeight.bold),
                       ),
-                      const SizedBox(
-                        height: 30,
-                      ),
+                      const Spacer(),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -241,6 +238,10 @@ class Module1State extends State {
                           ),
                         ],
                       ),
+                      const Text("Возможности кинезиологического теста", style: TextStyle(color: AppColors.gold),),
+                      const SizedBox(height: 4),
+                      const Text("data"),
+                      const SizedBox(height: 10),
                       if(step<=1)ColorRoundedButton(
                           "Важность кинезиологический теста", () {
                         BlocProvider.of<NavigationBloc>(context)
@@ -248,7 +249,7 @@ class Module1State extends State {
                       })
                     ],
                   )),
-            ]));
+            ]);
           }));
     });
   }

@@ -44,8 +44,10 @@ class InitialOnboardingScreen extends StatelessWidget {
         body: SafeArea(
           child: Stack(children: [
             Story(
-              onFlashForward: () {},
-              //Navigator.of(context).pop,
+              onFlashForward: () {
+                BlocProvider.of<NavigationBloc>(context)
+                    .add(NavigateToModuleScreenEvent());
+              },
               onFlashBack: () {},
               //Navigator.of(context).pop,
               momentCount: _momentCount,
