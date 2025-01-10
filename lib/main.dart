@@ -20,6 +20,7 @@ import 'package:wishmap/home/diaryedit_screen.dart';
 import 'package:wishmap/home/gaery_screen.dart';
 import 'package:wishmap/home/lockscreen.dart';
 import 'package:wishmap/home/mainsphereedit_screen.dart';
+import 'package:wishmap/home/my_testing.dart';
 import 'package:wishmap/home/mytasks_screen.dart';
 import 'package:wishmap/home/settings/main_settings.dart';
 import 'package:wishmap/home/settings/personal_settings.dart';
@@ -424,7 +425,7 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
     } else if (state is NavigationPromocodesScreenState) {
       return const PromocodesScreen();
     } else if (state is NavigationInitialOnboardingScreenState) {
-      return const InitialOnboardingScreen();
+      return InitialOnboardingScreen();
     } else if (state is NavigationAlarmScreenState) {
       return AlarmScreen();
     } else if (state is NavigationTestScreenState) {
@@ -439,6 +440,8 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
       return Report1();
     } else if (state is NavigationReportInfoScreenScreenState) {
       return ReportInfoScreen(state.sphere, key: UniqueKey(),);
+    } else if (state is NavigationMyTestingScreenState) {
+      return MyTestingScreen();
     } else {
       return Container(); // По умолчанию или для других состояний.
     }

@@ -68,6 +68,17 @@ class LocalRepository {
     _prefs!.setInt("enableFingerprint", lp.allowFingerprint ? 1 : 0);
   }
 
+  Future setTestPassed() async{
+    if (_prefs == null) {
+      await init();
+    }
+    _prefs!.setBool("testPassed",true);
+  }
+
+  Future<bool> getTestPassed() async{
+    return _prefs!.getBool("testPassed")??false;
+  }
+
   LockParams getLockParams() {
     String unsstr(String input) {
       final h = int.parse(input.substring(8, 10));

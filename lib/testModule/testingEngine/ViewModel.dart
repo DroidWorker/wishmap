@@ -10,6 +10,7 @@ import 'data/models.dart';
 import 'testingRepository.dart';
 
 class TestViewModel extends ChangeNotifier {
+  var kinClicked = false;
   final repository = TestingRepository();
   LocalRepository localRep = LocalRepository();
   bool isInLoading = false;
@@ -47,6 +48,7 @@ class TestViewModel extends ChangeNotifier {
   }
 
   Future calculateResult() async {
+    localRep.setTestPassed();
     final answerWeights = [1, 0.75, 0.5, 0.25, 0];
     List<CalculationStep> steps = [];
     if (questionsAndKoeffs.length == ansversM1.length) {

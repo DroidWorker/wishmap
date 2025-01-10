@@ -69,10 +69,9 @@ class Module1State extends State {
               ],
             ),
           ),
-          body: LayoutBuilder(builder: (context, constraints) {
-            return Column(children: [
-              const SizedBox(height: 15),
-              Container(
+          body: SafeArea(
+            child: LayoutBuilder(builder: (context, constraints) {
+              return Container(
                   width: constraints.maxWidth,
                   color: AppColors.backgroundColor,
                   padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -90,28 +89,27 @@ class Module1State extends State {
                           ),
                         ),
                       ),
-                  const SizedBox(height: 15),
-                  SizedBox(
-                              height: 20,
-                              child: ClipRRect(
-                                  borderRadius: const BorderRadius.all(
-                                      Radius.circular(10.0)),
-                                  child: Stack(
-                                    children: [
-                                      Positioned.fill(
-                                        child: LinearProgressIndicator(
-                                          minHeight: 10,
-                                          value: (step) / questions.length,
-                                          // Пример: 0.5 означает 50% заполнения
-                                          backgroundColor: buttonGrey,
-                                          // Прозрачный фон для видимости границ
-                                          valueColor:
-                                              AlwaysStoppedAnimation<Color>(
-                                                  progressColor),
-                                        ),
-                                      ),
-                                    ],
-                                  ))),
+                      const SizedBox(height: 15),
+                      SizedBox(
+                          height: 20,
+                          child: ClipRRect(
+                              borderRadius:
+                                  const BorderRadius.all(Radius.circular(10.0)),
+                              child: Stack(
+                                children: [
+                                  Positioned.fill(
+                                    child: LinearProgressIndicator(
+                                      minHeight: 10,
+                                      value: (step) / questions.length,
+                                      // Пример: 0.5 означает 50% заполнения
+                                      backgroundColor: buttonGrey,
+                                      // Прозрачный фон для видимости границ
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                          progressColor),
+                                    ),
+                                  ),
+                                ],
+                              ))),
                       const SizedBox(
                         height: 30,
                       ),
@@ -127,14 +125,16 @@ class Module1State extends State {
                         "Yтверждение:",
                         style: TextStyle(fontSize: 18),
                       ),
-                      Text(
-                        questions.isNotEmpty
-                            ? "\"${questions[step - 1].question}\""
-                            : "",
-                        style: const TextStyle(
-                            fontSize: 22, fontWeight: FontWeight.bold),
+                      Expanded(
+                        child: Text(
+                          questions.isNotEmpty
+                              ? "\"${questions[step - 1].question}\""
+                              : "",
+                          style: const TextStyle(
+                              fontSize: 22, fontWeight: FontWeight.bold),
+                        ),
                       ),
-                      const Spacer(),
+                      //const Spacer(),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -149,6 +149,7 @@ class Module1State extends State {
                                   step++;
                                 } else {
                                   viewModel.calculateResult();
+                                  BlocProvider.of<NavigationBloc>(context).handleBackPress();
                                   BlocProvider.of<NavigationBloc>(context)
                                       .add(NavigateToReport1ScreenEvent());
                                 }
@@ -168,6 +169,7 @@ class Module1State extends State {
                                 step++;
                               } else {
                                 viewModel.calculateResult();
+                                BlocProvider.of<NavigationBloc>(context).handleBackPress();
                                 BlocProvider.of<NavigationBloc>(context)
                                     .add(NavigateToReport1ScreenEvent());
                               }
@@ -187,6 +189,7 @@ class Module1State extends State {
                                   step++;
                                 } else {
                                   viewModel.calculateResult();
+                                  BlocProvider.of<NavigationBloc>(context).handleBackPress();
                                   BlocProvider.of<NavigationBloc>(context)
                                       .add(NavigateToReport1ScreenEvent());
                                 }
@@ -207,6 +210,7 @@ class Module1State extends State {
                                   step++;
                                 } else {
                                   viewModel.calculateResult();
+                                  BlocProvider.of<NavigationBloc>(context).handleBackPress();
                                   BlocProvider.of<NavigationBloc>(context)
                                       .add(NavigateToReport1ScreenEvent());
                                 }
@@ -227,6 +231,7 @@ class Module1State extends State {
                                   step++;
                                 } else {
                                   viewModel.calculateResult();
+                                  BlocProvider.of<NavigationBloc>(context).handleBackPress();
                                   BlocProvider.of<NavigationBloc>(context)
                                       .add(NavigateToReport1ScreenEvent());
                                 }
@@ -238,19 +243,32 @@ class Module1State extends State {
                           ),
                         ],
                       ),
-                      const Text("Возможности кинезиологического теста", style: TextStyle(color: AppColors.gold),),
+                      //const Spacer(),
+                      const Text(
+                        "Возможности кинезиологического теста",
+                        style: TextStyle(
+                            color: AppColors.gold,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16),
+                      ),
                       const SizedBox(height: 4),
-                      const Text("data"),
+                      const Text(
+                          "Это поможет тебе определить, какие жизненные проекты и желания для тебя наиболее актуальны, какие изменения на пути к их реализации принесут наибольшую пользу."),
                       const SizedBox(height: 10),
-                      if(step<=1)ColorRoundedButton(
-                          "Важность кинезиологический теста", () {
-                        BlocProvider.of<NavigationBloc>(context)
-                            .add(NavigateToKinScreenEvent());
-                      })
+                      if (!viewModel.kinClicked)
+                        ColorRoundedButton("Важность кинезиологический теста",
+                            () {
+                          viewModel.kinClicked= true;
+                          BlocProvider.of<NavigationBloc>(context)
+                              .add(NavigateToKinScreenEvent());
+                        })
+                      else
+                        OutlinedGradientButton(
+                            "Важность кинезиологический теста", () {})
                     ],
-                  )),
-            ]);
-          }));
+                  ));
+            }),
+          ));
     });
   }
 }

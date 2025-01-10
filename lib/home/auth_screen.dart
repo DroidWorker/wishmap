@@ -976,6 +976,10 @@ class _AuthScreen_State extends State<AuthScreen> {
                                                 BlocProvider.of<NavigationBloc>(
                                                     context)
                                                     .add(
+                                                    NavigateToMyTestingScreenEvent());
+                                                BlocProvider.of<NavigationBloc>(
+                                                    context)
+                                                    .add(
                                                     NavigateToInitialOnboardingScreenEvent());
                                               } else {
                                                 _showError(

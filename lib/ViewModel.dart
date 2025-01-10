@@ -38,6 +38,7 @@ class AppViewModel with ChangeNotifier {
 
   var connectivity = 'No Internet Connection';
 
+  bool testPassed = false;
   bool lockEnabled = false;
   bool _lockState = true;
   bool allowSkipAuth = false;
@@ -56,6 +57,13 @@ class AppViewModel with ChangeNotifier {
 
   LockParams get lockParams {
     return localRep.getLockParams();
+  }
+
+  setTestPassed(){
+    localRep.setTestPassed();
+  }
+  Future<bool> isTestPassed() async{
+    return await localRep.getTestPassed();
   }
 
   //auth/regScreen
