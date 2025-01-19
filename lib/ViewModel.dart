@@ -19,6 +19,8 @@ import 'package:wishmap/services/reminder_service.dart';
 
 import 'data/date_static.dart';
 import 'data/models.dart';
+import 'home/my_knwlgs.dart';
+import 'home/my_testing.dart';
 
 class AppViewModel with ChangeNotifier {
   LocalRepository localRep = LocalRepository();
@@ -26,6 +28,10 @@ class AppViewModel with ChangeNotifier {
 
   bool important = false;
   final MessageError _me = MessageError();
+
+  void saveMapToFirebase(Map<dynamic, dynamic> data) {
+    repository.saveData(data);
+  }
 
   String get messageError {
     final text = _me.text;
@@ -59,11 +65,53 @@ class AppViewModel with ChangeNotifier {
     return localRep.getLockParams();
   }
 
-  setTestPassed(){
+  setTestPassed() {
     localRep.setTestPassed();
   }
-  Future<bool> isTestPassed() async{
-    return await localRep.getTestPassed();
+
+  Future<bool> isTestPassed() async {
+    testPassed = await localRep.getTestPassed();
+    return testPassed;
+  }
+
+  int onboardingShownCount = 0;
+
+  setOnboardingShownCount(int value) {
+    onboardingShownCount = value;
+    localRep.setOnboardingShownCount(value);
+  }
+
+  Future<bool> getOnboardingShownCount() async {
+    onboardingShownCount = await localRep.getOnboardingShownCount();
+    return testPassed;
+  }
+
+  List<LevelData> knowlegesData = [];
+  List<TestData> tests= [];
+
+  //settings
+  Future<List<LevelData>> getKnowledges() async {
+    List<LevelData> levels = [];
+
+    final data = await repository.getKnowleges();
+    data.forEach((value) {
+      LevelData level = LevelData.fromMap(Map<String, dynamic>.from(value));
+      levels.add(level);
+    });
+
+    knowlegesData = levels;
+    notifyListeners();
+    return levels;
+  }
+  Future<List<TestData>> getTests() async {
+    List<TestData> ttests = [];
+
+    final data = await repository.getTests();
+    ttests = data.map((item) => TestData.fromMap(Map<String, dynamic>.from(item as Map))).toList();
+
+    tests = ttests;
+    notifyListeners();
+    return ttests;
   }
 
   //auth/regScreen
@@ -344,9 +392,11 @@ class AppViewModel with ChangeNotifier {
     lockEnabled = (await localRep.getLockPass()).length == 10;
     authData = await localRep.getAuth();
     profileData = await localRep.getProfile();
+    await isTestPassed();
     alarmChecked = await localRep.alarmsChecked();
     if (authData != null) getMoons();
     settings = await localRep.getActSetting();
+    getOnboardingShownCount();
     notifyListeners();
   }
 
@@ -867,7 +917,7 @@ class AppViewModel with ChangeNotifier {
         }
       });
       isDataFetched--;
-    }catch(eex, s){
+    } catch (eex, s) {
       print("ex $eex");
       print("aaaaaaaaaaaaaaaa $s");
     }
@@ -1523,7 +1573,7 @@ class AppViewModel with ChangeNotifier {
     final wish = await localRep.getSphere(id, mainScreenState!.moon.id);
     mainScreenState?.allCircles.firstWhere((e) => e.id == id).isActive = true;
     wishItems.firstWhereOrNull((e) => e.id == id)?.isActive = true;
-    if (wish != null && wish.parentId>0) activateParentSpheres(wish.parentId);
+    if (wish != null && wish.parentId > 0) activateParentSpheres(wish.parentId);
   }
 
   Future activateChildWishes(WishData wish) async {
@@ -1584,7 +1634,8 @@ class AppViewModel with ChangeNotifier {
       currentCircles.firstWhereOrNull((element) => element.id == id)?.isActive =
           status;
       if (id == 0) {
-        if (settings.sphereActualizingMode == 0&&!settings.actualizeFullBranch) {
+        if (settings.sphereActualizingMode == 0 &&
+            !settings.actualizeFullBranch) {
           List<int> childSpheres = mainScreenState?.allCircles
                   .where((element) => element.parenId == 0)
                   .map((e) => e.id)
@@ -1600,7 +1651,8 @@ class AppViewModel with ChangeNotifier {
         List<int> childTasks = [];
         for (var eid in childAims) {
           activateAim(eid, true, needToCommit: false);
-          if (settings.taskActualizingMode == 0||settings.actualizeFullBranch) {
+          if (settings.taskActualizingMode == 0 ||
+              settings.actualizeFullBranch) {
             final ts = await localRep.getAimsChildTasks(
                 eid, mainScreenState?.moon.id ?? 0);
             childTasks.addAll(ts);
@@ -1613,12 +1665,17 @@ class AppViewModel with ChangeNotifier {
         localRep.commitAimsActivation(status, mainScreenState!.moon.id);
         localRep.commitTasksActivation(status, mainScreenState!.moon.id);
       } else if (wi?.parenId == 0) {
-        final childTecWishId = mainScreenState?.allCircles.firstWhereOrNull(
-            (e) => e.parenId == id && e.text.contains("HEADERSIM"))?.id;
+        final childTecWishId = mainScreenState?.allCircles
+            .firstWhereOrNull(
+                (e) => e.parenId == id && e.text.contains("HEADERSIM"))
+            ?.id;
         if (childTecWishId != null) {
           await activateSphereWish(childTecWishId, true,
               updateScreen: updateScreen, needToCommit: false);
-          List<int> childAims = aimItems.where((e)=>e.parentId==childTecWishId).map((e)=>e.id).toList();
+          List<int> childAims = aimItems
+              .where((e) => e.parentId == childTecWishId)
+              .map((e) => e.id)
+              .toList();
           print("object aaaa - $childAims");
           List<int> childTasks = [];
           for (var eid in childAims) {
@@ -1684,10 +1741,10 @@ class AppViewModel with ChangeNotifier {
           }
         }
         //actualize childTask
-          for (var eid in childTasks) {
-            await activateTask(eid, true, needToCommit: false);
-          }
-          localRep.commitTasksActivation(status, mainScreenState!.moon.id);
+        for (var eid in childTasks) {
+          await activateTask(eid, true, needToCommit: false);
+        }
+        localRep.commitTasksActivation(status, mainScreenState!.moon.id);
         localRep.commitAimsActivation(status, mainScreenState!.moon.id);
       }
       if (myNodes.isNotEmpty) toggleActive(myNodes.first, 'w', id, status);
@@ -2316,10 +2373,7 @@ class AppViewModel with ChangeNotifier {
 
   getDiaryArticles(int diaryId) async {
     try {
-      articles =
-          (await localRep.getArticles(diaryId))
-              .reversed
-              .toList();
+      articles = (await localRep.getArticles(diaryId)).reversed.toList();
       notifyListeners();
     } catch (ex, s) {
       addError(ex.toString());
@@ -2349,7 +2403,8 @@ class AppViewModel with ChangeNotifier {
       final time =
           "${DateFormat('HH:mm').format(now)}, ${fullDayOfWeek[now.weekday]}";
       final uniqueId = await localRep.addDiaryArticle(
-          Article(articles.length, parentId, title, date, time, attachmentsPaths),);
+        Article(articles.length, parentId, title, date, time, attachmentsPaths),
+      );
       final article =
           Article(uniqueId, parentId, title, date, time, attachmentsPaths);
       if (connectivity != 'No Internet Connection')
@@ -2367,9 +2422,9 @@ class AppViewModel with ChangeNotifier {
       String text, List<String> attachmentsList, int articleId) async {
     try {
       final diaryId = articles.firstWhere((e) => e.id == articleId).parentId;
-      if(connectivity != 'No Internet Connection')repository.updateDiaryArticle(text, articleId, diaryId);
-      await localRep.updateDiaryArticle(
-          text, attachmentsList, articleId);
+      if (connectivity != 'No Internet Connection')
+        repository.updateDiaryArticle(text, articleId, diaryId);
+      await localRep.updateDiaryArticle(text, attachmentsList, articleId);
       articles.firstWhere((e) => e.id == articleId)
         ..text = text
         ..attachments = attachmentsList;

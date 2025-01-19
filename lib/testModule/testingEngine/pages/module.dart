@@ -20,7 +20,6 @@ class Module1 extends StatefulWidget {
 class Module1State extends State {
   late TestViewModel vm;
   List<Question> questions = [];
-  var step = 1;
   var maxStep = 21;
 
   @override
@@ -38,6 +37,7 @@ class Module1State extends State {
   Widget build(BuildContext context) {
     return Consumer<TestViewModel>(builder: (context, viewModel, child) {
       questions = viewModel.questionsAndKoeffs;
+      var step = viewModel.step;
       if (questions.isNotEmpty) maxStep = questions.length;
 
       return Scaffold(
@@ -146,7 +146,7 @@ class Module1State extends State {
                               setState(() {
                                 viewModel.ansversM1.add(1);
                                 if (step != maxStep) {
-                                  step++;
+                                  viewModel.step++;
                                 } else {
                                   viewModel.calculateResult();
                                   BlocProvider.of<NavigationBloc>(context).handleBackPress();
@@ -166,7 +166,7 @@ class Module1State extends State {
                             setState(() {
                               viewModel.ansversM1.add(0.75);
                               if (step != maxStep) {
-                                step++;
+                                viewModel.step++;
                               } else {
                                 viewModel.calculateResult();
                                 BlocProvider.of<NavigationBloc>(context).handleBackPress();
@@ -186,7 +186,7 @@ class Module1State extends State {
                               setState(() {
                                 viewModel.ansversM1.add(0.5);
                                 if (step != maxStep) {
-                                  step++;
+                                  viewModel.step++;
                                 } else {
                                   viewModel.calculateResult();
                                   BlocProvider.of<NavigationBloc>(context).handleBackPress();
@@ -207,7 +207,7 @@ class Module1State extends State {
                               setState(() {
                                 viewModel.ansversM1.add(0.25);
                                 if (step != maxStep) {
-                                  step++;
+                                  viewModel.step++;
                                 } else {
                                   viewModel.calculateResult();
                                   BlocProvider.of<NavigationBloc>(context).handleBackPress();
@@ -228,7 +228,7 @@ class Module1State extends State {
                               setState(() {
                                 viewModel.ansversM1.add(0);
                                 if (step != maxStep) {
-                                  step++;
+                                  viewModel.step++;
                                 } else {
                                   viewModel.calculateResult();
                                   BlocProvider.of<NavigationBloc>(context).handleBackPress();

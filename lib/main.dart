@@ -10,6 +10,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:wishmap/common/initial_onboarding.dart';
+import 'package:wishmap/common/passed_onboarding.dart';
 import 'package:wishmap/home/aim_create.dart';
 import 'package:wishmap/home/aimedit_screen.dart';
 import 'package:wishmap/home/alarm_screen.dart';
@@ -20,6 +21,7 @@ import 'package:wishmap/home/diaryedit_screen.dart';
 import 'package:wishmap/home/gaery_screen.dart';
 import 'package:wishmap/home/lockscreen.dart';
 import 'package:wishmap/home/mainsphereedit_screen.dart';
+import 'package:wishmap/home/my_knwlgs.dart';
 import 'package:wishmap/home/my_testing.dart';
 import 'package:wishmap/home/mytasks_screen.dart';
 import 'package:wishmap/home/settings/main_settings.dart';
@@ -109,11 +111,17 @@ void main() async {
           BlocProvider<NavigationBloc>(
             create: (context) {
               final appViewModel = context.read<AppViewModel>();
-              return NavigationBloc()
-                ..add(appViewModel.profileData != null &&
-                        appViewModel.profileData!.id.isNotEmpty
-                    ? NavigateToCardsScreenEvent()
-                    : NavigateToAuthScreenEvent());
+              return (appViewModel.profileData != null &&
+                      appViewModel.profileData!.id.isNotEmpty)
+                  ? (appViewModel.testPassed
+                      ? (NavigationBloc()..add(NavigateToCardsScreenEvent()))
+                      : (NavigationBloc()
+                        ..add(NavigateToCardsScreenEvent())
+                        ..add(NavigateToMyKnwlgsScreenEvent())
+                        ..add(NavigateToPassedOnboardingScreenEvent())
+                        ..add(NavigateToMyTestingScreenEvent())
+                        ..add(NavigateToInitialOnboardingScreenEvent())))
+                  : (NavigationBloc()..add(NavigateToAuthScreenEvent()));
             },
           ),
         ],
@@ -426,6 +434,8 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
       return const PromocodesScreen();
     } else if (state is NavigationInitialOnboardingScreenState) {
       return InitialOnboardingScreen();
+    } else if (state is NavigationPassedOnboardingScreenState) {
+      return PassedOnboardingScreen();
     } else if (state is NavigationAlarmScreenState) {
       return AlarmScreen();
     } else if (state is NavigationTestScreenState) {
@@ -434,14 +444,19 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
       return CalculationStepsScreen();
     } else if (state is NavigationKinScreenState) {
       return KinScreen();
-    }  else if (state is NavigationModuleScreenState) {
+    } else if (state is NavigationModuleScreenState) {
       return const Module1();
     } else if (state is NavigationReport1ScreenState) {
       return Report1();
     } else if (state is NavigationReportInfoScreenScreenState) {
-      return ReportInfoScreen(state.sphere, key: UniqueKey(),);
+      return ReportInfoScreen(
+        state.sphere,
+        key: UniqueKey(),
+      );
     } else if (state is NavigationMyTestingScreenState) {
       return MyTestingScreen();
+    } else if (state is NavigationMyKnwlgsScreenState) {
+      return MyKnwlgsScreen();
     } else {
       return Container(); // По умолчанию или для других состояний.
     }

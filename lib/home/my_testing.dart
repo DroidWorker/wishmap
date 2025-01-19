@@ -7,15 +7,25 @@ import 'package:provider/provider.dart';
 import 'package:wishmap/interface_widgets/colorButton.dart';
 import 'package:wishmap/res/colors.dart';
 
+import '../ViewModel.dart';
 import '../common/gradientText.dart';
 import '../data/const_common.dart';
 import '../navigation/navigation_block.dart';
 import '../testModule/testingEngine/ViewModel.dart';
 
 class MyTestingScreen extends StatelessWidget {
+  
+  List<TestData> data = [];
+
   @override
   Widget build(BuildContext context) {
+    final appViewModel = Provider.of<AppViewModel>(context);
+    //final map = { for (int i = 0; i < data.length; i++) i: data[i].toMap()};
+    //appViewModel.saveMapToFirebase(map);
+    appViewModel.getTests();
+
     return Consumer<TestViewModel>(builder: (context, viewModel, child) {
+      data = appViewModel.tests;
       final stepsResult = viewModel.localRep.getCalculation();
       final mindLevels = viewModel.configEmotionSphere?.emotions
           .map((k, v) {
@@ -101,7 +111,8 @@ class MyTestingScreen extends StatelessWidget {
                                       })?.value ??
                                       "",
                                   style: const TextStyle(
-                                      fontWeight: FontWeight.bold, fontSize: 30),
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 30),
                                   gradient: const LinearGradient(colors: [
                                     AppColors.gradientStart,
                                     AppColors.gradientEnd
@@ -116,8 +127,8 @@ class MyTestingScreen extends StatelessWidget {
                                           .lastOrNull?.result
                                           .indexOf(maxHokinsResultEntry) ??
                                       0],
-                                  style:
-                                      const TextStyle(fontWeight: FontWeight.bold),
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold),
                                   gradient: const LinearGradient(colors: [
                                     AppColors.gradientStart,
                                     AppColors.gradientEnd
@@ -133,7 +144,9 @@ class MyTestingScreen extends StatelessWidget {
                           height: 200,
                           child: LineChart(
                             LineChartData(
-                              lineBarsData: stepsResult.lastOrNull?.result
+                              lineBarsData: stepsResult
+                                      .lastOrNull?.hokinsResult.values.last
+                                      .getRange(1, 15)
                                       .mapIndexed((index, entry) {
                                     return LineChartBarData(
                                       spots: [
@@ -159,17 +172,12 @@ class MyTestingScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: testItem(
-                      "Сферы жизни",
-                      "Цель данного отчета — предоставить комплексный обзор текущего состояния этих сфер, выявить ключевые проблемы и предложить рекомендации для их оптимизации, что позволит каждому человеку стремиться к более гармоничной и полноценной жизни.",
-                      "Пройден",
-                      "",
-                          (){
-            
-                      }),
-                )
+                ...data.map((it){
+                  return Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: testItem(it.title, it.description, it.status, it.hint, (){}),
+                  );
+                })
               ],
             ),
           );
@@ -195,11 +203,12 @@ Widget testItem(String testTitle, String testDescr, String status, String hint,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(testTitle,
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                style:
+                    const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             Container(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(10),
-                color: Colors.green,
+                color: status=="Пройден" ? Colors.green : Colors.red,
               ),
               padding: const EdgeInsets.all(3),
               child: Text(
@@ -218,8 +227,35 @@ Widget testItem(String testTitle, String testDescr, String status, String hint,
             style: TextStyle(color: AppColors.greytextColor),
           ),
         ),
-        ColorRoundedButton("Изучить", onClick)
+        ColorRoundedButton("Пройти", onClick)
       ],
     ),
   );
+}
+
+class TestData {
+  final String title;
+  final String description;
+  final String status;
+  final String hint;
+
+  TestData(this.title, this.description, this.status, this.hint);
+
+  Map<String, dynamic> toMap() {
+    return {
+      'title': title,
+      'description': description,
+      'status': status,
+      'hint': hint
+    };
+  }
+
+  factory TestData.fromMap(Map<String, dynamic> map) {
+    return TestData(
+      map['title'],
+      map['description'],
+      map['status'],
+      map['hint'],
+    );
+  }
 }

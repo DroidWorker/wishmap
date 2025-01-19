@@ -112,12 +112,17 @@ class _ProfileScreenState extends State<ProfileScreen>{
                                 .add(NavigateToPersonalSettingsScreenEvent());
                           }),
                           settingsWidget("assets/icons/setting_testing.svg" ,"Мое тестирование", (){
+                            if(appViewModel.onboardingShownCount<4) {
+                              appViewModel.setOnboardingShownCount(appViewModel.onboardingShownCount+1);
+                              BlocProvider.of<NavigationBloc>(context)
+                                .add(NavigateToPassedOnboardingScreenEvent());
+                            }
                             BlocProvider.of<NavigationBloc>(context)
-                                .add(NavigateToTestScreenEvent());
+                                .add(NavigateToMyTestingScreenEvent());
                           }),
-                          settingsWidget("assets/icons/setting_level.svg" ,"Уровень", (){
+                          settingsWidget("assets/icons/setting_level.svg" ,"Мои знания", (){
                             BlocProvider.of<NavigationBloc>(context)
-                                .add(NavigateToAdminPanelScreenEvent());
+                                .add(NavigateToMyKnwlgsScreenEvent());
                           }),
                           settingsWidget("assets/icons/promocode_discount.png" ,"Мои промокоды", (){
                             BlocProvider.of<NavigationBloc>(context)

@@ -19,10 +19,10 @@ import 'package:firebase_storage/firebase_storage.dart';
 class Repository {
   final DatabaseReference userRef = FirebaseDatabase.instance
       .refFromURL(
-      'https://wishmap-c3e06-default-rtdb.europe-west1.firebasedatabase.app/')
+          'https://wishmap-c3e06-default-rtdb.europe-west1.firebasedatabase.app/')
       .child('users');
-  final Reference storageRef = FirebaseStorage.instance.refFromURL(
-      'gs://wishmap-c3e06.appspot.com/diary');
+  final Reference storageRef = FirebaseStorage.instance
+      .refFromURL('gs://wishmap-c3e06.appspot.com/diary');
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   Repository() {
@@ -43,7 +43,7 @@ class Repository {
             (await userRef.child(_auth.currentUser!.uid).once()).snapshot;
         if (snapshot.value != null) {
           Map<dynamic, dynamic> userData =
-          snapshot.value as Map<dynamic, dynamic>;
+              snapshot.value as Map<dynamic, dynamic>;
           String name = userData['name'] ?? '';
           String surname = userData['surname'] ?? '';
           String thirdname = userData['thirdname'] ?? '';
@@ -161,8 +161,9 @@ class Repository {
   }
 
   Future<Map<int, String>> fetchImages(int id, int moonId) async {
-    DatabaseReference reference =
-    userRef.child(_auth.currentUser!.uid).child("moonlist")
+    DatabaseReference reference = userRef
+        .child(_auth.currentUser!.uid)
+        .child("moonlist")
         .child(moonId.toString())
         .child("images");
 
@@ -186,11 +187,11 @@ class Repository {
   Future<int> getLastMoonSyncData(int moonId) async {
     if (_auth.currentUser != null) {
       DataSnapshot snapshot = (await userRef
-          .child(_auth.currentUser!.uid)
-          .child("moonlist")
-          .child(moonId.toString())
-          .child("lastSyncDate")
-          .once())
+              .child(_auth.currentUser!.uid)
+              .child("moonlist")
+              .child(moonId.toString())
+              .child("lastSyncDate")
+              .once())
           .snapshot;
       if (snapshot.value != null) {
         return int.parse(snapshot.value.toString());
@@ -202,7 +203,7 @@ class Repository {
   Future<Map<String, String>> getAudios() async {
     Map<String, String> urls = {};
     final storage =
-    FirebaseStorage.instanceFor(bucket: "gs://wishmap-c3e06.appspot.com");
+        FirebaseStorage.instanceFor(bucket: "gs://wishmap-c3e06.appspot.com");
     final storageRef = FirebaseStorage.instance.ref();
     final result = await storageRef.listAll();
     for (var element in result.items) {
@@ -215,12 +216,12 @@ class Repository {
   Future<Uint8List?> getImage(int id, int moonId) async {
     if (_auth.currentUser != null) {
       DataSnapshot snapshot = (await userRef
-          .child(_auth.currentUser!.uid)
-          .child("moonlist")
-          .child(moonId.toString())
-          .child("images")
-          .child(id.toString())
-          .once())
+              .child(_auth.currentUser!.uid)
+              .child("moonlist")
+              .child(moonId.toString())
+              .child("images")
+              .child(id.toString())
+              .once())
           .snapshot;
       if (snapshot.value != null) {
         return base64Decode(snapshot.value.toString());
@@ -243,24 +244,23 @@ class Repository {
   }
 
   Future<String> saveFile(File file) async {
-    Reference ref = storageRef.child(file.path
-        .split("/")
-        .last);
+    Reference ref = storageRef.child(file.path.split("/").last);
     await ref.putFile(file);
     return await ref.getDownloadURL();
   }
 
   Future deleteImages(String ids, moonId) async {
     if (_auth.currentUser != null) {
-      if (ids.isNotEmpty) for (var e in ids.split("|")) {
-        userRef
-            .child(_auth.currentUser!.uid)
-            .child("moonlist")
-            .child(moonId.toString())
-            .child("images")
-            .child(e.toString())
-            .remove();
-      }
+      if (ids.isNotEmpty)
+        for (var e in ids.split("|")) {
+          userRef
+              .child(_auth.currentUser!.uid)
+              .child("moonlist")
+              .child(moonId.toString())
+              .child("images")
+              .child(e.toString())
+              .remove();
+        }
     }
   }
 
@@ -296,7 +296,7 @@ class Repository {
           if (element.key != null && element.value != null) {
             int id = int.parse(element.key!);
             final Map<dynamic, dynamic> dataList =
-            element.value as Map<dynamic, dynamic>;
+                element.value as Map<dynamic, dynamic>;
             String text = dataList['text'];
             String date = dataList['date'];
             double filling = dataList['filling'];
@@ -324,9 +324,7 @@ class Repository {
         'text': moonItem.text,
         'date': moonItem.date,
         'filling': moonItem.filling,
-        'lastSyncDate': DateTime
-            .now()
-            .millisecondsSinceEpoch
+        'lastSyncDate': DateTime.now().millisecondsSinceEpoch
       });
 
       // Записываем данные для circles, используя индексы из объектов
@@ -480,28 +478,28 @@ class Repository {
 
     if (_auth.currentUser != null) {
       DataSnapshot dataSnapshot = (await userRef
-          .child(_auth.currentUser!.uid)
-          .child("moonlist")
-          .child(moonId.toString())
-          .child("spheres")
-          .once())
+              .child(_auth.currentUser!.uid)
+              .child("moonlist")
+              .child(moonId.toString())
+              .child("spheres")
+              .once())
           .snapshot;
       if (dataSnapshot.children.isNotEmpty) {
         dataSnapshot.children.forEach((element) {
           final Map<dynamic, dynamic> dataList =
-          element.value as Map<dynamic, dynamic>;
+              element.value as Map<dynamic, dynamic>;
           CircleData circleData = CircleData(
               id: int.parse(element.key.toString()),
               nextId: dataList['nextId'] == null
                   ? -1
                   : (dataList['nextId'] is int
-                  ? dataList['nextId']
-                  : int.tryParse(dataList['nextId']) ?? -1),
+                      ? dataList['nextId']
+                      : int.tryParse(dataList['nextId']) ?? -1),
               prevId: dataList['prevId'] == null
                   ? -1
                   : (dataList['prevId'] is int
-                  ? dataList['prevId']
-                  : int.tryParse(dataList['prevId']) ?? -1),
+                      ? dataList['prevId']
+                      : int.tryParse(dataList['prevId']) ?? -1),
               text: dataList['text'],
               subText: dataList['subText'] ?? "",
               color: Color(int.parse(dataList['color'].toString())),
@@ -524,29 +522,29 @@ class Repository {
 
     if (_auth.currentUser != null) {
       DataSnapshot dataSnapshot = (await userRef
-          .child(_auth.currentUser!.uid)
-          .child("moonlist")
-          .child(moonId.toString())
-          .child("spheres")
-          .once())
+              .child(_auth.currentUser!.uid)
+              .child("moonlist")
+              .child(moonId.toString())
+              .child("spheres")
+              .once())
           .snapshot;
       if (dataSnapshot.children.isNotEmpty) {
         dataSnapshot.children.forEach((element) {
           final Map<dynamic, dynamic> dataList =
-          element.value as Map<dynamic, dynamic>;
+              element.value as Map<dynamic, dynamic>;
           try {
             WishData circleData = WishData(
                 id: int.parse(element.key.toString()),
                 nextId: dataList['nextId'] == null
                     ? -1
                     : (dataList['nextId'] is int
-                    ? dataList['nextId']
-                    : int.tryParse(dataList['nextId']) ?? -1),
+                        ? dataList['nextId']
+                        : int.tryParse(dataList['nextId']) ?? -1),
                 prevId: dataList['prevId'] == null
                     ? -1
                     : (dataList['prevId'] is int
-                    ? dataList['prevId']
-                    : int.tryParse(dataList['prevId']) ?? -1),
+                        ? dataList['prevId']
+                        : int.tryParse(dataList['prevId']) ?? -1),
                 text: dataList['text'].toString(),
                 description: dataList['subText'].toString() ?? "",
                 color: Color(int.parse(dataList['color'].toString())),
@@ -558,7 +556,7 @@ class Repository {
               ..isHidden = dataList['isHidden'] ?? false;
             if (dataList['childAims'] != null) {
               final Map<dynamic, dynamic> aimsData =
-              dataList['childAims'] as Map<dynamic, dynamic>;
+                  dataList['childAims'] as Map<dynamic, dynamic>;
               final Map<String, int> aims = {};
               aimsData.forEach((key, value) {
                 if (value is int) {
@@ -582,17 +580,17 @@ class Repository {
     if (_auth.currentUser != null) {
       List<int> numberList = [];
       DataSnapshot dataSnapshot = (await userRef
-          .child(_auth.currentUser!.uid)
-          .child("moonlist")
-          .child(moonId.toString())
-          .child("spheres")
-          .child(sphereId.toString())
-          .child("childAims")
-          .once())
+              .child(_auth.currentUser!.uid)
+              .child("moonlist")
+              .child(moonId.toString())
+              .child("spheres")
+              .child(sphereId.toString())
+              .child("childAims")
+              .once())
           .snapshot;
       if (dataSnapshot.value != null) {
         final Map<dynamic, dynamic> data =
-        dataSnapshot.value as Map<dynamic, dynamic>;
+            dataSnapshot.value as Map<dynamic, dynamic>;
 
         data.forEach((key, value) {
           // Пропустите ключи и добавьте только значения
@@ -610,17 +608,17 @@ class Repository {
     if (_auth.currentUser != null) {
       List<int> numberList = [];
       DataSnapshot dataSnapshot = (await userRef
-          .child(_auth.currentUser!.uid)
-          .child("moonlist")
-          .child(moonId.toString())
-          .child("aims")
-          .child(aimId.toString())
-          .child("childTasks")
-          .once())
+              .child(_auth.currentUser!.uid)
+              .child("moonlist")
+              .child(moonId.toString())
+              .child("aims")
+              .child(aimId.toString())
+              .child("childTasks")
+              .once())
           .snapshot;
       if (dataSnapshot.value != null) {
         final Map<dynamic, dynamic> data =
-        dataSnapshot.value as Map<dynamic, dynamic>;
+            dataSnapshot.value as Map<dynamic, dynamic>;
 
         data.forEach((key, value) {
           // Пропустите ключи и добавьте только значения
@@ -638,16 +636,16 @@ class Repository {
     if (_auth.currentUser != null) {
       List<TaskItem> tasksList = [];
       DataSnapshot dataSnapshot = (await userRef
-          .child(_auth.currentUser!.uid)
-          .child("moonlist")
-          .child(moonId.toString())
-          .child("tasks")
-          .once())
+              .child(_auth.currentUser!.uid)
+              .child("moonlist")
+              .child(moonId.toString())
+              .child("tasks")
+              .once())
           .snapshot;
       if (dataSnapshot.children.isNotEmpty) {
         dataSnapshot.children.forEach((element) {
           final Map<dynamic, dynamic> dataList =
-          element.value as Map<dynamic, dynamic>;
+              element.value as Map<dynamic, dynamic>;
           tasksList.add(TaskItem(
               id: int.parse(dataList['id'].toString()),
               parentId: int.parse(dataList['parentId'].toString()),
@@ -665,16 +663,16 @@ class Repository {
     if (_auth.currentUser != null) {
       List<TaskData> tasksList = [];
       DataSnapshot dataSnapshot = (await userRef
-          .child(_auth.currentUser!.uid)
-          .child("moonlist")
-          .child(moonId.toString())
-          .child("tasks")
-          .once())
+              .child(_auth.currentUser!.uid)
+              .child("moonlist")
+              .child(moonId.toString())
+              .child("tasks")
+              .once())
           .snapshot;
       if (dataSnapshot.children.isNotEmpty) {
         dataSnapshot.children.forEach((element) {
           final Map<dynamic, dynamic> dataList =
-          element.value as Map<dynamic, dynamic>;
+              element.value as Map<dynamic, dynamic>;
           try {
             tasksList.add(TaskData(
                 id: int.parse(dataList['id'].toString()),
@@ -697,16 +695,16 @@ class Repository {
     if (_auth.currentUser != null) {
       List<AimItem> aimsList = [];
       DataSnapshot dataSnapshot = (await userRef
-          .child(_auth.currentUser!.uid)
-          .child("moonlist")
-          .child(moonId.toString())
-          .child("aims")
-          .once())
+              .child(_auth.currentUser!.uid)
+              .child("moonlist")
+              .child(moonId.toString())
+              .child("aims")
+              .once())
           .snapshot;
       if (dataSnapshot.children.isNotEmpty) {
         dataSnapshot.children.forEach((element) {
           final Map<dynamic, dynamic> dataList =
-          element.value as Map<dynamic, dynamic>;
+              element.value as Map<dynamic, dynamic>;
           aimsList.add(AimItem(
               id: int.parse(dataList['id'].toString()),
               parentId: int.parse(dataList['parentId'].toString()),
@@ -724,16 +722,16 @@ class Repository {
     if (_auth.currentUser != null) {
       List<AimData> aimsList = [];
       DataSnapshot dataSnapshot = (await userRef
-          .child(_auth.currentUser!.uid)
-          .child("moonlist")
-          .child(moonId.toString())
-          .child("aims")
-          .once())
+              .child(_auth.currentUser!.uid)
+              .child("moonlist")
+              .child(moonId.toString())
+              .child("aims")
+              .once())
           .snapshot;
       if (dataSnapshot.children.isNotEmpty) {
         dataSnapshot.children.forEach((element) {
           final Map<dynamic, dynamic> dataList =
-          element.value as Map<dynamic, dynamic>;
+              element.value as Map<dynamic, dynamic>;
           Map<dynamic, dynamic> childTasksMap = {};
           if (dataList['childTasks'] != null) {
             if (dataList['childTasks'] is List) {
@@ -744,7 +742,7 @@ class Repository {
             } else if (dataList['childTasks'] is Map) {
               // Просто присвоить, если уже является картой
               childTasksMap =
-              Map<dynamic, dynamic>.from(dataList['childTasks']);
+                  Map<dynamic, dynamic>.from(dataList['childTasks']);
             }
           }
           List<int> childTasksList = childTasksMap.values
@@ -769,16 +767,16 @@ class Repository {
     if (_auth.currentUser != null) {
       List<WishItem> wishesList = [];
       DataSnapshot dataSnapshot = (await userRef
-          .child(_auth.currentUser!.uid)
-          .child("moonlist")
-          .child(moonId.toString())
-          .child("spheres")
-          .once())
+              .child(_auth.currentUser!.uid)
+              .child("moonlist")
+              .child(moonId.toString())
+              .child("spheres")
+              .once())
           .snapshot;
       if (dataSnapshot.children.isNotEmpty) {
         dataSnapshot.children.forEach((element) {
           final Map<dynamic, dynamic> dataList =
-          element.value as Map<dynamic, dynamic>;
+              element.value as Map<dynamic, dynamic>;
           wishesList.add(WishItem(
               id: int.parse(dataList['id'].toString()),
               text: dataList['text'],
@@ -796,20 +794,18 @@ class Repository {
   Future<WishData?> getMyWish(int id, int moonId) async {
     if (_auth.currentUser != null) {
       DataSnapshot dataSnapshot = (await userRef
-          .child(_auth.currentUser!.uid)
-          .child("moonlist")
-          .child(moonId.toString())
-          .child("spheres")
-          .child(id.toString())
-          .once())
+              .child(_auth.currentUser!.uid)
+              .child("moonlist")
+              .child(moonId.toString())
+              .child("spheres")
+              .child(id.toString())
+              .once())
           .snapshot;
       if (dataSnapshot.children.isNotEmpty) {
         final Map<dynamic, dynamic> dataList =
-        dataSnapshot.value as Map<dynamic, dynamic>;
+            dataSnapshot.value as Map<dynamic, dynamic>;
         var tmp =
-        dataSnapshot
-            .child("childAims")
-            .value as Map<dynamic, dynamic>?;
+            dataSnapshot.child("childAims").value as Map<dynamic, dynamic>?;
         Map<String, int> childAims = {};
         if (tmp != null) {
           tmp.forEach((key, value) {
@@ -890,26 +886,26 @@ class Repository {
     }
   }
 
-  Future updateNeighbour(int sphereId, bool updateNextId, int newId,
-      int currentMoonId) async {
+  Future updateNeighbour(
+      int sphereId, bool updateNextId, int newId, int currentMoonId) async {
     if (_auth.currentUser != null) {
       updateNextId
           ? userRef
-          .child(_auth.currentUser!.uid)
-          .child("moonlist")
-          .child(currentMoonId.toString())
-          .child("spheres")
-          .child(sphereId.toString())
-          .child("nextId")
-          .set(newId)
+              .child(_auth.currentUser!.uid)
+              .child("moonlist")
+              .child(currentMoonId.toString())
+              .child("spheres")
+              .child(sphereId.toString())
+              .child("nextId")
+              .set(newId)
           : userRef
-          .child(_auth.currentUser!.uid)
-          .child("moonlist")
-          .child(currentMoonId.toString())
-          .child("spheres")
-          .child(sphereId.toString())
-          .child("prevId")
-          .set(newId);
+              .child(_auth.currentUser!.uid)
+              .child("moonlist")
+              .child(currentMoonId.toString())
+              .child("spheres")
+              .child(sphereId.toString())
+              .child("prevId")
+              .set(newId);
       //updateMoonSync(currentMoonId);
     }
   }
@@ -956,18 +952,18 @@ class Repository {
     }
   }
 
-  Future<int?> createAim(AimData ad, int parentWishId,
-      int currentMoonId) async {
+  Future<int?> createAim(
+      AimData ad, int parentWishId, int currentMoonId) async {
     if (_auth.currentUser != null) {
       //Получаем последний идентификатор
       final DataSnapshot snapshot = (await userRef
-          .child(_auth.currentUser!.uid)
-          .child("moonlist")
-          .child(currentMoonId.toString())
-          .child("aims")
-          .orderByKey()
-          .limitToLast(1)
-          .once())
+              .child(_auth.currentUser!.uid)
+              .child("moonlist")
+              .child(currentMoonId.toString())
+              .child("aims")
+              .orderByKey()
+              .limitToLast(1)
+              .once())
           .snapshot;
       int index = 0;
       if (snapshot.value != null) {
@@ -1008,20 +1004,18 @@ class Repository {
   Future<AimData?> getMyAim(int id, int moonId) async {
     if (_auth.currentUser != null) {
       DataSnapshot dataSnapshot = (await userRef
-          .child(_auth.currentUser!.uid)
-          .child("moonlist")
-          .child(moonId.toString())
-          .child("aims")
-          .child(id.toString())
-          .once())
+              .child(_auth.currentUser!.uid)
+              .child("moonlist")
+              .child(moonId.toString())
+              .child("aims")
+              .child(id.toString())
+              .once())
           .snapshot;
       if (dataSnapshot.children.isNotEmpty) {
         final Map<dynamic, dynamic> dataList =
-        dataSnapshot.value as Map<dynamic, dynamic>;
+            dataSnapshot.value as Map<dynamic, dynamic>;
         var tmp =
-        dataSnapshot
-            .child("childTasks")
-            .value as Map<dynamic, dynamic>?;
+            dataSnapshot.child("childTasks").value as Map<dynamic, dynamic>?;
         List<int> childTasks = [];
         if (tmp != null) {
           tmp.forEach((key, value) {
@@ -1106,18 +1100,18 @@ class Repository {
     }
   }
 
-  Future<int?> createTask(TaskData td, int parentAimId,
-      int currentMoonId) async {
+  Future<int?> createTask(
+      TaskData td, int parentAimId, int currentMoonId) async {
     if (_auth.currentUser != null) {
       //Получаем последний идентификатор
       final DataSnapshot snapshot = (await userRef
-          .child(_auth.currentUser!.uid)
-          .child("moonlist")
-          .child(currentMoonId.toString())
-          .child("tasks")
-          .orderByKey()
-          .limitToLast(1)
-          .once())
+              .child(_auth.currentUser!.uid)
+              .child("moonlist")
+              .child(currentMoonId.toString())
+              .child("tasks")
+              .orderByKey()
+              .limitToLast(1)
+              .once())
           .snapshot;
       int index = 0;
       if (snapshot.value != null) {
@@ -1157,16 +1151,16 @@ class Repository {
   Future<TaskData?> getMyTask(int id, int moonId) async {
     if (_auth.currentUser != null) {
       DataSnapshot dataSnapshot = (await userRef
-          .child(_auth.currentUser!.uid)
-          .child("moonlist")
-          .child(moonId.toString())
-          .child("tasks")
-          .child(id.toString())
-          .once())
+              .child(_auth.currentUser!.uid)
+              .child("moonlist")
+              .child(moonId.toString())
+              .child("tasks")
+              .child(id.toString())
+              .once())
           .snapshot;
       if (dataSnapshot.children.isNotEmpty) {
         final Map<dynamic, dynamic> dataList =
-        dataSnapshot.value as Map<dynamic, dynamic>;
+            dataSnapshot.value as Map<dynamic, dynamic>;
         return TaskData(
             id: int.parse(dataList['id'].toString()),
             text: dataList['text'],
@@ -1258,10 +1252,7 @@ class Repository {
         }
         Map<int, Map<String, dynamic>> indexedDiary = {};
         diary.asMap().forEach((index, v) => indexedDiary[index + 1] = v);
-        userRef
-            .child(_auth.currentUser!.uid)
-            .child("diary")
-            .set(indexedDiary);
+        userRef.child(_auth.currentUser!.uid).child("diary").set(indexedDiary);
       } else {
         Map<String, dynamic> dataMap = {
           'id': data.last.id,
@@ -1350,16 +1341,14 @@ class Repository {
   Future<Map<CardData, List<Article>>?> getDiaryList() async {
     if (_auth.currentUser != null) {
       Map<CardData, List<Article>> diaryList = {};
-      DataSnapshot dataSnapshot = (await userRef
-          .child(_auth.currentUser!.uid)
-          .child("diary")
-          .once())
-          .snapshot;
+      DataSnapshot dataSnapshot =
+          (await userRef.child(_auth.currentUser!.uid).child("diary").once())
+              .snapshot;
       if (dataSnapshot.children.isNotEmpty) {
         dataSnapshot.children.forEach((element) {
           List<Article> marticles = [];
           final Map<dynamic, dynamic> dataList =
-          element.value as Map<dynamic, dynamic>;
+              element.value as Map<dynamic, dynamic>;
           if (dataList['articles'] != null) {
             var articles = Map<String, dynamic>.from(dataList['articles']);
             articles.forEach((k, v) {
@@ -1383,8 +1372,7 @@ class Repository {
             text: dataList['text'],
             color: Color(int.parse(dataList['color'].toString())),
           )] = marticles;
-        }
-        );
+        });
       }
       print("reeeeeturn");
       return diaryList;
@@ -1395,14 +1383,14 @@ class Repository {
   Future<Map<String, String>> getQ() async {
     if (_auth.currentUser != null) {
       DataSnapshot dataSnapshot = (await FirebaseDatabase.instance
-          .refFromURL(
-          'https://wishmap-c3e06-default-rtdb.europe-west1.firebasedatabase.app/')
-          .child("questions")
-          .once())
+              .refFromURL(
+                  'https://wishmap-c3e06-default-rtdb.europe-west1.firebasedatabase.app/')
+              .child("questions")
+              .once())
           .snapshot;
       if (dataSnapshot.children.isNotEmpty) {
         final Map<dynamic, dynamic> dataList =
-        dataSnapshot.value as Map<dynamic, dynamic>;
+            dataSnapshot.value as Map<dynamic, dynamic>;
         return Map<String, String>.fromEntries(dataList.entries
             .map((element) => MapEntry(element.key, element.value)));
       }
@@ -1413,14 +1401,14 @@ class Repository {
   Future<Map<String, String>> getStatic() async {
     if (_auth.currentUser != null) {
       DataSnapshot dataSnapshot = (await FirebaseDatabase.instance
-          .refFromURL(
-          'https://wishmap-c3e06-default-rtdb.europe-west1.firebasedatabase.app/')
-          .child("static")
-          .once())
+              .refFromURL(
+                  'https://wishmap-c3e06-default-rtdb.europe-west1.firebasedatabase.app/')
+              .child("static")
+              .once())
           .snapshot;
       if (dataSnapshot.children.isNotEmpty) {
         final Map<dynamic, dynamic> dataList =
-        dataSnapshot.value as Map<dynamic, dynamic>;
+            dataSnapshot.value as Map<dynamic, dynamic>;
         return Map<String, String>.fromEntries(dataList.entries
             .map((element) => MapEntry(element.key, element.value)));
       }
@@ -1435,23 +1423,58 @@ class Repository {
   Future<Promocode?> searchPromocode(String promocode) async {
     if (_auth.currentUser != null) {
       DataSnapshot dataSnapshot = (await FirebaseDatabase.instance
-          .refFromURL(
-          'https://wishmap-c3e06-default-rtdb.europe-west1.firebasedatabase.app/')
-          .child("promocodes").child(promocode)
-          .once())
+              .refFromURL(
+                  'https://wishmap-c3e06-default-rtdb.europe-west1.firebasedatabase.app/')
+              .child("promocodes")
+              .child(promocode)
+              .once())
           .snapshot;
       if (dataSnapshot.value != null && dataSnapshot.key != null) {
         print("dsk ${dataSnapshot.key} dsv ${dataSnapshot.value}");
-        final Map<dynamic, dynamic> dataList = dataSnapshot.value as Map<
-            dynamic,
-            dynamic>;
-        final date = DateFormat("dd.MM.yyyy").parse(
-            dataList["expiryDate"]).add(const Duration(days: 1));
-        return Promocode(
-            dataSnapshot.key!, DateFormat("dd.MM.yyyy").format(date),
-            dataList['type']);
+        final Map<dynamic, dynamic> dataList =
+            dataSnapshot.value as Map<dynamic, dynamic>;
+        final date = DateFormat("dd.MM.yyyy")
+            .parse(dataList["expiryDate"])
+            .add(const Duration(days: 1));
+        return Promocode(dataSnapshot.key!,
+            DateFormat("dd.MM.yyyy").format(date), dataList['type']);
       }
     }
     return null;
+  }
+
+  Future<List<dynamic>> getKnowleges() async {
+    final snap = (await FirebaseDatabase.instance
+            .refFromURL(
+                'https://wishmap-c3e06-default-rtdb.europe-west1.firebasedatabase.app/')
+            .child("knowledges")
+            .once())
+        .snapshot;
+
+    List<dynamic> data = snap.value as List<dynamic>;
+
+    return data;
+  }
+
+  Future<List<dynamic>> getTests() async {
+    final snap = (await FirebaseDatabase.instance
+        .refFromURL(
+        'https://wishmap-c3e06-default-rtdb.europe-west1.firebasedatabase.app/')
+        .child("tests")
+        .once())
+        .snapshot;
+
+    List<dynamic> data = snap.value as List<dynamic>;
+
+    return data;
+  }
+
+  void saveData(Map<dynamic, dynamic> data) async {
+    print("aaaaaaaaaaaaaaaaaa - ${data}");
+    final frb = await FirebaseDatabase.instance
+        .refFromURL(
+            'https://wishmap-c3e06-default-rtdb.europe-west1.firebasedatabase.app/')
+        .child("tests");
+    await frb.set(data);
   }
 }

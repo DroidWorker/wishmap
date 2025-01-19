@@ -976,6 +976,14 @@ class _AuthScreen_State extends State<AuthScreen> {
                                                 BlocProvider.of<NavigationBloc>(
                                                     context)
                                                     .add(
+                                                    NavigateToMyKnwlgsScreenEvent());
+                                                BlocProvider.of<NavigationBloc>(
+                                                    context)
+                                                    .add(
+                                                    NavigateToPassedOnboardingScreenEvent());
+                                                BlocProvider.of<NavigationBloc>(
+                                                    context)
+                                                    .add(
                                                     NavigateToMyTestingScreenEvent());
                                                 BlocProvider.of<NavigationBloc>(
                                                     context)

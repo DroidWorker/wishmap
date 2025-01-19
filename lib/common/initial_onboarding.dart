@@ -61,6 +61,7 @@ class InitialOnboardingScreen extends StatelessWidget {
             Expanded(child: Image.asset("assets/res/onboarding/back.png")),
             Story(
               onFlashForward: () {
+                BlocProvider.of<NavigationBloc>(context).removeLastFromBS();
                 BlocProvider.of<NavigationBloc>(context)
                     .add(NavigateToModuleScreenEvent());
               },
@@ -74,7 +75,9 @@ class InitialOnboardingScreen extends StatelessWidget {
               alignment: Alignment.topLeft,
               child: InkWell(
                   onTap: () {
-                    BlocProvider.of<NavigationBloc>(context).handleBackPress();
+                    BlocProvider.of<NavigationBloc>(context).removeLastFromBS();
+                    BlocProvider.of<NavigationBloc>(context)
+                        .add(NavigateToModuleScreenEvent());
                   },
                   child: const Padding(
                     padding: EdgeInsets.all(16.0),

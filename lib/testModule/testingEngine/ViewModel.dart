@@ -15,6 +15,7 @@ class TestViewModel extends ChangeNotifier {
   LocalRepository localRep = LocalRepository();
   bool isInLoading = false;
   int avg = 0;
+  var step = 1;
 
   init() async {
     hokinsKoefs = await repository.getHokins();
@@ -48,6 +49,7 @@ class TestViewModel extends ChangeNotifier {
   }
 
   Future calculateResult() async {
+    step = 1;
     localRep.setTestPassed();
     final answerWeights = [1, 0.75, 0.5, 0.25, 0];
     List<CalculationStep> steps = [];
