@@ -54,68 +54,7 @@ class MyKnwlgsScreen extends StatelessWidget {
                     child: Column(
                       children: knowleges.map((it) {
                         return LevelItem(it.title, it.items);
-                      }).toList()
-                      /*LevelItem("Базовый уровень", [
-                          LevelItemData(
-                              "Вводный курс",
-                              "Пройден",
-                              "Доступен к 15.11.2024",
-                              0,
-                              "Цель данного отчета — предоставить комплексный обзор текущего состояния этих сфер, выявить ключевые проблемы и предложить рекомендации для их оптимизации, что позволит каждому человеку стремиться к более гармоничной и полноценной жизни."),
-                          LevelItemData(
-                              "Наполнение карты",
-                              "Не пройден ",
-                              "Доступен к 15.11.2024",
-                              1,
-                              "Цель данного отчета — предоставить комплексный обзор текущего состояния этих сфер, выявить ключевые проблемы и предложить рекомендации для их оптимизации, что позволит каждому человеку стремиться к более гармоничной и полноценной жизни."),
-                          LevelItemData(
-                              "Актуализация",
-                              "Не пройден",
-                              "Доступен к 15.11.2024",
-                              1,
-                              "Цель данного отчета — предоставить комплексный обзор текущего состояния этих сфер, выявить ключевые проблемы и предложить рекомендации для их оптимизации, что позволит каждому человеку стремиться к более гармоничной и полноценной жизни.")
-                        ]),
-                        LevelItem("Средний уровень", [
-                          LevelItemData(
-                              "Вводный курс",
-                              "Пройден",
-                              "Доступен к 15.11.2024",
-                              0,
-                              "Цель данного отчета — предоставить комплексный обзор текущего состояния этих сфер, выявить ключевые проблемы и предложить рекомендации для их оптимизации, что позволит каждому человеку стремиться к более гармоничной и полноценной жизни."),
-                          LevelItemData(
-                              "Наполнение карты",
-                              "Не пройден ",
-                              "Доступен к 15.11.2024",
-                              1,
-                              "Цель данного отчета — предоставить комплексный обзор текущего состояния этих сфер, выявить ключевые проблемы и предложить рекомендации для их оптимизации, что позволит каждому человеку стремиться к более гармоничной и полноценной жизни."),
-                          LevelItemData(
-                              "Актуализация",
-                              "Не пройден",
-                              "Доступен к 15.11.2024",
-                              1,
-                              "Цель данного отчета — предоставить комплексный обзор текущего состояния этих сфер, выявить ключевые проблемы и предложить рекомендации для их оптимизации, что позволит каждому человеку стремиться к более гармоничной и полноценной жизни.")
-                        ]),
-                        LevelItem("Продвинутый уровень", [
-                          LevelItemData(
-                              "Вводный курс",
-                              "Пройден",
-                              "Доступен к 15.11.2024",
-                              0,
-                              "Цель данного отчета — предоставить комплексный обзор текущего состояния этих сфер, выявить ключевые проблемы и предложить рекомендации для их оптимизации, что позволит каждому человеку стремиться к более гармоничной и полноценной жизни."),
-                          LevelItemData(
-                              "Наполнение карты",
-                              "Не пройден ",
-                              "Доступен к 15.11.2024",
-                              1,
-                              "Цель данного отчета — предоставить комплексный обзор текущего состояния этих сфер, выявить ключевые проблемы и предложить рекомендации для их оптимизации, что позволит каждому человеку стремиться к более гармоничной и полноценной жизни."),
-                          LevelItemData(
-                              "Актуализация",
-                              "Не пройден",
-                              "Доступен к 15.11.2024",
-                              1,
-                              "Цель данного отчета — предоставить комплексный обзор текущего состояния этих сфер, выявить ключевые проблемы и предложить рекомендации для их оптимизации, что позволит каждому человеку стремиться к более гармоничной и полноценной жизни.")
-                        ])*/
-                      ,
+                      }).toList(),
                     ))
               ],
             ),
@@ -137,10 +76,11 @@ class LevelItem extends StatefulWidget {
 }
 
 class LevelItemState extends State<LevelItem> {
-  bool expanded = false;
+  bool expanded = true;
   final levelTexts = {
-    "Базовый уровень": Colors.green,
-    "Продвинутый": Colors.red
+    "БАЗОВЫЙ УРОВЕНЬ": Colors.green,
+    "ПРОДВИНУТЫЙ": Colors.red,
+    "НЕОПРЕДЕЛЕННЫЙ": Colors.yellow
   };
 
   @override
@@ -149,6 +89,7 @@ class LevelItemState extends State<LevelItem> {
       return e.level;
     }).toSet();
     return Container(
+      margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(10),
       width: double.infinity,
       decoration: BoxDecoration(
@@ -190,19 +131,21 @@ class LevelItemState extends State<LevelItem> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Container(
-                          margin: const EdgeInsets.all(8),
+                          margin: const EdgeInsets.fromLTRB(4, 16, 4, 0),
+                          padding: const EdgeInsets.all(4),
                           height: double.infinity,
                           decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(10),
-                            color: levelTexts.values.toList()[e],
+                            borderRadius: BorderRadius.circular(14),
+                            color: levelTexts.values.toList()[e].withOpacity(0.3),
                           ),
                           child: RotatedBox(
                             quarterTurns: -1,
                             child: Text(
                               levelTexts.keys.toList()[e],
-                              style: const TextStyle(
-                                fontSize: 18,
-                                color: Colors.white,
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: levelTexts.values.toList()[e],
                               ),
                               textAlign: TextAlign.center,
                             ),
@@ -211,12 +154,15 @@ class LevelItemState extends State<LevelItem> {
                         Expanded(
                           // Use Expanded to keep the column in place
                           child: Padding(
-                            padding: const EdgeInsets.all(8.0),
+                            padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
                             child: Column(
                               children: widget.data
                                   .where((i) => i.level == e)
                                   .map<Widget>((e) {
-                                return Subitem(e, () {});
+                                return Padding(
+                                  padding: const EdgeInsets.only(top: 8.0),
+                                  child: Subitem(e, () {}),
+                                );
                               }).toList(),
                             ),
                           ),
@@ -237,7 +183,12 @@ Widget Subitem(LevelItemData data, Function() onClick) {
   return Container(
     decoration: BoxDecoration(
       borderRadius: BorderRadius.circular(10),
+      border: Border.all(
+        width: 1,
+        color: Colors.grey.withOpacity(0.3),
+      ),
     ),
+    padding: const EdgeInsets.all(8),
     child: Column(
       children: [
         Row(
@@ -256,27 +207,32 @@ Widget Subitem(LevelItemData data, Function() onClick) {
             Container(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(10),
-                color: Colors.green,
+                color: data.status == "Пройден" ? Colors.green : Colors.red,
               ),
-              padding: const EdgeInsets.all(3),
+              padding: const EdgeInsets.symmetric(vertical: 3, horizontal: 10),
               child: Text(
-                data.title,
-                style: const TextStyle(color: Colors.white),
+                data.status,
+                style: const TextStyle(
+                    color: Colors.white, fontSize: 12),
               ),
             )
           ],
         ),
-        const SizedBox(height: 15),
-        Text(data.description),
-        const SizedBox(height: 15),
+        const SizedBox(height: 10),
+        Text(
+          data.description,
+          style: const TextStyle(fontSize: 13, height: 1),
+          maxLines: 3,
+          overflow: TextOverflow.ellipsis,
+        ),
+        const SizedBox(height: 10),
         Center(
           child: Text(
             data.hint,
-            style: const TextStyle(color: AppColors.greytextColor),
+            style: const TextStyle(color: AppColors.greytextColor, fontSize: 14),
           ),
         ),
-        ColorRoundedButton("Изучить", onClick),
-        const SizedBox(height: 6)
+        ColorRoundedButton("Изучить", onClick, height: 36),
       ],
     ),
   );
@@ -330,12 +286,7 @@ class LevelItemData {
   }
 
   factory LevelItemData.fromMap(Map<String, dynamic> map) {
-    return LevelItemData(
-      map['title'],
-      map['status'],
-      map['hint'],
-      map['level'],
-      map['description']
-    );
+    return LevelItemData(map['title'], map['status'], map['hint'], map['level'],
+        map['description']);
   }
 }

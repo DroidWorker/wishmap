@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:ffi';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
@@ -16,9 +15,19 @@ class TestViewModel extends ChangeNotifier {
   bool isInLoading = false;
   int avg = 0;
   var step = 1;
+  final spheres = [
+    "Красота и здоровье",
+    "Отношения и любовь",
+    "Твое окружение",
+    "Призвание и карьера",
+    "Богатство и деньги",
+    "Яркость жизни",
+    "Самосознание"
+  ];
 
   init() async {
     hokinsKoefs = await repository.getHokins();
+    print("koeeeefs - ${hokinsKoefs.length}");
     mainData = await getMainReportData();
     configEmotionSphere = await getHokinsSphere("Красота и здоровье");
   }
@@ -28,11 +37,12 @@ class TestViewModel extends ChangeNotifier {
 
   //test1
   List<double> ansversM1 = [];
-  Map<String, List<List<List<double>>>> hokinsKoefs = {};
+  List<List<List<double>>> hokinsKoefs = [];
   MainData? mainData;
   EmotionData? configEmotionSphere;
   Map<String, double> resultM1 = {};
-  Map<String, double> hokinsResultM1 = {};
+  Map<String, List<double>> hokinsResultM1 =
+      {}; //<гнев, <1, 2, 3, 4,>> список значений в порядке здоровье,отношения ...
 
   Future getmoduleName() async {
     moduleName = await repository.getmoduleName();
@@ -49,6 +59,7 @@ class TestViewModel extends ChangeNotifier {
   }
 
   Future calculateResult() async {
+    localRep.setAnswers("answ1", ansversM1.join("|"));
     step = 1;
     localRep.setTestPassed();
     final answerWeights = [1, 0.75, 0.5, 0.25, 0];
@@ -56,7 +67,7 @@ class TestViewModel extends ChangeNotifier {
     if (questionsAndKoeffs.length == ansversM1.length) {
       List<double> result = [0, 0, 0, 0, 0, 0, 0, 0];
       Map<String, List<double>> hokinsResult = Map.fromEntries(
-        hokinsKoefs.keys.map((element) {
+        spheres.map((element) {
           return MapEntry(element, List<double>.filled(16, 0));
         }),
       );
@@ -66,9 +77,11 @@ class TestViewModel extends ChangeNotifier {
           result[j] += value * koeff;
           intermediateValue.add(value * koeff);
         }
-        for (var sphere in hokinsKoefs.keys) {
-          for (var (k, element) in hokinsKoefs[sphere]![i].indexed) {
-            hokinsResult[sphere]?[k] += element[answerWeights.indexOf(koeff)];
+        for (var (ns, sphere) in spheres.indexed) {
+          for (var (k, element) in hokinsKoefs[ns].indexed) {
+            hokinsResult[sphere]?[k] += (element[answerWeights.indexOf(koeff)] *
+                    questionsAndKoeffs[i].indexes[ns]) /
+                100;
           }
         }
         steps.add(CalculationStep(
@@ -76,11 +89,17 @@ class TestViewModel extends ChangeNotifier {
           weights: questionsAndKoeffs[i].indexes,
           coefficient: koeff,
           result: List<double>.from(result),
-          hokinsStep: hokinsKoefs.map((k, v) =>
-              MapEntry(k,
-                  v[i].map((e) => e[answerWeights.indexOf(koeff)]).toList())),
-          hokinsResult: hokinsResult.map((key, value) =>
-              MapEntry(key, List<double>.from(value))),
+          hokinsStep: {
+            for (var (ns, item) in spheres.indexed)
+              item: hokinsKoefs[ns]
+                  .map((e) =>
+                      (e[answerWeights.indexOf(koeff)] *
+                          questionsAndKoeffs[i].indexes[ns]) /
+                      100)
+                  .toList()
+          },
+          hokinsResult: hokinsResult
+              .map((key, value) => MapEntry(key, List<double>.from(value))),
           intermediateValue: List<double>.from(intermediateValue),
         ));
       }
@@ -97,21 +116,51 @@ class TestViewModel extends ChangeNotifier {
       for (var (i, element) in hokinsResult.values.first.indexed) {
         hokinsResult.values.first[i] = element / 100;
       }
-      hokinsResultM1["Стыд"] = hokinsResult.values.last[0];
-      hokinsResultM1["Вина"] = hokinsResult.values.last[1];
-      hokinsResultM1["Апатия"] = hokinsResult.values.last[2];
-      hokinsResultM1["Горе"] = hokinsResult.values.last[3];
-      hokinsResultM1["Страх"] = hokinsResult.values.last[4];
-      hokinsResultM1["Жажда"] = hokinsResult.values.last[5];
-      hokinsResultM1["Гнев"] = hokinsResult.values.last[6];
-      hokinsResultM1["Гордыня"] = hokinsResult.values.last[7];
-      hokinsResultM1["Смелость"] = hokinsResult.values.last[8];
-      hokinsResultM1["Нейтралитет"] = hokinsResult.values.last[9];
-      hokinsResultM1["Готовность"] = hokinsResult.values.last[10];
-      hokinsResultM1["Принятие"] = hokinsResult.values.last[11];
-      hokinsResultM1["Разум"] = hokinsResult.values.last[12];
-      hokinsResultM1["Любовь"] = hokinsResult.values.last[13];
-      hokinsResultM1["Гармония"] = hokinsResult.values.last[14];
+      hokinsResultM1["Стыд"] = hokinsResult.values.map((e) {
+        return e[0];
+      }).toList();
+      hokinsResultM1["Вина"] = hokinsResult.values.map((e) {
+        return e[1];
+      }).toList();
+      hokinsResultM1["Апатия"] = hokinsResult.values.map((e) {
+        return e[2];
+      }).toList();
+      hokinsResultM1["Горе"] = hokinsResult.values.map((e) {
+        return e[3];
+      }).toList();
+      hokinsResultM1["Страх"] = hokinsResult.values.map((e) {
+        return e[4];
+      }).toList();
+      hokinsResultM1["Жажда"] = hokinsResult.values.map((e) {
+        return e[5];
+      }).toList();
+      hokinsResultM1["Гнев"] = hokinsResult.values.map((e) {
+        return e[6];
+      }).toList();
+      hokinsResultM1["Гордыня"] = hokinsResult.values.map((e) {
+        return e[7];
+      }).toList();
+      hokinsResultM1["Смелость"] = hokinsResult.values.map((e) {
+        return e[8];
+      }).toList();
+      hokinsResultM1["Нейтралитет"] = hokinsResult.values.map((e) {
+        return e[9];
+      }).toList();
+      hokinsResultM1["Готовность"] = hokinsResult.values.map((e) {
+        return e[10];
+      }).toList();
+      hokinsResultM1["Принятие"] = hokinsResult.values.map((e) {
+        return e[11];
+      }).toList();
+      hokinsResultM1["Разум"] = hokinsResult.values.map((e) {
+        return e[12];
+      }).toList();
+      hokinsResultM1["Любовь"] = hokinsResult.values.map((e) {
+        return e[13];
+      }).toList();
+      hokinsResultM1["Гармония"] = hokinsResult.values.map((e) {
+        return e[14];
+      }).toList();
       //hokinsResultM1["Покой"] = hokinsResult.values.first[15];
 
       notifyListeners();
@@ -132,8 +181,7 @@ class TestViewModel extends ChangeNotifier {
             return double.parse(e);
           }).toList();
           combinationIndex = getCombinationIndex(answers);
-        }
-        else {
+        } else {
           if (combinationIndex != -1 && combinationIndex < e.value.length) {
             result += e.value.elementAt(combinationIndex);
           }
@@ -146,8 +194,8 @@ class TestViewModel extends ChangeNotifier {
   }
 
   Future<MainData> getMainReportData() async {
-    String jsonString = await rootBundle.loadString(
-        'assets/res/config_texts.json');
+    String jsonString =
+        await rootBundle.loadString('assets/res/config_texts.json');
     Map<String, dynamic> jsonResponse = jsonDecode(jsonString);
     MainData mainData = MainData.fromJson(jsonResponse);
     return mainData;
@@ -179,34 +227,48 @@ class TestViewModel extends ChangeNotifier {
   }
 
   Future<String> loadJsonString(String sphere) async {
+    final p = await localRep.getProfile();
     switch (sphere) {
       case "Красота и здоровье":
-        return await rootBundle.loadString(
-            'assets/res/config_hokins_beautyhealth_w.json');
+        return await rootBundle.loadString(p?.male==true
+            ? 'assets/res/config_hokins_beautyhealth_m.json'
+            : 'assets/res/config_hokins_beautyhealth_w.json');
       case "Отношения и любовь":
-        return await rootBundle.loadString(
-            'assets/res/config_hokins_love_w.json');
+        return await rootBundle
+            .loadString(p?.male==true
+            ? 'assets/res/config_hokins_love_m.json'
+            : 'assets/res/config_hokins_love_w.json');
       case "Призвание и карьера":
-        return await rootBundle.loadString(
-            'assets/res/config_hokins_relationships_w.json');
+        return await rootBundle
+            .loadString(p?.male==true
+            ? 'assets/res/config_hokins_relationships_m.json'
+            : 'assets/res/config_hokins_relationships_w.json');
       case "Твое окружение":
-        return await rootBundle.loadString(
-            'assets/res/config_hokins_ikigai_w.json');
+        return await rootBundle
+            .loadString(p?.male==true
+            ? 'assets/res/config_hokins_ikigai_m.json'
+            : 'assets/res/config_hokins_ikigai_w.json');
       case "Богатство и деньги":
-        return await rootBundle.loadString(
-            'assets/res/config_hokins_finance_w.json');
+        return await rootBundle
+            .loadString(p?.male==true
+            ? 'assets/res/config_hokins_finance_m.json'
+            : 'assets/res/config_hokins_finance_w.json');
       case "Яркость жизни":
-        return await rootBundle.loadString(
-            'assets/res/config_hokins_highlife_w.json');
+        return await rootBundle
+            .loadString(p?.male==true
+            ? 'assets/res/config_hokins_highlife_m.json'
+            : 'assets/res/config_hokins_highlife_w.json');
       case "Самосознание":
-        return await rootBundle.loadString(
-            'assets/res/config_hokins_selfmade_w.json');
+        return await rootBundle
+            .loadString(p?.male==true
+            ? 'assets/res/config_hokins_selfmade_m.json'
+            : 'assets/res/config_hokins_selfmade_w.json');
       default:
         throw Exception('Неизвестная сфера: $sphere');
     }
   }
 
   List<List<double>> getHokinsForQuestion(int qNumber) {
-    return hokinsKoefs.values.first[qNumber];
+    return hokinsKoefs[qNumber];
   }
 }

@@ -16,8 +16,23 @@ import '../ViewModel.dart';
 class ReportInfoScreen extends StatelessWidget {
   bool isVideoVisible = true;
   String sphere = "";
+  int index = 0;
 
-  ReportInfoScreen(this.sphere, {super.key});
+  ReportInfoScreen(this.sphere, this.index, {super.key});
+
+  MapEntry<String, double>? getMaxValueAtIndex(Map<String, List<double>> map) {
+    String? maxKey;
+    double maxValue = double.negativeInfinity;
+
+    map.forEach((key, values) {
+      if (index < values.length && values[index] > maxValue) {
+        maxValue = values[index];
+        maxKey = key;
+      }
+    });
+
+    return maxKey != null ? MapEntry(maxKey??"", maxValue) : null;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,8 +40,8 @@ class ReportInfoScreen extends StatelessWidget {
       final commonText = viewModel.buildStringByAnswers(sphere);
       final testResult = viewModel.resultM1.values.toList();
       final hokinsResult = viewModel.hokinsResultM1;
-      MapEntry<String, double> maxHokinsResultEntry =
-          hokinsResult.entries.reduce((a, b) => a.value > b.value ? a : b);
+      hokinsResult.entries.forEach((w){print(w);});
+      MapEntry<String, double> maxHokinsResultEntry = getMaxValueAtIndex(hokinsResult)??const MapEntry("err", 0);
       final configEmotion =
           viewModel.configEmotionSphere?.emotions[maxHokinsResultEntry.key];
       final mindLevels = viewModel.configEmotionSphere?.emotions
@@ -315,7 +330,7 @@ class ReportInfoScreen extends StatelessWidget {
                                   viewModel.buildConfigAsync(e);
                                   BlocProvider.of<NavigationBloc>(context).handleBackPress();
                                   BlocProvider.of<NavigationBloc>(context).add(
-                                      NavigateToReportInfoScreenScreenEvent(e));
+                                      NavigateToReportInfoScreenScreenEvent(e, i));
                                 });
                           })
                         ],

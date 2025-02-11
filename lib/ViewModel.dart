@@ -604,6 +604,7 @@ class AppViewModel with ChangeNotifier {
         await init();
       }
     } catch (ex) {
+      print("exxxxxxxxxxxxx - ${ex.toString()}");
       addError("5857${ex.toString()}");
       throw Exception("no access #vm003");
     }

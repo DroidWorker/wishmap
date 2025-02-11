@@ -90,6 +90,17 @@ class LocalRepository {
     return _prefs!.getInt("OnboardingShownCount")??0;
   }
 
+  Future setAnswers(String key, String answers) async{
+    if (_prefs == null) {
+      await init();
+    }
+    _prefs!.setString(key,answers);
+  }
+
+  Future<String> getAnswers(String key) async{
+    return _prefs!.getString(key)??"";
+  }
+
   LockParams getLockParams() {
     String unsstr(String input) {
       final h = int.parse(input.substring(8, 10));

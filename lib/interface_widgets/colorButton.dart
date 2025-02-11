@@ -8,8 +8,9 @@ class ColorRoundedButton extends StatelessWidget{
   Color? c;
   Color? textColor;
   double? radius;
+  int height = 46;
   Function() onPressed;
-  ColorRoundedButton( this.text, this.onPressed, {this.c, this.radius, this.textColor, super.key});
+  ColorRoundedButton( this.text, this.onPressed, {this.c, this.radius, this.textColor, this.height = 46, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +18,7 @@ class ColorRoundedButton extends StatelessWidget{
       style: TextButton.styleFrom(padding: EdgeInsets.zero),
         onPressed: ()=>onPressed(),
         child: Container(
-          height: 46,
+          height: height.toDouble(),
           decoration:  BoxDecoration(
               borderRadius: BorderRadius.all(Radius.circular(radius??23)),
               gradient: c==null?const LinearGradient(

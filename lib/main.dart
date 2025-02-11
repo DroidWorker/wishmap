@@ -451,6 +451,7 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
     } else if (state is NavigationReportInfoScreenScreenState) {
       return ReportInfoScreen(
         state.sphere,
+        state.index,
         key: UniqueKey(),
       );
     } else if (state is NavigationMyTestingScreenState) {

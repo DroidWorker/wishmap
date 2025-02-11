@@ -133,6 +133,13 @@ flutter:
     - assets/res/config_hokins_love_w.json
     - assets/res/config_hokins_relationships_w.json
     - assets/res/config_hokins_selfmade_w.json
+    - assets/res/config_hokins_beautyhealth_m.json
+    - assets/res/config_hokins_love_m.json
+    - assets/res/config_hokins_relationships_m.json
+    - assets/res/config_hokins_ikigai_m.json
+    - assets/res/config_hokins_finance_m.json
+    - assets/res/config_hokins_highlife_m.json
+    - assets/res/config_hokins_selfmade_m.json
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

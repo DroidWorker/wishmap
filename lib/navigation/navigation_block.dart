@@ -87,7 +87,8 @@ class NavigateToModuleScreenEvent extends NavigationEvent {}
 class NavigateToReport1ScreenEvent extends NavigationEvent {}
 class NavigateToReportInfoScreenScreenEvent extends NavigationEvent {
   String sphere = "";
-  NavigateToReportInfoScreenScreenEvent(this.sphere);
+  int index = 0;
+  NavigateToReportInfoScreenScreenEvent(this.sphere, this.index);
 }
 
 abstract class NavigationState {}
@@ -173,7 +174,8 @@ class NavigationModuleScreenState extends NavigationState {}
 class NavigationReport1ScreenState extends NavigationState {}
 class NavigationReportInfoScreenScreenState extends NavigationState {
   String sphere = "";
-  NavigationReportInfoScreenScreenState(this.sphere);
+  int index = 0;
+  NavigationReportInfoScreenScreenState(this.sphere, this.index);
 }
 
 
@@ -350,7 +352,7 @@ class NavigationBloc extends Bloc<NavigationEvent, NavigationState> {
     });
 
     on<NavigateToReportInfoScreenScreenEvent>((event, emit) {
-      _navigationHistory.add(NavigationReportInfoScreenScreenState(event.sphere));
+      _navigationHistory.add(NavigationReportInfoScreenScreenState(event.sphere, event.index));
       emit(_navigationHistory.last);
     });
 

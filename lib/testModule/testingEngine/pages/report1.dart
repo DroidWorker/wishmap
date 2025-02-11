@@ -27,16 +27,7 @@ class Report1State extends State<Report1> {
   Widget build(BuildContext context) {
     return Consumer<TestViewModel>(builder: (context, viewModel, child) {
       final testResult = viewModel.resultM1.values.toList();
-      final hokinsResult = viewModel.hokinsResultM1;
-      final mindLevels = viewModel.configEmotionSphere?.emotions
-          .map((k, v) {
-            return MapEntry(k, v.score);
-          })
-          .entries
-          .toList();
       //search max hokins result
-      MapEntry<String, double> maxHokinsResultEntry =
-          hokinsResult.entries.reduce((a, b) => a.value > b.value ? a : b);
       final mainData = viewModel.mainData;
       return testResult.isNotEmpty
           ? Scaffold(
@@ -207,14 +198,14 @@ class Report1State extends State<Report1> {
                                                   context)
                                               .add(
                                             NavigateToReportInfoScreenScreenEvent(
-                                                e),
+                                                e, i),
                                           );
                                         },
                                       );
                                     }),
                                   ])),
                           const SizedBox(height: 25),
-                          Container(
+                         /* Container(
                             width: constraints.maxWidth,
                             decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(10),
@@ -339,7 +330,7 @@ class Report1State extends State<Report1> {
                                           "ы неустанно ищешь идеальные способы, чтобы достичь желаемой внешности и крепкого здоровья. Ты представляешь себя..."),
                                     )),
                                 const SizedBox(height: 25),
-                                RichText(
+                                /*RichText(
                                   textAlign: TextAlign.center,
                                   text: const TextSpan(
                                       text:
@@ -357,10 +348,10 @@ class Report1State extends State<Report1> {
                                       ]),
                                 ),
                                 const SizedBox(height: 15),
-                                ColorRoundedButton("Изучить", () {})
+                                ColorRoundedButton("Изучить", () {})*/
                               ],
                             ),
-                          )
+                          )*/
                         ]));
                       }),
               ))

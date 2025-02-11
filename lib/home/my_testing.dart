@@ -175,7 +175,16 @@ class MyTestingScreen extends StatelessWidget {
                 ...data.map((it){
                   return Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: testItem(it.title, it.description, it.status, it.hint, (){}),
+                    child: testItem(it.title, it.description, it.status, it.hint,
+                            (){},
+                        () async {
+                          List<double> answers = (await viewModel.localRep.getAnswers("answ1")).split("|").map((s) => double.parse(s)).toList();
+                          if(answers.isNotEmpty) {
+                            viewModel.ansversM1 = answers;
+                            BlocProvider.of<NavigationBloc>(context)
+                                .add(NavigateToReport1ScreenEvent());
+                          }
+                        }),
                   );
                 })
               ],
@@ -188,7 +197,7 @@ class MyTestingScreen extends StatelessWidget {
 }
 
 Widget testItem(String testTitle, String testDescr, String status, String hint,
-    Function() onClick) {
+    Function() onClick, Function() showTest) {
   return Container(
     padding: const EdgeInsets.all(10),
     width: double.infinity,
@@ -202,9 +211,12 @@ Widget testItem(String testTitle, String testDescr, String status, String hint,
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(testTitle,
-                style:
-                    const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            Expanded(
+              child: Text(testTitle,
+                  overflow: TextOverflow.ellipsis,
+                  style:
+                      const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            ),
             Container(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(10),
@@ -224,10 +236,11 @@ Widget testItem(String testTitle, String testDescr, String status, String hint,
         Center(
           child: Text(
             hint,
-            style: TextStyle(color: AppColors.greytextColor),
+            style: const TextStyle(color: AppColors.greytextColor),
           ),
         ),
-        ColorRoundedButton("Пройти", onClick)
+        ColorRoundedButton(status=="Пройден"?"Пройти тест заново":"Пройти", onClick),
+        if(status=="Пройден")ColorRoundedButton("Посмотреть тест", showTest, c: Colors.transparent, textColor: Colors.black,)
       ],
     ),
   );
