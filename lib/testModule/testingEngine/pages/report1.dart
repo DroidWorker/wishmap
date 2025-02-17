@@ -155,7 +155,10 @@ class Report1State extends State<Report1> {
                                       child: Text(
                                         mainData?.conclusionByPercent
                                                 .conclusionByPercent.values
-                                                .toList()[avg.toInt() ~/ 10] ??
+                                                .toList()[(((avg.toInt() == 100)
+                                                    ? 99
+                                                    : avg.toInt()) ~/
+                                                10)] ??
                                             "",
                                         style: const TextStyle(
                                             color: AppColors.greytextColor),
@@ -205,7 +208,7 @@ class Report1State extends State<Report1> {
                                     }),
                                   ])),
                           const SizedBox(height: 25),
-                         /* Container(
+                          /* Container(
                             width: constraints.maxWidth,
                             decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(10),

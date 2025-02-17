@@ -1458,10 +1458,10 @@ class Repository {
 
   Future<List<dynamic>> getTests() async {
     final snap = (await FirebaseDatabase.instance
-        .refFromURL(
-        'https://wishmap-c3e06-default-rtdb.europe-west1.firebasedatabase.app/')
-        .child("tests")
-        .once())
+            .refFromURL(
+                'https://wishmap-c3e06-default-rtdb.europe-west1.firebasedatabase.app/')
+            .child("tests")
+            .once())
         .snapshot;
 
     List<dynamic> data = snap.value as List<dynamic>;
@@ -1476,5 +1476,13 @@ class Repository {
             'https://wishmap-c3e06-default-rtdb.europe-west1.firebasedatabase.app/')
         .child("tests");
     await frb.set(data);
+  }
+
+  void saveTestData(String data) async {
+    if (_auth.currentUser != null) {
+      userRef.child(_auth.currentUser!.uid).child("testResult").set({
+        "data": data,
+      });
+    }
   }
 }

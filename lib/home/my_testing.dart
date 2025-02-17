@@ -14,7 +14,6 @@ import '../navigation/navigation_block.dart';
 import '../testModule/testingEngine/ViewModel.dart';
 
 class MyTestingScreen extends StatelessWidget {
-  
   List<TestData> data = [];
 
   @override
@@ -172,19 +171,28 @@ class MyTestingScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-                ...data.map((it){
+                ...data.map((it) {
                   return Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: testItem(it.title, it.description, it.status, it.hint,
-                            (){},
-                        () async {
-                          List<double> answers = (await viewModel.localRep.getAnswers("answ1")).split("|").map((s) => double.parse(s)).toList();
-                          if(answers.isNotEmpty) {
-                            viewModel.ansversM1 = answers;
-                            BlocProvider.of<NavigationBloc>(context)
-                                .add(NavigateToReport1ScreenEvent());
-                          }
-                        }),
+                    child: testItem(
+                        it.title, it.description, it.status, it.hint, () {
+                      if (it.status.length==7) {
+                        BlocProvider.of<NavigationBloc>(context).handleBackPress();
+                        BlocProvider.of<NavigationBloc>(context)
+                            .add(NavigateToModuleScreenEvent());
+                      }
+                    }, () async {
+                      List<double> answers =
+                          (await viewModel.localRep.getAnswers("answ1"))
+                              .split("|")
+                              .map((s) => double.parse(s))
+                              .toList();
+                      if (answers.isNotEmpty) {
+                        viewModel.ansversM1 = answers;
+                        BlocProvider.of<NavigationBloc>(context)
+                            .add(NavigateToReport1ScreenEvent());
+                      }
+                    }),
                   );
                 })
               ],
@@ -214,13 +222,13 @@ Widget testItem(String testTitle, String testDescr, String status, String hint,
             Expanded(
               child: Text(testTitle,
                   overflow: TextOverflow.ellipsis,
-                  style:
-                      const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  style: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.bold)),
             ),
             Container(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(10),
-                color: status=="Пройден" ? Colors.green : Colors.red,
+                color: status == "Пройден" ? Colors.green : Colors.red,
               ),
               padding: const EdgeInsets.all(3),
               child: Text(
@@ -239,8 +247,15 @@ Widget testItem(String testTitle, String testDescr, String status, String hint,
             style: const TextStyle(color: AppColors.greytextColor),
           ),
         ),
-        ColorRoundedButton(status=="Пройден"?"Пройти тест заново":"Пройти", onClick),
-        if(status=="Пройден")ColorRoundedButton("Посмотреть тест", showTest, c: Colors.transparent, textColor: Colors.black,)
+        ColorRoundedButton(
+            status == "Пройден" ? "Пройти тест заново" : "Пройти", onClick),
+        if (status == "Пройден")
+          ColorRoundedButton(
+            "Посмотреть тест",
+            showTest,
+            c: Colors.transparent,
+            textColor: Colors.black,
+          )
       ],
     ),
   );

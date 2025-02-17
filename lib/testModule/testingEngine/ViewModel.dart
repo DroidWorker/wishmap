@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 
+import '../../repository/Repository.dart';
 import '../../repository/local_repository.dart';
 import 'data/adminModule.dart';
 import 'data/models.dart';
@@ -11,6 +12,7 @@ import 'testingRepository.dart';
 class TestViewModel extends ChangeNotifier {
   var kinClicked = false;
   final repository = TestingRepository();
+  Repository firepository = Repository();
   LocalRepository localRep = LocalRepository();
   bool isInLoading = false;
   int avg = 0;
@@ -27,7 +29,6 @@ class TestViewModel extends ChangeNotifier {
 
   init() async {
     hokinsKoefs = await repository.getHokins();
-    print("koeeeefs - ${hokinsKoefs.length}");
     mainData = await getMainReportData();
     configEmotionSphere = await getHokinsSphere("Красота и здоровье");
   }
@@ -78,7 +79,7 @@ class TestViewModel extends ChangeNotifier {
           intermediateValue.add(value * koeff);
         }
         for (var (ns, sphere) in spheres.indexed) {
-          for (var (k, element) in hokinsKoefs[ns].indexed) {
+          for (var (k, element) in hokinsKoefs[i].indexed) {
             hokinsResult[sphere]?[k] += (element[answerWeights.indexOf(koeff)] *
                     questionsAndKoeffs[i].indexes[ns]) /
                 100;
@@ -91,7 +92,7 @@ class TestViewModel extends ChangeNotifier {
           result: List<double>.from(result),
           hokinsStep: {
             for (var (ns, item) in spheres.indexed)
-              item: hokinsKoefs[ns]
+              item: hokinsKoefs[i]
                   .map((e) =>
                       (e[answerWeights.indexOf(koeff)] *
                           questionsAndKoeffs[i].indexes[ns]) /
@@ -104,6 +105,7 @@ class TestViewModel extends ChangeNotifier {
         ));
       }
       localRep.saveCalculation(steps);
+      firepository.saveTestData(jsonEncode(steps.map((step) => step.toJson()).toList()));
       resultM1["Здоровье"] = result[0];
       resultM1["Отношения"] = result[1];
       resultM1["Окружение"] = result[2];

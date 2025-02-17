@@ -300,7 +300,10 @@ class ReportInfoScreen extends StatelessWidget {
                             child: Text(
                               viewModel.mainData?.conclusionByPercent
                                   .conclusionByPercent.values
-                                  .toList()[viewModel.avg.toInt() ~/ 10] ??
+                                  .toList()[(((viewModel.avg.toInt() == 100)
+                                  ? 99
+                                  : viewModel.avg.toInt()) ~/
+                                  10)] ??
                                   "",
                               style: const TextStyle(
                                   color: AppColors.greytextColor),
