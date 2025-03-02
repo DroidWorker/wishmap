@@ -187,22 +187,14 @@ class Report1State extends State<Report1> {
                                         colors[e] ?? Colors.blue,
                                         value.toInt(),
                                         e,
-                                        () async {
-                                          setState(() {
-                                            showLoader = true;
-                                          });
-                                          viewModel.configEmotionSphere =
-                                              await viewModel
-                                                  .getHokinsSphere(e);
-                                          setState(() {
-                                            showLoader = false;
-                                          });
-                                          BlocProvider.of<NavigationBloc>(
-                                                  context)
-                                              .add(
-                                            NavigateToReportInfoScreenScreenEvent(
-                                                e, i),
-                                          );
+                                        () {
+                                          viewModel.buildConfigAsync(e);
+                                            BlocProvider.of<NavigationBloc>(
+                                                    context)
+                                                .add(
+                                              NavigateToReportInfoScreenScreenEvent(
+                                                  e, i),
+                                            );
                                         },
                                       );
                                     }),

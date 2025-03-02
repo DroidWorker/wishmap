@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 import 'package:wishmap/interface_widgets/colorButton.dart';
 import 'package:wishmap/res/colors.dart';
 
@@ -161,7 +162,9 @@ class LevelItemState extends State<LevelItem> {
                                   .map<Widget>((e) {
                                 return Padding(
                                   padding: const EdgeInsets.only(top: 8.0),
-                                  child: Subitem(e, () {}),
+                                  child: Subitem(e, () {
+                                    if(e.link.isNotEmpty)launchUrlString(e.link);
+                                  }),
                                 );
                               }).toList(),
                             ),
@@ -271,9 +274,10 @@ class LevelItemData {
   final String status;
   final String description;
   final String hint;
+  final String link;
 
   LevelItemData(
-      this.title, this.status, this.hint, this.level, this.description);
+      this.title, this.status, this.hint, this.level, this.description, this.link);
 
   Map<String, dynamic> toMap() {
     return {
@@ -281,12 +285,13 @@ class LevelItemData {
       'title': title,
       'status': status,
       'description': description,
-      'hint': hint
+      'hint': hint,
+      'link': link
     };
   }
 
   factory LevelItemData.fromMap(Map<String, dynamic> map) {
     return LevelItemData(map['title'], map['status'], map['hint'], map['level'],
-        map['description']);
+        map['description'], map['link']);
   }
 }

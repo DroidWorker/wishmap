@@ -33,6 +33,10 @@ class TestViewModel extends ChangeNotifier {
     configEmotionSphere = await getHokinsSphere("Красота и здоровье");
   }
 
+  notify() {
+    notifyListeners();
+  }
+
   List<Question> questionsAndKoeffs = [];
   String moduleName = "";
 
@@ -105,7 +109,8 @@ class TestViewModel extends ChangeNotifier {
         ));
       }
       localRep.saveCalculation(steps);
-      firepository.saveTestData(jsonEncode(steps.map((step) => step.toJson()).toList()));
+      firepository.saveTestData(
+          jsonEncode(steps.map((step) => step.toJson()).toList()));
       resultM1["Здоровье"] = result[0];
       resultM1["Отношения"] = result[1];
       resultM1["Окружение"] = result[2];
@@ -169,6 +174,49 @@ class TestViewModel extends ChangeNotifier {
     }
   }
 
+  List<double> calculateAverages(Map<String, List<double>>? data) {
+    if (data == null || data.isEmpty)
+      return [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+      ];
+
+    int maxLength =
+        data.values.map((list) => list.length).reduce((a, b) => a > b ? a : b);
+
+    List<double> result = List.generate(maxLength, (index) {
+      double sum = 0;
+      int count = 0;
+      for (var list in data.values) {
+        if (index < list.length) {
+          sum += list[index];
+          count++;
+        }
+      }
+      return count == 0 ? 0.0 : sum / count;
+    });
+
+    return result;
+  }
+
   String buildStringByAnswers(String sphere) {
     //mainData
     var result = "";
@@ -177,22 +225,33 @@ class TestViewModel extends ChangeNotifier {
     final textsData = mainData?.conclusionCommonInSphere.spheres[sphere];
 
     textsData?.combinationQuestions.entries.forEach((e) {
-      if (e.key == "COMBINATIONQUESTIONS" || e.key == "COMBINATION") {
-        if (e.key == "COMBINATIONQUESTIONS") {
-          final answers = e.value.map((e) {
-            return double.parse(e);
-          }).toList();
-          combinationIndex = getCombinationIndex(answers);
-        } else {
-          if (combinationIndex != -1 && combinationIndex < e.value.length) {
-            result += e.value.elementAt(combinationIndex);
-          }
-        }
-      } else {
-        result = e.value[ansversM1[int.parse(e.key)].toInt()];
+      if (e.key == "COMBINATIONQUESTIONS") {
+        final answerKoeffs = e.value.map((id){
+          return ansversM1[int.parse(id)];
+        });
+        final combiId = calculateResultIndex(answerKoeffs.toList(), textsData.combinationQuestions["COMBINATION"]??List.empty());
+        result += textsData.combinationQuestions["COMBINATION"]?[combiId]??"";
+      } else if(e.key == "COMBINATION") {} else {
+        result += e.value[ansversM1[int.parse(e.key)*4].toInt()];
       }
     });
     return result;
+  }
+
+  int calculateResultIndex(List<double> answers, List<String> resultPatterns) {
+    List<double> possibleValues = [1, 0.75, 0.5, 0.25, 0];
+    int base = possibleValues.length;
+
+    int calculateIndex(List<double> answers, List<double> possibleValues) {
+      int index = 0;
+      for (int i = 0; i < answers.length; i++) {
+        int position = possibleValues.indexOf(answers[i]);
+        index = index * base + position;
+      }
+      return index;
+    }
+
+    return calculateIndex(answers, possibleValues);
   }
 
   Future<MainData> getMainReportData() async {
@@ -225,44 +284,41 @@ class TestViewModel extends ChangeNotifier {
   }
 
   void buildConfigAsync(String sphere) async {
+    configEmotionSphere = null;
     configEmotionSphere = await getHokinsSphere(sphere);
+    notifyListeners();
   }
 
   Future<String> loadJsonString(String sphere) async {
     final p = await localRep.getProfile();
     switch (sphere) {
       case "Красота и здоровье":
-        return await rootBundle.loadString(p?.male==true
+        return await rootBundle.loadString(p?.male == true
             ? 'assets/res/config_hokins_beautyhealth_m.json'
             : 'assets/res/config_hokins_beautyhealth_w.json');
       case "Отношения и любовь":
-        return await rootBundle
-            .loadString(p?.male==true
+        return await rootBundle.loadString(p?.male == true
             ? 'assets/res/config_hokins_love_m.json'
             : 'assets/res/config_hokins_love_w.json');
       case "Призвание и карьера":
-        return await rootBundle
-            .loadString(p?.male==true
-            ? 'assets/res/config_hokins_relationships_m.json'
-            : 'assets/res/config_hokins_relationships_w.json');
-      case "Твое окружение":
-        return await rootBundle
-            .loadString(p?.male==true
+        return await rootBundle.loadString(p?.male == true
             ? 'assets/res/config_hokins_ikigai_m.json'
             : 'assets/res/config_hokins_ikigai_w.json');
+
+      case "Твое окружение":
+        return await rootBundle.loadString(p?.male == true
+            ? 'assets/res/config_hokins_relationships_m.json'
+            : 'assets/res/config_hokins_relationships_w.json');
       case "Богатство и деньги":
-        return await rootBundle
-            .loadString(p?.male==true
+        return await rootBundle.loadString(p?.male == true
             ? 'assets/res/config_hokins_finance_m.json'
             : 'assets/res/config_hokins_finance_w.json');
       case "Яркость жизни":
-        return await rootBundle
-            .loadString(p?.male==true
+        return await rootBundle.loadString(p?.male == true
             ? 'assets/res/config_hokins_highlife_m.json'
             : 'assets/res/config_hokins_highlife_w.json');
       case "Самосознание":
-        return await rootBundle
-            .loadString(p?.male==true
+        return await rootBundle.loadString(p?.male == true
             ? 'assets/res/config_hokins_selfmade_m.json'
             : 'assets/res/config_hokins_selfmade_w.json');
       default:

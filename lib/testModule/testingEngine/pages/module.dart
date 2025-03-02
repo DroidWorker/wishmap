@@ -32,6 +32,7 @@ class Module1State extends State {
     // Вызываем методы во ViewModel только один раз
     vm.getmoduleName();
     vm.getQuestions();
+    vm.ansversM1.clear();
   }
 
   @override
@@ -48,9 +49,9 @@ class Module1State extends State {
             scrolledUnderElevation: 0,
             toolbarHeight: 50,
             title: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                /*IconButton(
+                IconButton(
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
                     style: const ButtonStyle(
@@ -60,13 +61,20 @@ class Module1State extends State {
                     icon: const Icon(Icons.keyboard_arrow_left,
                         size: 28, color: AppColors.gradientStart),
                     onPressed: () {
-                      BlocProvider.of<NavigationBloc>(context)
+                      if(step!=1){
+                        setState(() {
+                          viewModel.ansversM1.removeLast();
+                            viewModel.step--;
+                        });
+                      }else {
+                        BlocProvider.of<NavigationBloc>(context)
                           .handleBackPress();
-                    }),*/
+                      }
+                    }),
                 Text(viewModel.moduleName,
                     style: const TextStyle(
                         fontWeight: FontWeight.w600, fontSize: 16)),
-                //const SizedBox(width: 29)
+                const SizedBox(width: 29)
               ],
             ),
           ),

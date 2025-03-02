@@ -44,6 +44,9 @@ class ReportInfoScreen extends StatelessWidget {
       MapEntry<String, double> maxHokinsResultEntry = getMaxValueAtIndex(hokinsResult)??const MapEntry("err", 0);
       final configEmotion =
           viewModel.configEmotionSphere?.emotions[maxHokinsResultEntry.key];
+      print(
+        "aaaaaaaaaaaaaaa - ${configEmotion?.perception}"
+      );
       final mindLevels = viewModel.configEmotionSphere?.emotions
           .map((k, v) {
             return MapEntry(k, v.score);
@@ -54,7 +57,7 @@ class ReportInfoScreen extends StatelessWidget {
       return Scaffold(
           backgroundColor: AppColors.backgroundColor,
           body: SafeArea(child: LayoutBuilder(builder: (context, constraints) {
-            return SingleChildScrollView(
+            return configEmotion!=null?SingleChildScrollView(
                 child: Column(children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -85,7 +88,7 @@ class ReportInfoScreen extends StatelessWidget {
                     const SizedBox(height: 20),
                     const Text("Описание", style: TextStyle(fontSize: 18),),
                     const SizedBox(height: 20),
-                    Text(commonText),
+                    Text(commonText, softWrap: true),
                     const SizedBox(height: 10),
                     Container(
                       width: double.infinity,
@@ -244,7 +247,7 @@ class ReportInfoScreen extends StatelessWidget {
                                 ],
                               ),
                               const SizedBox(height: 10),
-                              Text(configEmotion?.text.entries.firstOrNull?.value ?? ""),
+                              Text(configEmotion.text.entries.firstOrNull?.value ?? "", softWrap: true),
                               const SizedBox(height: 10),
                               if (configEmotion != null)
                                 for (final item in configEmotion.text.entries.skip(1))
@@ -342,7 +345,9 @@ class ReportInfoScreen extends StatelessWidget {
                   ],
                 ),
               ),
-            ]));
+            ])):const Center(
+              child: CircularProgressIndicator(),
+            );
           })));
     });
   }

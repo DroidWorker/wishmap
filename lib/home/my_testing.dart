@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 import 'package:wishmap/interface_widgets/colorButton.dart';
 import 'package:wishmap/res/colors.dart';
 
@@ -32,8 +33,8 @@ class MyTestingScreen extends StatelessWidget {
           })
           .entries
           .toList();
-      double maxHokinsResultEntry =
-          stepsResult.lastOrNull?.result.reduce((a, b) => a > b ? a : b) ?? 0;
+      final hokinsAVG = viewModel.calculateAverages(stepsResult.lastOrNull?.hokinsResult);
+      double maxHokinsResultEntry = hokinsAVG.reduce((a, b) => a > b ? a : b) ?? 0;
       return Scaffold(
         backgroundColor: AppColors.backgroundColor,
         body: SafeArea(child: LayoutBuilder(builder: (context, constraints) {
@@ -102,8 +103,7 @@ class MyTestingScreen extends StatelessWidget {
                                 GradientText(
                                   mindLevels?.firstWhereOrNull((v) {
                                         return v.key ==
-                                            hokColors.keys.toList()[stepsResult
-                                                    .lastOrNull?.result
+                                            hokColors.keys.toList()[hokinsAVG
                                                     .indexOf(
                                                         maxHokinsResultEntry) ??
                                                 0];
@@ -122,8 +122,7 @@ class MyTestingScreen extends StatelessWidget {
                                   child: Divider(),
                                 ),
                                 GradientText(
-                                  hokColors.keys.toList()[stepsResult
-                                          .lastOrNull?.result
+                                  hokColors.keys.toList()[hokinsAVG
                                           .indexOf(maxHokinsResultEntry) ??
                                       0],
                                   style: const TextStyle(
@@ -143,8 +142,7 @@ class MyTestingScreen extends StatelessWidget {
                           height: 200,
                           child: LineChart(
                             LineChartData(
-                              lineBarsData: stepsResult
-                                      .lastOrNull?.hokinsResult.values.last
+                              lineBarsData: hokinsAVG
                                       .getRange(1, 15)
                                       .mapIndexed((index, entry) {
                                     return LineChartBarData(
@@ -171,26 +169,34 @@ class MyTestingScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-                ...data.map((it) {
+                ...data.mapIndexed((index, it) {
                   return Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: testItem(
-                        it.title, it.description, it.status, it.hint, () {
-                      if (it.status.length==7) {
+                        it.title, it.description, index==0?(appViewModel.testPassed?"Пройден":"Не пройден"):it.status, it.hint, () {
+                      if (it.status.length==7 && it.link.isEmpty) {
                         BlocProvider.of<NavigationBloc>(context).handleBackPress();
                         BlocProvider.of<NavigationBloc>(context)
                             .add(NavigateToModuleScreenEvent());
+                      } else {
+                        launchUrlString(it.link);
                       }
                     }, () async {
-                      List<double> answers =
-                          (await viewModel.localRep.getAnswers("answ1"))
-                              .split("|")
-                              .map((s) => double.parse(s))
-                              .toList();
-                      if (answers.isNotEmpty) {
-                        viewModel.ansversM1 = answers;
-                        BlocProvider.of<NavigationBloc>(context)
-                            .add(NavigateToReport1ScreenEvent());
+                      if(it.link.isEmpty){
+                        List<double> answers =
+                        (await viewModel.localRep.getAnswers("answ1"))
+                            .split("|")
+                            .map((s) => double.parse(s))
+                            .toList();
+                        if (answers.isNotEmpty) {
+                          await viewModel.getQuestions();
+                          viewModel.ansversM1 = answers;
+                          viewModel.calculateResult();
+                          BlocProvider.of<NavigationBloc>(context)
+                              .add(NavigateToReport1ScreenEvent());
+                        }
+                      } else {
+                        launchUrlString(it.link);
                       }
                     }),
                   );
@@ -266,15 +272,17 @@ class TestData {
   final String description;
   final String status;
   final String hint;
+  final String link;
 
-  TestData(this.title, this.description, this.status, this.hint);
+  TestData(this.title, this.description, this.status, this.hint, this.link);
 
   Map<String, dynamic> toMap() {
     return {
       'title': title,
       'description': description,
       'status': status,
-      'hint': hint
+      'hint': hint,
+      'link': link
     };
   }
 
@@ -284,6 +292,7 @@ class TestData {
       map['description'],
       map['status'],
       map['hint'],
+      map['link'],
     );
   }
 }
