@@ -1,6 +1,7 @@
 import 'dart:ffi';
 
 import 'package:collection/collection.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -149,17 +150,17 @@ class ReportInfoScreen extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 20),
-                        /*SizedBox(
+                        SizedBox(
                           width: constraints.maxWidth - 60,
                           height: 200,
                           child: LineChart(
                             LineChartData(
                               lineBarsData: hokinsResult.entries
-                                  .mapIndexed((index, entry) {
+                                  .mapIndexed((inindex, entry) {
                                 return LineChartBarData(
                                   spots: [
-                                    FlSpot(index.toDouble(), entry.value),
-                                    FlSpot(index.toDouble(), 0)
+                                    FlSpot(inindex.toDouble(), entry.value[index]),
+                                    FlSpot(inindex.toDouble(), 0)
                                   ].toList(),
                                   isCurved: true,
                                   color: hokColors[entry.key],
@@ -174,7 +175,7 @@ class ReportInfoScreen extends StatelessWidget {
                               borderData: FlBorderData(show: false),
                             ),
                           ),
-                        ),*/
+                        ),
                         const SizedBox(height: 16),
                         Padding(
                           padding: const EdgeInsets.all(8.0),

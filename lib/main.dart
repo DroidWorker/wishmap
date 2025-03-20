@@ -98,7 +98,19 @@ void main() async {
       (await flutterLocalNotificationsPlugin.getNotificationAppLaunchDetails())
           ?.notificationResponse;
 
-  if (initialNotificationResponse == null) {
+  int? alarmId = null;
+  int? taskId = null;
+
+  if (initialNotificationResponse?.payload?.contains("alarm") == true) {
+    final id = int.parse(initialNotificationResponse!.payload!.split("|")[1]);
+    alarmId = id ~/ 100;
+    appViewModel.getLastObjectsForAlarm();
+  } else if (initialNotificationResponse?.payload?.contains("WishMap://task") == true) {
+    taskId = int.parse(initialNotificationResponse!.payload!.split("id=")[1]);
+    appViewModel.currentTask = null;
+    appViewModel.startAppFromTask(taskId);
+  }
+
     runApp(
       MultiProvider(
         providers: [
@@ -122,23 +134,25 @@ void main() async {
                         ..add(NavigateToMyTestingScreenEvent())
                         ..add(NavigateToInitialOnboardingScreenEvent())))
                   : (NavigationBloc()..add(NavigateToAuthScreenEvent()));
-            },
+            }
           ),
         ],
-        child: MyApp(),
+        child: MyApp(taskId: taskId, alarmId: alarmId),
       ),
     );
-  } else {
+  /* else {
+    print("sssssssssss");
     if (initialNotificationResponse.payload?.contains("alarm") == true) {
+      print("sssssssssss1");
       final id = int.parse(initialNotificationResponse.payload!.split("|")[1]);
       _runAppWithAlarm(id ~/ 100, appViewModel, tvm);
     } else if (initialNotificationResponse.payload
             ?.contains("WishMap://task") ==
         true) {
+      print("sssssssssss2");
       _runAppWithTask(initialNotificationResponse, appViewModel, tvm);
     }
-    ;
-  }
+  }*/
 }
 
 Future<void> _requestPermissions(
@@ -152,18 +166,21 @@ Future<void> _requestPermissions(
     print('Error while requesting permissions: $e');
   }
 }
-
-Future<void> _handleNotificationResponse(
-    NotificationResponse response, AppViewModel vm, TestViewModel tvm) async {
-  AudioPlayerManager().stop();
+/*
+* Future<void> _handleNotificationResponse( NotificationResponse response, AppViewModel vm, TestViewModel tvm) async { AudioPlayerManager().stop(); if (response.payload?.contains("alarm") == true) { final id = int.parse(response.payload!.split("|")[1]); _runAppWithAlarm(id ~/ 100, vm, tvm); } else if (response.payload?.contains("WishMap://task") == true) { _runAppWithTask(response, vm, tvm); } }*/
+Future<void> _handleNotificationResponse(NotificationResponse response, AppViewModel appViewModel, TestViewModel tvm) async {
   if (response.payload?.contains("alarm") == true) {
     final id = int.parse(response.payload!.split("|")[1]);
-    _runAppWithAlarm(id ~/ 100, vm, tvm);
+    navigatorKey.currentState?.push(
+      MaterialPageRoute(builder: (context) => NotifyAlarmScreen((){}, id ~/ 100)),
+    );
   } else if (response.payload?.contains("WishMap://task") == true) {
-    _runAppWithTask(response, vm, tvm);
+    final taskId = int.parse(response.payload!.split("id=")[1]);
+    navigatorKey.currentState?.push(
+      MaterialPageRoute(builder: (context) => TaskEditScreen(aimId: taskId)),
+    );
   }
 }
-
 void _runAppWithAlarm(int alarmId, AppViewModel vm, TestViewModel tvm) async {
   vm.getLastObjectsForAlarm();
   runApp(

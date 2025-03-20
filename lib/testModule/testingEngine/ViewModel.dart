@@ -232,7 +232,7 @@ class TestViewModel extends ChangeNotifier {
         final combiId = calculateResultIndex(answerKoeffs.toList(), textsData.combinationQuestions["COMBINATION"]??List.empty());
         result += textsData.combinationQuestions["COMBINATION"]?[combiId]??"";
       } else if(e.key == "COMBINATION") {} else {
-        result += e.value[ansversM1[int.parse(e.key)*4].toInt()];
+        result += e.value[(((ansversM1[int.parse(e.key)]*4).toInt()-4).abs())];
       }
     });
     return result;
