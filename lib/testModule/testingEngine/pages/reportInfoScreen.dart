@@ -103,7 +103,7 @@ class ReportInfoScreen extends StatelessWidget {
                             Padding(
                               padding: EdgeInsets.only(left: 8.0, top: 8.0),
                               child: Text(
-                                "Общий уровень сознания",
+                                "Уровень принятия сферы",
                                 style: TextStyle(
                                     fontWeight: FontWeight.bold, fontSize: 16),
                               ),

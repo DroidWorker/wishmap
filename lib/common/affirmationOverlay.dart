@@ -120,6 +120,8 @@ class _MyOverlayState extends State<MyAffirmationOverlay> {
                         setState(() {
                           screenType = 0;
                           if(currentIndex<widget.affirmations.length)widget.affirmations.removeAt(currentIndex);
+                          currentIndex = 0;
+                          currentAffirmation = widget.affirmations[currentIndex];
                           isAdding = false;
                           controller.clear();
                         });

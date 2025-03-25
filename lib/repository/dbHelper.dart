@@ -178,6 +178,8 @@ class DatabaseHelper {
 
     // Удаление всех данных из таблицы tasks
     await db.delete('tasks', where: "moonId = ?", whereArgs: [moonId]);
+
+    await db.delete('images', where: "moonId = ?", whereArgs: [moonId]);
   }
   Future<void> clearDatabaseFolMoons(String ids) async {
     Database db = await database;
@@ -194,6 +196,8 @@ class DatabaseHelper {
 
     // Удаление всех данных из таблицы diary
     count += await db.rawDelete('DELETE FROM diary');
+
+    await db.delete('DELETE FROM images WHERE moonId IN ($ids)');
 
     print("removed $count rows");
   }
@@ -263,7 +267,7 @@ class DatabaseHelper {
       return lastId;
     } else {
       // Return a default value (you can choose your own default value)
-      return -1;
+      return 0;
     }
   }
 

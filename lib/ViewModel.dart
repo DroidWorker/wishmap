@@ -683,7 +683,7 @@ class AppViewModel with ChangeNotifier {
         }
       }
       notifyListeners();
-      lastImageId = await repository.getLastImageId() ?? -1;
+      lastImageId = await localRep.getImageLastId();
     } catch (ex, s) {
       print("strase $s");
       addError("87895${ex.toString()}");
@@ -786,6 +786,7 @@ class AppViewModel with ChangeNotifier {
   Future getImages(List<int> ids) async {
     cachedImages.clear();
     isinLoading = true;
+    print("aaaaaaaaaaaaa$ids");
     for (var element in ids) {
       final photo = await localRep.getImage(element);
       //final photo = await repository.getImage(element);//replaced by localrep

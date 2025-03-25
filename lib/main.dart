@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -63,8 +64,11 @@ import 'package:timezone/data/latest.dart' as tz;
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
+late BuildContext mainContext;
+late NavigationBloc globalNavigationBloc;
 
 void main() async {
+  globalNavigationBloc = NavigationBloc();
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
@@ -98,61 +102,48 @@ void main() async {
       (await flutterLocalNotificationsPlugin.getNotificationAppLaunchDetails())
           ?.notificationResponse;
 
-  int? alarmId = null;
-  int? taskId = null;
+  int? alarmId;
+  int? taskId;
 
   if (initialNotificationResponse?.payload?.contains("alarm") == true) {
     final id = int.parse(initialNotificationResponse!.payload!.split("|")[1]);
     alarmId = id ~/ 100;
     appViewModel.getLastObjectsForAlarm();
-  } else if (initialNotificationResponse?.payload?.contains("WishMap://task") == true) {
+  } else if (initialNotificationResponse?.payload?.contains("WishMap://task") ==
+      true) {
     taskId = int.parse(initialNotificationResponse!.payload!.split("id=")[1]);
     appViewModel.currentTask = null;
     appViewModel.startAppFromTask(taskId);
   }
 
-    runApp(
-      MultiProvider(
-        providers: [
-          ChangeNotifierProvider<AppViewModel>(
-            create: (context) => appViewModel,
-          ),
-          ChangeNotifierProvider<TestViewModel>(
-            create: (context) => tvm,
-          ),
-          BlocProvider<NavigationBloc>(
-            create: (context) {
-              final appViewModel = context.read<AppViewModel>();
-              return (appViewModel.profileData != null &&
-                      appViewModel.profileData!.id.isNotEmpty)
-                  ? (appViewModel.testPassed
-                      ? (NavigationBloc()..add(NavigateToCardsScreenEvent()))
-                      : (NavigationBloc()
-                        ..add(NavigateToCardsScreenEvent())
-                        ..add(NavigateToMyKnwlgsScreenEvent())
-                        ..add(NavigateToPassedOnboardingScreenEvent())
-                        ..add(NavigateToMyTestingScreenEvent())
-                        ..add(NavigateToInitialOnboardingScreenEvent())))
-                  : (NavigationBloc()..add(NavigateToAuthScreenEvent()));
-            }
-          ),
-        ],
-        child: MyApp(taskId: taskId, alarmId: alarmId),
-      ),
-    );
-  /* else {
-    print("sssssssssss");
-    if (initialNotificationResponse.payload?.contains("alarm") == true) {
-      print("sssssssssss1");
-      final id = int.parse(initialNotificationResponse.payload!.split("|")[1]);
-      _runAppWithAlarm(id ~/ 100, appViewModel, tvm);
-    } else if (initialNotificationResponse.payload
-            ?.contains("WishMap://task") ==
-        true) {
-      print("sssssssssss2");
-      _runAppWithTask(initialNotificationResponse, appViewModel, tvm);
-    }
-  }*/
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider<AppViewModel>(
+          create: (context) => appViewModel,
+        ),
+        ChangeNotifierProvider<TestViewModel>(
+          create: (context) => tvm,
+        ),
+        BlocProvider<NavigationBloc>(create: (context) {
+          mainContext = context;
+          final appViewModel = context.read<AppViewModel>();
+          return (appViewModel.profileData != null &&
+                  appViewModel.profileData!.id.isNotEmpty)
+              ? (appViewModel.testPassed
+                  ? (globalNavigationBloc..add(NavigateToCardsScreenEvent()))
+                  : (globalNavigationBloc
+                    ..add(NavigateToCardsScreenEvent())
+                    ..add(NavigateToMyKnwlgsScreenEvent())
+                    ..add(NavigateToPassedOnboardingScreenEvent())
+                    ..add(NavigateToMyTestingScreenEvent())
+                    ..add(NavigateToInitialOnboardingScreenEvent())))
+              : (globalNavigationBloc..add(NavigateToAuthScreenEvent()));
+        }),
+      ],
+      child: MyApp(taskId: taskId, alarmId: alarmId),
+    ),
+  );
 }
 
 Future<void> _requestPermissions(
@@ -166,21 +157,37 @@ Future<void> _requestPermissions(
     print('Error while requesting permissions: $e');
   }
 }
+
 /*
 * Future<void> _handleNotificationResponse( NotificationResponse response, AppViewModel vm, TestViewModel tvm) async { AudioPlayerManager().stop(); if (response.payload?.contains("alarm") == true) { final id = int.parse(response.payload!.split("|")[1]); _runAppWithAlarm(id ~/ 100, vm, tvm); } else if (response.payload?.contains("WishMap://task") == true) { _runAppWithTask(response, vm, tvm); } }*/
-Future<void> _handleNotificationResponse(NotificationResponse response, AppViewModel appViewModel, TestViewModel tvm) async {
+Future<void> _handleNotificationResponse(NotificationResponse response,
+    AppViewModel appViewModel, TestViewModel tvm) async {
+  print("bbbggggg - $mainContext");
   if (response.payload?.contains("alarm") == true) {
     final id = int.parse(response.payload!.split("|")[1]);
-    navigatorKey.currentState?.push(
-      MaterialPageRoute(builder: (context) => NotifyAlarmScreen((){}, id ~/ 100)),
+    navigatorKey.currentState?.pushAndRemoveUntil(
+      MaterialPageRoute(
+          builder: (context) => NotifyAlarmScreen(() {}, id ~/ 100)),
+      (route) => false,
     );
-  } else if (response.payload?.contains("WishMap://task") == true) {
-    final taskId = int.parse(response.payload!.split("id=")[1]);
-    navigatorKey.currentState?.push(
+    } else if (response.payload?.contains("WishMap://task") == true) {
+      print("bbbggggg2222");
+      final taskId = int.parse(response.payload!.split("id=")[1]);
+      if(navigatorKey.currentState!=null) {
+        final navContext = navigatorKey.currentState!.context;
+        BlocProvider.of<NavigationBloc>(navContext)
+            .add(NavigateToTaskEditScreenEvent(taskId));
+      }else {
+        globalNavigationBloc
+            .add(NavigateToTaskEditScreenEvent(taskId));
+      }
+    /*navigatorKey.currentState?.pushAndRemoveUntil(
       MaterialPageRoute(builder: (context) => TaskEditScreen(aimId: taskId)),
-    );
+          (route) => false,
+    );*/
   }
 }
+
 void _runAppWithAlarm(int alarmId, AppViewModel vm, TestViewModel tvm) async {
   vm.getLastObjectsForAlarm();
   runApp(
@@ -214,6 +221,7 @@ void _runAppWithTask(
       ),
       BlocProvider<NavigationBloc>(
         create: (context) {
+
           final appViewModel = context.read<AppViewModel>();
           appViewModel.currentTask = null;
           appViewModel.startAppFromTask(taskId);

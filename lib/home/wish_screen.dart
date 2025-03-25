@@ -1,7 +1,6 @@
 import 'dart:math';
 import 'dart:typed_data';
 
-import 'package:auto_size_text/auto_size_text.dart';
 import 'package:capped_progress_indicator/capped_progress_indicator.dart';
 import 'package:collection/collection.dart';
 import 'package:dotted_border/dotted_border.dart';
@@ -124,18 +123,17 @@ class _WishScreenState extends State<WishScreen> {
         TextEditingController(text: curwish.affirmation.split("|")[0]);
     _title.addListener(() {
       if (_title.text != appViewModel.wishScreenState!.wish.text &&
-          !_title.text.contains("HEADERSIMPLETASKHEADER") &&
-          !appViewModel.isChanged) {
-        setState(() {
-          appViewModel.isChanged = true;
-          curwish.text = _title.text;
-        });
+          !_title.text.contains("HEADERSIMPLETASKHEADER")) {
+        appViewModel.isChanged = true;
+        curwish.text = _title.text;
       }
     });
+
     _description.addListener(() {
-      if (_description.text != appViewModel.wishScreenState!.wish.description)
+      if (_description.text != appViewModel.wishScreenState!.wish.description) {
         appViewModel.isChanged = true;
-      curwish.description = _description.text;
+        curwish.description = _description.text;
+      }
     });
     _affirmation.addListener(() {});
     myColors = appViewModel.getUserColors();
@@ -162,7 +160,7 @@ class _WishScreenState extends State<WishScreen> {
         curwish = appVM.wishScreenState!.wish;
         _title.text = appVM.wishScreenState!.wish.text;
         _description.text = appVM.wishScreenState!.wish.description;
-        _affirmation.text = appVM.wishScreenState!.wish.affirmation;
+        _affirmation.text = appVM.wishScreenState!.wish.affirmation.split("|")[0];
         _color = appVM.wishScreenState!.wish.color;
         isDataLoaded = appVM.wishScreenState!.isDataloaded;
         appVM.convertToMyTreeNodeFullBranch(curwish.id);
@@ -589,7 +587,6 @@ class _WishScreenState extends State<WishScreen> {
                                     "Чтобы редактировать желание необходимо перевести в статус \nна 'не исполнено'");
                               else if (!curwish.isActive) showUneditable();
                             },
-                            showCursor: true,
                             readOnly: curwish.isChecked ||
                                     !curwish.isActive ||
                                     curwish.text
@@ -840,11 +837,11 @@ class _WishScreenState extends State<WishScreen> {
                               ),
                             ),
                           const SizedBox(height: 24),
-                          const Divider(
+                          if (curwish.parentId > 1) const Divider(
                             color: AppColors.grey,
                             height: 2,
                           ),
-                          const SizedBox(height: 16),
+                          if (curwish.parentId > 1) const SizedBox(height: 16),
                           if (curwish.parentId > 1)
                             LayoutBuilder(
                               builder: (context, constraints) {
