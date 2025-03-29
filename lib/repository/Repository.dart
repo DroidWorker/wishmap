@@ -1470,7 +1470,6 @@ class Repository {
   }
 
   void saveData(Map<dynamic, dynamic> data) async {
-    print("aaaaaaaaaaaaaaaaaa - ${data}");
     final frb = await FirebaseDatabase.instance
         .refFromURL(
             'https://wishmap-c3e06-default-rtdb.europe-west1.firebasedatabase.app/')
@@ -1484,5 +1483,15 @@ class Repository {
         "data": data,
       });
     }
+  }
+  Future<String?> getTestData() async {
+    final snap = (await userRef.child(_auth.currentUser!.uid)
+        .child("testResult/data")
+        .once())
+        .snapshot;
+
+    String? data = snap.value as String?;
+
+    return data;
   }
 }

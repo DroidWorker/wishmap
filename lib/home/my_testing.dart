@@ -17,15 +17,16 @@ import '../testModule/testingEngine/ViewModel.dart';
 class MyTestingScreen extends StatelessWidget {
   List<TestData> data = [];
 
+
   @override
   Widget build(BuildContext context) {
     final appViewModel = Provider.of<AppViewModel>(context);
     //final map = { for (int i = 0; i < data.length; i++) i: data[i].toMap()};
     //appViewModel.saveMapToFirebase(map);
-    appViewModel.getTests();
 
     return Consumer<TestViewModel>(builder: (context, viewModel, child) {
       data = appViewModel.tests;
+      if(data.isEmpty)appViewModel.getTests();
       final stepsResult = viewModel.localRep.getCalculation();
       final mindLevels = viewModel.configEmotionSphere?.emotions
           .map((k, v) {

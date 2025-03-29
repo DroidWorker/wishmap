@@ -79,7 +79,7 @@ class _MainScreenState extends State<MainScreen>{
           }
           else {
             final sphereid = appVM.mainCircles.lastOrNull?.id??0;
-            final sphere = appVM.mainScreenState!.allCircles.where((element) => element.id==sphereid).first;
+            final sphere = appVM.mainScreenState?.allCircles.where((element) => element.id==sphereid).first ?? CircleData(id: 0, prevId: 0, nextId: 0, text: '', color: Colors.transparent, parenId: 0);
             if(appVM!=null&&appVM.hint=="") {
               if (sphere.shuffle && hintId != sphereid) {
                 final affirmations = sphere.affirmation.split("|");

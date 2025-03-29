@@ -8,6 +8,7 @@ import '../navigation/navigation_block.dart';
 class PassedOnboardingScreen extends StatelessWidget {
   final _momentCount = 5;
   final _momentDuration = const Duration(seconds: 5);
+  late List<Widget> images;
 
   final slidesSet = {
     "Я говорю тебе спасибо!\nТы прошел тест — это важный шаг на пути к исполнению желаний и переменам в твоей жизни\n":
@@ -22,18 +23,15 @@ class PassedOnboardingScreen extends StatelessWidget {
         "Моя цель — чтобы ты освободился от плена своих демонов, вырвался из клетки обстоятельств, расправил крылья и полетел навстречу своей яркой и счастливой жизни. \n\nЯ создал систему знаний, которая позволит тебе всецело осознать, как исполнять свои заветные мечты.\n\nПолучай знания, используй данное приложение, и ты обязательно придешь в лучшее место своей жизни."
   };
 
-  PassedOnboardingScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final images = List.generate(
+  PassedOnboardingScreen({super.key}){
+    images = List.generate(
       _momentCount,
           (idx) =>
           Stack(children: [
             Container(alignment: Alignment.bottomCenter,
-              child: (idx < 5) ? Image.asset(
-                  'assets/res/onboarding/p${idx + 1}.png') : Image.asset(
-                  'assets/res/onboarding/emp.png')
+                child: (idx < 5) ? Image.asset(
+                    'assets/res/onboarding/p${idx + 1}.png') : Image.asset(
+                    'assets/res/onboarding/emp.png')
             ),
             Padding(
               padding: const EdgeInsets.all(16.0),
@@ -57,12 +55,16 @@ class PassedOnboardingScreen extends StatelessWidget {
             ),
           ]),
     );
+  }
+
+  @override
+  Widget build(BuildContext context) {
 
     return Scaffold(
         backgroundColor: CupertinoColors.black,
         body: SafeArea(
           child: Stack(children: [
-            Expanded(child: Image.asset("assets/res/onboarding/back.png")),
+            Image.asset("assets/res/onboarding/back.png"),
             Story(
               onFlashForward: () {
                 BlocProvider.of<NavigationBloc>(context).handleBackPress();

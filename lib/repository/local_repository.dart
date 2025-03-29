@@ -38,6 +38,13 @@ class LocalRepository {
     _prefs!.setString("CircularDiagramCalculation",
         stepsJson);
   }
+  saveCalculationString(String steps) async {
+    if (_prefs == null) {
+      await init();
+    }
+    _prefs!.setString("CircularDiagramCalculation",
+        steps);
+  }
 
   List<CalculationStep> getCalculation() {
     try {

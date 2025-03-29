@@ -168,7 +168,6 @@ class TestViewModel extends ChangeNotifier {
       hokinsResultM1["Гармония"] = hokinsResult.values.map((e) {
         return e[14];
       }).toList();
-      //hokinsResultM1["Покой"] = hokinsResult.values.first[15];
 
       notifyListeners();
     }

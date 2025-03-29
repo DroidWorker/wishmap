@@ -572,6 +572,7 @@ class AppViewModel with ChangeNotifier {
       ProfileData? pd = await repository.signIn(login, password);
       if (pd != null) {
         await fetchDiary();
+        await fetchTestData();
         await localRep.saveProfile(pd);
         await init();
       } else {
@@ -919,6 +920,20 @@ class AppViewModel with ChangeNotifier {
         }
       });
       isDataFetched--;
+    } catch (eex, s) {
+      print("ex $eex");
+      print("aaaaaaaaaaaaaaaa $s");
+    }
+  }
+
+  Future fetchTestData() async {
+    try {
+      final data = await repository.getTestData();
+      print("aaaaaa$data");
+      if(data!=null) {
+        localRep.saveCalculationString(data);
+        localRep.setTestPassed();
+      }
     } catch (eex, s) {
       print("ex $eex");
       print("aaaaaaaaaaaaaaaa $s");
