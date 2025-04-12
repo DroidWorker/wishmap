@@ -86,9 +86,7 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>
     }
     final ids = curWd.photosIds.split("|") ?? [];
     if (ids.firstOrNull == "") ids.clear();
-    /*if (appViewModel.cachedImages.length != ids.length) {
-      appViewModel.isChanged = true;
-    }*/
+
     TextEditingController text = TextEditingController(text: curWd.text);
     TextEditingController affirmation =
         TextEditingController(text: curWd.affirmation.split("|")[0]);
@@ -849,8 +847,11 @@ class _MainSphereEditScreenState extends State<MainSphereEditScreen>
                                 () {
                                   if (!appVM.isChanged) {
                                     BlocProvider.of<NavigationBloc>(context)
-                                        .add(NavigateToTaskCreateScreenEvent(0,
-                                            isSimple: true, type: 'm'));
+                                        .add(NavigateToTaskCreateScreenEvent(
+                                        0,
+                                            isSimple: true,
+                                        type: 'm'
+                                    ));
                                   } else {
                                     showModalBottomSheet<void>(
                                       backgroundColor:

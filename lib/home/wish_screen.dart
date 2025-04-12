@@ -91,6 +91,9 @@ class _WishScreenState extends State<WishScreen> {
 
   AnimationController? lottieController;
 
+  final FocusNode focusNode = FocusNode();
+  final TextEditingController _title = TextEditingController();
+
   @override
   initState() {
     super.initState();
@@ -109,14 +112,14 @@ class _WishScreenState extends State<WishScreen> {
         }
       }
     });
+
+    _title.text = curwish.text.replaceAll("HEADERSIMPLETASKHEADER", "");
   }
 
   @override
   Widget build(BuildContext context) {
     _treeViewKey = GlobalKey();
     final appViewModel = Provider.of<AppViewModel>(context);
-    TextEditingController _title = TextEditingController(
-        text: curwish.text.replaceAll("HEADERSIMPLETASKHEADER", ""));
     TextEditingController _description =
         TextEditingController(text: curwish.description);
     TextEditingController _affirmation =
@@ -574,6 +577,7 @@ class _WishScreenState extends State<WishScreen> {
                         Column(children: [
                           TextField(
                             controller: _title,
+                            focusNode: focusNode,
                             onTap: () {
                               if (curwish.isChecked && !curwish.isActive) {
                                 showUnavailable(
@@ -1535,11 +1539,12 @@ class _WishScreenState extends State<WishScreen> {
                               children: [
                                 Center(
                                     child: WordWrapWidget(
-                                        text: curwish.text,
+                                        text: curwish.text.substring(0, min(11, curwish.text.length)),
                                         minTextSize: 4,
                                         maxTextSize: 12,
                                         style: const TextStyle(
                                           fontSize: 13,
+                                            overflow: TextOverflow.ellipsis,
                                             color: Colors.white))),
                                 if (curwish.isChecked)
                                   Align(

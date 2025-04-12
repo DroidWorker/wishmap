@@ -2856,6 +2856,7 @@ class AppViewModel with ChangeNotifier {
               description: "Общие задачи");
           await localRep.addAim(aim, mainScreenState?.moon.id ?? 0);
           repository.createAim(aim, wishId, mainScreenState?.moon.id ?? 0);
+          aimItems.add(AimItem(id: aim.id, parentId: wishId, text: aim.text, isChecked: true, isActive: true));
           currentAim = aim;
         } else {
           aimId = simpleAim.first.id;
