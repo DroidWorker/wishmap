@@ -53,13 +53,8 @@ class CardsScreenState extends State<CardsScreen> {
           if (!isInSync)
             Column(children: [
               ConnectionStatus(
-                isShow: true,
-              ),
-              TextButton(
-                  onPressed: () {
-                    showOverlayedSpeedTest(context);
-                  },
-                  child: const Text("test speed"))
+                isShow: false,
+              )
             ]),
           if (isInSync)
             const Row(

@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 class Question {
   String question;
   final List<String> answers;

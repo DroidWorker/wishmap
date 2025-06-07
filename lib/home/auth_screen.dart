@@ -70,6 +70,8 @@ class _AuthScreen_State extends State<AuthScreen> {
   String selectedYear = '1990';
 
   bool agreement = false;
+  String agtext = "";
+  bool dataLoaded= false;
 
   @override
   void initState() {
@@ -89,6 +91,7 @@ class _AuthScreen_State extends State<AuthScreen> {
   @override
   Widget build(BuildContext context) {
     vm = Provider.of<AppViewModel>(context);
+
     return Scaffold(
         backgroundColor: AppColors.backgroundColor,
         body: SafeArea(
@@ -98,10 +101,15 @@ class _AuthScreen_State extends State<AuthScreen> {
                 valueListenable:
                     Provider.of<AppViewModel>(context).authDataNotifier,
                 builder: (context, authData, child) {
-                  _loginController.text =
-                      authData != null ? authData.login : '';
-                  _passwordController.text =
-                      authData != null ? authData.password : '';
+                  if(!dataLoaded) {
+                    vm?.fetchStatic();
+                    agtext = vm?.static["agreement"] ?? "";
+                    _loginController.text =
+                    authData != null ? authData.login : '';
+                    _passwordController.text =
+                    authData != null ? authData.password : '';
+                    dataLoaded = true;
+                  }
 
                   return Column(
                     children: [
@@ -864,13 +872,13 @@ class _AuthScreen_State extends State<AuthScreen> {
                                         context: context,
                                         isScrollControlled: true,
                                         builder: (BuildContext context) {
-                                          return const Padding(
-                                            padding: EdgeInsets.all(16.0),
+                                          return Padding(
+                                            padding: const EdgeInsets.all(16.0),
                                             child: Column(
                                               mainAxisSize: MainAxisSize.min,
                                               children: [
-                                                Text("Согласие на обработку персональных данных", textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.w600,fontSize: 18)),
-                                                Text("lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet lorem ipsum dolor amet")
+                                                const Text("Согласие на обработку персональных данных", textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.w600,fontSize: 18)),
+                                                Text(vm?.static["agreement"] ?? "")
                                               ],
                                             ),
                                           );

@@ -13,7 +13,7 @@ import 'package:flutter/foundation.dart'
 /// await Firebase.initializeApp(
 ///   options: DefaultFirebaseOptions.currentPlatform,
 /// );
-/// ```
+/// ```flutte
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
@@ -58,11 +58,11 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyAjJ4xG1qLDbjJoIrZLpGRXYwuJIdt9TDc',
-    appId: '1:390038865604:android:6a168f43397f5c9d322b91',
+    apiKey: 'AIzaSyC-kDMaBo0Jar9FrYhScozSKnXZPp8jKmc',
+    appId: '1:568861797082:android:c17561c9e50101202e13e3',
     messagingSenderId: '390038865604',
-    projectId: 'wishmap-c3e06',
-    databaseURL: 'https://wishmap-c3e06-default-rtdb.europe-west1.firebasedatabase.app',
+    projectId: 'the-self-889cb',
+    databaseURL: 'https://the-self-889cb-default-rtdb.asia-southeast1.firebasedatabase.app',
     storageBucket: 'wishmap-c3e06.appspot.com',
   );
 

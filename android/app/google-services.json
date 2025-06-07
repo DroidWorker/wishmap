@@ -1,14 +1,14 @@
 {
   "project_info": {
-    "project_number": "390038865604",
-    "firebase_url": "https://wishmap-c3e06-default-rtdb.europe-west1.firebasedatabase.app",
-    "project_id": "wishmap-c3e06",
-    "storage_bucket": "wishmap-c3e06.appspot.com"
+    "project_number": "568861797082",
+    "firebase_url": "https://the-self-889cb-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "the-self-889cb",
+    "storage_bucket": "the-self-889cb.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:390038865604:android:6a168f43397f5c9d322b91",
+        "mobilesdk_app_id": "1:568861797082:android:c17561c9e50101202e13e3",
         "android_client_info": {
           "package_name": "com.kwork.wish.map.wishmap"
         }
@@ -16,7 +16,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyAjJ4xG1qLDbjJoIrZLpGRXYwuJIdt9TDc"
+          "current_key": "AIzaSyDVuUK6Ic7-QzrcKQhsstrWaMZQEuPtxY0"
         }
       ],
       "services": {

@@ -58,18 +58,24 @@ class InitialOnboardingScreen extends StatelessWidget {
         backgroundColor: CupertinoColors.black,
         body: SafeArea(
           child: Stack(children: [
-            Expanded(child: Image.asset("assets/res/onboarding/back.png")),
-            Story(
-              onFlashForward: () {
-                BlocProvider.of<NavigationBloc>(context).removeLastFromBS();
-                BlocProvider.of<NavigationBloc>(context)
-                    .add(NavigateToModuleScreenEvent());
-              },
-              onFlashBack: () {},
-              //Navigator.of(context).pop,
-              momentCount: _momentCount,
-              momentDurationGetter: (idx) => _momentDuration,
-              momentBuilder: (context, idx) => images[idx],
+            SizedBox(
+              width: double.infinity,
+              height: double.infinity,
+              child: Image.asset("assets/res/onboarding/back.png", fit: BoxFit.cover),
+            ),
+            Positioned.fill(
+              child: Story(
+                onFlashForward: () {
+                  BlocProvider.of<NavigationBloc>(context).removeLastFromBS();
+                  BlocProvider.of<NavigationBloc>(context)
+                      .add(NavigateToModuleScreenEvent());
+                },
+                onFlashBack: () {},
+                //Navigator.of(context).pop,
+                momentCount: _momentCount,
+                momentDurationGetter: (idx) => _momentDuration,
+                momentBuilder: (context, idx) => images[idx],
+              ),
             ),
             Align(
               alignment: Alignment.topLeft,

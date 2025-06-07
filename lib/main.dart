@@ -33,9 +33,7 @@ import 'package:wishmap/home/settings/q_screen.dart';
 import 'package:wishmap/home/taskcreate_screen.dart';
 import 'package:wishmap/home/todo_screen.dart';
 import 'package:wishmap/home/wish_screen.dart';
-import 'package:wishmap/provider/audio_manager.dart';
 import 'package:wishmap/res/colors.dart';
-import 'package:wishmap/services/reminder_service.dart';
 import 'package:wishmap/testModule/adminPanel/CalculationResultScreen.dart';
 import 'package:wishmap/testModule/testingEngine/ViewModel.dart';
 import 'package:wishmap/testModule/testingEngine/pages/kin_screen.dart';
@@ -368,8 +366,10 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
   }
 
   _startPeriodicMessage(BuildContext c) async {
+    print("aaaaaaaaaasttr");
     vm?.promocodeMessageActive = await vm?.hasActivePromocode(null) ?? false;
     _timer = Timer.periodic(const Duration(minutes: 30), (t) {
+      return;//remove later
       if (vm?.promocodeMessageActive == true) {
         return;
       }

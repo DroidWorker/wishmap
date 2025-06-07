@@ -19,7 +19,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 class Repository {
   final DatabaseReference userRef = FirebaseDatabase.instance
       .refFromURL(
-          'https://wishmap-c3e06-default-rtdb.europe-west1.firebasedatabase.app/')
+          'https://the-self-889cb-default-rtdb.asia-southeast1.firebasedatabase.app/')
       .child('users');
   final Reference storageRef = FirebaseStorage.instance
       .refFromURL('gs://wishmap-c3e06.appspot.com/diary');
@@ -1384,7 +1384,7 @@ class Repository {
     if (_auth.currentUser != null) {
       DataSnapshot dataSnapshot = (await FirebaseDatabase.instance
               .refFromURL(
-                  'https://wishmap-c3e06-default-rtdb.europe-west1.firebasedatabase.app/')
+                  'https://the-self-889cb-default-rtdb.asia-southeast1.firebasedatabase.app/')
               .child("questions")
               .once())
           .snapshot;
@@ -1399,10 +1399,9 @@ class Repository {
   }
 
   Future<Map<String, String>> getStatic() async {
-    if (_auth.currentUser != null) {
       DataSnapshot dataSnapshot = (await FirebaseDatabase.instance
               .refFromURL(
-                  'https://wishmap-c3e06-default-rtdb.europe-west1.firebasedatabase.app/')
+                  'https://the-self-889cb-default-rtdb.asia-southeast1.firebasedatabase.app/')
               .child("static")
               .once())
           .snapshot;
@@ -1412,7 +1411,6 @@ class Repository {
         return Map<String, String>.fromEntries(dataList.entries
             .map((element) => MapEntry(element.key, element.value)));
       }
-    }
     return {};
   }
 
@@ -1424,7 +1422,7 @@ class Repository {
     if (_auth.currentUser != null) {
       DataSnapshot dataSnapshot = (await FirebaseDatabase.instance
               .refFromURL(
-                  'https://wishmap-c3e06-default-rtdb.europe-west1.firebasedatabase.app/')
+                  'https://the-self-889cb-default-rtdb.asia-southeast1.firebasedatabase.app/')
               .child("promocodes")
               .child(promocode)
               .once())
@@ -1446,7 +1444,7 @@ class Repository {
   Future<List<dynamic>> getKnowleges() async {
     final snap = (await FirebaseDatabase.instance
             .refFromURL(
-                'https://wishmap-c3e06-default-rtdb.europe-west1.firebasedatabase.app/')
+                'https://the-self-889cb-default-rtdb.asia-southeast1.firebasedatabase.app/')
             .child("knowledges")
             .once())
         .snapshot;
@@ -1459,7 +1457,7 @@ class Repository {
   Future<List<dynamic>> getTests() async {
     final snap = (await FirebaseDatabase.instance
             .refFromURL(
-                'https://wishmap-c3e06-default-rtdb.europe-west1.firebasedatabase.app/')
+                'https://the-self-889cb-default-rtdb.asia-southeast1.firebasedatabase.app/')
             .child("tests")
             .once())
         .snapshot;
@@ -1472,7 +1470,7 @@ class Repository {
   void saveData(Map<dynamic, dynamic> data) async {
     final frb = await FirebaseDatabase.instance
         .refFromURL(
-            'https://wishmap-c3e06-default-rtdb.europe-west1.firebasedatabase.app/')
+            'https://the-self-889cb-default-rtdb.asia-southeast1.firebasedatabase.app/')
         .child("tests");
     await frb.set(data);
   }
