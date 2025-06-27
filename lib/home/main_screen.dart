@@ -62,7 +62,6 @@ class _MainScreenState extends State<MainScreen>{
       }
       if(key!="")vm?.setInProgress(key!,progress);
     });
-    FlutterDownloader.registerCallback(FileDownloader.downloadCallback);
   }
 
   @override

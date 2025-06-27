@@ -47,14 +47,14 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyDKGgexDrfEkGwrRRJifj2poP4A1crV_38',
-    appId: '1:390038865604:web:9b60e2ef4e231495322b91',
-    messagingSenderId: '390038865604',
-    projectId: 'wishmap-c3e06',
-    authDomain: 'wishmap-c3e06.firebaseapp.com',
-    databaseURL: 'https://wishmap-c3e06-default-rtdb.europe-west1.firebasedatabase.app',
-    storageBucket: 'wishmap-c3e06.appspot.com',
-    measurementId: 'G-D9CRBD8J37',
+    apiKey: 'AIzaSyC-kDMaBo0Jar9FrYhScozSKnXZPp8jKmc',
+    appId: '1:568861797082:web:f739a39c6f7ff4e32e13e3',
+    messagingSenderId: '568861797082',
+    projectId: 'the-self-889cb',
+    authDomain: 'the-self-889cb.firebaseapp.com',
+    databaseURL: 'https://the-self-889cb-default-rtdb.asia-southeast1.firebasedatabase.app',
+    storageBucket: 'the-self-889cb.firebasestorage.app',
+    measurementId: 'G-PQRRSJMM1C',
   );
 
   static const FirebaseOptions android = FirebaseOptions(

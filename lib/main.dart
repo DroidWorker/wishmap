@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -72,8 +71,6 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   await _requestPermissions(flutterLocalNotificationsPlugin);
-  await FlutterDownloader.initialize(debug: false);
-  await AndroidAlarmManager.initialize();
   tz.initializeTimeZones();
 
   const AndroidInitializationSettings initializationSettingsAndroid =

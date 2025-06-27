@@ -18,15 +18,7 @@ class FileDownloader {
     send?.send("$id,$status,$progress");
   }
   static Future<String?> downloadFile(String url, String savedDir) async {
-
-    // Создание задачи загрузки файла
-    final taskId = await FlutterDownloader.enqueue(
-      url: url,
-      savedDir: savedDir,
-      showNotification: true, // Показывать уведомление во время загрузки
-      openFileFromNotification: false, // Открывать файл после загрузки
-    );
-    print("taskCreaaaaaaates");
-    return taskId;
+    print("try to download");
+    return "";
   }
 }

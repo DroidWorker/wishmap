@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'dart:typed_data';
-import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:workmanager/workmanager.dart';
 import '../data/models.dart';
@@ -141,20 +140,13 @@ Future<void> _scheduleNotification(FlutterLocalNotificationsPlugin flutterLocalN
 
 void setReminder(Reminder reminder) async {
 
-    final result = await AndroidAlarmManager.oneShotAt(
-      reminder.dateTime,
-      reminder.TaskId*100,
-      showRemindNotification,
-      alarmClock: true,
-      exact: true,
-      wakeup: true,
-    );
+    final result = false;
     print('Single reminder set for ${reminder.dateTime} with id ${reminder.id} alarmid - ${reminder.TaskId*100} - $result');
 }
 
 Future<bool> cancelAlarmManager(int id) async{
-  print("canceled reminder $id");
-  return await AndroidAlarmManager.cancel(id);
+
+  return false;
 }
 
 Future<List<int>> setAlarm(Alarm alarm, bool repeating) async {
@@ -167,30 +159,13 @@ Future<List<int>> setAlarm(Alarm alarm, bool repeating) async {
       final DateTime now = DateTime.now();
       final int dayOffset = getDayOffset(int.parse(day), now.weekday);
       final DateTime firstAlarmTime = now.add(Duration(days: dayOffset));
-
-      await AndroidAlarmManager.periodic(
-        const Duration(days: 7),
-        alarmId,
-        showFSNotification,
-        startAt: firstAlarmTime,
-        exact: true,
-        wakeup: true,
-      );
       alarmIds.add(alarmId);
 
       print('Repeating alarm set for $day starting at $firstAlarmTime');
     });
   } else {
-    final result = await AndroidAlarmManager.oneShotAt(
-      alarm.dateTime,
-      alarm.id*100,
-      showFSNotification,
-      alarmClock: true,
-      exact: true,
-      wakeup: true,
-    );
     alarmIds.add(alarm.id+654);
-    print('Single alarm set for ${alarm.dateTime} with id ${alarm.id} - $result');
+    print('Single alarm set for ${alarm.dateTime} with id ${alarm.id} - false');
   }
   return alarmIds;
 }
