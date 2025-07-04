@@ -48,20 +48,6 @@ class _MainScreenState extends State<MainScreen>{
   @override
   void initState() {
     super.initState();
-    IsolateNameServer.registerPortWithName(_port.sendPort, 'downloader_send_port');
-    _port.listen((dynamic data) {
-      print("seeeeeeerv geeeeet");
-      final elements = data.split(",");
-      String id = elements[0];
-      DownloadTaskStatus status = DownloadTaskStatus.values[int.parse(elements[1])];
-      int progress = int.parse(elements[2]);
-      final key = vm?.inProgress.keys.firstWhere((element) => element.contains(id), orElse: ()=>"");
-      if(progress>99) {
-        vm?.hint = "файл загружен, для загрузки дополнительных треков перейдите в настройки";
-        if(key!="")vm?.saveTrackPath(id);
-      }
-      if(key!="")vm?.setInProgress(key!,progress);
-    });
   }
 
   @override
@@ -228,7 +214,11 @@ class _MainScreenState extends State<MainScreen>{
                       ],
                     ),
                   ),
-                  CircularDraggableCircles(key: _CDWidgetKey,circles: appVM.currentCircles, size: MediaQuery.of(context).size.width-20, center: Pair(key: MediaQuery.of(context).size.width/2, value: MediaQuery.of(context).size.height*0.53), clearData: clearData,),
+                  SizedBox(
+                    width: 200,
+                    height: 800,
+                    child: CircularDraggableCircles(key: _CDWidgetKey,circles: appVM.currentCircles, size: MediaQuery.of(context).size.width-20, center: Pair(key: MediaQuery.of(context).size.width/2, value: MediaQuery.of(context).size.height*0.53), clearData: clearData,),
+                  ),
                   Padding(
                     padding: const EdgeInsets.fromLTRB(0, 16.0, 8, 16),
                     child: SizedBox(

@@ -97,8 +97,7 @@ class AlarmScreenState extends State<AlarmScreen> {
                               "Вы можете добавить будильник по кнопке ниже"),
                           const Spacer(flex: 2),
                           ColorRoundedButton("Добавить будильник", () {
-                            BlocProvider.of<NavigationBloc>(context)
-                                .add(NavigateToAlarmSettingsScreenEvent(1));
+                            appVM.addError("Для доступа к расширенному функционалу устаовите мобuльное приложение!");
                           }),
                           const SizedBox(height: 24)
                         ],

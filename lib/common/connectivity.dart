@@ -43,13 +43,10 @@ class _ConnectionStatusState extends State<ConnectionStatus> {
   String _getStatusString(var status) {
     switch (status) {
       case ConnectivityResult.none:
-        appViewModel.connectivity = 'No Internet Connection';
         return 'No Internet Connection';
       case ConnectivityResult.mobile:
-        appViewModel.connectivity = 'Mobile Data Connection';
         return 'Mobile Data Connection';
       case ConnectivityResult.wifi:
-        appViewModel.connectivity = 'WiFi Connection';
         return 'WiFi Connection';
       default:
         return 'Unknown';

@@ -33,14 +33,7 @@ Future<void> _checkReminders() async {
     _showNotification(null);
   }
 
-  final dbHelper = DatabaseHelper();
   List<Reminder> reminders = [];
-  try {
-    reminders = await dbHelper.getReminders();
-  } catch (ex, s) {
-    print("errrrrrrrrrror worker - $ex");
-    print(s);
-  }
 
   DateTime now = DateTime.now();
   String currentDay = now.weekday.toString();

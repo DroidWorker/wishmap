@@ -102,11 +102,6 @@ class CardsScreenState extends State<CardsScreen> {
                           } else {
                             try {
                               if (!isInSync) {
-                                var result =
-                                    await Connectivity().checkConnectivity();
-                                if (result == ConnectivityResult.none)
-                                  appViewModel.connectivity =
-                                      'No Internet Connection';
                                 if (items[index].id != -1 &&
                                     appViewModel.moonItems.isNotEmpty) {
                                   final moonId = appVM.moonItems
@@ -116,7 +111,7 @@ class CardsScreenState extends State<CardsScreen> {
                                     isInSync = true;
                                   });
                                   await appViewModel.fetchDatas(moonId.id);
-                                  appViewModel.mainScreenState=null;
+                                  appViewModel.mainScreenState = null;
                                   appViewModel.aimItems.clear();
                                   appViewModel.taskItems.clear();
                                   appViewModel.startMainScreen(moonId);
@@ -146,7 +141,7 @@ class CardsScreenState extends State<CardsScreen> {
                       },
                     ),
                   ),
-                  deleteMode && appVM.connectivity != "No Internet Connection"
+                  deleteMode
                       ? ColorRoundedButton("Удалить", () {
                           showModalBottomSheet<void>(
                             backgroundColor: AppColors.backgroundColor,

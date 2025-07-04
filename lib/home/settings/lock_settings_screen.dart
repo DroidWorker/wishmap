@@ -197,45 +197,7 @@ class LockSettingsScreenState extends State<LockSettingsScreen>{
               }),*/
               const SizedBox(height: 16),
               ColorRoundedButton(lockParams!.password.isEmpty?"Сохранить":"Сбросить пароль", (){
-                if(lockParams!.password.isEmpty){
-                  print("isempty");
-                  if(passwordRepeat.isEmpty){
-                    print("prisempty");
-                    if(password.length==4) {
-                      passwordRepeat = password;
-                      setState(() {
-                        message="Повторите пароль";
-                        password = "";
-                      });
-                    }
-                    return;
-                  }
-                    if(password.length==4&&password==passwordRepeat) {
-                        lockParams?.password = password;
-                      }else{
-                      setState(() {
-                        password="";
-                      });
-                      return;
-                    }
-                    if(lockParams!=null){
-                    appViewModel?.lockParams = lockParams!;
-                    appViewModel?.lockEnabled=true;
-                    BlocProvider.of<NavigationBloc>(context).handleBackPress();
-                  }
-                }else{
-                  if(password==lockParams?.password){
-                    setState(() {
-                      password="";
-                      lockParams?.password="";
-                      message="Введите новый пароль";
-                    });
-                  }else{
-                    setState(() {
-                      message="Введите старый пароль";
-                    });
-                  }
-                }
+                appViewModel?.addError("Для доступа к расширенному функционалу воспользуйтесь мобильным приложением!");
               })
             ],
           )
