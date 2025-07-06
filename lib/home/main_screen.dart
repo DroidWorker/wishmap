@@ -95,7 +95,7 @@ class _MainScreenState extends State<MainScreen>{
           //calculate topmessagebox
           final centerY = MediaQuery.of(context).size.height*0.50;
           final SSSize = MediaQuery.of(context).size.width-20;
-          final maxHeight = centerY-SSSize/2-50;
+          const maxHeight = 100.0;
 
           SchedulerBinding.instance.addPostFrameCallback((timeStamp) async {
             if(!appVM.alarmChecked&&await appVM.alarmsExists){
@@ -121,168 +121,180 @@ class _MainScreenState extends State<MainScreen>{
           });
           Widget w = Scaffold(
               backgroundColor: AppColors.backgroundColor,
-              body: SafeArea(child:Stack(
-                children: [
-                  Center(
-                    child: Column(
-                      children: [
-                        Expanded(child:
-                        LayoutBuilder(
-                          builder: (BuildContext context, BoxConstraints constraints) {
-                            return const SizedBox();
-                          },
-                        )
-                        ),
-                        const SizedBox(height: 30),
-                        Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: const BorderRadius.all(Radius.circular(25)),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.withOpacity(0.5),
-                                spreadRadius: 3,
-                                blurRadius: 7, // changes position of shadow
-                              ),
-                            ],
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              IconButton(
-                                icon: SvgPicture.asset('assets/icons/prev.svg', height: 20, width: 20),
-                                onPressed: () async {
-                                  final audioUrl = await appVM.getAudio();
-                                  if(audioUrl.isEmpty)return;
-                                  if(audioUrl.length>1){
-                                    final num = appVM.audioNum;
-                                    appVM.audioNum = num-1<0?audioUrl.length-1:num-1;
-                                    AudioPlayerManager().playLocal(audioUrl.keys.toList()[appVM.audioNum]);
-                                  }
-                                    setState(() {
-                                      isPauseIcon=false;
-                                      appVM.hint = audioUrl.keys.toList()[appVM.audioNum];
-                                    });
-                                },
-                              ),
-                              const SizedBox(width: 5),
-                              IconButton(
-                                icon: isPauseIcon?Image.asset('assets/icons/plau.png', height: 35, width: 35):SvgPicture.asset('assets/icons/pause.svg', height: 35, width: 35),
-                                onPressed: () async {
-                                  final audioUrl = await appVM.getAudio();
-                                  if(audioUrl.isEmpty)return;
-                                  if(!isPauseIcon){
-                                    AudioPlayerManager().pause();
-                                  }else {
-                                    AudioPlayerManager().playLocal(audioUrl.keys.toList()[appVM.audioNum]);
-                                  }
-                                  setState((){
-                                    ppPressCount++;
-                                    if(ppPressCount==5){
-                                      ppPressCount=0;
-                                      if(!isPauseIcon){
-                                          appVM.hint = quotesQuite[Random().nextInt(55)];
-                                      }
-                                    }else{
-                                        appVM.hint = audioUrl.keys.toList()[appVM.audioNum];
-                                    }
-                                    isPauseIcon=!isPauseIcon;
-                                    clearData=false;
-                                  });
-                                },
-                              ),
-                              const SizedBox(width: 5),
-                              IconButton(
-                                icon: SvgPicture.asset('assets/icons/next.svg', height: 20, width: 20),
-                                onPressed: () async {
-                                  final audioUrl = await appVM.getAudio();
-                                  if(audioUrl.isEmpty)return;
-                                  if(audioUrl.length>1){
-                                    final num = appVM.audioNum;
-                                    appVM.audioNum = num+1>audioUrl.length-1?0:num+1;
-                                    AudioPlayerManager().playLocal(audioUrl.keys.toList()[appVM.audioNum]);
-                                    setState(() {
-                                      isPauseIcon=false;
-                                      appVM.hint = audioUrl.keys.toList()[appVM.audioNum];print("aaaaaaaaaaaaaaaaa${appVM.hint}");
-                                    });
-                                  }
-                                },
-                              )
-                            ],),
-                        ),
-                        const SizedBox(height: 10),
-                      ],
-                    ),
-                  ),
-                  SizedBox(
-                    width: 200,
-                    height: 800,
-                    child: CircularDraggableCircles(key: _CDWidgetKey,circles: appVM.currentCircles, size: MediaQuery.of(context).size.width-20, center: Pair(key: MediaQuery.of(context).size.width/2, value: MediaQuery.of(context).size.height*0.53), clearData: clearData,),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(0, 16.0, 8, 16),
-                    child: SizedBox(
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const SizedBox(width: 16),
-                          Expanded(
-                              flex: 5,
-                              child: SelectorTextWidget(appViewModel: appVM, maxHeight: maxHeight,)//Text("${appVM.hint}")
-                          ),
-                          const SizedBox(width: 32),
-                          Expanded(
-                              flex: 1,
-                              child: Column(
-                                children: [
-                                  InkWell(child:IconButton(
-                                    style: ButtonStyle(
-                                        backgroundColor: MaterialStateProperty.all(Colors.white),
-                                        shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                                            RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(8.0),
-                                            )
-                                        )),
-                                    icon: const Icon(Icons.menu, size: 30,),
-                                    onPressed: () {
-                                      appVM.mainCircles.clear();
-                                      BlocProvider.of<NavigationBloc>(context)
-                                          .add(NavigateToProfileScreenEvent());
-                                    },
+              body: SafeArea(child:Center(
+                child: SizedBox(
+                  width: 600,
+                  height: 1000,
+                  child: Stack(
+                    children: [
+                      Center(
+                        child: Column(
+                          children: [
+                            Expanded(child:
+                            LayoutBuilder(
+                              builder: (BuildContext context, BoxConstraints constraints) {
+                                return const SizedBox();
+                              },
+                            )
+                            ),
+                            const SizedBox(height: 30),
+                            Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: const BorderRadius.all(Radius.circular(25)),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.grey.withOpacity(0.5),
+                                    spreadRadius: 3,
+                                    blurRadius: 7, // changes position of shadow
                                   ),
-                                    onLongPress: (){
-                                      appVM.createReport();
-                                      appVM.addError("Bug Report");
-                                    },
-                                  ),
-                                  const SizedBox(height: 10),
-                                  InkWell(
-                                    onTap: (){
-                                      appVM.mainScreenState = null;
-                                      appVM.mainCircles.clear();
-                                      appVM.currentCircles.clear();
-                                      BlocProvider.of<NavigationBloc>(context)
-                                          .add(NavigateToCardsScreenEvent());
-                                    },
-                                    child: Container(
-                                      height: (MediaQuery.of(context).size.height-MediaQuery.of(context).size.width)*0.1,
-                                      width: (MediaQuery.of(context).size.height-MediaQuery.of(context).size.width)*0.1,
-                                      child: MoonWidget(
-                                        date: parseDateString(appVM.mainScreenState?.moon.date??"01.01.2020")??DateTime.now(),
-                                        size: (MediaQuery.of(context).size.height-MediaQuery.of(context).size.width)*0.1,
-                                        resolution: ((MediaQuery.of(context).size.height-MediaQuery.of(context).size.width)*0.1)*100,
-                                      ),
-                                    ),
-                                  )
                                 ],
-                              )
-                          ),
-                          const SizedBox(width: 16)
-                        ],
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    icon: SvgPicture.asset('assets/icons/prev.svg', height: 20, width: 20),
+                                    onPressed: () async {
+                                      final audioUrl = await appVM.getAudio();
+                                      if(audioUrl.isEmpty)return;
+                                      if(audioUrl.length>1){
+                                        final num = appVM.audioNum;
+                                        appVM.audioNum = num-1<0?audioUrl.length-1:num-1;
+                                        AudioPlayerManager().playLocal(audioUrl.keys.toList()[appVM.audioNum]);
+                                      }
+                                        setState(() {
+                                          isPauseIcon=false;
+                                          appVM.hint = audioUrl.keys.toList()[appVM.audioNum];
+                                        });
+                                    },
+                                  ),
+                                  const SizedBox(width: 5),
+                                  IconButton(
+                                    icon: isPauseIcon?Image.asset('assets/icons/plau.png', height: 35, width: 35):SvgPicture.asset('assets/icons/pause.svg', height: 35, width: 35),
+                                    onPressed: () async {
+                                      final audioUrl = await appVM.getAudio();
+                                      if(audioUrl.isEmpty)return;
+                                      if(!isPauseIcon){
+                                        AudioPlayerManager().pause();
+                                      }else {
+                                        AudioPlayerManager().playLocal(audioUrl.keys.toList()[appVM.audioNum]);
+                                      }
+                                      setState((){
+                                        ppPressCount++;
+                                        if(ppPressCount==5){
+                                          ppPressCount=0;
+                                          if(!isPauseIcon){
+                                              appVM.hint = quotesQuite[Random().nextInt(55)];
+                                          }
+                                        }else{
+                                            appVM.hint = audioUrl.keys.toList()[appVM.audioNum];
+                                        }
+                                        isPauseIcon=!isPauseIcon;
+                                        clearData=false;
+                                      });
+                                    },
+                                  ),
+                                  const SizedBox(width: 5),
+                                  IconButton(
+                                    icon: SvgPicture.asset('assets/icons/next.svg', height: 20, width: 20),
+                                    onPressed: () async {
+                                      final audioUrl = await appVM.getAudio();
+                                      if(audioUrl.isEmpty)return;
+                                      if(audioUrl.length>1){
+                                        final num = appVM.audioNum;
+                                        appVM.audioNum = num+1>audioUrl.length-1?0:num+1;
+                                        AudioPlayerManager().playLocal(audioUrl.keys.toList()[appVM.audioNum]);
+                                        setState(() {
+                                          isPauseIcon=false;
+                                          appVM.hint = audioUrl.keys.toList()[appVM.audioNum];print("aaaaaaaaaaaaaaaaa${appVM.hint}");
+                                        });
+                                      }
+                                    },
+                                  )
+                                ],),
+                            ),
+                            const SizedBox(height: 10),
+                          ],
+                        ),
                       ),
-                    ),
-                  ),
-                ],)),
+                      Center(
+                        child: SizedBox(
+                          width: 400,
+                          height: 800,
+                          child: CircularDraggableCircles(key: _CDWidgetKey,circles: appVM.currentCircles, size: 400, center: Pair(key: 200, value: 400), clearData: clearData,),
+                        ),
+                      ),
+                      SizedBox(
+                        height: 200,
+                        width: 500,
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(0, 16.0, 8, 16),
+                          child: SizedBox(
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const SizedBox(width: 16),
+                                Expanded(
+                                    flex: 5,
+                                    child: SelectorTextWidget(appViewModel: appVM, maxHeight: maxHeight,)//Text("${appVM.hint}")
+                                ),
+                                const SizedBox(width: 32),
+                                Expanded(
+                                    flex: 1,
+                                    child: Column(
+                                      children: [
+                                        InkWell(child:IconButton(
+                                          style: ButtonStyle(
+                                              backgroundColor: MaterialStateProperty.all(Colors.white),
+                                              shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                                                  RoundedRectangleBorder(
+                                                    borderRadius: BorderRadius.circular(8.0),
+                                                  )
+                                              )),
+                                          icon: const Icon(Icons.menu, size: 30,),
+                                          onPressed: () {
+                                            appVM.mainCircles.clear();
+                                            BlocProvider.of<NavigationBloc>(context)
+                                                .add(NavigateToProfileScreenEvent());
+                                          },
+                                        ),
+                                          onLongPress: (){
+                                            appVM.createReport();
+                                            appVM.addError("Bug Report");
+                                          },
+                                        ),
+                                        const SizedBox(height: 10),
+                                        InkWell(
+                                          onTap: (){
+                                            appVM.mainScreenState = null;
+                                            appVM.mainCircles.clear();
+                                            appVM.currentCircles.clear();
+                                            BlocProvider.of<NavigationBloc>(context)
+                                                .add(NavigateToCardsScreenEvent());
+                                          },
+                                          child: Container(
+                                            height: 40,
+                                            width: 40,
+                                            child: MoonWidget(
+                                              date: parseDateString(appVM.mainScreenState?.moon.date??"01.01.2020")??DateTime.now(),
+                                              size: 40,
+                                              resolution: (40)*100,
+                                            ),
+                                          ),
+                                        )
+                                      ],
+                                    )
+                                ),
+                                const SizedBox(width: 16)
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],),
+                ),
+              )),
               bottomNavigationBar: BottomBar(
                 onAimsTap: (){
                   _CDWidgetKey.currentState?.stateSnapshot();

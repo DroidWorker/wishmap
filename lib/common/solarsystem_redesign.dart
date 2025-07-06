@@ -228,8 +228,7 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles>
   List<Key> ccKeys = [];
 
   Size getScreenSize(BuildContext context) {
-    final mediaQueryData = MediaQuery.of(context);
-    return mediaQueryData.size;
+    return const Size(400, 800);
   }
 
   @override
@@ -547,7 +546,7 @@ class CircularDraggableCirclesState extends State<CircularDraggableCircles>
 
     if (vm!.mainScreenState?.needToUpdateCoords == true) {
       lastRotation.value = 0.0;
-      final radius = MediaQuery.of(context).size.width * 0.15;
+      final radius = 400 * 0.15;
       for (int i = 0; i < centralCircles.length; i++) {
         centralCircles[i].radius = radius;
         if (centralCircles[i].coords.key == 0.0 ||
