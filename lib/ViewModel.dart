@@ -990,9 +990,10 @@ class AppViewModel with ChangeNotifier {
         cachedImages.clear();
         myNodes.clear();
       }
-      WishData wdItem;
-      wdItem = /*(await localRep.getSphere(wishId, mainScreenState!.moon.id)) ??*///TODO load wish fro
-          WishData(
+      WishData? wdItem;
+      wdItem = await repository.getMyWish(wishId, mainScreenState!.moon.id);/*(await localRep.getSphere(wishId, mainScreenState!.moon.id)) ??*///TODO load wish fro
+          if(wdItem==null) {
+            return WishData(
               id: -100,
               prevId: -1,
               nextId: -1,
@@ -1001,6 +1002,7 @@ class AppViewModel with ChangeNotifier {
               description: "",
               affirmation: "",
               color: Colors.transparent);
+          }
       if (!isUpdateScreen) {
         wishScreenState = WishScreenState(wish: wdItem);
       } else {
@@ -1201,7 +1203,7 @@ class AppViewModel with ChangeNotifier {
   Future<WishData?> getSphereNow(int id) async {
     try {
       if (mainScreenState != null) {
-        return await null; /*localRep.getSphere(id, mainScreenState?.moon.id ?? 0);*///TODo load sphere
+        return await repository.getMyWish(id, mainScreenState?.moon.id ?? 0); /*localRep.getSphere(id, mainScreenState?.moon.id ?? 0);*///TODo load sphere
       } else {
         throw Exception("#2365 lost datas: mainScreen NULL");
       }
@@ -1311,11 +1313,10 @@ class AppViewModel with ChangeNotifier {
 
   Future activateParentSpheres(int id) async {
     repository.activateWish(id, mainScreenState!.moon.id, true);
-    //final wish = await localRep.getSphere(id, mainScreenState!.moon.id);
-    //TODO load sphere
-    /*mainScreenState?.allCircles.firstWhere((e) => e.id == id).isActive = true;
+    final wish = await repository.getMyWish(id, mainScreenState?.moon.id ?? 0);
+    mainScreenState?.allCircles.firstWhere((e) => e.id == id).isActive = true;
     wishItems.firstWhereOrNull((e) => e.id == id)?.isActive = true;
-    if (wish != null && wish.parentId > 0) activateParentSpheres(wish.parentId);*/
+    if (wish != null && wish.parentId > 0) activateParentSpheres(wish.parentId);
   }
 
   Future activateChildWishes(WishData wish) async {
@@ -1377,22 +1378,20 @@ class AppViewModel with ChangeNotifier {
           });
         }
         //actualize child aims
-        // List<int> childAims = await localRep.getSpheresChildAims(
-        //     id, mainScreenState?.moon.id ?? 0);
-        // List<int> childTasks = [];
-        // for (var eid in childAims) {
-        //   activateAim(eid, true, needToCommit: false);
-        //   if (settings.taskActualizingMode == 0 ||
-        //       settings.actualizeFullBranch) {
-        //     final ts = await localRep.getAimsChildTasks(
-        //         eid, mainScreenState?.moon.id ?? 0);
-        //     childTasks.addAll(ts);
-        //   }
-        // }
+        List<int> childAims = await repository.getSpheresChildAims(id, mainScreenState?.moon.id ?? 0) ?? List.empty();
+        List<int> childTasks = [];
+        for (var eid in childAims) {
+          activateAim(eid, true, needToCommit: false);
+          if (settings.taskActualizingMode == 0 ||
+              settings.actualizeFullBranch) {
+            final ts = await repository.getAimsChildTasks(eid, mainScreenState?.moon.id ?? 0);
+            if(ts!=null)childTasks.addAll(ts);
+          }
+        }
         //actualize childTasks
-        // for (var eid in childTasks) {
-        //   activateTask(eid, true, needToCommit: false);
-        // }
+        for (var eid in childTasks) {
+          activateTask(eid, true, needToCommit: false);
+        }
       } else if (wi?.parenId == 0) {
         final childTecWishId = mainScreenState?.allCircles
             .firstWhereOrNull(

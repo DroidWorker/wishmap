@@ -817,10 +817,10 @@ class Repository {
           id: int.parse(dataList['id'].toString()),
           nextId: dataList['nextId'] == null
               ? -1
-              : int.tryParse(dataList['nextId']) ?? -1,
+              : dataList['nextId'] ?? -1,
           prevId: dataList['prevId'] == null
               ? -1
-              : int.tryParse(dataList['prevId']) ?? -1,
+              : dataList['prevId'] ?? -1,
           text: dataList['text'],
           description: dataList['subText'] ?? "",
           color: Color(int.parse(dataList['color'].toString())),
