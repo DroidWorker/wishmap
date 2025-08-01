@@ -437,43 +437,7 @@ class TaskEditScreenState extends State<TaskEditScreen>{
                               }),
                               const SizedBox(height: 16),
                               OutlinedGradientButton("Напоминание", widgetBeforeText: const Icon(Icons.add_circle_outline_rounded), (){
-                                showModalBottomSheet(context: context,backgroundColor: AppColors.backgroundColor, isScrollControlled: true, builder: (BuildContext context){
-                                  return ReminderBS((reminder){
-                                    setState(() {
-                                      if (reminder.dateTime
-                                          .isBefore(DateTime.now())) {
-                                        if (reminder.remindDays.isNotEmpty) {
-                                          final dayOffset =
-                                          getDayOffsetToClosest(
-                                              reminder.remindDays
-                                                  .map((e) => int.parse(e))
-                                                  .toList(),
-                                              reminder.dateTime
-                                                  .add(const Duration(
-                                                  days: 1))
-                                                  .weekday);
-                                          reminder.dateTime=reminder.dateTime
-                                              .add(Duration(days: dayOffset));
-                                        } else {
-                                          reminder.dateTime = reminder.dateTime
-                                              .add(const Duration(days: 1));
-                                        }
-                                      }
-                                      if (reminder.remindDays.isNotEmpty) {
-                                        final dayOffset = getDayOffsetToClosest(
-                                            reminder.remindDays
-                                                .map((e) => int.parse(e))
-                                                .toList(),
-                                            reminder.dateTime.weekday);
-                                        reminder.dateTime=reminder .dateTime
-                                            .add(Duration(days: dayOffset));
-                                      }
-                                      appVM.addReminder(reminder);
-                                      setReminder(reminder);
-                                      Navigator.pop(context, 'OK');
-                                    });
-                                  }, ai?.id??-1, appVM.mainScreenState?.moon.id??0);
-                                });
+                                appVM.addError("Для доступа к расширенному функционалу устаовите мобuльное приложение!");
                               }),
                               const SizedBox(height: 16),
                             ],),
