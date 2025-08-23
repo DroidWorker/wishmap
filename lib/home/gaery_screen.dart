@@ -181,7 +181,7 @@ class GalleryScreenState extends State<GalleryScreen>{
                         ),
                         itemCount: appViewModel.cachedImages.length,
                         itemBuilder: (context, index) {
-                          return GalleryPhotoContainer(key: ValueKey(appViewModel.cachedImages[index]), appViewModel.cachedImages[index], needtoSelect: deleteMode, (image) async {
+                          return GalleryPhotoContainer(key: ValueKey(appViewModel.cachedImages[index]), appViewModel.cachedImages[index], needToSelect: deleteMode, (image) async {
                             if(deleteMode){
                               deleteIndexes.contains(index)?deleteIndexes.remove(index):deleteIndexes.add(index);
                             }
@@ -218,11 +218,8 @@ class GalleryScreenState extends State<GalleryScreen>{
               screenNumber==1?Expanded(child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: RoundedPhotoGallery( onClick: (image) async {
-                  final imge = await showOverlayedImageManager(context, "no url", image: image);
-                  if(imge!=null){
                     appViewModel.cachedImages.add(image);
                     appViewModel.isChanged=true;
-                  }
                 }),
               )):
               screenNumber==2? Consumer<AppViewModel>(builder: (ccontext, appVM, child){

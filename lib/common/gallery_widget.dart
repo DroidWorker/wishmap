@@ -61,8 +61,9 @@ class _RoundedPhotoGalleryState extends State<RoundedPhotoGallery> {
             ),
             itemCount: _images.length,
             itemBuilder: (context, index) {
+              widget.onClick(_images[index]);
               return GalleryPhotoContainer.fromBytes(_images[index], (image) {
-                widget.onClick(image);
+
               });
             },
           ),
